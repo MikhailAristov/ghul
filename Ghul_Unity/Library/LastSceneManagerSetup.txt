@@ -1,4 +1,0 @@
-sceneSetups:
-- path: Assets/ghul_unity_project.unity
-  isLoaded: 1
-  isActive: 1
