@@ -2,32 +2,56 @@
 using System.Collections;
 
 public class Control_Camera : MonoBehaviour {
+    
+    public GameObject GameState;
+    private Data_GameState GS;
 
     public GameObject focusOn;
-
-    public GameObject currentRoom;
+    private Transform focusTrafo;
+    
     private Environment_Room currentEnvironment;
 
-    private Transform trafo;
-    private Transform focusTrafo;
-    private const float PANNING_SPEED = 6.0f;
+    private float PANNING_SPEED;
 
-    // Use this for initialization
+    // Use this for initialization; note that only local variables can be initialized here, game state is loaded later
     void Start ()
     {
-        trafo = transform;
-        focusTrafo = focusOn.transform;
-        currentEnvironment = currentRoom.GetComponent<Environment_Room>();
+        return;
     }
-	
-	// Update is called once per frame
-	void Update ()
+
+    // To make sure the game state is fully initialized before loading it, this function is called by game state class itself
+    public void loadGameState(Data_GameState gameState)
     {
-        float targetPosition = currentEnvironment.validateCameraPosition(focusTrafo.position.x);
-        float displacement = (targetPosition - trafo.position.x) * Time.deltaTime * 9.0f;
-        if (Mathf.Abs(displacement) > 0.00f)
+        this.GS = gameState;
+
+        // Set general movement parameters
+        PANNING_SPEED = GS.getSetting("CAMERA_PANNING_SPEED");
+    }
+
+    // Update is called once per frame
+    void Update ()
+    {
+        if (GS == null) { return; } // Don't do anything until game state is loaded
+
+        if (this.focusOn != null)
         {
-            trafo.Translate(displacement, 0, 0);
+            // Calculate the horizontal displacement between the camera and its current object
+            float targetPositionX = currentEnvironment.validateCameraPosition(focusTrafo.position.x);
+            float displacementX = (targetPositionX - transform.position.x) * Time.deltaTime * this.PANNING_SPEED;
+            // Calculate the vertical displacement between the camera and its current object
+            float displacementY = focusTrafo.position.y - transform.position.y;
+            // Correct displacement
+            if (Mathf.Abs(displacementX) > 0.00f || Mathf.Abs(displacementY) > 0.00f) {
+                transform.Translate(displacementX, displacementY, 0);
+            }
         }
+    }
+
+    // Set an object to focus on
+    public void setFocusOn(GameObject gameObj, Environment_Room env)
+    {
+        this.focusOn = gameObj;
+        this.focusTrafo = gameObj.transform;
+        this.currentEnvironment = env;
     }
 }
