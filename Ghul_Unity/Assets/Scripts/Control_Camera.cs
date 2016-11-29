@@ -1,20 +1,20 @@
 ﻿using UnityEngine;
-using System.Collections;
 
-public class Control_Camera : MonoBehaviour {
-    
+public class Control_Camera : MonoBehaviour
+{
+
     public GameObject GameState;
     private Data_GameState GS;
 
     public GameObject focusOn;
     private Transform focusTrafo;
-    
+
     private Environment_Room currentEnvironment;
 
     private float PANNING_SPEED;
 
     // Use this for initialization; note that only local variables can be initialized here, game state is loaded later
-    void Start ()
+    void Start()
     {
         return;
     }
@@ -29,20 +29,29 @@ public class Control_Camera : MonoBehaviour {
     }
 
     // Update is called once per frame
-    void Update ()
+    void Update()
     {
         if (GS == null) { return; } // Don't do anything until game state is loaded
 
         if (this.focusOn != null)
         {
-            // Calculate the horizontal displacement between the camera and its current object
+            // Calculate the differences between the camera's current and target position
             float targetPositionX = currentEnvironment.validateCameraPosition(focusTrafo.position.x);
-            float displacementX = (targetPositionX - transform.position.x) * Time.deltaTime * this.PANNING_SPEED;
-            // Calculate the vertical displacement between the camera and its current object
             float displacementY = focusTrafo.position.y - transform.position.y;
-            // Correct displacement
-            if (Mathf.Abs(displacementX) > 0.00f || Mathf.Abs(displacementY) > 0.00f) {
+            float displacementX = targetPositionX - transform.position.x;
+            // If there is a difference in the vertical direction, close it all at once (provisional)
+            if (Mathf.Abs(displacementY) > 0.0f)
+            {
                 transform.Translate(displacementX, displacementY, 0);
+                return;
+            }
+
+            // Otherwise, pan gradually
+            displacementX *= Time.deltaTime * this.PANNING_SPEED;
+            // Correct displacement
+            if (Mathf.Abs(displacementX) > 0.0f)
+            {
+                transform.Translate(displacementX, 0, 0);
             }
         }
     }
