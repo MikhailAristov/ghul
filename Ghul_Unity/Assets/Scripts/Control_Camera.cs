@@ -12,6 +12,7 @@ public class Control_Camera : MonoBehaviour
     private Environment_Room currentEnvironment;
 
     private float PANNING_SPEED;
+    private float VERTICAL_ROOM_SPACING;
 
     // Use this for initialization; note that only local variables can be initialized here, game state is loaded later
     void Start()
@@ -26,6 +27,7 @@ public class Control_Camera : MonoBehaviour
 
         // Set general movement parameters
         PANNING_SPEED = GS.getSetting("CAMERA_PANNING_SPEED");
+        VERTICAL_ROOM_SPACING = GS.getSetting("VERTICAL_ROOM_SPACING");
     }
 
     // Update is called once per frame
@@ -42,6 +44,11 @@ public class Control_Camera : MonoBehaviour
             // If there is a difference in the vertical direction, close it all at once (provisional)
             if (Mathf.Abs(displacementY) > 0.0f)
             {
+                // Update the environment
+                int roomIndex = Mathf.RoundToInt(focusTrafo.position.y / VERTICAL_ROOM_SPACING); // TODO: This can be done much smarter....
+                this.currentEnvironment = GS.getRoomByIndex(roomIndex).env;
+                // Reevaluate and apply camera displacement
+                displacementX = currentEnvironment.validateCameraPosition(focusTrafo.position.x) - transform.position.x;
                 transform.Translate(displacementX, displacementY, 0);
                 return;
             }

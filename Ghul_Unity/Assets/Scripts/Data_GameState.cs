@@ -39,6 +39,7 @@ public class Data_GameState : MonoBehaviour {
         ROOMS.Add(0, new Data_Room(0, GameObject.Find("Room00")));
         ROOMS.Add(1, new Data_Room(1, GameObject.Find("Room01")));
         ROOMS.Add(2, new Data_Room(2, GameObject.Find("Room02")));
+        ROOMS.Add(3, new Data_Room(3, GameObject.Find("Room03")));
 
         // INITIALIZE DOORS
         DOORS = new SortedList<int, Data_Door>();
@@ -48,6 +49,8 @@ public class Data_GameState : MonoBehaviour {
         DOORS.Add(3, new Data_Door(3, GameObject.Find("Door1-1")));
         DOORS.Add(4, new Data_Door(4, GameObject.Find("Door1-2")));
         DOORS.Add(5, new Data_Door(5, GameObject.Find("Door2-1")));
+        DOORS.Add(6, new Data_Door(6, GameObject.Find("Door3-1")));
+        DOORS.Add(7, new Data_Door(7, GameObject.Find("Door3-2")));
 
         // ADD DOORS TO ROOMS
         ROOMS[0].addDoor(DOORS[0], DOORS[0].gameObj.transform.position.x);
@@ -56,15 +59,18 @@ public class Data_GameState : MonoBehaviour {
         ROOMS[1].addDoor(DOORS[3], DOORS[3].gameObj.transform.position.x);
         ROOMS[1].addDoor(DOORS[4], DOORS[4].gameObj.transform.position.x);
         ROOMS[2].addDoor(DOORS[5], DOORS[5].gameObj.transform.position.x);
+        ROOMS[3].addDoor(DOORS[6], DOORS[6].gameObj.transform.position.x);
+        ROOMS[3].addDoor(DOORS[7], DOORS[7].gameObj.transform.position.x);
 
         // CONNECT DOORS
         DOORS[0].connectTo(DOORS[5]);
-        DOORS[1].connectTo(DOORS[4]);
-        DOORS[2].connectTo(DOORS[3]);
+        DOORS[1].connectTo(DOORS[3]);
+        DOORS[2].connectTo(DOORS[6]);
+        DOORS[4].connectTo(DOORS[7]);
         // TODO: Must ensure that side doors never connect to the opposite sides, or it will look weird and cause trouble with room transitions
 
         // LINK GAME OBJECTS TO GAME STATE
-        foreach(Data_Room r in ROOMS.Values)
+        foreach (Data_Room r in ROOMS.Values)
         {
             // Load rooms
             r.env.loadGameState(this, r.INDEX);
