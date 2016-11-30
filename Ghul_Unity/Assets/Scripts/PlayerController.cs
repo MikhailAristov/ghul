@@ -9,8 +9,8 @@ public class PlayerController : MonoBehaviour {
 	private Transform blockRightTrafo;
 
 	private float runSpeedMultiplier; // Multiplies the basic movement speed. Value is 1, if Run is not pressed.
-	private const float RUN_SPEED_MULTIPLIER_INCREASEMENT = 0.8f; // speed multiplier increases by this amount when run button is held
-	private const float RUN_SPEED_MULTIPLIER_DECREASEMENT = 1.2f; // speed multiplier decreases by this amount when run button is not held
+	private const float RUN_SPEED_MULTIPLIER_INCREMENT = 0.8f; // speed multiplier increases by this amount when run button is held
+	private const float RUN_SPEED_MULTIPLIER_DECREMENT = 1.2f; // speed multiplier decreases by this amount when run button is not held
 	private const float MAX_RUN_SPEED_MULTIPLIER = 2.0f;
 	private const float BASIC_MOVEMENT_SPEED = 5.0f;
 
@@ -54,9 +54,9 @@ public class PlayerController : MonoBehaviour {
 
 		// Run speed handling
 		if (Input.GetButton ("Run") && directionKeyPressed && !isOutOfPower) {
-			runSpeedMultiplier = Mathf.Min (MAX_RUN_SPEED_MULTIPLIER, runSpeedMultiplier + RUN_SPEED_MULTIPLIER_INCREASEMENT * Time.deltaTime);
+			runSpeedMultiplier = Mathf.Min (MAX_RUN_SPEED_MULTIPLIER, runSpeedMultiplier + RUN_SPEED_MULTIPLIER_INCREMENT * Time.deltaTime);
 		} else {
-			runSpeedMultiplier = Mathf.Max (1.0f, runSpeedMultiplier - RUN_SPEED_MULTIPLIER_DECREASEMENT * Time.deltaTime);
+			runSpeedMultiplier = Mathf.Max (1.0f, runSpeedMultiplier - RUN_SPEED_MULTIPLIER_DECREMENT * Time.deltaTime);
 		}
 
 		// Horizontal movement
