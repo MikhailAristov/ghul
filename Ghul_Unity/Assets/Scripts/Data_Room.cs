@@ -3,25 +3,24 @@ using System;
 using System.Collections.Generic;
 
 // Game state object representing rooms in the house
+[Serializable]
 public class Data_Room : IComparable<Data_Room> {
 
-    public int INDEX { get; private set; }
-    public GameObject gameObj { get; private set; }
-    public Environment_Room env { get; private set; }
-    public float width { get; private set; }
-    public List<Data_Door> DOORS { get; private set; } // The list is private, but elements are not
-
-    private Transform background;
-    private Renderer bgRenderer;
+    public int INDEX;
+    public GameObject gameObj;
+    [NonSerialized]
+    public Environment_Room env;
+    public float width;
+    public List<Data_Door> DOORS;
 
     public Data_Room(int I, GameObject O)
     {
         this.INDEX = I;
         this.gameObj = O;
         this.env = this.gameObj.GetComponent<Environment_Room>();
-        this.background = this.gameObj.transform.FindChild("Background");
-        this.bgRenderer = this.background.GetComponent<Renderer>();
-        this.width = this.bgRenderer.bounds.size[0];
+        Transform background = this.gameObj.transform.FindChild("Background");
+        Renderer bgRenderer = background.GetComponent<Renderer>();
+        this.width = bgRenderer.bounds.size[0];
         this.DOORS = new List<Data_Door>();
     }
 

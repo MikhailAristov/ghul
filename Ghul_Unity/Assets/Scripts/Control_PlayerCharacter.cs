@@ -27,7 +27,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
     public void loadGameState(Data_GameState gameState)
     {
         this.GS = gameState;
-        this.me = gameState.PLAYER_CHARACTER;
+        this.me = gameState.getCHARA();
         this.currentEnvironment = me.isIn.env;
 
         // Set general movement parameters

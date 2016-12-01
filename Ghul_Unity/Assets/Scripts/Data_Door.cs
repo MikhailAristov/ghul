@@ -1,15 +1,16 @@
 ﻿using UnityEngine;
 using System;
-using System.Collections.Generic;
 
 // Game state object representing doors (connections between rooms) in the house
+[Serializable]
 public class Data_Door : IComparable<Data_Door> {
 
-    public int INDEX { get; private set; }
-    public Data_Room isIn { get; private set; }
-    public float atPos { get; private set; }
-    public Data_Door connectsTo { get; private set; }
-    public GameObject gameObj { get; private set; }
+    public int INDEX;
+    [NonSerialized]
+    public Data_Room isIn;
+    public float atPos;
+    public Data_Door connectsTo;
+    public GameObject gameObj;
 
     public Data_Door(int I, GameObject O)
     {

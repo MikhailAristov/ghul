@@ -1,15 +1,17 @@
 ﻿using UnityEngine;
+using System;
 
+[Serializable]
 public class Data_Character {
 
-    public string Name { get; private set; }
-    public GameObject gameObj { get; private set; }
-    public Control_PlayerCharacter control { get; private set; }
-    public Data_Room isIn { get; private set; }
-    public float pos { get; private set; }
+    public string Name;
+    public GameObject gameObj;
+    public Control_PlayerCharacter control;
+    public Data_Room isIn;
+    public float pos;
     // Gameplay parameters:
-    public float stamina { get; private set; } // goes from 0.0 to 1.0
-    public bool exhausted { get; private set; }
+    public float stamina; // goes from 0.0 to 1.0
+    public bool exhausted;
 
     public Data_Character(string N, GameObject O)
     {
