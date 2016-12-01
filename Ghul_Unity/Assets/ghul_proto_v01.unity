@@ -826,7 +826,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1333168850}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8f8d1b5efb538e0498deb5a8b17033ca, type: 3}
+  m_Script: {fileID: 11500000, guid: 553f3789f13647b4eb1aa94fc6ff5248, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &1344317735
@@ -928,8 +928,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 282fa773170181746af71c1b6b583e45, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GameState: {fileID: 0}
-  focusOn: {fileID: 558393186}
+  focusOn:
+    RoomId: 0
+    X: 0
 --- !u!1 &1551384215
 GameObject:
   m_ObjectHideFlags: 0
