@@ -9,6 +9,7 @@ public class Data_GameState : MonoBehaviour {
     private SortedList<int, Data_Door> DOORS;
 
     public Data_Character PLAYER_CHARACTER;
+	public Data_Monster MONSTER;
     private Control_Camera MAIN_CAMERA_CONTROL;
 
     // Initialization at the start of the game
@@ -25,6 +26,9 @@ public class Data_GameState : MonoBehaviour {
 
         SETTINGS.Add("CHARA_WALKING_SPEED", 5.0f);
         SETTINGS.Add("CHARA_RUNNING_SPEED", 8.0f);
+		SETTINGS.Add("MONSTER_WALKING_SPEED", 5.2f);
+		SETTINGS.Add("MONSTER_KILL_RADIUS", 1.0f); // when the player gets this close to the monster, he dies.
+		SETTINGS.Add("TIME_TO_REACT", 0.35f); // if the player escapes the monster's radius within this timeframe, he isn't killed.
 
         // Stamina range: 0.0 .. 1.0; increments are applied per second
         SETTINGS.Add("RUNNING_STAMINA_LOSS", -0.2f);   // Must be negative
@@ -33,6 +37,8 @@ public class Data_GameState : MonoBehaviour {
 
         SETTINGS.Add("DOOR_COOLDOWN_DURATION", 0.3f);
         SETTINGS.Add("CAMERA_PANNING_SPEED", 9.0f);
+
+		SETTINGS.Add("TOTAL_DEATH_DURATION", 3.0f); // When deathDuration of Data_Character reaches this value the player resets to the starting room
 
         // INITIALIZE ROOMS
         ROOMS = new SortedList<int, Data_Room>();
@@ -86,8 +92,15 @@ public class Data_GameState : MonoBehaviour {
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         PLAYER_CHARACTER = new Data_Character("CHARA", playerObj);
         PLAYER_CHARACTER.moveToRoom(ROOMS[0]); // put CHARA in the starting room
+		PLAYER_CHARACTER.startingRoom = ROOMS[0];
         PLAYER_CHARACTER.control.loadGameState(this);
         InvokeRepeating("updatePlayerCharacterPosition", 0.0f, 10.0f); // update CHARA's position in the game state every 10 seconds
+
+		// INITIALIZE MONSTER
+		GameObject monsterObj = GameObject.FindGameObjectWithTag("Monster");
+		MONSTER = new Data_Monster("MONSTER", monsterObj);
+		MONSTER.moveToRoom(ROOMS[2]); // TODO: Finding a proper place for the monster to spawn.
+		MONSTER.control.loadGameState(this);
 
         // FOCUS CAMERA ON PLAYER CHARACTER
         MAIN_CAMERA_CONTROL = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Control_Camera>();

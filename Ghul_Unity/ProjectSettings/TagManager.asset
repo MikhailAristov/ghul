@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Door
   - Room
+  - Monster
   layers:
   - Default
   - TransparentFX

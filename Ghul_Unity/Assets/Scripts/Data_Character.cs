@@ -10,6 +10,12 @@ public class Data_Character {
     // Gameplay parameters:
     public float stamina { get; private set; } // goes from 0.0 to 1.0
     public bool exhausted { get; private set; }
+	public bool controllable { get; set; }
+	public Data_Room startingRoom { get; set; }
+	public float startingPos { get; set; }
+	public float deathDuration { get; set; }
+	public bool isDying { get; set; }
+	public float remainingReactionTime { get; set; } //remaining time to escape killing radius
 
     public Data_Character(string N, GameObject O)
     {
@@ -19,6 +25,8 @@ public class Data_Character {
 
         this.stamina = 1.0f;
         this.exhausted = false;
+		this.controllable = true;
+		this.isDying = false;
     }
 
     public override string ToString() { return this.Name; }

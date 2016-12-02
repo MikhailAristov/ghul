@@ -34,4 +34,9 @@ public class Data_Room : IComparable<Data_Room> {
         D.addToRoom(this, Pos);
         this.DOORS.Add(D);
     }
+
+	// Returns how many doors are located in this room
+	public int getAmountOfDoors() {
+		return DOORS.Count;
+	}
 }

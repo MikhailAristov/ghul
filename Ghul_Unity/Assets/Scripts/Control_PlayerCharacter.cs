@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections;
 
 public class Control_PlayerCharacter : MonoBehaviour {
 
@@ -18,9 +19,19 @@ public class Control_PlayerCharacter : MonoBehaviour {
     private float DOOR_COOLDOWN; // This prevents the character "flickering" between doors
     private float DOOR_COOLDOWN_DURATION; // This prevents the character "flickering" between doors
 
+	private float TOTAL_DEATH_DURATION;
+	private float DEATH_DURATION;
+	private float TIME_TO_REACT;
+
+	public Sprite tombstone; // DEBUG only - display of death
+	private Sprite stickman; // DEBUG only
+	private SpriteRenderer stickmanRenderer; // DEBUG only
+
     // Use this for initialization; note that only local variables are initialized here, game state is loaded later
     void Start () {
         DOOR_COOLDOWN = Time.timeSinceLevelLoad;
+		stickmanRenderer = transform.Find("Stickman").gameObject.GetComponent<SpriteRenderer>(); // Find the child "Stickman", then its Sprite Renderer and then the renderer's sprite
+		stickman = stickmanRenderer.sprite;
     }
 
     // To make sure the game state is fully initialized before loading it, this function is called by game state class itself
@@ -29,6 +40,8 @@ public class Control_PlayerCharacter : MonoBehaviour {
         this.GS = gameState;
         this.me = gameState.PLAYER_CHARACTER;
         this.currentEnvironment = me.isIn.env;
+		DEATH_DURATION = me.deathDuration;
+		me.startingPos = me.pos;
 
         // Set general movement parameters
         WALKING_SPEED = GS.getSetting("CHARA_WALKING_SPEED");
@@ -40,11 +53,22 @@ public class Control_PlayerCharacter : MonoBehaviour {
 
         VERTICAL_ROOM_SPACING = GS.getSetting("VERTICAL_ROOM_SPACING");
         DOOR_COOLDOWN_DURATION = GS.getSetting("DOOR_COOLDOWN_DURATION");
+
+		TOTAL_DEATH_DURATION = GS.getSetting("TOTAL_DEATH_DURATION");
+		TIME_TO_REACT = GS.getSetting("TIME_TO_REACT");
+
+		me.remainingReactionTime = TIME_TO_REACT;
     }
 
     // Update is called once per frame
     void Update () {
-        if (GS == null) { return; } // Don't do anything until game state is loaded
+		if (GS == null || !me.controllable) { return; } // Don't do anything until game state is loaded
+
+		//FOR DEBUGGIN ONLY - Dying on command
+		if (Input.GetButtonDown("Die")) {
+			dying();
+		}
+
 
         // Vertical "movement"
         if (Input.GetAxis("Vertical") > 0.1f && Time.timeSinceLevelLoad > DOOR_COOLDOWN)
@@ -118,6 +142,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
         // Move character within game state
         me.moveToRoom(destinationRoom);
         currentEnvironment = me.isIn.env;
+		me.remainingReactionTime = TIME_TO_REACT;
 
         // Move character sprite
         float validPosition = currentEnvironment.validatePosition(destinationDoor.atPos);
@@ -126,4 +151,50 @@ public class Control_PlayerCharacter : MonoBehaviour {
 
         Debug.Log(me + " walks from door #" + door + " to door #" + destinationDoor + " at position " + targetPosition);
     }
+
+	// Player withing the attack radius -> reduce time to react
+	public void beingAttacked() {
+		me.remainingReactionTime -= Time.deltaTime;
+		if (me.remainingReactionTime <= 0.0f) {
+			dying();
+		}
+	}
+
+	// Activate the player's death scene
+	private void dying() {
+		if (!me.isDying) {
+			me.isDying = true;
+			stickmanRenderer.sprite = tombstone;
+			transform.Find ("Stickman").gameObject.transform.Translate (new Vector3 (0, -1.0f, 0));
+			me.controllable = false;
+			StartCoroutine (waitingForRespawn());
+		}
+	}
+
+	// Reset the player to the starting location after the total death duration set in Data_GameState.
+	private IEnumerator waitingForRespawn() {
+		while (DEATH_DURATION < TOTAL_DEATH_DURATION) {
+			me.deathDuration += Time.deltaTime;
+			DEATH_DURATION = me.deathDuration;
+			yield return null;
+		}
+
+		// Death duration is over. Reset the position.
+		me.deathDuration = 0.0f;
+		DEATH_DURATION = me.deathDuration;
+		transform.Find("Stickman").gameObject.transform.Translate(new Vector3(0,1.0f,0));
+		stickmanRenderer.sprite = stickman;
+		me.controllable = true;
+		me.moveToRoom(me.startingRoom);
+		currentEnvironment = me.isIn.env;
+
+		// Move character sprite
+		Vector3 targetPosition = new Vector3(me.startingPos, me.startingRoom.INDEX * VERTICAL_ROOM_SPACING);
+		transform.Translate(targetPosition - transform.position);
+
+		me.isDying = false;
+		me.remainingReactionTime = TIME_TO_REACT;
+
+		yield return null;
+	}
 }
