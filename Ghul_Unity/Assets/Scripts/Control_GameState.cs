@@ -6,29 +6,52 @@ public class Control_GameState : MonoBehaviour {
     private Data_GameState GS;
 
     private Control_Camera MAIN_CAMERA_CONTROL;
+    public Canvas MAIN_MENU_CANVAS;
 
     private float AUTOSAVE_FREQUENCY;
-    private float NEXT_AUTOSAVE_TIME;
+    private float NEXT_AUTOSAVE_IN;
 
     // Use this for initialization
     void Start ()
     {
-        if(true)
+        MAIN_CAMERA_CONTROL = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Control_Camera>();
+
+        continueFromSavedGameState();
+        setAdditionalParameters();
+        GS.SUSPENDED = true; // Suspend the game while in the main menu initially
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        if (GS.SUSPENDED) { return; }
+
+        // Timed autosave
+        NEXT_AUTOSAVE_IN -= Time.deltaTime;
+        if (NEXT_AUTOSAVE_IN <= 0.0f)
         {
-            continueFromSavedGameState();
-        } else
-        {
-            resetGameState();
+            NEXT_AUTOSAVE_IN = AUTOSAVE_FREQUENCY;
+            Data_GameState.saveToDisk(GS);
         }
 
+        // Open main menu if the player presses Esc
+        if (Input.GetButton("Cancel"))
+        {
+            GS.SUSPENDED = true;
+            MAIN_MENU_CANVAS.enabled = true;
+        }
+    }
+
+    // This method updates parameters after loading or resetting the game
+    private void setAdditionalParameters()
+    {
         // Train the camera on the main character
-        MAIN_CAMERA_CONTROL = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Control_Camera>();
         MAIN_CAMERA_CONTROL.loadGameState(GS);
         MAIN_CAMERA_CONTROL.setFocusOn(GS.getCHARA().pos);
 
         // Initialize autosave
         AUTOSAVE_FREQUENCY = GS.getSetting("AUTOSAVE_FREQUENCY");
-        NEXT_AUTOSAVE_TIME = Time.timeSinceLevelLoad;
+        NEXT_AUTOSAVE_IN = AUTOSAVE_FREQUENCY;
     }
 
     // This method loads the saved game state to memory
@@ -95,13 +118,29 @@ public class Control_GameState : MonoBehaviour {
         GS.getCHARA().control.loadGameState(GS);
     }
 
-    // Update is called once per frame
-    void Update()
-    {   
-        // Timed autosave
-        if(Time.timeSinceLevelLoad > NEXT_AUTOSAVE_TIME) {
-            NEXT_AUTOSAVE_TIME = Time.timeSinceLevelLoad + AUTOSAVE_FREQUENCY;
-            Data_GameState.saveToDisk(GS);
-        }
+    // This method is called when the New Game button is activated from the main menu
+    void onNewGameSelect()
+    {
+        resetGameState();                   // Reset the game state
+        setAdditionalParameters();          // Refocus camera and such
+        Data_GameState.saveToDisk(GS);      // Save the new game state to disk
+        MAIN_MENU_CANVAS.enabled = false;   // Dismiss the main menu
+        GS.SUSPENDED = false;               // Continue playing
+    }
+
+    // This method is called when the Continue button is activated from the main menu
+    void onContinueSelect()
+    {
+        // Simply dismiss the main menu to continue playing
+        MAIN_MENU_CANVAS.enabled = false;
+        GS.SUSPENDED = false;
+    }
+
+    // This method is called when the Exit button is activated from the main menu
+    void onExitSelect()
+    {
+        // Save and exit
+        Data_GameState.saveToDisk(GS);
+        Application.Quit();
     }
 }

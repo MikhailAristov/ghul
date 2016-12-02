@@ -3,28 +3,17 @@ using System;
 
 public class Control_Camera : MonoBehaviour
 {
-    [NonSerialized]
-    public GameObject GameState;
-    [NonSerialized]
     private Data_GameState GS;
-
-    public Data_Position focusOn;
-    [NonSerialized]
+    private Data_Position focusOn;
     private Environment_Room currentEnvironment;
 
     private float PANNING_SPEED;
     private float VERTICAL_ROOM_SPACING;
-
-    // Use this for initialization; note that only local variables can be initialized here, game state is loaded later
-    void Start()
-    {
-        //InvokeRepeating("updateCameraStatus", 0.5f, 10.0f);
-    }
-
+    
     // To make sure the game state is fully initialized before loading it, this function is called by game state class itself
     public void loadGameState(Data_GameState gameState)
     {
-        this.GS = gameState;
+        GS = gameState;
 
         // Set general movement parameters
         PANNING_SPEED = GS.getSetting("CAMERA_PANNING_SPEED");
@@ -34,9 +23,9 @@ public class Control_Camera : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (GS == null) { return; } // Don't do anything until game state is loaded
+        if (GS == null) { return; } // Don't do anything if the game state is not loaded yet
 
-        if (this.focusOn != null)
+        if (focusOn != null)
         {
             // Calculate the differences between the camera's current and target position
             float targetPositionX = currentEnvironment.validateCameraPosition(focusOn.X);
@@ -54,7 +43,7 @@ public class Control_Camera : MonoBehaviour
             }
 
             // Otherwise, pan gradually
-            displacementX *= Time.deltaTime * this.PANNING_SPEED;
+            displacementX *= Time.deltaTime * PANNING_SPEED;
             // Correct displacement
             if (Mathf.Abs(displacementX) > 0.0f)
             {
@@ -66,8 +55,8 @@ public class Control_Camera : MonoBehaviour
     // Set an object to focus on
     public void setFocusOn(Data_Position pos)
     {
-        this.focusOn = pos;
-        this.currentEnvironment = GS.getRoomByIndex(pos.RoomId).env;
+        focusOn = pos;
+        currentEnvironment = GS.getRoomByIndex(pos.RoomId).env;
     }
 
     // Update the camera position

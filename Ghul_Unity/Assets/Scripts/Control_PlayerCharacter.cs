@@ -25,7 +25,6 @@ public class Control_PlayerCharacter : MonoBehaviour {
     // Use this for initialization; note that only local variables are initialized here, game state is loaded later
     void Start () {
         DOOR_COOLDOWN = Time.timeSinceLevelLoad;
-        //InvokeRepeating("updatePlayerCharacterPosition", 1.0f, 1.0f);
     }
 
     // To make sure the game state is fully initialized before loading it, this function is called by game state class itself
@@ -53,7 +52,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
 
     // Update is called once per frame
     void Update () {
-        if (GS == null) { return; } // Don't do anything until game state is loaded
+        if (GS == null || GS.SUSPENDED) { return; } // Don't do anything if the game state is not loaded yet or suspended
 
         // Vertical "movement"
         if (Input.GetAxis("Vertical") > 0.1f && Time.timeSinceLevelLoad > DOOR_COOLDOWN)

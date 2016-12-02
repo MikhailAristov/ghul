@@ -8,6 +8,9 @@ using System.Runtime.CompilerServices;
 [Serializable]
 public class Data_GameState {
 
+    [NonSerialized] // Setting this flag suspends the game
+    public bool SUSPENDED = true;
+
     [NonSerialized]
     private Dictionary<string, float> SETTINGS;
 
