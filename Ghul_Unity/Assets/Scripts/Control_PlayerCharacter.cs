@@ -45,6 +45,10 @@ public class Control_PlayerCharacter : MonoBehaviour {
 
         VERTICAL_ROOM_SPACING = GS.getSetting("VERTICAL_ROOM_SPACING");
         DOOR_COOLDOWN_DURATION = GS.getSetting("DOOR_COOLDOWN_DURATION");
+
+        // Move the character sprite directly to where the game state says it should be standing
+        Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
+        transform.Translate(savedPosition - transform.position);
     }
 
     // Update is called once per frame

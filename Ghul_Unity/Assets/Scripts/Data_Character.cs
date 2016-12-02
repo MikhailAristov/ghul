@@ -57,6 +57,7 @@ public class Data_Character {
     public Data_Character(string gameObjectName)
     {
         name = gameObjectName;
+        _gameObjName = gameObjectName;
         gameObj = GameObject.Find(gameObjectName);
         if (gameObj == null) {
             throw new ArgumentException("Cannot find character object: " + gameObjectName);

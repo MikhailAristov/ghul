@@ -46,6 +46,7 @@ public class Data_Door : IComparable<Data_Door> {
     public Data_Door(int I, string gameObjectName)
     {
         INDEX = I;
+        _gameObjName = gameObjectName;
         gameObj = GameObject.Find(gameObjectName);
         if (gameObj == null) {
             throw new ArgumentException("Cannot find room: " + gameObjectName);
@@ -93,7 +94,8 @@ public class Data_Door : IComparable<Data_Door> {
     public void fixObjectReferences(Data_GameState GS)
     {
         gameObj = GameObject.Find(_gameObjName);
-        isIn = GS.getRoomByIndex(pos.RoomId);
+        // Connect to the other door
         connectsTo = GS.getDoorByIndex(_connectsToDoorIndex);
+        // Room relations are set in the Data_Room.fixObjectReferences()
     }
 }

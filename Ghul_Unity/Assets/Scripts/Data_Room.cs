@@ -42,6 +42,7 @@ public class Data_Room : IComparable<Data_Room> {
     public Data_Room(int I, string gameObjectName)
     {
         INDEX = I;
+        _gameObjName = gameObjectName;
         gameObj = GameObject.Find(gameObjectName);
         if(gameObj != null)
         {
@@ -70,13 +71,18 @@ public class Data_Room : IComparable<Data_Room> {
     }
 
     // Resets game object references, e.g. after a saved state load
+    // NOTE: All doors must have their object references fixed before this function is called
     public void fixObjectReferences(Data_GameState GS)
     {
         gameObj = GameObject.Find(_gameObjName);
         env = gameObj.GetComponent<Environment_Room>();
+        // Re-associate doors
         DOORS = new List<Data_Door>();
-        foreach(int id in _doorIds) {
-            DOORS.Add(GS.getDoorByIndex(id));
+        foreach (int id in _doorIds)
+        {
+            Data_Door d = GS.getDoorByIndex(id);
+            DOORS.Add(d);
+            d.isIn = this;
         }
     }
 }

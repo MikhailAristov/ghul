@@ -19,6 +19,7 @@ public class Data_GameState {
     [SerializeField]
     private Data_Character PLAYER_CHARACTER;
 
+    private static bool SAVING_DISABLED = false; // For debugging purposes
     private static string FILENAME_SAVE_RESETTABLE = "save1.dat";
     //private static string FILENAME_SAVE_PERMANENT  = "save2.dat";
 
@@ -33,6 +34,7 @@ public class Data_GameState {
 
     public void loadDefaultSetttings()
     {
+        SETTINGS = new Dictionary<string, float>();
         // Screen settings
         SETTINGS.Add("SCREEN_SIZE_HORIZONTAL", 6.4f);   // 640px
         SETTINGS.Add("SCREEN_SIZE_VERTICAL", 4.8f);     // 480px
@@ -128,18 +130,45 @@ public class Data_GameState {
     [MethodImpl(MethodImplOptions.Synchronized)] // Synchronized to avoid simultaneous calls from parallel threads
     public static void saveToDisk(Data_GameState GS)
     {
+        if(!SAVING_DISABLED)
+        {
+            // Set the save file paths
+            string resettableFilePath = Application.persistentDataPath + "/" + FILENAME_SAVE_RESETTABLE;
+            //string permanentFilePath = Application.persistentDataPath + "/" + FILENAME_SAVE_PERMANENT;
+
+            Debug.Log("Saving game to " + resettableFilePath);
+
+            // Prepare writing file
+            BinaryFormatter bf = new BinaryFormatter();
+            FileStream file = File.Create(resettableFilePath);
+
+            // Write the game state to file and close it
+            bf.Serialize(file, GS);
+            file.Close();
+        }
+    }
+
+    // Returns a game state from disk; returns null if no saved state is found
+    public static Data_GameState loadFromDisk()
+    {
         // Set the save file paths
         string resettableFilePath = Application.persistentDataPath + "/" + FILENAME_SAVE_RESETTABLE;
         //string permanentFilePath = Application.persistentDataPath + "/" + FILENAME_SAVE_PERMANENT;
+        if(!File.Exists(resettableFilePath))
+        {
+            Debug.Log("No game state found in: " + resettableFilePath);
+            return null;
+        }
 
-        Debug.Log("Saving game to " + resettableFilePath);
-
-        // Prepare writing file
+        Debug.Log("Loading game from " + resettableFilePath);
+        
+        // Prepare opening the file
         BinaryFormatter bf = new BinaryFormatter();
-        FileStream file = File.Create(resettableFilePath);
+        FileStream file = File.Open(resettableFilePath, FileMode.Open);
 
-        // Write the game state to file and close it
-        bf.Serialize(file, GS);
+        // Read the file to memory and close it
+        Data_GameState result = (Data_GameState)bf.Deserialize(file);
         file.Close();
+        return result;        
     }
 }

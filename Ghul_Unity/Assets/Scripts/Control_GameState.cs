@@ -13,6 +13,50 @@ public class Control_GameState : MonoBehaviour {
     // Use this for initialization
     void Start ()
     {
+        if(true)
+        {
+            continueFromSavedGameState();
+        } else
+        {
+            resetGameState();
+        }
+
+        // Train the camera on the main character
+        MAIN_CAMERA_CONTROL = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Control_Camera>();
+        MAIN_CAMERA_CONTROL.loadGameState(GS);
+        MAIN_CAMERA_CONTROL.setFocusOn(GS.getCHARA().pos);
+
+        // Initialize autosave
+        AUTOSAVE_FREQUENCY = GS.getSetting("AUTOSAVE_FREQUENCY");
+        NEXT_AUTOSAVE_TIME = Time.timeSinceLevelLoad;
+    }
+
+    // This method loads the saved game state to memory
+    private void continueFromSavedGameState()
+    {
+        // Load the game state from the disk
+        GS = Data_GameState.loadFromDisk();
+        // If no game state has been found, initialize it instead
+        if(GS == null) { resetGameState(); return; }
+        GS.loadDefaultSetttings();
+
+        // Fix door object references first, because Data_Room.fixObjectReferences() relies on them being set
+        foreach (Data_Door d in GS.DOORS.Values) {
+            d.fixObjectReferences(GS);
+        }
+        // Now fix all the room object references, including the door assignments
+        foreach (Data_Room r in GS.ROOMS.Values) {
+            r.fixObjectReferences(GS);
+            r.env.loadGameState(GS, r.INDEX); // While we are on it, load game state into room environment scripts 
+        }
+        // Lastly, fix the character object references
+        GS.getCHARA().fixObjectReferences(GS);
+        GS.getCHARA().control.loadGameState(GS);
+    }
+
+    // This method initializes the game state back to default
+    private void resetGameState()
+    {
         // Initialize game settings
         GS = new Data_GameState();
         GS.loadDefaultSetttings();
@@ -40,7 +84,7 @@ public class Control_GameState : MonoBehaviour {
         GS.connectTwoDoors(4, 7);
         // TODO: Must ensure that side doors never connect to the opposite sides, or it will look weird and cause trouble with room transitions
 
-        // LOAD GAME STATE TO ROOM GAME OBJECTS
+        // Load game state into room environment scripts
         foreach (Data_Room r in GS.ROOMS.Values) {
             r.env.loadGameState(GS, r.INDEX);
         }
@@ -49,15 +93,6 @@ public class Control_GameState : MonoBehaviour {
         GS.setPlayerCharacter("PlayerCharacter");
         GS.getCHARA().updatePosition(GS.getRoomByIndex(0), GS.getCHARA().gameObj.transform.position.x);
         GS.getCHARA().control.loadGameState(GS);
-
-        // FOCUS CAMERA ON PLAYER CHARACTER
-        MAIN_CAMERA_CONTROL = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Control_Camera>();
-        MAIN_CAMERA_CONTROL.loadGameState(GS);
-        MAIN_CAMERA_CONTROL.setFocusOn(GS.getCHARA().pos);
-
-        // Initialize autosave
-        AUTOSAVE_FREQUENCY = GS.getSetting("AUTOSAVE_FREQUENCY");
-        NEXT_AUTOSAVE_TIME = Time.timeSinceLevelLoad;
     }
 
     // Update is called once per frame
