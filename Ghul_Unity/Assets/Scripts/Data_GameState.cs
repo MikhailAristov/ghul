@@ -27,6 +27,7 @@ public class Data_GameState : MonoBehaviour {
         SETTINGS.Add("CHARA_WALKING_SPEED", 5.0f);
         SETTINGS.Add("CHARA_RUNNING_SPEED", 8.0f);
 		SETTINGS.Add("MONSTER_WALKING_SPEED", 5.2f);
+		SETTINGS.Add("MONSTER_SLOW_WALKING_SPEED", 2.5f); // when the monster randomly walks around
 		SETTINGS.Add("MONSTER_KILL_RADIUS", 1.0f); // when the player gets this close to the monster, he dies.
 		SETTINGS.Add("TIME_TO_REACT", 0.35f); // if the player escapes the monster's radius within this timeframe, he isn't killed.
 
@@ -95,6 +96,7 @@ public class Data_GameState : MonoBehaviour {
 		PLAYER_CHARACTER.startingRoom = ROOMS[0];
         PLAYER_CHARACTER.control.loadGameState(this);
         InvokeRepeating("updatePlayerCharacterPosition", 0.0f, 10.0f); // update CHARA's position in the game state every 10 seconds
+		InvokeRepeating("updateMonsterPosition", 5.0f, 10.0f);
 
 		// INITIALIZE MONSTER
 		GameObject monsterObj = GameObject.FindGameObjectWithTag("Monster");
@@ -119,6 +121,12 @@ public class Data_GameState : MonoBehaviour {
         this.PLAYER_CHARACTER.updatePosition(this.PLAYER_CHARACTER.gameObj.transform.position.x);
         Debug.Log(PLAYER_CHARACTER + " is in room #" + PLAYER_CHARACTER.isIn + " at position " + PLAYER_CHARACTER.pos);
     }
+
+	// Update the monster's position
+	public void updateMonsterPosition() {
+		this.MONSTER.updatePosition(this.MONSTER.gameObj.transform.position.x);
+		Debug.Log (MONSTER + " is in room #" + MONSTER.isIn + " at position " + MONSTER.pos);
+	}
 
     // Returns the value of a game setting
     public float getSetting(string Name)

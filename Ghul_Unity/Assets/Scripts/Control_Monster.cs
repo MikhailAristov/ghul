@@ -10,6 +10,7 @@ public class Control_Monster : MonoBehaviour {
 	private float VERTICAL_ROOM_SPACING;
 
 	private float MONSTER_WALKING_SPEED;
+	private float MONSTER_SLOW_WALKING_SPEED;
 	private float MONSTER_KILL_RADIUS;
 	private float TIME_TO_REACT;
 
@@ -32,6 +33,7 @@ public class Control_Monster : MonoBehaviour {
 		this.currentEnvironment = me.isIn.env;
 
 		MONSTER_WALKING_SPEED = GS.getSetting("MONSTER_WALKING_SPEED");
+		MONSTER_SLOW_WALKING_SPEED = GS.getSetting("MONSTER_SLOW_WALKING_SPEED");
 		MONSTER_KILL_RADIUS = GS.getSetting("MONSTER_KILL_RADIUS");
 
 		VERTICAL_ROOM_SPACING = GS.getSetting("VERTICAL_ROOM_SPACING");
@@ -75,9 +77,14 @@ public class Control_Monster : MonoBehaviour {
 				}
 				if (!me.isThinking) {
 					moveToPoint(me.randomTargetPos);
-					if (Mathf.Abs (transform.position.x - me.randomTargetPos) <= 0.1f) {
-						checkForDoors();
-						me.isRandomTargetSet = false;
+					if (Mathf.Abs (transform.position.x - me.randomTargetPos) <= 0.6f) {
+						if (checkForDoors ()) {
+							me.remainingThinkingTime = UnityEngine.Random.Range (1, 2);
+							me.isThinking = true;
+						} else {
+							print ("The monster can't find a door.");
+							me.isRandomTargetSet = false;
+						}
 					}
 				} else {
 					me.remainingThinkingTime -= Time.deltaTime;
@@ -93,42 +100,45 @@ public class Control_Monster : MonoBehaviour {
 	}
 
 	// if the monster is in reach for a door, go through it
-	private void checkForDoors() {
+	private bool checkForDoors() {
 		
-			// Reached the point where the player was last seen. Go through door
-			if (Time.timeSinceLevelLoad > DOOR_COOLDOWN) {
-				// Check if the monster can walk through the door, and if so, move them to the "other side"
-				Data_Door door = currentEnvironment.getDoorAtPos (transform.position.x);
-				if (door != null) {
-					goThroughTheDoor (door);
+		// Reached the point where the player was last seen. Go through door
+		if (Time.timeSinceLevelLoad > DOOR_COOLDOWN) {
+			// Check if the monster can walk through the door, and if so, move them to the "other side"
+			Data_Door door = currentEnvironment.getDoorAtPos (transform.position.x);
+			if (door != null) {
+				goThroughTheDoor(door);
+				return true;
+			} else {
+				Data_Door leftDoor = currentEnvironment.getDoorOnTheLeft();
+				Data_Door rightDoor = currentEnvironment.getDoorOnTheRight();
+				if (leftDoor != null && transform.position.x < 0.0f) { 
+					goThroughTheDoor(leftDoor); 
+					return true;
+				} else if (rightDoor != null && transform.position.x > 0.0f) {
+					goThroughTheDoor(rightDoor);
+					return true;
 				} else {
-					Data_Door leftDoor = currentEnvironment.getDoorOnTheLeft ();
-					Data_Door rightDoor = currentEnvironment.getDoorOnTheRight ();
-					if (leftDoor != null && transform.position.x < 0.0f) { 
-						goThroughTheDoor (leftDoor); 
-					} else if (rightDoor != null && transform.position.x > 0.0f) {
-						goThroughTheDoor (rightDoor);
-					} else {
-						// no door found
-						
-					}
+					// no door found
+					return false;
 				}
 			}
+		} else { return false; }
 	}
 
 	// The monster decides randomly what it does next.
 	private void randomMovementDecision() {
-		int rand = UnityEngine.Random.Range(0,4);
+		int rand = UnityEngine.Random.Range(0,6);
 		switch (rand) {
 		case 0:
 			// Thinking
-			me.remainingThinkingTime = UnityEngine.Random.Range (1, 5);
+			me.remainingThinkingTime = UnityEngine.Random.Range (1.5f, 4.0f);
 			me.isThinking = true;
 			break;
 
 		case 1:
 			// walking left
-			float pointOfInterestL = transform.position.x - UnityEngine.Random.Range (0, 5);
+			float pointOfInterestL = transform.position.x - UnityEngine.Random.Range (1, 5);
 			float validPointOfInterestL = currentEnvironment.validatePosition (pointOfInterestL);
 			if (pointOfInterestL <= validPointOfInterestL + 0.5f) {
 				// the monster doesn't walk to close to the wall.
@@ -139,7 +149,7 @@ public class Control_Monster : MonoBehaviour {
 		case 2:
 			
 			// walking right
-			float pointOfInterestR = transform.position.x + UnityEngine.Random.Range (0, 5);
+			float pointOfInterestR = transform.position.x + UnityEngine.Random.Range (1, 5);
 			float validPointOfInterestR = currentEnvironment.validatePosition (pointOfInterestR);
 			if (pointOfInterestR >= validPointOfInterestR - 0.5f) {
 				// the monster doesn't walk to close to the wall.
@@ -149,20 +159,26 @@ public class Control_Monster : MonoBehaviour {
 			break;
 
 		case 3:
+		case 4:
+		case 5:
 			// going to a door
 			int amountOfDoors = me.isIn.getAmountOfDoors ();
 			int selectedDoor = UnityEngine.Random.Range (0, amountOfDoors);
+
 			bool doorFound = false;
+			int counter = 0;
 			foreach (Data_Door d in me.isIn.DOORS) {
-				if (d.INDEX == selectedDoor) {
+				if (counter == selectedDoor) {
 					me.randomTargetPos = d.atPos;
 					doorFound = true;
 					break;
 				}
+				counter++;
 			}
 			if (!doorFound) { 
-				// Confused. Monster needs time to think.
-				me.remainingThinkingTime = 3.0f;
+				// Confused...
+				print("The monster can't find a door.");
+				me.remainingThinkingTime = 2.0f;
 				me.isThinking = true;
 			}
 			break;
@@ -176,7 +192,12 @@ public class Control_Monster : MonoBehaviour {
 
 	// The monster approaches the target position
 	private void moveToPoint(float targetPos) {
-		float velocity = MONSTER_WALKING_SPEED;
+		float velocity;
+		if (me.playerDetected) {
+			velocity = MONSTER_WALKING_SPEED;
+		} else {
+			velocity = MONSTER_SLOW_WALKING_SPEED;
+		}
 		float direction = (-1) * Mathf.Sign(transform.position.x - targetPos);
 
 		// Flip the sprite as necessary
