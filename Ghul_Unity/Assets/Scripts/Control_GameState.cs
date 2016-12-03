@@ -75,7 +75,8 @@ public class Control_GameState : MonoBehaviour {
         // Lastly, fix the character and monster object references
         GS.getCHARA().fixObjectReferences(GS);
         GS.getCHARA().control.loadGameState(GS);
-		// TODO Monster:
+        GS.getMonster().fixObjectReferences(GS);
+        GS.getMonster().control.loadGameState(GS);
     }
 
     // This method initializes the game state back to default

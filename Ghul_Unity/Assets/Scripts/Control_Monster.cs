@@ -10,7 +10,7 @@ public class Control_Monster : MonoBehaviour {
     [NonSerialized]
     private Data_Monster me;
     [NonSerialized]
-    private Data_Character player;
+    private Data_PlayerCharacter player;
 
     private float VERTICAL_ROOM_SPACING;
 
@@ -22,7 +22,7 @@ public class Control_Monster : MonoBehaviour {
 	private float DOOR_COOLDOWN; // This prevents the character "flickering" between doors
 	private float DOOR_COOLDOWN_DURATION; // This prevents the character "flickering" between doors
 
-	public bool DEBUG_DANGEROUS = false; // set to false to make the monster "blind"
+	public bool DEBUG_DANGEROUS; // set to false to make the monster "blind"
 
 	// Use this for initialization
 	void Start () {
@@ -42,8 +42,12 @@ public class Control_Monster : MonoBehaviour {
 		MONSTER_KILL_RADIUS = GS.getSetting("MONSTER_KILL_RADIUS");
 
 		VERTICAL_ROOM_SPACING = GS.getSetting("VERTICAL_ROOM_SPACING");
-		DOOR_COOLDOWN_DURATION = GS.getSetting("DOOR_COOLDOWN_DURATION");
-	}
+        DOOR_COOLDOWN_DURATION = GS.getSetting("DOOR_COOLDOWN_DURATION");
+
+        // Move the character sprite directly to where the game state says it should be standing
+        Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
+        transform.Translate(savedPosition - transform.position);
+    }
 
 	// Update is called once per frame
 	void Update () {
@@ -212,8 +216,9 @@ public class Control_Monster : MonoBehaviour {
 		float displacement = direction * Time.deltaTime * velocity;
 		float validPosition = currentEnvironment.validatePosition(transform.position.x + displacement);
 
-		// Move the sprite to the new valid position
-		float validDisplacement = validPosition - transform.position.x;
+        // Move the sprite to the new valid position
+        me.updatePosition(validPosition);
+        float validDisplacement = validPosition - transform.position.x;
 		if (Mathf.Abs(validDisplacement) > 0.0f)
 		{
 			transform.Translate(validDisplacement, 0, 0);
@@ -229,13 +234,13 @@ public class Control_Monster : MonoBehaviour {
 		// Update door cooldown
 		DOOR_COOLDOWN = Time.timeSinceLevelLoad + DOOR_COOLDOWN_DURATION;
 
-		// Move character within game state
-		me.moveToRoom(destinationRoom);
-		currentEnvironment = me.isIn.env;
+        // Move character within game state
+        float newValidPosition = destinationRoom.env.validatePosition(destinationDoor.atPos);
+        me.updatePosition(destinationRoom, newValidPosition);
+        currentEnvironment = me.isIn.env;
 
-		// Move character sprite
-		float validPosition = currentEnvironment.validatePosition(destinationDoor.atPos);
-		Vector3 targetPosition = new Vector3(validPosition, destinationRoom.INDEX * VERTICAL_ROOM_SPACING);
+        // Move character sprite
+		Vector3 targetPosition = new Vector3(newValidPosition, destinationRoom.INDEX * VERTICAL_ROOM_SPACING);
 		transform.Translate(targetPosition - transform.position);
 
 		me.playerDetected = false;

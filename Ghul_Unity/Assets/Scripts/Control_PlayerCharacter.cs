@@ -9,7 +9,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
     [NonSerialized]
     private Environment_Room currentEnvironment;
     [NonSerialized]
-    private Data_Character me;
+    private Data_PlayerCharacter me;
 
     private float VERTICAL_ROOM_SPACING;
 
@@ -202,7 +202,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		transform.Find("Stickman").gameObject.transform.Translate(new Vector3(0,1.0f,0));
 		stickmanRenderer.sprite = stickman;
 		me.controllable = true;
-		me.resetPosition();
+		me.resetPosition(GS);
 		currentEnvironment = me.isIn.env;
 
 		// Move character sprite

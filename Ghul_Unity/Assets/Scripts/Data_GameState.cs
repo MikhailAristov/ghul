@@ -20,11 +20,11 @@ public class Data_GameState {
     public SortedList<int, Data_Door> DOORS;
 
     [SerializeField]
-    private Data_Character PLAYER_CHARACTER;
+    private Data_PlayerCharacter PLAYER_CHARACTER;
     [SerializeField]
     private Data_Monster MONSTER;
 
-    private static bool SAVING_DISABLED = true; // For debugging purposes
+    private static bool SAVING_DISABLED = false; // For debugging purposes
     private static string FILENAME_SAVE_RESETTABLE = "save1.dat";
     //private static string FILENAME_SAVE_PERMANENT  = "save2.dat";
 
@@ -101,11 +101,11 @@ public class Data_GameState {
     // Sets the player character object
     public void setPlayerCharacter(string gameObjectName)
     {
-        PLAYER_CHARACTER = new Data_Character(gameObjectName);
+        PLAYER_CHARACTER = new Data_PlayerCharacter(gameObjectName);
     }
 
     // Returns the player character object
-    public Data_Character getCHARA()
+    public Data_PlayerCharacter getCHARA()
     {
         return PLAYER_CHARACTER;
     }
