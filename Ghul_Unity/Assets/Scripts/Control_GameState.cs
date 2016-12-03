@@ -117,12 +117,11 @@ public class Control_GameState : MonoBehaviour {
         GS.setPlayerCharacter("PlayerCharacter");
         GS.getCHARA().updatePosition(GS.getRoomByIndex(0), GS.getCHARA().gameObj.transform.position.x);
         GS.getCHARA().control.loadGameState(GS);
-		
-		// INITIALIZE MONSTER
-		GameObject monsterObj = GameObject.FindGameObjectWithTag("Monster");
-		GS.MONSTER = new Data_Monster("MONSTER", monsterObj);
-		GS.MONSTER.moveToRoom(ROOMS[2]); // TODO: Finding a proper place for the monster to spawn.
-		GS.MONSTER.control.loadGameState(GS);
+
+        // INITIALIZE MONSTER
+        GS.setMonsterCharacter("Monster");
+        GS.getMonster().updatePosition(GS.getRoomByIndex(2), GS.getMonster().gameObj.transform.position.x);
+		GS.getMonster().control.loadGameState(GS);
     }
 
     // This method is called when the New Game button is activated from the main menu

@@ -21,11 +21,10 @@ public class Data_GameState {
 
     [SerializeField]
     private Data_Character PLAYER_CHARACTER;
-
     [SerializeField]
     private Data_Monster MONSTER;
 
-    private static bool SAVING_DISABLED = false; // For debugging purposes
+    private static bool SAVING_DISABLED = true; // For debugging purposes
     private static string FILENAME_SAVE_RESETTABLE = "save1.dat";
     //private static string FILENAME_SAVE_PERMANENT  = "save2.dat";
 
@@ -36,6 +35,7 @@ public class Data_GameState {
         ROOMS = new SortedList<int, Data_Room>();
         DOORS = new SortedList<int, Data_Door>();
         PLAYER_CHARACTER = null;
+        MONSTER = null;
     }
 
     public void loadDefaultSetttings()
@@ -63,8 +63,8 @@ public class Data_GameState {
 		// Monster settings
 		SETTINGS.Add("MONSTER_WALKING_SPEED", 5.2f);
 		SETTINGS.Add("MONSTER_SLOW_WALKING_SPEED", 2.5f); // when the monster randomly walks around
-		SETTINGS.Add("MONSTER_KILL_RADIUS", 1.0f); // when the player gets this close to the monster, he dies.
-		SETTINGS.Add("TIME_TO_REACT", 0.35f); // if the player escapes the monster's radius within this timeframe, he isn't killed.
+		SETTINGS.Add("MONSTER_KILL_RADIUS", 1.0f);      // when the player gets this close to the monster, he dies.
+		SETTINGS.Add("TIME_TO_REACT", 0.35f);           // if the player escapes the monster's radius within this timeframe, he isn't killed.
 
         // Stamina range: 0.0 .. 1.0; increments are applied per second
         SETTINGS.Add("RUNNING_STAMINA_LOSS", -0.2f);    // Must be negative
@@ -72,9 +72,9 @@ public class Data_GameState {
         SETTINGS.Add("STANDING_STAMINA_GAIN", 0.4f);
 
         // Miscellaneous setttings
-        SETTINGS.Add("AUTOSAVE_FREQUENCY", 10.0f);       // In seconds
+        SETTINGS.Add("AUTOSAVE_FREQUENCY", 10.0f);      // In seconds
         SETTINGS.Add("CAMERA_PANNING_SPEED", 9.0f);
-		SETTINGS.Add("TOTAL_DEATH_DURATION", 3.0f); // When deathDuration of Data_Character reaches this value the player resets to the starting room
+		SETTINGS.Add("TOTAL_DEATH_DURATION", 3.0f);     // When deathDuration of Data_Character reaches this value the player resets to the starting room
     }
 
     // Adds a room to the game state
@@ -110,11 +110,17 @@ public class Data_GameState {
         return PLAYER_CHARACTER;
     }
 
-	// Update the monster's position
-	public void updateMonsterPosition() {
-		this.MONSTER.updatePosition(this.MONSTER.gameObj.transform.position.x);
-		Debug.Log (MONSTER + " is in room #" + MONSTER.isIn + " at position " + MONSTER.pos);
-	}
+    // Sets the monster character object
+    public void setMonsterCharacter(string gameObjectName)
+    {
+        MONSTER = new Data_Monster(gameObjectName);
+    }
+
+    // Returns the monster character object
+    public Data_Monster getMonster()
+    {
+        return MONSTER;
+    }
 
     // Returns the value of a game setting
     public float getSetting(string Name)

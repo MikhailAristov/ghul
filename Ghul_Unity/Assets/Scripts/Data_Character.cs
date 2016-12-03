@@ -53,8 +53,7 @@ public class Data_Character {
     }
 	// To fix parameters
 	public bool controllable { get; set; }
-	public Data_Room startingRoom { get; set; }
-	public float startingPos { get; set; }
+	public Data_Position startingPos { get; set; }
 	public float deathDuration { get; set; }
 	public bool isDying { get; set; }
 	public float remainingReactionTime { get; set; } //remaining time to escape killing radius
@@ -92,6 +91,11 @@ public class Data_Character {
     // Quicker update of horizontal position
     public void updatePosition(float Pos) {
         _pos.X = Pos;
+    }
+
+    // Moves the character back to the starting position
+    public void resetPosition() {
+        _pos = startingPos.clone();
     }
 
     // Updates the stamina meter with the specified amount (positive or negative), within boundaries

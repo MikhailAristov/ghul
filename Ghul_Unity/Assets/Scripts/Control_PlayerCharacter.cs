@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System;
+using System.Collections;
 
 public class Control_PlayerCharacter : MonoBehaviour {
 
@@ -44,7 +45,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
         this.me = gameState.getCHARA();
         this.currentEnvironment = me.isIn.env;
 		DEATH_DURATION = me.deathDuration;
-		me.startingPos = me.pos;
+		me.startingPos = me.pos.clone();
 
         // Set general movement parameters
         WALKING_SPEED = GS.getSetting("CHARA_WALKING_SPEED");
@@ -181,7 +182,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		if (!me.isDying) {
 			me.isDying = true;
 			stickmanRenderer.sprite = tombstone;
-			transform.Find ("Stickman").gameObject.transform.Translate (new Vector3 (0, -1.0f, 0));
+			transform.Find("Stickman").gameObject.transform.Translate (new Vector3 (0, -1.0f, 0));
 			me.controllable = false;
 			StartCoroutine (waitingForRespawn());
 		}
@@ -201,11 +202,11 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		transform.Find("Stickman").gameObject.transform.Translate(new Vector3(0,1.0f,0));
 		stickmanRenderer.sprite = stickman;
 		me.controllable = true;
-		me.moveToRoom(me.startingRoom);
+		me.resetPosition();
 		currentEnvironment = me.isIn.env;
 
 		// Move character sprite
-		Vector3 targetPosition = new Vector3(me.startingPos, me.startingRoom.INDEX * VERTICAL_ROOM_SPACING);
+		Vector3 targetPosition = new Vector3(me.startingPos.X, me.startingPos.RoomId * VERTICAL_ROOM_SPACING);
 		transform.Translate(targetPosition - transform.position);
 
 		me.isDying = false;

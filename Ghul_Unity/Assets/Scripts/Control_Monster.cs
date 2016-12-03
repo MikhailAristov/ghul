@@ -1,13 +1,18 @@
 ﻿using UnityEngine;
+using System;
 
 public class Control_Monster : MonoBehaviour {
 
-	private Data_GameState GS;
-	private Environment_Room currentEnvironment;
-	private Data_Monster me;
-	private Data_Character player;
+    [NonSerialized]
+    private Data_GameState GS;
+    [NonSerialized]
+    private Environment_Room currentEnvironment;
+    [NonSerialized]
+    private Data_Monster me;
+    [NonSerialized]
+    private Data_Character player;
 
-	private float VERTICAL_ROOM_SPACING;
+    private float VERTICAL_ROOM_SPACING;
 
 	private float MONSTER_WALKING_SPEED;
 	private float MONSTER_SLOW_WALKING_SPEED;
@@ -17,7 +22,7 @@ public class Control_Monster : MonoBehaviour {
 	private float DOOR_COOLDOWN; // This prevents the character "flickering" between doors
 	private float DOOR_COOLDOWN_DURATION; // This prevents the character "flickering" between doors
 
-	private const bool DEBUG_KILLABLE = true; // set to false to make the monster "blind"
+	public bool DEBUG_DANGEROUS = false; // set to false to make the monster "blind"
 
 	// Use this for initialization
 	void Start () {
@@ -28,8 +33,8 @@ public class Control_Monster : MonoBehaviour {
 	public void loadGameState(Data_GameState gameState)
 	{
 		this.GS = gameState;
-		this.me = gameState.MONSTER;
-		this.player = gameState.PLAYER_CHARACTER;
+        this.me = gameState.getMonster();
+		this.player = gameState.getCHARA();
 		this.currentEnvironment = me.isIn.env;
 
 		MONSTER_WALKING_SPEED = GS.getSetting("MONSTER_WALKING_SPEED");
@@ -42,9 +47,9 @@ public class Control_Monster : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-		if (GS == null) { return; } // Don't do anything until game state is loaded
+		if (GS == null || GS.SUSPENDED) { return; } // Don't do anything if the game state is not loaded yet or suspended
 
-		if (me.isIn.INDEX == player.isIn.INDEX && DEBUG_KILLABLE) {
+        if (me.isIn.INDEX == player.isIn.INDEX && DEBUG_DANGEROUS) {
 			// The monster is in the same room as the player.
 			me.playerInSight = true;
 			me.playerDetected = true;

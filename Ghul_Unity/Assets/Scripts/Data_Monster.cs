@@ -16,25 +16,45 @@ public class Data_Monster {
 	public float remainingThinkingTime { get; set; }
 
 	public Data_Monster(string N, GameObject O) {
-		this.Name = N;
-		this.gameObj = O;
-		this.control = O.GetComponent<Control_Monster>();
-		this.playerInSight = false;
-		this.playerDetected = false;
-		this.playerPosLastSeen = 0.0f;
-		this.isRandomTargetSet = false;
-		this.randomTargetPos = 0.0f;
-		this.isThinking = false;
-		this.remainingThinkingTime = 0.0f;
-	}
+		Name = N;
+		gameObj = O;
+		control = O.GetComponent<Control_Monster>();
+		playerInSight = false;
+		playerDetected = false;
+		playerPosLastSeen = 0.0f;
+		isRandomTargetSet = false;
+		randomTargetPos = 0.0f;
+		isThinking = false;
+		remainingThinkingTime = 0.0f;
+    }
+    public Data_Monster(string gameObjectName)
+    {
+        Name = gameObjectName;
+        gameObj = GameObject.Find(gameObjectName);
+        control = gameObj.GetComponent<Control_Monster>();
+        playerInSight = false;
+        playerDetected = false;
+        playerPosLastSeen = 0.0f;
+        isRandomTargetSet = false;
+        randomTargetPos = 0.0f;
+        isThinking = false;
+        remainingThinkingTime = 0.0f;
+    }
 
-	public override string ToString() { return this.Name; }
+    public override string ToString() { return Name; }
 
 	public void moveToRoom(Data_Room R) {
-		this.isIn = R;
+		isIn = R;
 	}
 
-	public void updatePosition(float Pos) {
-		this.pos = Pos;
+    // Complete position specification
+    public void updatePosition(Data_Room R, float xPos)
+    {
+        pos = xPos;
+        isIn = R;
+    }
+    // Quicker update of horizontal position
+    public void updatePosition(float Pos) {
+		pos = Pos;
 	}
 }
