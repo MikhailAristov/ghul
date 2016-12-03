@@ -1,125 +1,113 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Runtime.CompilerServices;
 
-public class Data_GameState : MonoBehaviour {
+[Serializable]
+public class Data_GameState {
 
+    [NonSerialized] // Setting this flag suspends the game
+    public bool SUSPENDED = true;
+
+    [NonSerialized]
     private Dictionary<string, float> SETTINGS;
 
-    private SortedList<int, Data_Room> ROOMS;
-    private SortedList<int, Data_Door> DOORS;
+    [SerializeField]
+    public SortedList<int, Data_Room> ROOMS;
+    [SerializeField]
+    public SortedList<int, Data_Door> DOORS;
 
-    public Data_Character PLAYER_CHARACTER;
-	public Data_Monster MONSTER;
-    private Control_Camera MAIN_CAMERA_CONTROL;
+    [SerializeField]
+    private Data_Character PLAYER_CHARACTER;
 
-    // Initialization at the start of the game
-    void Start () {
-        // Initialize game settings
+    [SerializeField]
+    private Data_Monster MONSTER;
+
+    private static bool SAVING_DISABLED = false; // For debugging purposes
+    private static string FILENAME_SAVE_RESETTABLE = "save1.dat";
+    //private static string FILENAME_SAVE_PERMANENT  = "save2.dat";
+
+    // Construct an empty game state
+    public Data_GameState()
+    {
         SETTINGS = new Dictionary<string, float>();
+        ROOMS = new SortedList<int, Data_Room>();
+        DOORS = new SortedList<int, Data_Door>();
+        PLAYER_CHARACTER = null;
+    }
+
+    public void loadDefaultSetttings()
+    {
+        SETTINGS = new Dictionary<string, float>();
+        // Screen settings
         SETTINGS.Add("SCREEN_SIZE_HORIZONTAL", 6.4f);   // 640px
         SETTINGS.Add("SCREEN_SIZE_VERTICAL", 4.8f);     // 480px
-        SETTINGS.Add("VERTICAL_ROOM_SPACING", -5.0f);    // must be bigger than SCREEN_SIZE_VERTICAL
 
-        SETTINGS.Add("HORIZONTAL_ROOM_MARGIN", 0.9f);   // prevents movement to screen edge past the margin
+        // Level generation setttings
+        SETTINGS.Add("VERTICAL_ROOM_SPACING", -5.0f);   // Must be bigger than SCREEN_SIZE_VERTICAL
+
+        // Level layout setttings
+        SETTINGS.Add("HORIZONTAL_ROOM_MARGIN", 0.9f);   // Prevents movement to screen edge past the margin
         SETTINGS.Add("HORIZONTAL_DOOR_WIDTH", 1.35f);
-        SETTINGS.Add("MARGIN_DOOR_ENTRANCE", 0.6f);     // How close a character's center of mass must be to the door's center to use it
 
+        // Door settings
+        SETTINGS.Add("MARGIN_DOOR_ENTRANCE", 0.6f);     // How close a character's center of mass must be to the door's center to use it
+        SETTINGS.Add("DOOR_COOLDOWN_DURATION", 0.4f);
+
+        // Character movement settings
         SETTINGS.Add("CHARA_WALKING_SPEED", 5.0f);
         SETTINGS.Add("CHARA_RUNNING_SPEED", 8.0f);
+
+		// Monster settings
 		SETTINGS.Add("MONSTER_WALKING_SPEED", 5.2f);
 		SETTINGS.Add("MONSTER_SLOW_WALKING_SPEED", 2.5f); // when the monster randomly walks around
 		SETTINGS.Add("MONSTER_KILL_RADIUS", 1.0f); // when the player gets this close to the monster, he dies.
 		SETTINGS.Add("TIME_TO_REACT", 0.35f); // if the player escapes the monster's radius within this timeframe, he isn't killed.
 
         // Stamina range: 0.0 .. 1.0; increments are applied per second
-        SETTINGS.Add("RUNNING_STAMINA_LOSS", -0.2f);   // Must be negative
-        SETTINGS.Add("WALKING_STAMINA_GAIN", 0.1f);    
+        SETTINGS.Add("RUNNING_STAMINA_LOSS", -0.2f);    // Must be negative
+        SETTINGS.Add("WALKING_STAMINA_GAIN", 0.1f);
         SETTINGS.Add("STANDING_STAMINA_GAIN", 0.4f);
 
-        SETTINGS.Add("DOOR_COOLDOWN_DURATION", 0.3f);
+        // Miscellaneous setttings
+        SETTINGS.Add("AUTOSAVE_FREQUENCY", 10.0f);       // In seconds
         SETTINGS.Add("CAMERA_PANNING_SPEED", 9.0f);
-
 		SETTINGS.Add("TOTAL_DEATH_DURATION", 3.0f); // When deathDuration of Data_Character reaches this value the player resets to the starting room
-
-        // INITIALIZE ROOMS
-        ROOMS = new SortedList<int, Data_Room>();
-        ROOMS.Add(0, new Data_Room(0, GameObject.Find("Room00")));
-        ROOMS.Add(1, new Data_Room(1, GameObject.Find("Room01")));
-        ROOMS.Add(2, new Data_Room(2, GameObject.Find("Room02")));
-        ROOMS.Add(3, new Data_Room(3, GameObject.Find("Room03")));
-
-        // INITIALIZE DOORS
-        DOORS = new SortedList<int, Data_Door>();
-        DOORS.Add(0, new Data_Door(0, GameObject.Find("Door0-1")));
-        DOORS.Add(1, new Data_Door(1, GameObject.Find("Door0-2")));
-        DOORS.Add(2, new Data_Door(2, GameObject.Find("Door0-3")));
-        DOORS.Add(3, new Data_Door(3, GameObject.Find("Door1-1")));
-        DOORS.Add(4, new Data_Door(4, GameObject.Find("Door1-2")));
-        DOORS.Add(5, new Data_Door(5, GameObject.Find("Door2-1")));
-        DOORS.Add(6, new Data_Door(6, GameObject.Find("Door3-1")));
-        DOORS.Add(7, new Data_Door(7, GameObject.Find("Door3-2")));
-
-        // ADD DOORS TO ROOMS
-        ROOMS[0].addDoor(DOORS[0], DOORS[0].gameObj.transform.position.x);
-        ROOMS[0].addDoor(DOORS[1], DOORS[1].gameObj.transform.position.x);
-        ROOMS[0].addDoor(DOORS[2], DOORS[2].gameObj.transform.position.x);
-        ROOMS[1].addDoor(DOORS[3], DOORS[3].gameObj.transform.position.x);
-        ROOMS[1].addDoor(DOORS[4], DOORS[4].gameObj.transform.position.x);
-        ROOMS[2].addDoor(DOORS[5], DOORS[5].gameObj.transform.position.x);
-        ROOMS[3].addDoor(DOORS[6], DOORS[6].gameObj.transform.position.x);
-        ROOMS[3].addDoor(DOORS[7], DOORS[7].gameObj.transform.position.x);
-
-        // CONNECT DOORS
-        DOORS[0].connectTo(DOORS[5]);
-        DOORS[1].connectTo(DOORS[3]);
-        DOORS[2].connectTo(DOORS[6]);
-        DOORS[4].connectTo(DOORS[7]);
-        // TODO: Must ensure that side doors never connect to the opposite sides, or it will look weird and cause trouble with room transitions
-
-        // LINK GAME OBJECTS TO GAME STATE
-        foreach (Data_Room r in ROOMS.Values)
-        {
-            // Load rooms
-            r.env.loadGameState(this, r.INDEX);
-            Debug.Log("Room #" + r + " contains " + r.DOORS.Count + " doors:");
-            // Load doors
-            foreach(Data_Door d in r.DOORS)
-            {
-                Debug.Log("  Door #" + d + " at position " + d.atPos + " in Room #" + r+ " connects to Door #" + d.connectsTo + " in Room #" + d.connectsTo.isIn);
-            }
-        }
-
-        // INITIALIZE PLAYER CHARACTER
-        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-        PLAYER_CHARACTER = new Data_Character("CHARA", playerObj);
-        PLAYER_CHARACTER.moveToRoom(ROOMS[0]); // put CHARA in the starting room
-		PLAYER_CHARACTER.startingRoom = ROOMS[0];
-        PLAYER_CHARACTER.control.loadGameState(this);
-        InvokeRepeating("updatePlayerCharacterPosition", 0.0f, 10.0f); // update CHARA's position in the game state every 10 seconds
-		InvokeRepeating("updateMonsterPosition", 5.0f, 10.0f);
-
-		// INITIALIZE MONSTER
-		GameObject monsterObj = GameObject.FindGameObjectWithTag("Monster");
-		MONSTER = new Data_Monster("MONSTER", monsterObj);
-		MONSTER.moveToRoom(ROOMS[2]); // TODO: Finding a proper place for the monster to spawn.
-		MONSTER.control.loadGameState(this);
-
-        // FOCUS CAMERA ON PLAYER CHARACTER
-        MAIN_CAMERA_CONTROL = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Control_Camera>();
-        MAIN_CAMERA_CONTROL.loadGameState(this);
-        MAIN_CAMERA_CONTROL.setFocusOn(playerObj, PLAYER_CHARACTER.isIn.env);
     }
 
-    // Update is called once per frame
-    void Update () {
-        return;
-	}
-
-    // Update the player character's position
-    public void updatePlayerCharacterPosition()
+    // Adds a room to the game state
+    public void addRoom(string gameObjectName)
     {
-        this.PLAYER_CHARACTER.updatePosition(this.PLAYER_CHARACTER.gameObj.transform.position.x);
-        Debug.Log(PLAYER_CHARACTER + " is in room #" + PLAYER_CHARACTER.isIn + " at position " + PLAYER_CHARACTER.pos);
+        int INDEX = ROOMS.Count;
+        ROOMS.Add(INDEX, new Data_Room(INDEX, gameObjectName));
+    }
+
+    // Adds a door to the game state, as well as to its containing room
+    public void addDoor(string gameObjectName, int RoomIndex)
+    {
+        int INDEX = DOORS.Count;
+        DOORS.Add(INDEX, new Data_Door(INDEX, gameObjectName));
+        ROOMS[RoomIndex].addDoor(DOORS[INDEX], DOORS[INDEX].gameObj.transform.position.x);
+    }
+	
+    // Connects two doors to each other
+    public void connectTwoDoors(int fromIndex, int toIndex)
+    {
+        DOORS[fromIndex].connectTo(DOORS[toIndex]);
+    }
+
+    // Sets the player character object
+    public void setPlayerCharacter(string gameObjectName)
+    {
+        PLAYER_CHARACTER = new Data_Character(gameObjectName);
+    }
+
+    // Returns the player character object
+    public Data_Character getCHARA()
+    {
+        return PLAYER_CHARACTER;
     }
 
 	// Update the monster's position
@@ -131,7 +119,7 @@ public class Data_GameState : MonoBehaviour {
     // Returns the value of a game setting
     public float getSetting(string Name)
     {
-        if (this.SETTINGS.ContainsKey(Name)) {
+        if (SETTINGS.ContainsKey(Name)) {
             return SETTINGS[Name];
         } else {
             throw new System.ArgumentException("Setting " + Name + " is not defined", "original");
@@ -144,7 +132,63 @@ public class Data_GameState : MonoBehaviour {
         if(ROOMS.ContainsKey(I)) {
             return ROOMS[I];
         } else {
-            throw new System.ArgumentException("There is no room #" + I, "original");
+            throw new System.ArgumentException("There is no room #" + I);
         }
+    }
+
+    // Returns a Door object to a given index, if it exists
+    public Data_Door getDoorByIndex(int I)
+    {
+        if (DOORS.ContainsKey(I)) {
+            return DOORS[I];
+        } else {
+            throw new System.ArgumentException("There is no door #" + I);
+        }
+    }
+
+    // Saves the current game state to disk
+    [MethodImpl(MethodImplOptions.Synchronized)] // Synchronized to avoid simultaneous calls from parallel threads
+    public static void saveToDisk(Data_GameState GS)
+    {
+        if(!SAVING_DISABLED)
+        {
+            // Set the save file paths
+            string resettableFilePath = Application.persistentDataPath + "/" + FILENAME_SAVE_RESETTABLE;
+            //string permanentFilePath = Application.persistentDataPath + "/" + FILENAME_SAVE_PERMANENT;
+
+            Debug.Log("Saving game to " + resettableFilePath);
+
+            // Prepare writing file
+            BinaryFormatter bf = new BinaryFormatter();
+            FileStream file = File.Create(resettableFilePath);
+
+            // Write the game state to file and close it
+            bf.Serialize(file, GS);
+            file.Close();
+        }
+    }
+
+    // Returns a game state from disk; returns null if no saved state is found
+    public static Data_GameState loadFromDisk()
+    {
+        // Set the save file paths
+        string resettableFilePath = Application.persistentDataPath + "/" + FILENAME_SAVE_RESETTABLE;
+        //string permanentFilePath = Application.persistentDataPath + "/" + FILENAME_SAVE_PERMANENT;
+        if(!File.Exists(resettableFilePath))
+        {
+            Debug.Log("No game state found in: " + resettableFilePath);
+            return null;
+        }
+
+        Debug.Log("Loading game from " + resettableFilePath);
+        
+        // Prepare opening the file
+        BinaryFormatter bf = new BinaryFormatter();
+        FileStream file = File.Open(resettableFilePath, FileMode.Open);
+
+        // Read the file to memory and close it
+        Data_GameState result = (Data_GameState)bf.Deserialize(file);
+        file.Close();
+        return result;        
     }
 }

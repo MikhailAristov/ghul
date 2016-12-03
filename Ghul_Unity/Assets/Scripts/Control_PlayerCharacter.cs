@@ -1,10 +1,13 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System;
 
 public class Control_PlayerCharacter : MonoBehaviour {
 
+    [NonSerialized]
     private Data_GameState GS;
+    [NonSerialized]
     private Environment_Room currentEnvironment;
+    [NonSerialized]
     private Data_Character me;
 
     private float VERTICAL_ROOM_SPACING;
@@ -38,7 +41,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
     public void loadGameState(Data_GameState gameState)
     {
         this.GS = gameState;
-        this.me = gameState.PLAYER_CHARACTER;
+        this.me = gameState.getCHARA();
         this.currentEnvironment = me.isIn.env;
 		DEATH_DURATION = me.deathDuration;
 		me.startingPos = me.pos;
@@ -58,17 +61,20 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		TIME_TO_REACT = GS.getSetting("TIME_TO_REACT");
 
 		me.remainingReactionTime = TIME_TO_REACT;
+		
+        // Move the character sprite directly to where the game state says it should be standing
+        Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
+        transform.Translate(savedPosition - transform.position);
     }
 
     // Update is called once per frame
     void Update () {
-		if (GS == null || !me.controllable) { return; } // Don't do anything until game state is loaded
+		if (GS == null || GS.SUSPENDED || !me.controllable) { return; } // Don't do anything if the game state is not loaded yet or suspended
 
 		//FOR DEBUGGIN ONLY - Dying on command
 		if (Input.GetButtonDown("Die")) {
 			dying();
 		}
-
 
         // Vertical "movement"
         if (Input.GetAxis("Vertical") > 0.1f && Time.timeSinceLevelLoad > DOOR_COOLDOWN)
@@ -119,6 +125,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
             }
 
             // Move the sprite to the new valid position
+            me.updatePosition(validPosition);
             float validDisplacement = validPosition - transform.position.x;
             if (Mathf.Abs(validDisplacement) > 0.0f)
             {
@@ -140,16 +147,25 @@ public class Control_PlayerCharacter : MonoBehaviour {
         DOOR_COOLDOWN = Time.timeSinceLevelLoad + DOOR_COOLDOWN_DURATION;
 
         // Move character within game state
-        me.moveToRoom(destinationRoom);
+        float newValidPosition = destinationRoom.env.validatePosition(destinationDoor.atPos);
+        me.updatePosition(destinationRoom, newValidPosition);
         currentEnvironment = me.isIn.env;
 		me.remainingReactionTime = TIME_TO_REACT;
 
         // Move character sprite
-        float validPosition = currentEnvironment.validatePosition(destinationDoor.atPos);
-        Vector3 targetPosition = new Vector3(validPosition, destinationRoom.INDEX * VERTICAL_ROOM_SPACING);
+        Vector3 targetPosition = new Vector3(newValidPosition, destinationRoom.INDEX * VERTICAL_ROOM_SPACING);
         transform.Translate(targetPosition - transform.position);
 
         Debug.Log(me + " walks from door #" + door + " to door #" + destinationDoor + " at position " + targetPosition);
+        
+        // Trigger an autosave upon changing locations
+        Data_GameState.saveToDisk(GS);
+    }
+
+    // Update the player character's position
+    public void updateCharacterPosition()
+    {
+        Debug.Log(me + " is in room #" + me.isIn + " at position " + me.atPos);
     }
 
 	// Player withing the attack radius -> reduce time to react

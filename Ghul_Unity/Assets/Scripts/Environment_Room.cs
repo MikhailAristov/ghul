@@ -1,8 +1,11 @@
 ﻿using UnityEngine;
+using System;
 
 public class Environment_Room : MonoBehaviour {
 
+    [NonSerialized]
     private Data_GameState GS;
+    [NonSerialized]
     private Data_Room me;
 
     private float leftWallPos;
