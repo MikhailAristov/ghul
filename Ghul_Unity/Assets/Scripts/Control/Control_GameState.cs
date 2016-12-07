@@ -77,6 +77,9 @@ public class Control_GameState : MonoBehaviour {
         GS.getCHARA().control.loadGameState(GS);
         GS.getMonster().fixObjectReferences(GS);
         GS.getMonster().control.loadGameState(GS);
+
+		GS.getCadaver().fixObjectReferences(GS);
+		// TODO: Das gleiche fuer Items
     }
 
     // This method initializes the game state back to default
@@ -121,8 +124,13 @@ public class Control_GameState : MonoBehaviour {
 
         // INITIALIZE MONSTER
         GS.setMonsterCharacter("Monster");
-        GS.getMonster().updatePosition(GS.getRoomByIndex(2), GS.getMonster().gameObj.transform.position.x);
+        GS.getMonster().updatePosition(GS.getRoomByIndex(1), GS.getMonster().gameObj.transform.position.x);
 		GS.getMonster().control.loadGameState(GS);
+		GS.getMonster().setForbiddenRoomIndex(GS.getCHARA().isIn.INDEX);
+
+		// INITIALIZE CADAVER
+		GS.setCadaverCharacter("Cadaver");
+		GS.getCadaver().updatePosition(GS.getRoomByIndex (0), GS.getCadaver().gameObj.transform.position.x);
     }
 
     // This method is called when the New Game button is activated from the main menu

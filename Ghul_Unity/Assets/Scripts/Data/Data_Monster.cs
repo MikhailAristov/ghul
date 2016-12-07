@@ -16,6 +16,7 @@ public class Data_Monster : Data_Character {
     public float randomTargetPos;
     public bool isThinking;
     public float remainingThinkingTime;
+	public int forbiddenRoomIndex; // index of the portal room. The monster can't access it.
     
     public Data_Monster(string gameObjectName) : base(gameObjectName)
     {
@@ -28,7 +29,12 @@ public class Data_Monster : Data_Character {
         randomTargetPos = 0.0f;
         isThinking = false;
         remainingThinkingTime = 0.0f;
+		forbiddenRoomIndex = 0;
     }
+
+	public void setForbiddenRoomIndex(int index) {
+		forbiddenRoomIndex = index;
+	}
 
     // Resets game object references, e.g. after a saved state load
     public void fixObjectReferences(Data_GameState GS)

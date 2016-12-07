@@ -108,24 +108,32 @@ public class Control_Monster : MonoBehaviour {
 
 	}
 
+	// If the door connects to the portal room, the monster isn't allowed to enter it.
+	private bool checkIfForbiddenDoor(Data_Door door) {
+		return door.connectsTo.isIn.INDEX == me.forbiddenRoomIndex;
+	}
+
 	// if the monster is in reach for a door, go through it
 	private bool checkForDoors() {
-		
+
 		// Reached the point where the player was last seen. Go through door
 		if (Time.timeSinceLevelLoad > DOOR_COOLDOWN) {
+			
 			// Check if the monster can walk through the door, and if so, move them to the "other side"
 			Data_Door door = currentEnvironment.getDoorAtPos (transform.position.x);
+
 			if (door != null) {
-				goThroughTheDoor(door);
+				if (!checkIfForbiddenDoor(door)) { goThroughTheDoor(door); }
 				return true;
+
 			} else {
 				Data_Door leftDoor = currentEnvironment.getDoorOnTheLeft();
 				Data_Door rightDoor = currentEnvironment.getDoorOnTheRight();
-				if (leftDoor != null && transform.position.x < 0.0f) { 
-					goThroughTheDoor(leftDoor); 
+				if (leftDoor != null && transform.position.x < 0.0f) {
+					if (!checkIfForbiddenDoor(leftDoor)) { goThroughTheDoor(leftDoor); }
 					return true;
 				} else if (rightDoor != null && transform.position.x > 0.0f) {
-					goThroughTheDoor(rightDoor);
+					if (!checkIfForbiddenDoor(rightDoor)) { goThroughTheDoor(rightDoor); }
 					return true;
 				} else {
 					// no door found

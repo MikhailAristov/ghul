@@ -23,6 +23,8 @@ public class Data_GameState {
     private Data_PlayerCharacter PLAYER_CHARACTER;
     [SerializeField]
     private Data_Monster MONSTER;
+	[SerializeField]
+	private Data_Cadaver CADAVER;
 
     private static bool SAVING_DISABLED = false; // For debugging purposes
     private static string FILENAME_SAVE_RESETTABLE = "save1.dat";
@@ -36,6 +38,7 @@ public class Data_GameState {
         DOORS = new SortedList<int, Data_Door>();
         PLAYER_CHARACTER = null;
         MONSTER = null;
+		CADAVER = null;
     }
 
     public void loadDefaultSetttings()
@@ -121,6 +124,18 @@ public class Data_GameState {
     {
         return MONSTER;
     }
+
+	// Sets the cadaver character object
+	public void setCadaverCharacter(string gameObjectName)
+	{
+		CADAVER = new Data_Cadaver(gameObjectName);
+	}
+
+	// Returns the cadaver character object
+	public Data_Cadaver getCadaver()
+	{
+		return CADAVER;
+	}
 
     // Returns the value of a game setting
     public float getSetting(string Name)

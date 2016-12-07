@@ -10,6 +10,8 @@ public class Control_PlayerCharacter : MonoBehaviour {
     private Environment_Room currentEnvironment;
     [NonSerialized]
     private Data_PlayerCharacter me;
+	[SerializeField]
+	private Data_Cadaver cadaver;
 
     private float VERTICAL_ROOM_SPACING;
 
@@ -182,6 +184,8 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		if (!me.isDying) {
 			me.isDying = true;
 			stickmanRenderer.sprite = tombstone;
+			// TODO: Remove this line when the dying animation exists. This line only moves the tombstone
+			//		 such that it doesn't float
 			transform.Find("Stickman").gameObject.transform.Translate (new Vector3 (0, -1.0f, 0));
 			me.controllable = false;
 			StartCoroutine (waitingForRespawn());
@@ -196,9 +200,15 @@ public class Control_PlayerCharacter : MonoBehaviour {
 			yield return null;
 		}
 
+		// Place the cadaver
+		Vector3 positionOfCadaver = new Vector3(transform.position.x, transform.position.y - 1.55f, transform.position.z);
+		GS.getCadaver().gameObj.transform.Translate(positionOfCadaver - GS.getCadaver().gameObj.transform.position);
+		GS.getCadaver().updatePosition(me.isIn, transform.position.x);
+
 		// Death duration is over. Reset the position.
 		me.deathDuration = 0.0f;
 		DEATH_DURATION = me.deathDuration;
+		// TODO: Remove this line when the dying animation exists. This line only moves the character up again (see above)
 		transform.Find("Stickman").gameObject.transform.Translate(new Vector3(0,1.0f,0));
 		stickmanRenderer.sprite = stickman;
 		me.controllable = true;

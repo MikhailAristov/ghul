@@ -7,6 +7,7 @@ TagManager:
   - Door
   - Room
   - Monster
+  - Cadaver
   layers:
   - Default
   - TransparentFX
@@ -41,6 +42,15 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: Background
+    uniqueID: 3969415051
+    locked: 0
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Player
+    uniqueID: 1973454843
+    locked: 0
+  - name: Foreground
+    uniqueID: 2424570323
     locked: 0
