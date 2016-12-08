@@ -18,6 +18,10 @@ public class Data_GameState {
     public SortedList<int, Data_Room> ROOMS;
     [SerializeField]
     public SortedList<int, Data_Door> DOORS;
+	[SerializeField]
+	public SortedList<int, Data_ItemSpot> ITEM_SPOTS;
+	[SerializeField]
+	public SortedList<int, Data_Item> ITEMS;
 
     [SerializeField]
     private Data_PlayerCharacter PLAYER_CHARACTER;
@@ -36,6 +40,8 @@ public class Data_GameState {
         SETTINGS = new Dictionary<string, float>();
         ROOMS = new SortedList<int, Data_Room>();
         DOORS = new SortedList<int, Data_Door>();
+		ITEM_SPOTS = new SortedList<int, Data_ItemSpot>();
+		ITEMS = new SortedList<int, Data_Item>();
         PLAYER_CHARACTER = null;
         MONSTER = null;
 		CADAVER = null;
@@ -94,12 +100,43 @@ public class Data_GameState {
         DOORS.Add(INDEX, new Data_Door(INDEX, gameObjectName));
         ROOMS[RoomIndex].addDoor(DOORS[INDEX], DOORS[INDEX].gameObj.transform.position.x);
     }
-	
+
+	// Adds an item spot to the game state, as well as to its containing room
+	public void addItemSpot(string gameObjectName, int RoomIndex) {
+		int INDEX = ITEM_SPOTS.Count;
+		ITEM_SPOTS.Add(INDEX, new Data_ItemSpot(gameObjectName));
+		ROOMS[RoomIndex].addItemSpot(ITEM_SPOTS[INDEX], ITEM_SPOTS[INDEX].gameObj.transform.position.x,
+			ITEM_SPOTS[INDEX].gameObj.transform.localPosition.y);
+	}
+
+	// Adds an item to the game state
+	public void addItem(string gameObjectName) {
+		int INDEX = ITEMS.Count;
+		ITEMS.Add(INDEX, new Data_Item(gameObjectName));
+	}
+
     // Connects two doors to each other
     public void connectTwoDoors(int fromIndex, int toIndex)
     {
         DOORS[fromIndex].connectTo(DOORS[toIndex]);
     }
+
+	// Places an item in an item spot
+	public void placeItemInSpot(int itemIndex, int spotIndex)
+	{
+		Data_ItemSpot spot = ITEM_SPOTS[spotIndex];
+		spot.placeItem(itemIndex);
+		// move the sprite
+		Vector3 spotLocation = spot.gameObj.transform.position;
+		Vector3 itemLocation = ITEMS[itemIndex].gameObj.transform.position;
+		ITEMS[itemIndex].gameObj.transform.Translate(spotLocation - itemLocation);
+	}
+
+	// Removes an item from an item spot if there is one
+	public void removeItemFromSpot(int spotIndex)
+	{
+		ITEM_SPOTS[spotIndex].removeItem();
+	}
 
     // Sets the player character object
     public void setPlayerCharacter(string gameObjectName)
@@ -166,6 +203,26 @@ public class Data_GameState {
             throw new System.ArgumentException("There is no door #" + I);
         }
     }
+
+	// Returns an ItemSpot object to a given index, if it exists
+	public Data_ItemSpot getItemSpotByIndex(int I)
+	{
+		if (ITEM_SPOTS.ContainsKey(I)) {
+			return ITEM_SPOTS[I];
+		} else {
+			throw new System.ArgumentException("There is no item spot #" + I);
+		}
+	}
+
+	// Returns an Item object to a given index, if it exists
+	public Data_Item getItemByIndex(int I)
+	{
+		if (ITEMS.ContainsKey(I)) {
+			return ITEMS[I];
+		} else {
+			throw new System.ArgumentException("There is no item #" + I);
+		}
+	}
 
     // Saves the current game state to disk
     [MethodImpl(MethodImplOptions.Synchronized)] // Synchronized to avoid simultaneous calls from parallel threads

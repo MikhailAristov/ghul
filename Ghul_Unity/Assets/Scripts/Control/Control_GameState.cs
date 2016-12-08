@@ -63,23 +63,32 @@ public class Control_GameState : MonoBehaviour {
         if(GS == null) { resetGameState(); return; }
         GS.loadDefaultSetttings();
 
+		// Fix all item references
+		foreach (Data_Item i in GS.ITEMS.Values) {
+			i.fixObjectReferences(GS);
+		}
+		// Fix all item spot references
+		foreach (Data_ItemSpot iSpot in GS.ITEM_SPOTS.Values) {
+			iSpot.fixObjectReferences(GS);
+		}
+
         // Fix door object references first, because Data_Room.fixObjectReferences() relies on them being set
         foreach (Data_Door d in GS.DOORS.Values) {
             d.fixObjectReferences(GS);
         }
-        // Now fix all the room object references, including the door assignments
+        // Now fix all the room object references, including the door and item spot assignments
         foreach (Data_Room r in GS.ROOMS.Values) {
             r.fixObjectReferences(GS);
             r.env.loadGameState(GS, r.INDEX); // While we are on it, load game state into room environment scripts 
         }
-        // Lastly, fix the character and monster object references
+
+        // Lastly, fix the character, cadaver and monster object references
         GS.getCHARA().fixObjectReferences(GS);
         GS.getCHARA().control.loadGameState(GS);
         GS.getMonster().fixObjectReferences(GS);
         GS.getMonster().control.loadGameState(GS);
-
 		GS.getCadaver().fixObjectReferences(GS);
-		// TODO: Das gleiche fuer Items
+
     }
 
     // This method initializes the game state back to default
@@ -111,6 +120,50 @@ public class Control_GameState : MonoBehaviour {
         GS.connectTwoDoors(2, 6);
         GS.connectTwoDoors(4, 7);
         // TODO: Must ensure that side doors never connect to the opposite sides, or it will look weird and cause trouble with room transitions
+
+		// INITIALIZE ITEM SPOTS
+		GS.addItemSpot("ItemSpot1-1", 1);
+		GS.addItemSpot("ItemSpot1-2", 1);
+		GS.addItemSpot("ItemSpot2-1", 2);
+		GS.addItemSpot("ItemSpot2-2", 2);
+		GS.addItemSpot("ItemSpot2-3", 2);
+		GS.addItemSpot("ItemSpot2-4", 2);
+		GS.addItemSpot("ItemSpot3-1", 3);
+		GS.addItemSpot("ItemSpot3-2", 3);
+		GS.addItemSpot("ItemSpot3-3", 3);
+
+		// INITIALIZE ITEMS
+		GS.addItem("Item01");
+		GS.addItem("Item02");
+		GS.addItem("Item03");
+		GS.addItem("Item04");
+		GS.addItem("Item05");
+		GS.addItem("Item06");
+		GS.addItem("Item07");
+		GS.addItem("Item08");
+
+		// REMOVE ANY PRE-EXISTING ITEMS FROM ITEM SPOTS
+		GS.removeItemFromSpot(0);
+		GS.removeItemFromSpot(1);
+		GS.removeItemFromSpot(2);
+		GS.removeItemFromSpot(3);
+		GS.removeItemFromSpot(4);
+		GS.removeItemFromSpot(5);
+		GS.removeItemFromSpot(6);
+		GS.removeItemFromSpot(7);
+		GS.removeItemFromSpot(8);
+
+		// PUT ITEMS INTO ITEM SPOTS
+		// TODO: Randomize the placement
+		GS.placeItemInSpot(0,0);
+		GS.placeItemInSpot(1,1);
+		GS.placeItemInSpot(2,2);
+		GS.placeItemInSpot(3,3);
+		GS.placeItemInSpot(4,4);
+		GS.placeItemInSpot(5,5);
+		GS.placeItemInSpot(6,6);
+		GS.placeItemInSpot(7,7);
+		// last spot empty for now
 
         // Load game state into room environment scripts
         foreach (Data_Room r in GS.ROOMS.Values) {

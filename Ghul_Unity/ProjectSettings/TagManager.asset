@@ -8,6 +8,8 @@ TagManager:
   - Room
   - Monster
   - Cadaver
+  - ItemSpot
+  - Item
   layers:
   - Default
   - TransparentFX
