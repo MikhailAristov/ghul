@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System;
+using System.Collections.Generic;
 
 [Serializable]
 public class Data_PlayerCharacter : Data_Character {
@@ -30,6 +31,10 @@ public class Data_PlayerCharacter : Data_Character {
     public bool isDying { get; set; }
     public float remainingReactionTime { get; set; } //remaining time to escape killing radius
 
+	// Index list of the items the player collected
+	[SerializeField]
+	private List<int> itemList;
+
     // Constructor
     public Data_PlayerCharacter(string gameObjectName) : base(gameObjectName)
     {
@@ -39,6 +44,7 @@ public class Data_PlayerCharacter : Data_Character {
         exhausted = false;
         controllable = true;
         isDying = false;
+		itemList = new List<int>();
     }
 
     // Moves the player character back to the starting position
@@ -68,6 +74,16 @@ public class Data_PlayerCharacter : Data_Character {
         }
         return stamina;
     }
+		
+	// Add an item to the item list
+	public void addItemToList(int i) {
+		itemList.Add(i);
+	}
+
+	// Empties the item list
+	public void emptyItemList() {
+		itemList.Clear();
+	}
 
     // Resets game object references, e.g. after a saved state load
     public void fixObjectReferences(Data_GameState GS)

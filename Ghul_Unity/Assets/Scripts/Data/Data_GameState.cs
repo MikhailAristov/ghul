@@ -84,7 +84,8 @@ public class Data_GameState {
         SETTINGS.Add("AUTOSAVE_FREQUENCY", 10.0f);      // In seconds
         SETTINGS.Add("CAMERA_PANNING_SPEED", 9.0f);
 		SETTINGS.Add("TOTAL_DEATH_DURATION", 3.0f);     // When deathDuration of Data_Character reaches this value the player resets to the starting room
-    }
+		SETTINGS.Add("MARGIN_ITEM_COLLECT", 0.3f);		// How close a character's center must be to an item to be able to collect it
+	}
 
     // Adds a room to the game state
     public void addRoom(string gameObjectName)
@@ -136,6 +137,13 @@ public class Data_GameState {
 	public void removeItemFromSpot(int spotIndex)
 	{
 		ITEM_SPOTS[spotIndex].removeItem();
+	}
+
+	// Places an item sprite somewhere where it can't be seen
+	public void removeItemSprite(int itemIndex) 
+	{
+		Vector3 nirvana = new Vector3 (-90, 0, 0);
+		ITEMS[itemIndex].gameObj.transform.Translate(nirvana - ITEMS[itemIndex].gameObj.transform.position);
 	}
 
     // Sets the player character object

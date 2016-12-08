@@ -21,6 +21,5 @@ public class Data_Item : Data_Character {
 	public void fixObjectReferences(Data_GameState GS)
 	{
 		gameObj = GameObject.Find(_gameObjName);
-		isIn = GS.getRoomByIndex(_pos.RoomId);
 	}
 }

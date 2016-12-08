@@ -79,6 +79,11 @@ public class Control_PlayerCharacter : MonoBehaviour {
 			dying();
 		}
 
+		// Action (taking an item)
+		if (Input.GetButtonDown("Action")) {
+			takeItem();
+		}
+
         // Vertical "movement"
         if (Input.GetAxis("Vertical") > 0.1f && Time.timeSinceLevelLoad > DOOR_COOLDOWN)
         {
@@ -90,7 +95,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
                 return;
             }
         }
-
+			
         // Horizontal movement
         if (Input.GetAxis("Horizontal") > 0.01f || Input.GetAxis("Horizontal") < -0.01f)
         {
@@ -179,7 +184,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		}
 	}
 
-	// Activate the player's death scene
+	// Activate the player's death scene and drop all the items
 	private void dying() {
 		if (!me.isDying) {
 			me.isDying = true;
@@ -189,6 +194,8 @@ public class Control_PlayerCharacter : MonoBehaviour {
 			transform.Find("Stickman").gameObject.transform.Translate (new Vector3 (0, -1.0f, 0));
 			me.controllable = false;
 			StartCoroutine (waitingForRespawn());
+
+			// TODO: dropping the items at the cadaver's place (requires adding new item spots)
 		}
 	}
 
@@ -223,5 +230,20 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		me.remainingReactionTime = TIME_TO_REACT;
 
 		yield return null;
+	}
+
+	// The player takes a nearby item if there is any
+	private void takeItem() {
+		int itemIndex = currentEnvironment.getItemIndexAtPos(transform.position.x);
+		if (itemIndex >= 0) {
+			// the player got the item with index itemIndex.
+			me.addItemToList(itemIndex);
+			currentEnvironment.removeItemAtPos(transform.position.x);
+			GS.removeItemSprite(itemIndex);
+			Debug.Log ("Item #" + itemIndex + " collected.");
+
+			// Auto save when collecting an item.
+			Data_GameState.saveToDisk(GS);
+		}
 	}
 }

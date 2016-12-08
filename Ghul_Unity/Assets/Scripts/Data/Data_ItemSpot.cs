@@ -27,8 +27,6 @@ public class Data_ItemSpot : Data_Character {
 	public int itemIndex; // index of the item in this spot (-1 if empty)
 
 
-
-
 	// Constructor
 	public Data_ItemSpot(string gameObjectName) : base(gameObjectName) { 
 		containsItem = false;

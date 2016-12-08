@@ -14,6 +14,7 @@ public class Environment_Room : MonoBehaviour {
     private float MARGIN_SIZE_PHYSICAL;
     private float MARGIN_SIZE_CAMERA;
     private float MARGIN_DOOR_ENTRANCE;
+	private float MARGIN_ITEM_COLLECT;
 
     // Use this for initialization
     void Start () {
@@ -36,6 +37,7 @@ public class Environment_Room : MonoBehaviour {
         MARGIN_SIZE_PHYSICAL = GS.getSetting("HORIZONTAL_ROOM_MARGIN");
         MARGIN_SIZE_CAMERA = GS.getSetting("SCREEN_SIZE_HORIZONTAL") / 2;
         MARGIN_DOOR_ENTRANCE = GS.getSetting("MARGIN_DOOR_ENTRANCE");
+		MARGIN_ITEM_COLLECT = GS.getSetting("MARGIN_ITEM_COLLECT");
     }
 
     // Update is called once per frame
@@ -88,4 +90,34 @@ public class Environment_Room : MonoBehaviour {
     // These are just human-readable wrappers for the above:
     public Data_Door getDoorOnTheLeft() { return getSideDoor(true); }
     public Data_Door getDoorOnTheRight() { return getSideDoor(false); }
+
+	// Returns the index of an item object if one can be accessed from the specified position, otherwise returns NULL
+	public int getItemIndexAtPos(float pos)
+	{
+		foreach (Data_ItemSpot spot in me.ITEM_SPOTS) // Loop through all the item spots in this room
+		{
+			if(Mathf.Abs(spot.atPos - pos) < MARGIN_ITEM_COLLECT)
+			{
+				if (spot.containsItem) { return spot.itemIndex; }
+			}
+		}
+		return -1; // no item nearby
+	}
+
+	// Removes an item from a spot if one can be accessed from the specified position
+	public void removeItemAtPos(float pos)
+	{
+		foreach (Data_ItemSpot spot in me.ITEM_SPOTS) // Loop through all the item spots in this room
+		{
+			if(Mathf.Abs(spot.atPos - pos) < MARGIN_ITEM_COLLECT)
+			{
+				if (spot.containsItem) { 
+					spot.removeItem();
+					return;
+				}
+			}
+		}
+	}
+
+
 }

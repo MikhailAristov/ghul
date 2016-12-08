@@ -66,4 +66,5 @@ public class Data_Character {
     public void updatePosition(float Pos) {
         _pos.X = Pos;
     }
+
 }
