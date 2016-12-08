@@ -85,6 +85,11 @@ public class Data_PlayerCharacter : Data_Character {
 		itemList.Clear();
 	}
 
+	// Returns true, if the item with index i has been collected
+	public bool isItemCollected(int i) {
+		return itemList.Contains(i);
+	}
+
     // Resets game object references, e.g. after a saved state load
     public void fixObjectReferences(Data_GameState GS)
     {

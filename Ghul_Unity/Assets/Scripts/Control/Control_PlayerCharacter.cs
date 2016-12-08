@@ -240,10 +240,12 @@ public class Control_PlayerCharacter : MonoBehaviour {
 			me.addItemToList(itemIndex);
 			currentEnvironment.removeItemAtPos(transform.position.x);
 			GS.removeItemSprite(itemIndex);
-			Debug.Log ("Item #" + itemIndex + " collected.");
+			Debug.Log("Item #" + itemIndex + " collected.");
 
 			// Auto save when collecting an item.
 			Data_GameState.saveToDisk(GS);
+		} else {
+			Debug.Log("Ische findet nüschd.");
 		}
 	}
 }

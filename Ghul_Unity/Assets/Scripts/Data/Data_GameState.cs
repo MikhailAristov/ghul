@@ -104,10 +104,12 @@ public class Data_GameState {
 
 	// Adds an item spot to the game state, as well as to its containing room
 	public void addItemSpot(string gameObjectName, int RoomIndex) {
-		int INDEX = ITEM_SPOTS.Count;
-		ITEM_SPOTS.Add(INDEX, new Data_ItemSpot(gameObjectName));
-		ROOMS[RoomIndex].addItemSpot(ITEM_SPOTS[INDEX], ITEM_SPOTS[INDEX].gameObj.transform.position.x,
-			ITEM_SPOTS[INDEX].gameObj.transform.localPosition.y);
+		int index = ITEM_SPOTS.Count;
+		Data_ItemSpot spot = new Data_ItemSpot(gameObjectName);
+		spot.INDEX = index;
+		ITEM_SPOTS.Add(index, spot);
+		ROOMS[RoomIndex].addItemSpot(spot, spot.gameObj.transform.position.x,
+			spot.gameObj.transform.localPosition.y);
 	}
 
 	// Adds an item to the game state
@@ -127,6 +129,7 @@ public class Data_GameState {
 	{
 		Data_ItemSpot spot = ITEM_SPOTS[spotIndex];
 		spot.placeItem(itemIndex);
+		ITEMS[itemIndex].itemSpotIndex = spotIndex;
 		// move the sprite
 		Vector3 spotLocation = spot.gameObj.transform.position;
 		Vector3 itemLocation = ITEMS[itemIndex].gameObj.transform.position;

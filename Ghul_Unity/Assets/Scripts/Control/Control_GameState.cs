@@ -95,8 +95,19 @@ public class Control_GameState : MonoBehaviour {
 		cadaver.gameObj.transform.Translate(positionOfCadaver - cadaver.gameObj.transform.position);
 		cadaver.updatePosition(cadaver.isIn, cadaver.atPos);
 
-
-
+		int numOfItems = GS.ITEMS.Count;
+		for (int i = 0; i < numOfItems; i++) {
+			Data_Item item = GS.getItemByIndex(i);
+			Data_ItemSpot spot = GS.ITEM_SPOTS[item.itemSpotIndex];
+			if (!GS.getCHARA().isItemCollected(i) 
+				&& spot.containsItem) // another check, just in case
+			{
+				// Item not yet collected. Place it in the level.
+				Vector3 spotLocation = spot.gameObj.transform.position;
+				Vector3 itemLocation = item.gameObj.transform.position;
+				item.gameObj.transform.Translate(spotLocation - itemLocation);
+			}
+		}
 
     }
 

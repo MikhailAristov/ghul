@@ -11,7 +11,7 @@ public class Data_ItemSpot : Data_Character {
 	public int INDEX
 	{
 		get { return _INDEX; }
-		private set { _INDEX = value; }
+		set { _INDEX = value; }
 	}
 		
 	// local y-value with regards to the room the item spot is in
