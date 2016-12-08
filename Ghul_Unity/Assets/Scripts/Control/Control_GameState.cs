@@ -193,6 +193,7 @@ public class Control_GameState : MonoBehaviour {
         // INITIALIZE PLAYER CHARACTER
         GS.setPlayerCharacter("PlayerCharacter");
         GS.getCHARA().updatePosition(GS.getRoomByIndex(0), 0); // default: starting position is center of pentagram
+		GS.getCHARA().startingPos = new Data_Position(0, 0);
         GS.getCHARA().control.loadGameState(GS);
 
         // INITIALIZE MONSTER
@@ -208,6 +209,7 @@ public class Control_GameState : MonoBehaviour {
 		// Placing the cadaver sprite out of sight
 		Vector3 nirvana = new Vector3 (-100, 0, 0);
 		GS.getCadaver().gameObj.transform.Translate(nirvana - GS.getCadaver().gameObj.transform.position);
+		GS.getCadaver().updatePosition(-100);
 	}
 
     // This method is called when the New Game button is activated from the main menu

@@ -47,7 +47,6 @@ public class Control_PlayerCharacter : MonoBehaviour {
         this.me = gameState.getCHARA();
         this.currentEnvironment = me.isIn.env;
 		DEATH_DURATION = me.deathDuration;
-		me.startingPos = me.pos.clone();
 
         // Set general movement parameters
         WALKING_SPEED = GS.getSetting("CHARA_WALKING_SPEED");
@@ -244,8 +243,6 @@ public class Control_PlayerCharacter : MonoBehaviour {
 
 			// Auto save when collecting an item.
 			Data_GameState.saveToDisk(GS);
-		} else {
-			Debug.Log("Ische findet nüschd.");
 		}
 	}
 }

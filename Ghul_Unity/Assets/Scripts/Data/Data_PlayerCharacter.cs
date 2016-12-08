@@ -26,7 +26,13 @@ public class Data_PlayerCharacter : Data_Character {
     }
     // New gameplay parameters
     public bool controllable { get; set; }
-    public Data_Position startingPos { get; set; }
+	[SerializeField]
+	private Data_Position _startingPos;
+    public Data_Position startingPos
+	{ 
+		get { return _startingPos; } 
+		set { _startingPos = value; }
+	}
     public float deathDuration { get; set; }
     public bool isDying { get; set; }
     public float remainingReactionTime { get; set; } //remaining time to escape killing radius
