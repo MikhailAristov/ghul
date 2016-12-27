@@ -15,10 +15,10 @@ public class Control_GameState : MonoBehaviour {
     void Start ()
     {
         MAIN_CAMERA_CONTROL = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Control_Camera>();
-
-        continueFromSavedGameState();
+		onNewGameSelect();
+        //continueFromSavedGameState();
         setAdditionalParameters();
-        GS.SUSPENDED = true; // Suspend the game while in the main menu initially
+		//GS.SUSPENDED = true; // Suspend the game while in the main menu initially
     }
 
     // Update is called once per frame
