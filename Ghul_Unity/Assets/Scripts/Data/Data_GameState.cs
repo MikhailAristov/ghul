@@ -107,7 +107,6 @@ public class Data_GameState {
 		int index = ITEM_SPOTS.Count;
 		GameObject gameObj = GameObject.Find(gameObjectName);
 		float absoluteX = gameObj.transform.position.x;
-		float absoluteY = gameObj.transform.position.y;
 		float relativeY = gameObj.transform.position.y - getSetting("VERTICAL_ROOM_SPACING") * RoomIndex;
 
 		Data_ItemSpawn spot = new Data_ItemSpawn(index, RoomIndex, absoluteX, relativeY);
