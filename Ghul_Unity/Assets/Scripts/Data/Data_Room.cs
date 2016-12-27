@@ -43,7 +43,7 @@ public class Data_Room : IComparable<Data_Room> {
 	[SerializeField]
 	private List<int> _itemSpotIds;
 	[NonSerialized]
-	public List<Data_ItemSpot> ITEM_SPOTS;
+	public List<Data_ItemSpawn> ITEM_SPAWN_POINTS;
     
     public Data_Room(int I, string gameObjectName)
     {
@@ -64,7 +64,7 @@ public class Data_Room : IComparable<Data_Room> {
         _doorIds = new List<int>();
         DOORS = new List<Data_Door>();
 		_itemSpotIds = new List<int>();
-		ITEM_SPOTS = new List<Data_ItemSpot>();
+		ITEM_SPAWN_POINTS = new List<Data_ItemSpawn>();
     }
 
     public int CompareTo(Data_Room other) { return INDEX.CompareTo(other.INDEX); }
@@ -79,10 +79,9 @@ public class Data_Room : IComparable<Data_Room> {
     }
 
 	// Adds a door to this room at a specific position. NOTE: The y-value is a local coordinate
-	public void addItemSpot(Data_ItemSpot iSpot, float xPos, float localYPos) {
-		iSpot.addToRoom(this, xPos, localYPos);
-		_itemSpotIds.Add(iSpot.INDEX);
-		ITEM_SPOTS.Add(iSpot);
+	public void addItemSpot(Data_ItemSpawn iSpawnPoint) {
+		_itemSpotIds.Add(iSpawnPoint.INDEX);
+		ITEM_SPAWN_POINTS.Add(iSpawnPoint);
 	}
 
     // Resets game object references, e.g. after a saved state load
@@ -100,12 +99,12 @@ public class Data_Room : IComparable<Data_Room> {
             d.isIn = this;
         }
 		// Re-associate item spots
-		ITEM_SPOTS = new List<Data_ItemSpot>();
+		ITEM_SPAWN_POINTS = new List<Data_ItemSpawn>();
 		foreach (int id in _itemSpotIds)
 		{
-			Data_ItemSpot iSpot = GS.getItemSpotByIndex(id);
-			ITEM_SPOTS.Add(iSpot);
-			iSpot.isIn = this;
+			Data_ItemSpawn iSpot = GS.getItemSpawnPointByIndex(id);
+			ITEM_SPAWN_POINTS.Add(iSpot);
+			iSpot.RoomId = this.INDEX;
 		}
     }
 
@@ -116,6 +115,6 @@ public class Data_Room : IComparable<Data_Room> {
 
 	// Returns how many item spots are located in this room
 	public int getAmountOfItemSpots() {
-		return ITEM_SPOTS.Count;
+		return ITEM_SPAWN_POINTS.Count;
 	}
 }

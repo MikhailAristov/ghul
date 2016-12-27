@@ -19,7 +19,7 @@ public class Data_GameState {
     [SerializeField]
     public SortedList<int, Data_Door> DOORS;
 	[SerializeField]
-	public SortedList<int, Data_ItemSpot> ITEM_SPOTS;
+	public SortedList<int, Data_ItemSpawn> ITEM_SPOTS;
 	[SerializeField]
 	public SortedList<int, Data_Item> ITEMS;
 
@@ -40,7 +40,7 @@ public class Data_GameState {
         SETTINGS = new Dictionary<string, float>();
         ROOMS = new SortedList<int, Data_Room>();
         DOORS = new SortedList<int, Data_Door>();
-		ITEM_SPOTS = new SortedList<int, Data_ItemSpot>();
+		ITEM_SPOTS = new SortedList<int, Data_ItemSpawn>();
 		ITEMS = new SortedList<int, Data_Item>();
         PLAYER_CHARACTER = null;
         MONSTER = null;
@@ -105,11 +105,14 @@ public class Data_GameState {
 	// Adds an item spot to the game state, as well as to its containing room
 	public void addItemSpot(string gameObjectName, int RoomIndex) {
 		int index = ITEM_SPOTS.Count;
-		Data_ItemSpot spot = new Data_ItemSpot(gameObjectName);
-		spot.INDEX = index;
+		GameObject gameObj = GameObject.Find(gameObjectName);
+		float absoluteX = gameObj.transform.position.x;
+		float absoluteY = gameObj.transform.position.y;
+		float relativeY = gameObj.transform.position.y - getSetting("VERTICAL_ROOM_SPACING") * RoomIndex;
+
+		Data_ItemSpawn spot = new Data_ItemSpawn(index, RoomIndex, absoluteX, relativeY);
 		ITEM_SPOTS.Add(index, spot);
-		ROOMS[RoomIndex].addItemSpot(spot, spot.gameObj.transform.position.x,
-			spot.gameObj.transform.localPosition.y);
+		ROOMS[RoomIndex].addItemSpot(spot);
 	}
 
 	// Adds an item to the game state
@@ -127,11 +130,11 @@ public class Data_GameState {
 	// Places an item in an item spot
 	public void placeItemInSpot(int itemIndex, int spotIndex)
 	{
-		Data_ItemSpot spot = ITEM_SPOTS[spotIndex];
+		Data_ItemSpawn spot = ITEM_SPOTS[spotIndex];
 		spot.placeItem(itemIndex);
 		ITEMS[itemIndex].itemSpotIndex = spotIndex;
 		// move the sprite
-		Vector3 spotLocation = spot.gameObj.transform.position;
+		Vector3 spotLocation = new Vector3(spot.X, spot.RoomId * getSetting("VERTICAL_ROOM_SPACING") + spot.Y);
 		Vector3 itemLocation = ITEMS[itemIndex].gameObj.transform.position;
 		ITEMS[itemIndex].gameObj.transform.Translate(spotLocation - itemLocation);
 	}
@@ -216,12 +219,12 @@ public class Data_GameState {
     }
 
 	// Returns an ItemSpot object to a given index, if it exists
-	public Data_ItemSpot getItemSpotByIndex(int I)
+	public Data_ItemSpawn getItemSpawnPointByIndex(int I)
 	{
 		if (ITEM_SPOTS.ContainsKey(I)) {
 			return ITEM_SPOTS[I];
 		} else {
-			throw new System.ArgumentException("There is no item spot #" + I);
+			throw new System.ArgumentException("There is no item spawn point #" + I);
 		}
 	}
 

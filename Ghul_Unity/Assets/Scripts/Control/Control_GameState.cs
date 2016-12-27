@@ -67,10 +67,6 @@ public class Control_GameState : MonoBehaviour {
 		foreach (Data_Item i in GS.ITEMS.Values) {
 			i.fixObjectReferences(GS);
 		}
-		// Fix all item spot references
-		foreach (Data_ItemSpot iSpot in GS.ITEM_SPOTS.Values) {
-			iSpot.fixObjectReferences(GS);
-		}
 
         // Fix door object references first, because Data_Room.fixObjectReferences() relies on them being set
         foreach (Data_Door d in GS.DOORS.Values) {
@@ -98,12 +94,12 @@ public class Control_GameState : MonoBehaviour {
 		int numOfItems = GS.ITEMS.Count;
 		for (int i = 0; i < numOfItems; i++) {
 			Data_Item item = GS.getItemByIndex(i);
-			Data_ItemSpot spot = GS.ITEM_SPOTS[item.itemSpotIndex];
+			Data_ItemSpawn spot = GS.ITEM_SPOTS[item.itemSpotIndex];
 			if (!GS.getCHARA().isItemCollected(i) 
 				&& spot.containsItem) // another check, just in case
 			{
 				// Item not yet collected. Place it in the level.
-				Vector3 spotLocation = spot.gameObj.transform.position;
+				Vector3 spotLocation = new Vector3(spot.X, spot.RoomId * GS.getSetting("VERTICAL_ROOM_SPACING") + spot.Y);
 				Vector3 itemLocation = item.gameObj.transform.position;
 				item.gameObj.transform.Translate(spotLocation - itemLocation);
 			}

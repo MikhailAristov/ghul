@@ -94,9 +94,9 @@ public class Environment_Room : MonoBehaviour {
 	// Returns the index of an item object if one can be accessed from the specified position, otherwise returns NULL
 	public int getItemIndexAtPos(float pos)
 	{
-		foreach (Data_ItemSpot spot in me.ITEM_SPOTS) // Loop through all the item spots in this room
+		foreach (Data_ItemSpawn spot in me.ITEM_SPAWN_POINTS) // Loop through all the item spots in this room
 		{
-			if(Mathf.Abs(spot.atPos - pos) < MARGIN_ITEM_COLLECT)
+			if(Mathf.Abs(spot.X - pos) < MARGIN_ITEM_COLLECT)
 			{
 				if (spot.containsItem) { return spot.itemIndex; }
 			}
@@ -107,9 +107,9 @@ public class Environment_Room : MonoBehaviour {
 	// Removes an item from a spot if one can be accessed from the specified position
 	public void removeItemAtPos(float pos)
 	{
-		foreach (Data_ItemSpot spot in me.ITEM_SPOTS) // Loop through all the item spots in this room
+		foreach (Data_ItemSpawn spot in me.ITEM_SPAWN_POINTS) // Loop through all the item spots in this room
 		{
-			if(Mathf.Abs(spot.atPos - pos) < MARGIN_ITEM_COLLECT)
+			if(Mathf.Abs(spot.X - pos) < MARGIN_ITEM_COLLECT)
 			{
 				if (spot.containsItem) { 
 					spot.removeItem();
