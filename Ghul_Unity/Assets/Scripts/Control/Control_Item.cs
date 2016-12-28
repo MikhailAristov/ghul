@@ -10,7 +10,6 @@ public class Control_Item : MonoBehaviour {
 	[NonSerialized]
 	private Data_Item me;
 
-	private float VERTICAL_ROOM_SPACING;
 	private float ITEM_CARRY_ELEVATION = 0.0f;
 
 	// Use this for initialization
@@ -21,12 +20,6 @@ public class Control_Item : MonoBehaviour {
 	{
 		this.GS = gameState;
 		this.me = gameState.getItemByIndex(ownIndex);
-
-		VERTICAL_ROOM_SPACING = GS.getSetting("VERTICAL_ROOM_SPACING");
-
-		// Move the character sprite directly to where the game state says it should be standing
-		Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
-		transform.Translate(savedPosition - transform.position);
 	}
 	
 	// Update is called once per frame
@@ -50,10 +43,18 @@ public class Control_Item : MonoBehaviour {
 
 	// When CHARA dies again without retrieving the item
 	public void resetToSpawnPosition() {
-		if(me.state == Data_Item.STATE_ON_CADAVER) { 
+		if(me.state == Data_Item.STATE_ON_CADAVER || me.state == Data_Item.STATE_INITIAL) {
+			// Reset the state
 			me.state = Data_Item.STATE_INITIAL;
+			// Find the original spawn point and reset the position
 			Data_ItemSpawn target = GS.getItemSpawnPointByIndex(me.itemSpotIndex);
+			Debug.Log("setting location to " + GS.getRoomByIndex(target.RoomId) + " " + target.X + "/"+ target.Y);
 			me.updatePosition(GS.getRoomByIndex(target.RoomId), target.X, target.Y);
+			// Set the sprite's parent to the containing room and move the sprite there
+			transform.parent = GS.getRoomByIndex(me.pos.RoomId).env.transform; // Move the game object to the room game object
+			Debug.Log("setting local location to " + me.atPos + "/" + me.elevation + "/"+ transform.position.z);
+			transform.position = new Vector3(me.atPos, me.elevation, transform.position.z);
+			// Show the object
 			GetComponent<Renderer>().enabled = true;
 		} else {
 			Debug.LogError("Cannot reset " + me);

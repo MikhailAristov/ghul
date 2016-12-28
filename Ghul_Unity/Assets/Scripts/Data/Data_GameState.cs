@@ -106,10 +106,10 @@ public class Data_GameState {
 	public void addItemSpot(string gameObjectName, int RoomIndex) {
 		int index = ITEM_SPOTS.Count;
 		GameObject gameObj = GameObject.Find(gameObjectName);
-		float absoluteX = gameObj.transform.position.x;
-		float relativeY = gameObj.transform.position.y - getSetting("VERTICAL_ROOM_SPACING") * RoomIndex;
+		float relativeX = gameObj.transform.position.x;
+		float relativeY = gameObj.transform.position.y;
 
-		Data_ItemSpawn spot = new Data_ItemSpawn(index, RoomIndex, absoluteX, relativeY);
+		Data_ItemSpawn spot = new Data_ItemSpawn(index, RoomIndex, relativeX, relativeY);
 		ITEM_SPOTS.Add(index, spot);
 		ROOMS[RoomIndex].addItemSpot(spot);
 	}
@@ -126,16 +126,9 @@ public class Data_GameState {
         DOORS[fromIndex].connectTo(DOORS[toIndex]);
     }
 
-	// Places an item in an item spot
-	public void placeItemInSpot(int itemIndex, int spotIndex)
-	{
-		Data_ItemSpawn spot = ITEM_SPOTS[spotIndex];
-		spot.placeItem(itemIndex);
-		ITEMS[itemIndex].itemSpotIndex = spotIndex;
-		// move the sprite
-		Vector3 spotLocation = new Vector3(spot.X, spot.RoomId * getSetting("VERTICAL_ROOM_SPACING") + spot.Y);
-		Vector3 itemLocation = ITEMS[itemIndex].gameObj.transform.position;
-		ITEMS[itemIndex].gameObj.transform.Translate(spotLocation - itemLocation);
+	public void setItemSpawnPoint(int itemIndex, int spotIndex) {
+		Data_Item curItem = getItemByIndex(itemIndex);
+		curItem.itemSpotIndex = spotIndex;
 	}
 
 	// Removes an item from an item spot if there is one

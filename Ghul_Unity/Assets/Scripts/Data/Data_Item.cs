@@ -12,6 +12,10 @@ public class Data_Item : Data_Character {
 	public const int STATE_ON_CADAVER = 4;	// the item was carried by the player character when he died
 	public const int STATE_PLACED = 5;		// the item had been placed for the ritual in the main room
 
+	// Pointer to the character behavior aspect of the container object
+	[NonSerialized]
+	public Control_Item control;
+
 	// Index of the room in the global registry
 	[SerializeField]
 	private int _INDEX;
@@ -49,7 +53,8 @@ public class Data_Item : Data_Character {
 	}
 
 	// Constructor
-	public Data_Item(string gameObjectName) : base(gameObjectName) { 
+	public Data_Item(string gameObjectName) : base(gameObjectName) {
+		control = gameObj.GetComponent<Control_Item>();
 		_itemState = Data_Item.STATE_INITIAL;
 	}
 

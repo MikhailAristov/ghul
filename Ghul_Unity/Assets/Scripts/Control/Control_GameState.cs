@@ -150,13 +150,13 @@ public class Control_GameState : MonoBehaviour {
 
 		// INITIALIZE ITEMS
 		GS.addItem("Item01");
-		GS.addItem("Item02");
-		GS.addItem("Item03");
-		GS.addItem("Item04");
-		GS.addItem("Item05");
-		GS.addItem("Item06");
-		GS.addItem("Item07");
-		GS.addItem("Item08");
+		//GS.addItem("Item02");
+		//GS.addItem("Item03");
+		//GS.addItem("Item04");
+		//GS.addItem("Item05");
+		//GS.addItem("Item06");
+		//GS.addItem("Item07");
+		//GS.addItem("Item08");
 
 		// REMOVE ANY PRE-EXISTING ITEMS FROM ITEM SPOTS
 		GS.removeItemFromSpot(0);
@@ -171,7 +171,9 @@ public class Control_GameState : MonoBehaviour {
 
 		// PUT ITEMS INTO ITEM SPOTS
 		// TODO: Randomize the placement
-		GS.placeItemInSpot(0,0);
+		GS.setItemSpawnPoint(0,3);
+		/*
+		GS.placeItemInSpot(0,5);
 		GS.placeItemInSpot(1,1);
 		GS.placeItemInSpot(2,2);
 		GS.placeItemInSpot(3,3);
@@ -179,12 +181,16 @@ public class Control_GameState : MonoBehaviour {
 		GS.placeItemInSpot(5,5);
 		GS.placeItemInSpot(6,6);
 		GS.placeItemInSpot(7,7);
+		*/
 		// last spot empty for now
 
         // Load game state into room environment scripts
         foreach (Data_Room r in GS.ROOMS.Values) {
             r.env.loadGameState(GS, r.INDEX);
-        }
+		}
+
+		GS.getItemByIndex(0).control.loadGameState(GS, 0);
+		GS.getItemByIndex(0).control.resetToSpawnPosition();
 
         // INITIALIZE PLAYER CHARACTER
         GS.setPlayerCharacter("PlayerCharacter");

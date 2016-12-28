@@ -24,7 +24,7 @@ public class Data_ItemSpawn : Data_Position {
 	public int itemIndex; // index of the item in this spot (-1 if empty)
 
 	// Constructor
-	public Data_ItemSpawn(int I, int R, float X, float Y) : base(R, Y) { 
+	public Data_ItemSpawn(int I, int R, float X, float Y) : base(R, X) { 
 		INDEX = I;
 		this.Y = Y;
 		itemIndex = -1;
