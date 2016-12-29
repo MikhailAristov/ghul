@@ -69,6 +69,11 @@ public class Data_Item : Data_Character {
 		return (state == Data_Item.STATE_INITIAL || state == Data_Item.STATE_ON_CADAVER || state == Data_Item.STATE_DROPPED);
 	}
 
+	// Check if the item can be seen
+	public bool isVisible() {
+		return (state == Data_Item.STATE_INITIAL || state == Data_Item.STATE_DROPPED || state == Data_Item.STATE_PLACED);
+	}
+
 	// Resets game object references, e.g. after a saved state load
 	public void fixObjectReferences(Data_GameState GS)
 	{

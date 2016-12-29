@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System;
+using System.Collections;
 
 public class Control_Item : MonoBehaviour {
 
@@ -24,43 +25,37 @@ public class Control_Item : MonoBehaviour {
 		ITEM_CARRY_ELEVATION = GS.getSetting("ITEM_CARRY_ELEVATION");
 		ITEM_FLOOR_LEVEL = GS.getSetting("ITEM_FLOOR_LEVEL");
 
+		// Get the ritual details
 		float pentagramCenter = GS.getSetting("RITUAL_PENTAGRAM_CENTER");
 		float pentagramRadius = GS.getSetting("RITUAL_PENTAGRAM_RADIUS");
 		float maxItems = GS.getSetting("RITUAL_ITEMS_REQUIRED");
 		// Calculate the intented position of the item at the ritual 
 		float ritualPos = (pentagramCenter - pentagramRadius) + (2 * ownIndex + 1) * pentagramRadius / maxItems;
 		ITEM_POSITION_FOR_RITUAL = new Vector2(ritualPos, ITEM_FLOOR_LEVEL);
+
+		// Check the item visibility
+		GetComponent<Renderer>().enabled = me.isVisible();
 	}
 	
 	// Update is called once per frame
 	void Update() {
 		if (GS == null || GS.SUSPENDED) { return; } // Don't do anything if the game state is not loaded yet or suspended
 
-		switch(me.state) {
-		case Data_Item.STATE_INITIAL:
-		case Data_Item.STATE_ON_CADAVER:
-			return; // Don't do anything as long as the item is in its initial position or in the ritual room or on the corpse
-		case Data_Item.STATE_CARRIED:
-			// Set the position of the item to the position of the card
+		// Set the position of the item to chara's position as long as it is carried
+		if(me.state == Data_Item.STATE_CARRIED) {
 			Data_PlayerCharacter chara = GS.getCHARA();
 			me.updatePosition(chara.isIn, chara.pos.X, ITEM_CARRY_ELEVATION);
 			updateGameObjectPosition();
-			break;
-		case Data_Item.STATE_DROPPED:
-			fallOntoTheFloor();
-			break;
-		case Data_Item.STATE_PLACED:
-			floatToRitualPosition();
-			break;
 		}
 	}
 
 	// Drops a free-falling object on the floor
-	private void fallOntoTheFloor() {
-		if(me.elevation > ITEM_FLOOR_LEVEL) { // Let the item fall to the ground
+	private IEnumerator fallOntoTheFloor() {
+		while(me.elevation > ITEM_FLOOR_LEVEL) {
 			float newElevation = me.elevation - Time.deltaTime * getDownwardVelocity(ITEM_CARRY_ELEVATION - me.elevation);
 			me.updatePosition(me.isIn, me.pos.X, Math.Max(ITEM_FLOOR_LEVEL, newElevation));
 			updateGameObjectPosition();
+			yield return null;
 		}		
 	}
 
@@ -72,12 +67,14 @@ public class Control_Item : MonoBehaviour {
 	}
 
 	// When placed, lerps the item to its designated position on the pentagram
-	private void floatToRitualPosition() {
-		if(Vector2.Distance(transform.position, ITEM_POSITION_FOR_RITUAL) > 0.1f) {
+	private IEnumerator floatToRitualPosition() {
+		while(Vector2.Distance(transform.position, ITEM_POSITION_FOR_RITUAL) > 0.1f) {
 			Vector2 delta = Time.deltaTime * ((Vector2)transform.position -  Vector2.Lerp(transform.position, ITEM_POSITION_FOR_RITUAL, 1.0f));
 			me.updatePosition(me.isIn, me.atPos - delta.x, me.elevation - delta.y);
 			updateGameObjectPosition();
+			yield return null;
 		}
+		GS.NEXT_ITEM_PLEASE = true;
 	}
 
 	// Update the game object/sprite's position within the game space from the current game state
@@ -111,6 +108,7 @@ public class Control_Item : MonoBehaviour {
 	// When CHARA picks it up
 	public void moveToInventory() {
 		if(me.isTakeable()) { 
+			StopCoroutine("fallOntoTheFloor");
 			me.state = Data_Item.STATE_CARRIED;
 			GetComponent<Renderer>().enabled = false;
 		} else {
@@ -123,6 +121,7 @@ public class Control_Item : MonoBehaviour {
 		if(me.state == Data_Item.STATE_CARRIED) { 
 			me.state = Data_Item.STATE_DROPPED;
 			GetComponent<Renderer>().enabled = true;
+			StartCoroutine("fallOntoTheFloor");
 		} else {
 			Debug.LogError("Cannot drop " + me);
 		}
@@ -145,7 +144,7 @@ public class Control_Item : MonoBehaviour {
 		if(me.state == Data_Item.STATE_CARRIED) { 
 			me.state = Data_Item.STATE_PLACED;
 			GetComponent<Renderer>().enabled = true;
-			GS.NEXT_ITEM_PLEASE = true;
+			StartCoroutine(floatToRitualPosition());
 		} else {
 			Debug.LogError("Cannot put down " + me);
 		}
