@@ -8,18 +8,14 @@ public class Control_GameState : MonoBehaviour {
 
     private Control_Camera MAIN_CAMERA_CONTROL;
 	public Canvas MAIN_MENU_CANVAS;
-	public Canvas FADEOUT_CANVAS;
 
     private float AUTOSAVE_FREQUENCY;
     private float NEXT_AUTOSAVE_IN;
-
-	private Image FADEOUT_CANVAS_IMAGE;
 
     // Use this for initialization
     void Start ()
     {
         MAIN_CAMERA_CONTROL = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Control_Camera>();
-		FADEOUT_CANVAS_IMAGE = FADEOUT_CANVAS.GetComponent<Image>();
 		continueFromSavedGameState();
         setAdditionalParameters();
 		GS.SUSPENDED = true; // Suspend the game while in the main menu initially
@@ -94,7 +90,7 @@ public class Control_GameState : MonoBehaviour {
         GS.getMonster().control.loadGameState(GS);
 		GS.getCadaver().fixObjectReferences(GS);
 
-		//P lacing the cadaver and item sprites in the location they used to be
+		// Placing the cadaver and item sprites in the location they used to be
 		Data_Cadaver cadaver = GS.getCadaver();
 		Vector3 positionOfCadaver = new Vector3 (cadaver.atPos, cadaver.isIn.gameObj.transform.position.y - 1.55f, 0);
 		cadaver.gameObj.transform.Translate(positionOfCadaver - cadaver.gameObj.transform.position);
@@ -162,6 +158,10 @@ public class Control_GameState : MonoBehaviour {
 			itemObj.transform.parent = itemDepo.transform;
 		}
 
+		// INITIALIZE CADAVER
+		GS.setCadaverCharacter("Cadaver");
+		GS.getCadaver().updatePosition(GS.getRoomByIndex(0), GS.getCadaver().gameObj.transform.position.x);
+
         // INITIALIZE PLAYER CHARACTER
         GS.setPlayerCharacter("PlayerCharacter");
         GS.getCHARA().updatePosition(GS.getRoomByIndex(0), 0); // default: starting position is center of pentagram
@@ -173,10 +173,6 @@ public class Control_GameState : MonoBehaviour {
         GS.getMonster().updatePosition(GS.getRoomByIndex(1), GS.getMonster().gameObj.transform.position.x);
 		GS.getMonster().control.loadGameState(GS);
 		GS.getMonster().setForbiddenRoomIndex(GS.getCHARA().isIn.INDEX);
-
-		// INITIALIZE CADAVER
-		GS.setCadaverCharacter("Cadaver");
-		GS.getCadaver().updatePosition(GS.getRoomByIndex (0), GS.getCadaver().gameObj.transform.position.x);
     	
 		// Placing the cadaver sprite out of sight
 		Vector3 nirvana = new Vector3 (-100, 0, 0);

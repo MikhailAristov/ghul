@@ -150,19 +150,6 @@ public class Data_GameState {
 		curItem.itemSpotIndex = spotIndex;
 	}
 
-	// TODO Removes an item from an item spot if there is one
-	public void removeItemFromSpot(int spotIndex) 
-	{
-		ITEM_SPOTS[spotIndex].removeItem();
-	}
-
-	// TODO Places an item sprite somewhere where it can't be seen
-	public void removeItemSprite(int itemIndex) 
-	{
-		Vector3 nirvana = new Vector3 (-90, 0, 0);
-		ITEMS[itemIndex].gameObj.transform.Translate(nirvana - ITEMS[itemIndex].gameObj.transform.position);
-	}
-
     // Sets the player character object
     public void setPlayerCharacter(string gameObjectName)
     {
@@ -258,7 +245,7 @@ public class Data_GameState {
     [MethodImpl(MethodImplOptions.Synchronized)] // Synchronized to avoid simultaneous calls from parallel threads
     public static void saveToDisk(Data_GameState GS)
     {
-        if(!SAVING_DISABLED)
+		if(!SAVING_DISABLED && GS.getCHARA().etherialCooldown < 0.1f) // The second clause is just to avoid saving weird in-between states
         {
             // Set the save file paths
             string resettableFilePath = Application.persistentDataPath + "/" + FILENAME_SAVE_RESETTABLE;

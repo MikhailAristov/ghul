@@ -10,9 +10,10 @@ public class Control_PlayerCharacter : MonoBehaviour {
     private Environment_Room currentEnvironment;
     [NonSerialized]
     private Data_PlayerCharacter me;
-	[SerializeField]
+	[NonSerialized]
 	private Data_Cadaver cadaver;
 
+	// General settings
     private float VERTICAL_ROOM_SPACING;
 
     private float WALKING_SPEED;
@@ -27,22 +28,18 @@ public class Control_PlayerCharacter : MonoBehaviour {
 	private float RITUAL_PENTAGRAM_RADIUS;
 
     private float DOOR_TRANSITION_DURATION;
+	private float RESPAWN_TRANSITION_DURATION;
 
-	private float TOTAL_DEATH_DURATION;
-	private float DEATH_DURATION;
-	private float TIME_TO_REACT;
+	// Gameplay parameters
+	private float timeLeftToEscapeTheMonster;
 
-	public Sprite tombstone; // DEBUG only - display of death
-	private Sprite stickman; // DEBUG only
-	private SpriteRenderer stickmanRenderer; // DEBUG only
-
-	// While this value is above zero, it marks the character as uncontrollable and invulnerable, e.g. upon entering a door or dying
+	// Graphics parameters
+	private SpriteRenderer stickmanRenderer;
 	private Control_Camera MAIN_CAMERA_CONTROL;
 
     // Use this for initialization; note that only local variables are initialized here, game state is loaded later
     void Start () {
-		stickmanRenderer = transform.Find("Stickman").gameObject.GetComponent<SpriteRenderer>(); // Find the child "Stickman", then its Sprite Renderer and then the renderer's sprite
-		stickman = stickmanRenderer.sprite;
+		stickmanRenderer = transform.FindChild("Stickman").GetComponent<SpriteRenderer>(); // Find the child "Stickman", then its Sprite Renderer and then the renderer's sprite
 		MAIN_CAMERA_CONTROL = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Control_Camera>();
     }
 
@@ -52,7 +49,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
         this.GS = gameState;
         this.me = gameState.getCHARA();
         this.currentEnvironment = me.isIn.env;
-		DEATH_DURATION = me.deathDuration;
+		this.cadaver = GS.getCadaver();
 
         // Set general movement parameters
         WALKING_SPEED = GS.getSetting("CHARA_WALKING_SPEED");
@@ -65,14 +62,14 @@ public class Control_PlayerCharacter : MonoBehaviour {
         VERTICAL_ROOM_SPACING = GS.getSetting("VERTICAL_ROOM_SPACING");
 		DOOR_TRANSITION_DURATION = GS.getSetting("DOOR_TRANSITION_DURATION");
 
-		TOTAL_DEATH_DURATION = GS.getSetting("TOTAL_DEATH_DURATION");
-		TIME_TO_REACT = GS.getSetting("TIME_TO_REACT");
+		RESPAWN_TRANSITION_DURATION = GS.getSetting("TOTAL_DEATH_DURATION");
+		timeLeftToEscapeTheMonster = GS.getSetting("TIME_TO_REACT");
 
 		RITUAL_ROOM_INDEX = (int)GS.getSetting("RITUAL_ROOM_INDEX");
 		RITUAL_PENTAGRAM_CENTER = GS.getSetting("RITUAL_PENTAGRAM_CENTER");
 		RITUAL_PENTAGRAM_RADIUS = GS.getSetting("RITUAL_PENTAGRAM_RADIUS");
 
-		me.remainingReactionTime = TIME_TO_REACT;
+		me.remainingReactionTime = timeLeftToEscapeTheMonster;
 		
         // Move the character sprite directly to where the game state says it should be standing
         Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
@@ -81,24 +78,25 @@ public class Control_PlayerCharacter : MonoBehaviour {
 
     // Update is called once per frame
     void Update () {
-		if (GS == null || GS.SUSPENDED || !me.controllable) { return; } // Don't do anything if the game state is not loaded yet or suspended
+		if (GS == null || GS.SUSPENDED) { return; } // Don't do anything if the game state is not loaded yet or suspended
 		if (me.etherialCooldown > 0.0f) { // While the character is etherial, don't do anything
 			me.etherialCooldown -= Time.deltaTime;
 			return;
 		}
 
 		//FOR DEBUGGIN ONLY - Dying on command
-		if (Input.GetButtonDown("Die")) {
-			dying();
+		if (Debug.isDebugBuild && Input.GetButtonDown("Die")) {
+			StartCoroutine(dieAndRespawn());
 		}
 
 		// Item actions
-		if (Input.GetButtonDown("Action")) {
+		if (Input.GetButtonDown("Action")) { // Take
 			takeItem();
 		}
-		if (Input.GetButtonDown("Jump")) {
+		if (Debug.isDebugBuild && Input.GetButtonDown("Jump")) { // Drop (debug only)
 			dropItem();
 		}
+
 		// If conditions for placing the item at the pentagram are right, do just that
 		if(me.carriedItem != null && me.isIn.INDEX == RITUAL_ROOM_INDEX &&
 		    Math.Abs(RITUAL_PENTAGRAM_CENTER - me.atPos) <= RITUAL_PENTAGRAM_RADIUS) {
@@ -120,7 +118,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
         if (Input.GetAxis("Horizontal") > 0.01f || Input.GetAxis("Horizontal") < -0.01f)
         {
             // Flip the sprite as necessary
-            transform.Find("Stickman").GetComponent<SpriteRenderer>().flipX = (Input.GetAxis("Horizontal") < 0.0f) ? true : false;
+			stickmanRenderer.flipX = (Input.GetAxis("Horizontal") < 0.0f) ? true : false;
 
             // Determine movement speed
             float velocity = WALKING_SPEED;
@@ -176,7 +174,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		float newValidPosition = destinationRoom.env.validatePosition(destinationDoor.atPos);
 		me.updatePosition(destinationRoom, newValidPosition);
 		currentEnvironment = me.isIn.env;
-		me.remainingReactionTime = TIME_TO_REACT;
+		me.remainingReactionTime = timeLeftToEscapeTheMonster;
 
 		// Move character sprite
 		Vector3 targetPosition = new Vector3(newValidPosition, destinationRoom.INDEX * VERTICAL_ROOM_SPACING);
@@ -197,58 +195,46 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		if (me.remainingReactionTime <= 0.0f) {
 			if(me.carriedItem != null) { // First drop the item and reset the timer
 				dropItem();
-				me.remainingReactionTime = TIME_TO_REACT;
+				me.remainingReactionTime = timeLeftToEscapeTheMonster;
 			} else {
-				dying();
+				StartCoroutine(dieAndRespawn());
 			}
 		}
 	}
 
-	// Activate the player's death scene and drop all the items
-	private void dying() {
-		if (!me.isDying) {
-			me.isDying = true;
-			stickmanRenderer.sprite = tombstone;
-			// TODO: Remove this line when the dying animation exists. This line only moves the tombstone
-			//		 such that it doesn't float
-			transform.Find("Stickman").gameObject.transform.Translate (new Vector3 (0, -1.0f, 0));
-			me.controllable = false;
-			leaveItemOnCadaver();
-			StartCoroutine (waitingForRespawn());
-		}
-	}
+	private IEnumerator dieAndRespawn() {
+		// Start cooldown
+		me.etherialCooldown = RESPAWN_TRANSITION_DURATION;
 
-	// Reset the player to the starting location after the total death duration set in Data_GameState.
-	private IEnumerator waitingForRespawn() {
-		while (DEATH_DURATION < TOTAL_DEATH_DURATION) {
-			me.deathDuration += Time.deltaTime;
-			DEATH_DURATION = me.deathDuration;
-			yield return null;
-		}
+		Debug.Log(me + " died...");
 
-		// Place the cadaver
-		Vector3 positionOfCadaver = new Vector3(transform.position.x, transform.position.y - 1.55f, transform.position.z);
-		GS.getCadaver().gameObj.transform.Translate(positionOfCadaver - GS.getCadaver().gameObj.transform.position);
-		GS.getCadaver().updatePosition(me.isIn, transform.position.x);
+		// Hide chara's sprite and replace it with the cadaver
+		stickmanRenderer.enabled = false;
+		cadaver.gameObj.transform.position = transform.position + (new Vector3(0, -1.55f));
+		cadaver.updatePosition(me.isIn, me.atPos);
+		// Transfer the current item if any to the cadaver
+		leaveItemOnCadaver();
 
-		// Death duration is over. Reset the position.
-		me.deathDuration = 0.0f;
-		DEATH_DURATION = me.deathDuration;
-		// TODO: Remove this line when the dying animation exists. This line only moves the character up again (see above)
-		transform.Find("Stickman").gameObject.transform.Translate(new Vector3(0,1.0f,0));
-		stickmanRenderer.sprite = stickman;
-		me.controllable = true;
+		// Wait before fading out
+		yield return new WaitForSeconds(RESPAWN_TRANSITION_DURATION / 3);
+		MAIN_CAMERA_CONTROL.fadeOut(RESPAWN_TRANSITION_DURATION / 3);
+		// Wait until fade out is complete before moving the sprite
+		yield return new WaitForSeconds(RESPAWN_TRANSITION_DURATION / 3);
+
+		// Move the chara sprite back to the starting room
 		me.resetPosition(GS);
 		currentEnvironment = me.isIn.env;
+		transform.position = new Vector3(me.startingPos.X, me.startingPos.RoomId * VERTICAL_ROOM_SPACING);
+		stickmanRenderer.enabled = true;
 
-		// Move character sprite
-		Vector3 targetPosition = new Vector3(me.startingPos.X, me.startingPos.RoomId * VERTICAL_ROOM_SPACING);
-		transform.Translate(targetPosition - transform.position);
+		// Fade back in
+		MAIN_CAMERA_CONTROL.fadeIn(RESPAWN_TRANSITION_DURATION / 3);
 
-		me.isDying = false;
-		me.remainingReactionTime = TIME_TO_REACT;
+		// Reset the hitpoints
+		me.remainingReactionTime = timeLeftToEscapeTheMonster;
 
-		yield return null;
+		// Trigger an autosave upon changing locations
+		Data_GameState.saveToDisk(GS);
 	}
 
 	// The player takes a nearby item if there is any

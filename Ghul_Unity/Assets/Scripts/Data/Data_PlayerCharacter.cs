@@ -9,6 +9,15 @@ public class Data_PlayerCharacter : Data_Character {
     [NonSerialized]
     public Control_PlayerCharacter control;
 
+	// Original spawning position of the character
+	[SerializeField]
+	private Data_Position _startingPos;
+	public Data_Position startingPos
+	{ 
+		get { return _startingPos; } 
+		set { _startingPos = value; }
+	}
+
     // Gameplay parameters:
     [SerializeField]
     private float _stamina; // goes from 0.0 to 1.0
@@ -24,19 +33,8 @@ public class Data_PlayerCharacter : Data_Character {
         get { return _exhausted; }
         private set { _exhausted = value; }
     }
-    // New gameplay parameters
-    public bool controllable { get; set; }
-	[SerializeField]
-	private Data_Position _startingPos;
-    public Data_Position startingPos
-	{ 
-		get { return _startingPos; } 
-		set { _startingPos = value; }
-	}
-    public float deathDuration { get; set; }
-    public bool isDying { get; set; }
-    public float remainingReactionTime { get; set; } //remaining time to escape killing radius
-
+	// Remaining time to escape the monster's
+    public float remainingReactionTime { get; set; }
 	// While this value is above zero, it marks the character as uncontrollable and invulnerable, e.g. upon entering a door or dying
 	[SerializeField]
 	public float etherialCooldown; // in seconds
@@ -53,8 +51,6 @@ public class Data_PlayerCharacter : Data_Character {
 		etherialCooldown = 0.0f;
         stamina = 1.0f;
         exhausted = false;
-        controllable = true;
-        isDying = false;
 		carriedItem = null;
     }
 
