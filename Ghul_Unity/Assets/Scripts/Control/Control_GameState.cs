@@ -158,6 +158,13 @@ public class Control_GameState : MonoBehaviour {
             r.env.loadGameState(GS, r.INDEX);
 		}
 
+		// Move all item game objects away (they will be spawned by spawmNextItem())
+		GameObject itemDepo = GameObject.Find("ItemDeposit");
+		foreach (GameObject itemObj in GameObject.FindGameObjectsWithTag("Item")) {
+			itemObj.transform.parent = itemDepo.transform;
+		}
+
+
         // INITIALIZE PLAYER CHARACTER
         GS.setPlayerCharacter("PlayerCharacter");
         GS.getCHARA().updatePosition(GS.getRoomByIndex(0), 0); // default: starting position is center of pentagram
