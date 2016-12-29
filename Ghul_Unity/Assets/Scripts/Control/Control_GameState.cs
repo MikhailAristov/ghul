@@ -40,6 +40,18 @@ public class Control_GameState : MonoBehaviour {
             GS.SUSPENDED = true;
             MAIN_MENU_CANVAS.enabled = true;
         }
+
+		// Check if an item has been placed
+		if(GS.NEXT_ITEM_PLEASE == true) {
+			// Reset the flag
+			GS.NEXT_ITEM_PLEASE = false;
+			// Check if it's all of them
+			if(GS.ITEMS.Count < GS.getSetting("RITUAL_ITEMS_REQUIRED")) {
+				spawmNextItem();
+			} else {
+				triggerEndgame();
+			}
+		}
     }
 
     // This method updates parameters after loading or resetting the game
@@ -148,49 +160,13 @@ public class Control_GameState : MonoBehaviour {
 		GS.addItemSpot("ItemSpot3-2", 3);
 		GS.addItemSpot("ItemSpot3-3", 3);
 
-		// INITIALIZE ITEMS
-		GS.addItem("Item01");
-		//GS.addItem("Item02");
-		//GS.addItem("Item03");
-		//GS.addItem("Item04");
-		//GS.addItem("Item05");
-		//GS.addItem("Item06");
-		//GS.addItem("Item07");
-		//GS.addItem("Item08");
-
-		// REMOVE ANY PRE-EXISTING ITEMS FROM ITEM SPOTS
-		GS.removeItemFromSpot(0);
-		GS.removeItemFromSpot(1);
-		GS.removeItemFromSpot(2);
-		GS.removeItemFromSpot(3);
-		GS.removeItemFromSpot(4);
-		GS.removeItemFromSpot(5);
-		GS.removeItemFromSpot(6);
-		GS.removeItemFromSpot(7);
-		GS.removeItemFromSpot(8);
-
-		// PUT ITEMS INTO ITEM SPOTS
-		// TODO: Randomize the placement
-		GS.setItemSpawnPoint(0,3);
-		/*
-		GS.placeItemInSpot(0,5);
-		GS.placeItemInSpot(1,1);
-		GS.placeItemInSpot(2,2);
-		GS.placeItemInSpot(3,3);
-		GS.placeItemInSpot(4,4);
-		GS.placeItemInSpot(5,5);
-		GS.placeItemInSpot(6,6);
-		GS.placeItemInSpot(7,7);
-		*/
-		// last spot empty for now
-
         // Load game state into room environment scripts
         foreach (Data_Room r in GS.ROOMS.Values) {
             r.env.loadGameState(GS, r.INDEX);
 		}
 
-		GS.getItemByIndex(0).control.loadGameState(GS, 0);
-		GS.getItemByIndex(0).control.resetToSpawnPosition();
+		// Spawn the initial item
+		//spawmNextItem();
 
         // INITIALIZE PLAYER CHARACTER
         GS.setPlayerCharacter("PlayerCharacter");
@@ -212,6 +188,25 @@ public class Control_GameState : MonoBehaviour {
 		Vector3 nirvana = new Vector3 (-100, 0, 0);
 		GS.getCadaver().gameObj.transform.Translate(nirvana - GS.getCadaver().gameObj.transform.position);
 		GS.getCadaver().updatePosition(-100);
+	}
+
+	// Places the next item in a random spot
+	private void spawmNextItem() {
+		int newItemIndex = GS.ITEMS.Count;
+		// TODO: Use prefabs for this stuff...
+		string gameObjName = string.Format("Item{0:00}", newItemIndex + 1);
+		Data_Item newItem = GS.addItem(gameObjName);
+		// Randomize the placement
+		int newSpawnIndex = Random.Range(0, GS.ITEM_SPOTS.Count);
+		GS.setItemSpawnPoint(newItemIndex, newSpawnIndex);
+		// Place the new item
+		newItem.control.loadGameState(GS, newItemIndex);
+		newItem.control.resetToSpawnPosition();
+	}
+
+	private void triggerEndgame() {
+		// TODO: Proper endgame
+		Debug.LogError("Congratulations, you've won the game!");
 	}
 
     // This method is called when the New Game button is activated from the main menu

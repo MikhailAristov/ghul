@@ -22,6 +22,10 @@ public class Control_PlayerCharacter : MonoBehaviour {
     private float WALKING_STAMINA_GAIN;
     private float STANDING_STAMINA_GAIN;
 
+	private int RITUAL_ROOM_INDEX;
+	private float RITUAL_PENTAGRAM_CENTER;
+	private float RITUAL_PENTAGRAM_RADIUS;
+
     private float DOOR_COOLDOWN; // This prevents the character "flickering" between doors
     private float DOOR_COOLDOWN_DURATION; // This prevents the character "flickering" between doors
 
@@ -62,6 +66,10 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		TOTAL_DEATH_DURATION = GS.getSetting("TOTAL_DEATH_DURATION");
 		TIME_TO_REACT = GS.getSetting("TIME_TO_REACT");
 
+		RITUAL_ROOM_INDEX = (int)GS.getSetting("RITUAL_ROOM_INDEX");
+		RITUAL_PENTAGRAM_CENTER = GS.getSetting("RITUAL_PENTAGRAM_CENTER");
+		RITUAL_PENTAGRAM_RADIUS = GS.getSetting("RITUAL_PENTAGRAM_RADIUS");
+
 		me.remainingReactionTime = TIME_TO_REACT;
 		
         // Move the character sprite directly to where the game state says it should be standing
@@ -78,12 +86,17 @@ public class Control_PlayerCharacter : MonoBehaviour {
 			dying();
 		}
 
-		// Action (taking an item)
+		// Item actions
 		if (Input.GetButtonDown("Action")) {
 			takeItem();
 		}
 		if (Input.GetButtonDown("Jump")) {
 			dropItem();
+		}
+		// If conditions for placing the item at the pentagram are right, do just that
+		if(me.carriedItem != null && me.isIn.INDEX == RITUAL_ROOM_INDEX &&
+		    Math.Abs(RITUAL_PENTAGRAM_CENTER - me.atPos) <= RITUAL_PENTAGRAM_RADIUS) {
+			putItemOntoPentagram();
 		}
 
         // Vertical "movement"
@@ -276,5 +289,14 @@ public class Control_PlayerCharacter : MonoBehaviour {
 			me.carriedItem = null;
 			// Not autosave because death already autosaves
 		}
+	}
+
+	// The player reaches the pentagram with an item
+	private void putItemOntoPentagram() {
+		me.carriedItem.control.placeForRitual();
+		Debug.Log("Item #" + me.carriedItem.INDEX + " placed for the ritual");
+		me.carriedItem = null;
+		// Auto save when placing an item.
+		Data_GameState.saveToDisk(GS);
 	}
 }

@@ -6,8 +6,6 @@ public class Control_Item : MonoBehaviour {
 	[NonSerialized]
 	private Data_GameState GS;
 	[NonSerialized]
-	private Environment_Room currentEnvironment;
-	[NonSerialized]
 	private Data_Item me;
 
 	private float ITEM_CARRY_ELEVATION;
@@ -124,6 +122,7 @@ public class Control_Item : MonoBehaviour {
 		if(me.state == Data_Item.STATE_CARRIED) { 
 			me.state = Data_Item.STATE_PLACED;
 			GetComponent<Renderer>().enabled = true;
+			GS.NEXT_ITEM_PLEASE = true;
 		} else {
 			Debug.LogError("Cannot put down " + me);
 		}

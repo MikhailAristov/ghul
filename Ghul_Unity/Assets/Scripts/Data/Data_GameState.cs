@@ -8,11 +8,11 @@ using System.Runtime.CompilerServices;
 [Serializable]
 public class Data_GameState {
 
-	// The first room in the house is the ritual room
-	public const int RITUAL_ROOM_INDEX = 0;
-
     [NonSerialized] // Setting this flag suspends the game
-    public bool SUSPENDED = true;
+	public bool SUSPENDED = true;
+
+	[NonSerialized] // Setting this flag makes the game generate a new item
+	public bool NEXT_ITEM_PLEASE = true;
 
     [NonSerialized]
     private Dictionary<string, float> SETTINGS;
@@ -63,6 +63,12 @@ public class Data_GameState {
         // Level layout setttings
         SETTINGS.Add("HORIZONTAL_ROOM_MARGIN", 0.9f);   // Prevents movement to screen edge past the margin
         SETTINGS.Add("HORIZONTAL_DOOR_WIDTH", 1.35f);
+
+		// Ritual room settings
+		SETTINGS.Add("RITUAL_ROOM_INDEX", 0.0f);		// The index of the room with the ritual pentagram (has to be cast to int)
+		SETTINGS.Add("RITUAL_PENTAGRAM_CENTER", 0.2f);	// The center pentagram space (relative to room center)
+		SETTINGS.Add("RITUAL_PENTAGRAM_RADIUS", 1.4f);	// The distance between pentagram center and edge in either direction
+		SETTINGS.Add("RITUAL_ITEMS_REQUIRED", 5.0f);	// How many items are needed for the ritual (has to be cast to int)
 
         // Door settings
         SETTINGS.Add("MARGIN_DOOR_ENTRANCE", 0.6f);     // How close a character's center of mass must be to the door's center to use it
@@ -123,10 +129,12 @@ public class Data_GameState {
 	}
 
 	// Adds an item to the game state
-	public void addItem(string gameObjectName) 
+	public Data_Item addItem(string gameObjectName) 
 	{
 		int INDEX = ITEMS.Count;
-		ITEMS.Add(INDEX, new Data_Item(gameObjectName));
+		Data_Item newItem = new Data_Item(gameObjectName);
+		ITEMS.Add(INDEX, newItem);
+		return newItem;
 	}
 
     // Connects two doors to each other
