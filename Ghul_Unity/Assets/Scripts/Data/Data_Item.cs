@@ -73,5 +73,10 @@ public class Data_Item : Data_Character {
 	public void fixObjectReferences(Data_GameState GS)
 	{
 		gameObj = GameObject.Find(_gameObjName);
+		control = gameObj.GetComponent<Control_Item>();
+		isIn = GS.getRoomByIndex(pos.RoomId);
+		if(state == Data_Item.STATE_CARRIED) {
+			GS.getCHARA().carriedItem = this;
+		}
 	}
 }

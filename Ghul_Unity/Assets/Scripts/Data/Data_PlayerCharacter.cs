@@ -37,10 +37,6 @@ public class Data_PlayerCharacter : Data_Character {
     public bool isDying { get; set; }
     public float remainingReactionTime { get; set; } //remaining time to escape killing radius
 
-	// Index list of the items the player collected
-	[SerializeField]
-	private List<int> itemList;
-
 	// The item the character currently carries
 	[NonSerialized]
 	public Data_Item carriedItem;
@@ -54,7 +50,6 @@ public class Data_PlayerCharacter : Data_Character {
         exhausted = false;
         controllable = true;
         isDying = false;
-		itemList = new List<int>();
 		carriedItem = null;
     }
 
@@ -85,21 +80,6 @@ public class Data_PlayerCharacter : Data_Character {
         }
         return stamina;
     }
-		
-	// Add an item to the item list
-	public void addItemToList(int i) {
-		itemList.Add(i);
-	}
-
-	// Empties the item list
-	public void emptyItemList() {
-		itemList.Clear();
-	}
-
-	// Returns true, if the item with index i has been collected
-	public bool isItemCollected(int i) {
-		return itemList.Contains(i);
-	}
 
     // Resets game object references, e.g. after a saved state load
     public void fixObjectReferences(Data_GameState GS)
@@ -107,8 +87,5 @@ public class Data_PlayerCharacter : Data_Character {
         gameObj = GameObject.Find(_gameObjName);
         control = gameObj.GetComponent<Control_PlayerCharacter>();
         isIn = GS.getRoomByIndex(_pos.RoomId);
-		if(GS.getCurrentItem().state == Data_Item.STATE_CARRIED) {
-			carriedItem = GS.getCurrentItem();
-		}
     }
 }

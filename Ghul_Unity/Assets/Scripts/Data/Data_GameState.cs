@@ -265,6 +265,7 @@ public class Data_GameState {
             //string permanentFilePath = Application.persistentDataPath + "/" + FILENAME_SAVE_PERMANENT;
 
             Debug.Log("Saving game to " + resettableFilePath);
+			Debug.LogWarning(GS.ITEMS.Count);
 
             // Prepare writing file
             BinaryFormatter bf = new BinaryFormatter();
@@ -295,7 +296,8 @@ public class Data_GameState {
         FileStream file = File.Open(resettableFilePath, FileMode.Open);
 
         // Read the file to memory and close it
-        Data_GameState result = (Data_GameState)bf.Deserialize(file);
+		Data_GameState result = (Data_GameState)bf.Deserialize(file);
+		Debug.LogWarning(result.ITEMS.Count);
         file.Close();
         return result;        
     }

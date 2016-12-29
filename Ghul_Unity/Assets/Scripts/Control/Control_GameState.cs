@@ -15,10 +15,9 @@ public class Control_GameState : MonoBehaviour {
     void Start ()
     {
         MAIN_CAMERA_CONTROL = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Control_Camera>();
-		onNewGameSelect();
-        //continueFromSavedGameState();
+		continueFromSavedGameState();
         setAdditionalParameters();
-		//GS.SUSPENDED = true; // Suspend the game while in the main menu initially
+		GS.SUSPENDED = true; // Suspend the game while in the main menu initially
     }
 
     // Update is called once per frame
@@ -90,33 +89,27 @@ public class Control_GameState : MonoBehaviour {
             r.env.loadGameState(GS, r.INDEX); // While we are on it, load game state into room environment scripts 
         }
 
-        // Lastly, fix the character, cadaver and monster object references
+        // Fix the character, cadaver and monster object references
         GS.getCHARA().fixObjectReferences(GS);
         GS.getCHARA().control.loadGameState(GS);
         GS.getMonster().fixObjectReferences(GS);
         GS.getMonster().control.loadGameState(GS);
 		GS.getCadaver().fixObjectReferences(GS);
 
-		//Placing the cadaver and item sprites in the location they used to be
+		//P lacing the cadaver and item sprites in the location they used to be
 		Data_Cadaver cadaver = GS.getCadaver();
 		Vector3 positionOfCadaver = new Vector3 (cadaver.atPos, cadaver.isIn.gameObj.transform.position.y - 1.55f, 0);
 		cadaver.gameObj.transform.Translate(positionOfCadaver - cadaver.gameObj.transform.position);
 		cadaver.updatePosition(cadaver.isIn, cadaver.atPos);
 
+		// Fix the items
 		int numOfItems = GS.ITEMS.Count;
 		for (int i = 0; i < numOfItems; i++) {
 			Data_Item item = GS.getItemByIndex(i);
-			Data_ItemSpawn spot = GS.ITEM_SPOTS[item.itemSpotIndex];
-			if (!GS.getCHARA().isItemCollected(i) 
-				&& spot.containsItem) // another check, just in case
-			{
-				// Item not yet collected. Place it in the level.
-				Vector3 spotLocation = new Vector3(spot.X, spot.RoomId * GS.getSetting("VERTICAL_ROOM_SPACING") + spot.Y);
-				Vector3 itemLocation = item.gameObj.transform.position;
-				item.gameObj.transform.Translate(spotLocation - itemLocation);
-			}
+			item.fixObjectReferences(GS);
+			item.control.loadGameState(GS, i);
+			item.control.updateGameObjectPosition();
 		}
-
     }
 
     // This method initializes the game state back to default
@@ -199,6 +192,8 @@ public class Control_GameState : MonoBehaviour {
 		// Place the new item
 		newItem.control.loadGameState(GS, newItemIndex);
 		newItem.control.resetToSpawnPosition();
+		// Save the new game state to disk
+		Data_GameState.saveToDisk(GS);  
 	}
 
 	private void triggerEndgame() {
@@ -211,7 +206,6 @@ public class Control_GameState : MonoBehaviour {
     {
         resetGameState();                   // Reset the game state
         setAdditionalParameters();          // Refocus camera and such
-        Data_GameState.saveToDisk(GS);      // Save the new game state to disk
         MAIN_MENU_CANVAS.enabled = false;   // Dismiss the main menu
         GS.SUSPENDED = false;               // Continue playing
     }
