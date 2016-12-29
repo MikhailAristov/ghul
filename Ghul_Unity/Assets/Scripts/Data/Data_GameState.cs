@@ -66,7 +66,7 @@ public class Data_GameState {
 
 		// Ritual room settings
 		SETTINGS.Add("RITUAL_ROOM_INDEX", 0.0f);		// The index of the room with the ritual pentagram (has to be cast to int)
-		SETTINGS.Add("RITUAL_PENTAGRAM_CENTER", 0.2f);	// The center pentagram space (relative to room center)
+		SETTINGS.Add("RITUAL_PENTAGRAM_CENTER", 0.05f);	// The center pentagram space (relative to room center)
 		SETTINGS.Add("RITUAL_PENTAGRAM_RADIUS", 1.4f);	// The distance between pentagram center and edge in either direction
 		SETTINGS.Add("RITUAL_ITEMS_REQUIRED", 5.0f);	// How many items are needed for the ritual (has to be cast to int)
 

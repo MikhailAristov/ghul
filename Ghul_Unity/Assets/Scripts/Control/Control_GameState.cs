@@ -165,9 +165,6 @@ public class Control_GameState : MonoBehaviour {
             r.env.loadGameState(GS, r.INDEX);
 		}
 
-		// Spawn the initial item
-		//spawmNextItem();
-
         // INITIALIZE PLAYER CHARACTER
         GS.setPlayerCharacter("PlayerCharacter");
         GS.getCHARA().updatePosition(GS.getRoomByIndex(0), 0); // default: starting position is center of pentagram

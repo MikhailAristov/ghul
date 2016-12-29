@@ -10,6 +10,7 @@ public class Control_Item : MonoBehaviour {
 
 	private float ITEM_CARRY_ELEVATION;
 	private float ITEM_FLOOR_LEVEL;
+	private Vector2 ITEM_POSITION_FOR_RITUAL;
 
 	// Use this for initialization
 	void Start() {	}
@@ -22,6 +23,13 @@ public class Control_Item : MonoBehaviour {
 
 		ITEM_CARRY_ELEVATION = GS.getSetting("ITEM_CARRY_ELEVATION");
 		ITEM_FLOOR_LEVEL = GS.getSetting("ITEM_FLOOR_LEVEL");
+
+		float pentagramCenter = GS.getSetting("RITUAL_PENTAGRAM_CENTER");
+		float pentagramRadius = GS.getSetting("RITUAL_PENTAGRAM_RADIUS");
+		float maxItems = GS.getSetting("RITUAL_ITEMS_REQUIRED");
+		// Calculate the intented position of the item at the ritual 
+		float ritualPos = (pentagramCenter - pentagramRadius) + (2 * ownIndex + 1) * pentagramRadius / maxItems;
+		ITEM_POSITION_FOR_RITUAL = new Vector2(ritualPos, ITEM_FLOOR_LEVEL);
 	}
 	
 	// Update is called once per frame
@@ -31,7 +39,6 @@ public class Control_Item : MonoBehaviour {
 		switch(me.state) {
 		case Data_Item.STATE_INITIAL:
 		case Data_Item.STATE_ON_CADAVER:
-		case Data_Item.STATE_PLACED:
 			return; // Don't do anything as long as the item is in its initial position or in the ritual room or on the corpse
 		case Data_Item.STATE_CARRIED:
 			// Set the position of the item to the position of the card
@@ -40,14 +47,21 @@ public class Control_Item : MonoBehaviour {
 			updateGameObjectPosition();
 			break;
 		case Data_Item.STATE_DROPPED:
-			if(me.elevation > ITEM_FLOOR_LEVEL) { // Let the item fall to the ground
-				float newElevation = me.elevation - Time.deltaTime * getDownwardVelocity(ITEM_CARRY_ELEVATION - me.elevation);
-				me.updatePosition(me.isIn, me.pos.X, Math.Max(ITEM_FLOOR_LEVEL, newElevation));
-				updateGameObjectPosition();
-			}
-			// Let the item fall unless it's already on the floor if it is just dropped
+			fallOntoTheFloor();
+			break;
+		case Data_Item.STATE_PLACED:
+			floatToRitualPosition();
 			break;
 		}
+	}
+
+	// Drops a free-falling object on the floor
+	private void fallOntoTheFloor() {
+		if(me.elevation > ITEM_FLOOR_LEVEL) { // Let the item fall to the ground
+			float newElevation = me.elevation - Time.deltaTime * getDownwardVelocity(ITEM_CARRY_ELEVATION - me.elevation);
+			me.updatePosition(me.isIn, me.pos.X, Math.Max(ITEM_FLOOR_LEVEL, newElevation));
+			updateGameObjectPosition();
+		}		
 	}
 
 	// Calculates the downward velocity of the falling object from the distance it had already fallen
@@ -57,8 +71,17 @@ public class Control_Item : MonoBehaviour {
 		return (v > 0 ? v : g); // Differential equations are a bitch...
 	}
 
+	// When placed, lerps the item to its designated position on the pentagram
+	private void floatToRitualPosition() {
+		if(Vector2.Distance(transform.position, ITEM_POSITION_FOR_RITUAL) > 0.1f) {
+			Vector2 delta = Time.deltaTime * ((Vector2)transform.position -  Vector2.Lerp(transform.position, ITEM_POSITION_FOR_RITUAL, 1.0f));
+			me.updatePosition(me.isIn, me.atPos - delta.x, me.elevation - delta.y);
+			updateGameObjectPosition();
+		}
+	}
+
 	// Update the game object/sprite's position within the game space from the current game state
-	private void updateGameObjectPosition() {
+	public void updateGameObjectPosition() {
 		Vector3 targetPos = new Vector3(me.atPos, me.elevation, transform.position.z);
 		if(transform.parent != me.isIn.env.transform) {
 			transform.parent = me.isIn.env.transform; // Move the game object to the room game object
