@@ -64,6 +64,11 @@ public class Data_Item : Data_Character {
 		_localElevation = relElevation;
 	}
 
+	// Check if the item can be picked up
+	public bool isTakeable() {
+		return (state == Data_Item.STATE_INITIAL || state == Data_Item.STATE_ON_CADAVER || state == Data_Item.STATE_DROPPED);
+	}
+
 	// Resets game object references, e.g. after a saved state load
 	public void fixObjectReferences(Data_GameState GS)
 	{

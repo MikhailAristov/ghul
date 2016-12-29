@@ -10,7 +10,8 @@ public class Control_Item : MonoBehaviour {
 	[NonSerialized]
 	private Data_Item me;
 
-	private float ITEM_CARRY_ELEVATION = 0.0f;
+	private float ITEM_CARRY_ELEVATION;
+	private float ITEM_FLOOR_LEVEL;
 
 	// Use this for initialization
 	void Start() {	}
@@ -20,6 +21,9 @@ public class Control_Item : MonoBehaviour {
 	{
 		this.GS = gameState;
 		this.me = gameState.getItemByIndex(ownIndex);
+
+		ITEM_CARRY_ELEVATION = GS.getSetting("ITEM_CARRY_ELEVATION");
+		ITEM_FLOOR_LEVEL = GS.getSetting("ITEM_FLOOR_LEVEL");
 	}
 	
 	// Update is called once per frame
@@ -33,11 +37,36 @@ public class Control_Item : MonoBehaviour {
 			return; // Don't do anything as long as the item is in its initial position or in the ritual room or on the corpse
 		case Data_Item.STATE_CARRIED:
 			// Set the position of the item to the position of the card
-			me.updatePosition(GS.getCHARA().isIn, GS.getCHARA().pos.X, ITEM_CARRY_ELEVATION);
+			Data_PlayerCharacter chara = GS.getCHARA();
+			me.updatePosition(chara.isIn, chara.pos.X, ITEM_CARRY_ELEVATION);
+			updateGameObjectPosition();
 			break;
 		case Data_Item.STATE_DROPPED:
+			if(me.elevation > ITEM_FLOOR_LEVEL) { // Let the item fall to the ground
+				float newElevation = me.elevation - Time.deltaTime * getDownwardVelocity(ITEM_CARRY_ELEVATION - me.elevation);
+				me.updatePosition(me.isIn, me.pos.X, Math.Max(ITEM_FLOOR_LEVEL, newElevation));
+				updateGameObjectPosition();
+			}
 			// Let the item fall unless it's already on the floor if it is just dropped
 			break;
+		}
+	}
+
+	// Calculates the downward velocity of the falling object from the distance it had already fallen
+	private float getDownwardVelocity(float fallenDistance) {
+		float g = 1.5f * 9.81f; // Because fantasy physics
+		float v = (float)Math.Sqrt(2 * fallenDistance * g);
+		return (v > 0 ? v : g); // Differential equations are a bitch...
+	}
+
+	// Update the game object/sprite's position within the game space from the current game state
+	private void updateGameObjectPosition() {
+		Vector3 targetPos = new Vector3(me.atPos, me.elevation, transform.position.z);
+		if(transform.parent != me.isIn.env.transform) {
+			transform.parent = me.isIn.env.transform; // Move the game object to the room game object
+			transform.localPosition = targetPos;
+		} else if(Vector3.Distance(transform.position, targetPos) > 0.01f) {
+			transform.localPosition = targetPos;
 		}
 	}
 
@@ -48,12 +77,9 @@ public class Control_Item : MonoBehaviour {
 			me.state = Data_Item.STATE_INITIAL;
 			// Find the original spawn point and reset the position
 			Data_ItemSpawn target = GS.getItemSpawnPointByIndex(me.itemSpotIndex);
-			Debug.Log("setting location to " + GS.getRoomByIndex(target.RoomId) + " " + target.X + "/"+ target.Y);
-			me.updatePosition(GS.getRoomByIndex(target.RoomId), target.X, target.Y);
-			// Set the sprite's parent to the containing room and move the sprite there
-			transform.parent = GS.getRoomByIndex(me.pos.RoomId).env.transform; // Move the game object to the room game object
-			Debug.Log("setting local location to " + me.atPos + "/" + me.elevation + "/"+ transform.position.z);
-			transform.position = new Vector3(me.atPos, me.elevation, transform.position.z);
+			Data_Room spawnRoom = GS.getRoomByIndex(target.RoomId);
+			me.updatePosition(spawnRoom, target.X, target.Y);
+			updateGameObjectPosition();
 			// Show the object
 			GetComponent<Renderer>().enabled = true;
 		} else {
@@ -63,7 +89,7 @@ public class Control_Item : MonoBehaviour {
 
 	// When CHARA picks it up
 	public void moveToInventory() {
-		if(me.state == Data_Item.STATE_INITIAL || me.state == Data_Item.STATE_ON_CADAVER || me.state == Data_Item.STATE_DROPPED) { 
+		if(me.isTakeable()) { 
 			me.state = Data_Item.STATE_CARRIED;
 			GetComponent<Renderer>().enabled = false;
 		} else {
@@ -85,7 +111,8 @@ public class Control_Item : MonoBehaviour {
 	public void moveToCadaver() {
 		if(me.state == Data_Item.STATE_CARRIED) { 
 			me.state = Data_Item.STATE_ON_CADAVER;
-			me.updatePosition(GS.getCadaver().isIn, GS.getCadaver().pos.X, ITEM_CARRY_ELEVATION);
+			me.updatePosition(me.isIn, me.pos.X, ITEM_FLOOR_LEVEL); // The item remains where it was, just on the floor level
+			updateGameObjectPosition();
 			GetComponent<Renderer>().enabled = false;
 		} else {
 			Debug.LogError("Cannot transfer " + me + " to cadaver");

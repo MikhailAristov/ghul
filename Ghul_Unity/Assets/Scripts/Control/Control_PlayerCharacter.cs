@@ -82,6 +82,9 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		if (Input.GetButtonDown("Action")) {
 			takeItem();
 		}
+		if (Input.GetButtonDown("Jump")) {
+			dropItem();
+		}
 
         // Vertical "movement"
         if (Input.GetAxis("Vertical") > 0.1f && Time.timeSinceLevelLoad > DOOR_COOLDOWN)
@@ -179,7 +182,12 @@ public class Control_PlayerCharacter : MonoBehaviour {
 	public void beingAttacked() {
 		me.remainingReactionTime -= Time.deltaTime;
 		if (me.remainingReactionTime <= 0.0f) {
-			dying();
+			if(me.carriedItem != null) { // First drop the item and reset the timer
+				dropItem();
+				me.remainingReactionTime = TIME_TO_REACT;
+			} else {
+				dying();
+			}
 		}
 	}
 
@@ -193,8 +201,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
 			transform.Find("Stickman").gameObject.transform.Translate (new Vector3 (0, -1.0f, 0));
 			me.controllable = false;
 			StartCoroutine (waitingForRespawn());
-
-			// TODO: dropping the items at the cadaver's place (requires adding new item spots)
+			leaveItemOnCadaver();
 		}
 	}
 
@@ -233,16 +240,41 @@ public class Control_PlayerCharacter : MonoBehaviour {
 
 	// The player takes a nearby item if there is any
 	private void takeItem() {
-		int itemIndex = currentEnvironment.getItemIndexAtPos(transform.position.x);
-		if (itemIndex >= 0) {
+		Data_Item currentItem = GS.getCurrentItem();
+		if(me.carriedItem == null && currentItem.isTakeable() && me.isIn == currentItem.isIn &&
+		   Math.Abs(me.atPos - currentItem.atPos) < GS.getSetting("MARGIN_ITEM_COLLECT")) {
 			// the player got the item with index itemIndex.
-			me.addItemToList(itemIndex);
-			currentEnvironment.removeItemAtPos(transform.position.x);
-			GS.removeItemSprite(itemIndex);
-			Debug.Log("Item #" + itemIndex + " collected.");
+			currentItem.control.moveToInventory();
+			me.carriedItem = currentItem;
+			Debug.Log("Item #" + currentItem.INDEX + " collected.");
 
 			// Auto save when collecting an item.
 			Data_GameState.saveToDisk(GS);
+		} else {
+			Debug.LogWarning("Can't pick up " + currentItem);
+		}
+	}
+
+	// The player drops the carried item
+	private void dropItem() {
+		if(me.carriedItem != null) {
+			// Drop item down
+			me.carriedItem.control.dropFromInventory();
+			Debug.Log("Item #" + me.carriedItem.INDEX + " dropped");
+			me.carriedItem = null;
+			// Auto save when dropping an item.
+			Data_GameState.saveToDisk(GS);
+		}
+	}
+
+	// The player dies and leaves the item on chara's cadaver
+	private void leaveItemOnCadaver() {
+		if(me.carriedItem != null) {
+			// Drop item down
+			me.carriedItem.control.moveToCadaver();
+			Debug.Log("Item #" + me.carriedItem.INDEX + " left on cadaver");
+			me.carriedItem = null;
+			// Not autosave because death already autosaves
 		}
 	}
 }

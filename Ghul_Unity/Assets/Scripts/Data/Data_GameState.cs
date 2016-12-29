@@ -8,6 +8,9 @@ using System.Runtime.CompilerServices;
 [Serializable]
 public class Data_GameState {
 
+	// The first room in the house is the ritual room
+	public const int RITUAL_ROOM_INDEX = 0;
+
     [NonSerialized] // Setting this flag suspends the game
     public bool SUSPENDED = true;
 
@@ -78,13 +81,17 @@ public class Data_GameState {
         // Stamina range: 0.0 .. 1.0; increments are applied per second
         SETTINGS.Add("RUNNING_STAMINA_LOSS", -0.2f);    // Must be negative
         SETTINGS.Add("WALKING_STAMINA_GAIN", 0.1f);
-        SETTINGS.Add("STANDING_STAMINA_GAIN", 0.4f);
+		SETTINGS.Add("STANDING_STAMINA_GAIN", 0.4f);
+
+		// Item settings
+		SETTINGS.Add("MARGIN_ITEM_COLLECT", 0.3f);		// How close a character's center must be to an item to be able to collect it
+		SETTINGS.Add("ITEM_CARRY_ELEVATION", -0.33f);	// Distance from the horizontal center of the room at which items are carried by chara
+		SETTINGS.Add("ITEM_FLOOR_LEVEL", -1.8f);		// Distance from the horizontal center of the room at which items are lying on the floor
 
         // Miscellaneous setttings
         SETTINGS.Add("AUTOSAVE_FREQUENCY", 10.0f);      // In seconds
         SETTINGS.Add("CAMERA_PANNING_SPEED", 9.0f);
 		SETTINGS.Add("TOTAL_DEATH_DURATION", 3.0f);     // When deathDuration of Data_Character reaches this value the player resets to the starting room
-		SETTINGS.Add("MARGIN_ITEM_COLLECT", 0.3f);		// How close a character's center must be to an item to be able to collect it
 	}
 
     // Adds a room to the game state
@@ -103,11 +110,12 @@ public class Data_GameState {
     }
 
 	// Adds an item spot to the game state, as well as to its containing room
-	public void addItemSpot(string gameObjectName, int RoomIndex) {
+	public void addItemSpot(string gameObjectName, int RoomIndex) 
+	{
 		int index = ITEM_SPOTS.Count;
 		GameObject gameObj = GameObject.Find(gameObjectName);
-		float relativeX = gameObj.transform.position.x;
-		float relativeY = gameObj.transform.position.y;
+		float relativeX = gameObj.transform.localPosition.x;
+		float relativeY = gameObj.transform.localPosition.y;
 
 		Data_ItemSpawn spot = new Data_ItemSpawn(index, RoomIndex, relativeX, relativeY);
 		ITEM_SPOTS.Add(index, spot);
@@ -115,29 +123,32 @@ public class Data_GameState {
 	}
 
 	// Adds an item to the game state
-	public void addItem(string gameObjectName) {
+	public void addItem(string gameObjectName) 
+	{
 		int INDEX = ITEMS.Count;
 		ITEMS.Add(INDEX, new Data_Item(gameObjectName));
 	}
 
     // Connects two doors to each other
-    public void connectTwoDoors(int fromIndex, int toIndex)
-    {
+	public void connectTwoDoors(int fromIndex, int toIndex) 
+	{
         DOORS[fromIndex].connectTo(DOORS[toIndex]);
     }
 
-	public void setItemSpawnPoint(int itemIndex, int spotIndex) {
+	// Assigns an item to its spawn point
+	public void setItemSpawnPoint(int itemIndex, int spotIndex) 
+	{
 		Data_Item curItem = getItemByIndex(itemIndex);
 		curItem.itemSpotIndex = spotIndex;
 	}
 
-	// Removes an item from an item spot if there is one
-	public void removeItemFromSpot(int spotIndex)
+	// TODO Removes an item from an item spot if there is one
+	public void removeItemFromSpot(int spotIndex) 
 	{
 		ITEM_SPOTS[spotIndex].removeItem();
 	}
 
-	// Places an item sprite somewhere where it can't be seen
+	// TODO Places an item sprite somewhere where it can't be seen
 	public void removeItemSprite(int itemIndex) 
 	{
 		Vector3 nirvana = new Vector3 (-90, 0, 0);
@@ -228,6 +239,11 @@ public class Data_GameState {
 		} else {
 			throw new System.ArgumentException("There is no item #" + I);
 		}
+	}
+
+	// Returns the most recent item that has been spawned
+	public Data_Item getCurrentItem() {
+		return ITEMS[ITEMS.Count - 1];
 	}
 
     // Saves the current game state to disk

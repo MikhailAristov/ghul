@@ -41,6 +41,10 @@ public class Data_PlayerCharacter : Data_Character {
 	[SerializeField]
 	private List<int> itemList;
 
+	// The item the character currently carries
+	[NonSerialized]
+	public Data_Item carriedItem;
+
     // Constructor
     public Data_PlayerCharacter(string gameObjectName) : base(gameObjectName)
     {
@@ -51,6 +55,7 @@ public class Data_PlayerCharacter : Data_Character {
         controllable = true;
         isDying = false;
 		itemList = new List<int>();
+		carriedItem = null;
     }
 
     // Moves the player character back to the starting position
@@ -102,5 +107,8 @@ public class Data_PlayerCharacter : Data_Character {
         gameObj = GameObject.Find(_gameObjName);
         control = gameObj.GetComponent<Control_PlayerCharacter>();
         isIn = GS.getRoomByIndex(_pos.RoomId);
+		if(GS.getCurrentItem().state == Data_Item.STATE_CARRIED) {
+			carriedItem = GS.getCurrentItem();
+		}
     }
 }
