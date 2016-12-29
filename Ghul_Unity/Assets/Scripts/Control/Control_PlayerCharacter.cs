@@ -213,8 +213,8 @@ public class Control_PlayerCharacter : MonoBehaviour {
 			//		 such that it doesn't float
 			transform.Find("Stickman").gameObject.transform.Translate (new Vector3 (0, -1.0f, 0));
 			me.controllable = false;
-			StartCoroutine (waitingForRespawn());
 			leaveItemOnCadaver();
+			StartCoroutine (waitingForRespawn());
 		}
 	}
 
@@ -288,6 +288,11 @@ public class Control_PlayerCharacter : MonoBehaviour {
 			Debug.Log("Item #" + me.carriedItem.INDEX + " left on cadaver");
 			me.carriedItem = null;
 			// Not autosave because death already autosaves
+		} else {
+			Data_Item curItem = GS.getCurrentItem();
+			if(curItem.state == Data_Item.STATE_ON_CADAVER) {
+				curItem.control.resetToSpawnPosition();
+			}
 		}
 	}
 
