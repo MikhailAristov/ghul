@@ -72,7 +72,7 @@ public class Data_GameState {
 
         // Door settings
         SETTINGS.Add("MARGIN_DOOR_ENTRANCE", 0.6f);     // How close a character's center of mass must be to the door's center to use it
-        SETTINGS.Add("DOOR_COOLDOWN_DURATION", 0.4f);
+		SETTINGS.Add("DOOR_TRANSITION_DURATION", 0.4f);	// How long it takes to go through a door
 
         // Character movement settings
         SETTINGS.Add("CHARA_WALKING_SPEED", 5.0f);

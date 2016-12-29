@@ -17,6 +17,10 @@ public class Data_Monster : Data_Character {
     public bool isThinking;
     public float remainingThinkingTime;
 	public int forbiddenRoomIndex; // index of the portal room. The monster can't access it.
+
+	// While this value is above zero, it marks the character as uncontrollable and invulnerable, e.g. upon entering a door or dying
+	[SerializeField]
+	public float etherialCooldown; // in seconds
     
     public Data_Monster(string gameObjectName) : base(gameObjectName)
     {

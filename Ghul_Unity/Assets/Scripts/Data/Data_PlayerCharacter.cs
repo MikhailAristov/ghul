@@ -37,6 +37,10 @@ public class Data_PlayerCharacter : Data_Character {
     public bool isDying { get; set; }
     public float remainingReactionTime { get; set; } //remaining time to escape killing radius
 
+	// While this value is above zero, it marks the character as uncontrollable and invulnerable, e.g. upon entering a door or dying
+	[SerializeField]
+	public float etherialCooldown; // in seconds
+
 	// The item the character currently carries
 	[NonSerialized]
 	public Data_Item carriedItem;
@@ -46,6 +50,7 @@ public class Data_PlayerCharacter : Data_Character {
     {
         control = gameObj.GetComponent<Control_PlayerCharacter>();
         // Initialize gameplay parameters
+		etherialCooldown = 0.0f;
         stamina = 1.0f;
         exhausted = false;
         controllable = true;
@@ -88,4 +93,9 @@ public class Data_PlayerCharacter : Data_Character {
         control = gameObj.GetComponent<Control_PlayerCharacter>();
         isIn = GS.getRoomByIndex(_pos.RoomId);
     }
+
+	// Just some shortcut functions
+	public bool isInvulnerable() {
+		return (etherialCooldown >= 0.0f);
+	}
 }

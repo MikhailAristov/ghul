@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 
 // This is the controller class that manages the game state data
 public class Control_GameState : MonoBehaviour {
@@ -6,15 +7,19 @@ public class Control_GameState : MonoBehaviour {
     private Data_GameState GS;
 
     private Control_Camera MAIN_CAMERA_CONTROL;
-    public Canvas MAIN_MENU_CANVAS;
+	public Canvas MAIN_MENU_CANVAS;
+	public Canvas FADEOUT_CANVAS;
 
     private float AUTOSAVE_FREQUENCY;
     private float NEXT_AUTOSAVE_IN;
+
+	private Image FADEOUT_CANVAS_IMAGE;
 
     // Use this for initialization
     void Start ()
     {
         MAIN_CAMERA_CONTROL = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Control_Camera>();
+		FADEOUT_CANVAS_IMAGE = FADEOUT_CANVAS.GetComponent<Image>();
 		continueFromSavedGameState();
         setAdditionalParameters();
 		GS.SUSPENDED = true; // Suspend the game while in the main menu initially
@@ -25,17 +30,15 @@ public class Control_GameState : MonoBehaviour {
     {
         if (GS.SUSPENDED) { return; }
 
-        // Timed autosave
+		// Timed autosave
         NEXT_AUTOSAVE_IN -= Time.deltaTime;
-        if (NEXT_AUTOSAVE_IN <= 0.0f)
-        {
+        if (NEXT_AUTOSAVE_IN <= 0.0f) {
             NEXT_AUTOSAVE_IN = AUTOSAVE_FREQUENCY;
             Data_GameState.saveToDisk(GS);
         }
 
         // Open main menu if the player presses Esc
-        if (Input.GetButton("Cancel"))
-        {
+        if (Input.GetButton("Cancel")) {
             GS.SUSPENDED = true;
             MAIN_MENU_CANVAS.enabled = true;
         }
@@ -46,7 +49,7 @@ public class Control_GameState : MonoBehaviour {
 			GS.NEXT_ITEM_PLEASE = false;
 			// Check if it's all of them
 			if(GS.ITEMS.Count < GS.getSetting("RITUAL_ITEMS_REQUIRED")) {
-				spawmNextItem();
+				spawnNextItem();
 			} else {
 				triggerEndgame();
 			}
@@ -73,11 +76,6 @@ public class Control_GameState : MonoBehaviour {
         // If no game state has been found, initialize it instead
         if(GS == null) { resetGameState(); return; }
         GS.loadDefaultSetttings();
-
-		// Fix all item references
-		foreach (Data_Item i in GS.ITEMS.Values) {
-			i.fixObjectReferences(GS);
-		}
 
         // Fix door object references first, because Data_Room.fixObjectReferences() relies on them being set
         foreach (Data_Door d in GS.DOORS.Values) {
@@ -164,7 +162,6 @@ public class Control_GameState : MonoBehaviour {
 			itemObj.transform.parent = itemDepo.transform;
 		}
 
-
         // INITIALIZE PLAYER CHARACTER
         GS.setPlayerCharacter("PlayerCharacter");
         GS.getCHARA().updatePosition(GS.getRoomByIndex(0), 0); // default: starting position is center of pentagram
@@ -188,7 +185,7 @@ public class Control_GameState : MonoBehaviour {
 	}
 
 	// Places the next item in a random spot
-	private void spawmNextItem() {
+	private void spawnNextItem() {
 		int newItemIndex = GS.ITEMS.Count;
 		// TODO: Use prefabs for this stuff...
 		string gameObjName = string.Format("Item{0:00}", newItemIndex + 1);
@@ -214,7 +211,7 @@ public class Control_GameState : MonoBehaviour {
         resetGameState();                   // Reset the game state
         setAdditionalParameters();          // Refocus camera and such
         MAIN_MENU_CANVAS.enabled = false;   // Dismiss the main menu
-        GS.SUSPENDED = false;               // Continue playing
+		GS.SUSPENDED = false;               // Continue playing
     }
 
     // This method is called when the Continue button is activated from the main menu
@@ -222,8 +219,8 @@ public class Control_GameState : MonoBehaviour {
     {
         // Simply dismiss the main menu to continue playing
         MAIN_MENU_CANVAS.enabled = false;
-        GS.SUSPENDED = false;
-    }
+		GS.SUSPENDED = false;
+	}
 
     // This method is called when the Exit button is activated from the main menu
     void onExitSelect()

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System;
+using System.Collections;
 
 public class Control_Monster : MonoBehaviour {
 
@@ -18,16 +19,12 @@ public class Control_Monster : MonoBehaviour {
 	private float MONSTER_SLOW_WALKING_SPEED;
 	private float MONSTER_KILL_RADIUS;
 	private float TIME_TO_REACT;
-
-	private float DOOR_COOLDOWN; // This prevents the character "flickering" between doors
-	private float DOOR_COOLDOWN_DURATION; // This prevents the character "flickering" between doors
+	private float DOOR_TRANSITION_DURATION;
 
 	public bool DEBUG_DANGEROUS; // set to false to make the monster "blind"
 
 	// Use this for initialization
-	void Start () {
-		DOOR_COOLDOWN = Time.timeSinceLevelLoad;
-	}
+	void Start () {	}
 
 	// To make sure the game state is fully initialized before loading it, this function is called by game state class itself
 	public void loadGameState(Data_GameState gameState)
@@ -42,7 +39,7 @@ public class Control_Monster : MonoBehaviour {
 		MONSTER_KILL_RADIUS = GS.getSetting("MONSTER_KILL_RADIUS");
 
 		VERTICAL_ROOM_SPACING = GS.getSetting("VERTICAL_ROOM_SPACING");
-        DOOR_COOLDOWN_DURATION = GS.getSetting("DOOR_COOLDOWN_DURATION");
+		DOOR_TRANSITION_DURATION = GS.getSetting("DOOR_TRANSITION_DURATION");
 
         // Move the character sprite directly to where the game state says it should be standing
         Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
@@ -52,8 +49,12 @@ public class Control_Monster : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		if (GS == null || GS.SUSPENDED) { return; } // Don't do anything if the game state is not loaded yet or suspended
+		if (me.etherialCooldown > 0.0f) { // While the character is etherial, don't do anything
+			me.etherialCooldown -= Time.deltaTime;
+			return;
+		}
 
-        if (me.isIn.INDEX == player.isIn.INDEX && DEBUG_DANGEROUS) {
+		if (me.isIn.INDEX == player.isIn.INDEX && DEBUG_DANGEROUS && !player.isInvulnerable()) {
 			// The monster is in the same room as the player.
 			me.playerInSight = true;
 			me.playerDetected = true;
@@ -117,30 +118,27 @@ public class Control_Monster : MonoBehaviour {
 	private bool checkForDoors() {
 
 		// Reached the point where the player was last seen. Go through door
-		if (Time.timeSinceLevelLoad > DOOR_COOLDOWN) {
-			
-			// Check if the monster can walk through the door, and if so, move them to the "other side"
-			Data_Door door = currentEnvironment.getDoorAtPos (transform.position.x);
+		// Check if the monster can walk through the door, and if so, move them to the "other side"
+		Data_Door door = currentEnvironment.getDoorAtPos (transform.position.x);
 
-			if (door != null) {
-				if (!checkIfForbiddenDoor(door)) { goThroughTheDoor(door); }
+		if (door != null) {
+			if (!checkIfForbiddenDoor(door)) { StartCoroutine(goThroughTheDoor(door)); }
+			return true;
+
+		} else {
+			Data_Door leftDoor = currentEnvironment.getDoorOnTheLeft();
+			Data_Door rightDoor = currentEnvironment.getDoorOnTheRight();
+			if (leftDoor != null && transform.position.x < 0.0f) {
+				if (!checkIfForbiddenDoor(leftDoor)) { StartCoroutine(goThroughTheDoor(leftDoor)); }
 				return true;
-
+			} else if (rightDoor != null && transform.position.x > 0.0f) {
+				if (!checkIfForbiddenDoor(rightDoor)) { StartCoroutine(goThroughTheDoor(rightDoor)); }
+				return true;
 			} else {
-				Data_Door leftDoor = currentEnvironment.getDoorOnTheLeft();
-				Data_Door rightDoor = currentEnvironment.getDoorOnTheRight();
-				if (leftDoor != null && transform.position.x < 0.0f) {
-					if (!checkIfForbiddenDoor(leftDoor)) { goThroughTheDoor(leftDoor); }
-					return true;
-				} else if (rightDoor != null && transform.position.x > 0.0f) {
-					if (!checkIfForbiddenDoor(rightDoor)) { goThroughTheDoor(rightDoor); }
-					return true;
-				} else {
-					// no door found
-					return false;
-				}
+				// no door found
+				return false;
 			}
-		} else { return false; }
+		}
 	}
 
 	// The monster decides randomly what it does next.
@@ -234,22 +232,27 @@ public class Control_Monster : MonoBehaviour {
 	}
 
 	// This function transitions the monster through a door
-	private void goThroughTheDoor(Data_Door door)
+	private IEnumerator goThroughTheDoor(Data_Door door)
 	{
+		// Hide the sprite
+		GetComponentInChildren<Renderer>().enabled = false;
+
+		// Then wait
+		me.etherialCooldown = DOOR_TRANSITION_DURATION;
+		yield return new WaitForSeconds(DOOR_TRANSITION_DURATION);
+
 		Data_Door destinationDoor = door.connectsTo;
 		Data_Room destinationRoom = destinationDoor.isIn;
-
-		// Update door cooldown
-		DOOR_COOLDOWN = Time.timeSinceLevelLoad + DOOR_COOLDOWN_DURATION;
 
         // Move character within game state
         float newValidPosition = destinationRoom.env.validatePosition(destinationDoor.atPos);
         me.updatePosition(destinationRoom, newValidPosition);
         currentEnvironment = me.isIn.env;
 
-        // Move character sprite
+        // Move character sprite and show it again
 		Vector3 targetPosition = new Vector3(newValidPosition, destinationRoom.INDEX * VERTICAL_ROOM_SPACING);
 		transform.Translate(targetPosition - transform.position);
+		GetComponentInChildren<Renderer>().enabled = true;
 
 		me.playerDetected = false;
 

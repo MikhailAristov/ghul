@@ -26,8 +26,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
 	private float RITUAL_PENTAGRAM_CENTER;
 	private float RITUAL_PENTAGRAM_RADIUS;
 
-    private float DOOR_COOLDOWN; // This prevents the character "flickering" between doors
-    private float DOOR_COOLDOWN_DURATION; // This prevents the character "flickering" between doors
+    private float DOOR_TRANSITION_DURATION;
 
 	private float TOTAL_DEATH_DURATION;
 	private float DEATH_DURATION;
@@ -37,11 +36,14 @@ public class Control_PlayerCharacter : MonoBehaviour {
 	private Sprite stickman; // DEBUG only
 	private SpriteRenderer stickmanRenderer; // DEBUG only
 
+	// While this value is above zero, it marks the character as uncontrollable and invulnerable, e.g. upon entering a door or dying
+	private Control_Camera MAIN_CAMERA_CONTROL;
+
     // Use this for initialization; note that only local variables are initialized here, game state is loaded later
     void Start () {
-        DOOR_COOLDOWN = Time.timeSinceLevelLoad;
 		stickmanRenderer = transform.Find("Stickman").gameObject.GetComponent<SpriteRenderer>(); // Find the child "Stickman", then its Sprite Renderer and then the renderer's sprite
 		stickman = stickmanRenderer.sprite;
+		MAIN_CAMERA_CONTROL = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Control_Camera>();
     }
 
     // To make sure the game state is fully initialized before loading it, this function is called by game state class itself
@@ -61,7 +63,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
         STANDING_STAMINA_GAIN = GS.getSetting("STANDING_STAMINA_GAIN");
 
         VERTICAL_ROOM_SPACING = GS.getSetting("VERTICAL_ROOM_SPACING");
-        DOOR_COOLDOWN_DURATION = GS.getSetting("DOOR_COOLDOWN_DURATION");
+		DOOR_TRANSITION_DURATION = GS.getSetting("DOOR_TRANSITION_DURATION");
 
 		TOTAL_DEATH_DURATION = GS.getSetting("TOTAL_DEATH_DURATION");
 		TIME_TO_REACT = GS.getSetting("TIME_TO_REACT");
@@ -80,6 +82,10 @@ public class Control_PlayerCharacter : MonoBehaviour {
     // Update is called once per frame
     void Update () {
 		if (GS == null || GS.SUSPENDED || !me.controllable) { return; } // Don't do anything if the game state is not loaded yet or suspended
+		if (me.etherialCooldown > 0.0f) { // While the character is etherial, don't do anything
+			me.etherialCooldown -= Time.deltaTime;
+			return;
+		}
 
 		//FOR DEBUGGIN ONLY - Dying on command
 		if (Input.GetButtonDown("Die")) {
@@ -100,13 +106,12 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		}
 
         // Vertical "movement"
-        if (Input.GetAxis("Vertical") > 0.1f && Time.timeSinceLevelLoad > DOOR_COOLDOWN)
+        if (Input.GetAxis("Vertical") > 0.1f)
         {
             // Check if the character can walk through the door, and if so, move them to the "other side"
             Data_Door door = currentEnvironment.getDoorAtPos(transform.position.x);
-            if (door != null)
-            {
-                goThroughTheDoor(door);
+            if (door != null) {
+				StartCoroutine(goThroughTheDoor(door));
                 return;
             }
         }
@@ -132,18 +137,14 @@ public class Control_PlayerCharacter : MonoBehaviour {
             float validPosition = currentEnvironment.validatePosition(transform.position.x + displacement);
             
             // If validated position is different from the calculated position, we have reached the side of the room
-            if(validPosition > newPosition &&            // moving left (negative direction) gets us through the left door
-                Time.timeSinceLevelLoad > DOOR_COOLDOWN)
-            {
+			if(validPosition > newPosition) {		// moving left (negative direction) gets us through the left door
                 Data_Door leftDoor = currentEnvironment.getDoorOnTheLeft();
-                if (leftDoor != null) { goThroughTheDoor(leftDoor); }
+				if (leftDoor != null) { StartCoroutine(goThroughTheDoor(leftDoor)); }
                 return;
             }
-            else if (validPosition < newPosition &&      // moving right (positive direction) gets us through the right door
-                Time.timeSinceLevelLoad > DOOR_COOLDOWN)
-            {
+			else if (validPosition < newPosition) {	// moving right (positive direction) gets us through the right door
                 Data_Door rightDoor = currentEnvironment.getDoorOnTheRight();
-                if (rightDoor != null) { goThroughTheDoor(rightDoor); }
+				if (rightDoor != null) { StartCoroutine(goThroughTheDoor(rightDoor)); }
                 return;
             }
 
@@ -160,36 +161,35 @@ public class Control_PlayerCharacter : MonoBehaviour {
         }
     }
 
-    // This function transitions the character through a door
-    private void goThroughTheDoor(Data_Door door)
-    {
-        Data_Door destinationDoor = door.connectsTo;
-        Data_Room destinationRoom = destinationDoor.isIn;
+	// This function transitions the character through a door
+	private IEnumerator goThroughTheDoor(Data_Door door) {
+		me.etherialCooldown = DOOR_TRANSITION_DURATION;
 
-        // Update door cooldown
-        DOOR_COOLDOWN = Time.timeSinceLevelLoad + DOOR_COOLDOWN_DURATION;
+		// Fade out and wait
+		MAIN_CAMERA_CONTROL.fadeOut(DOOR_TRANSITION_DURATION / 2);
+		yield return new WaitForSeconds(DOOR_TRANSITION_DURATION);
 
-        // Move character within game state
-        float newValidPosition = destinationRoom.env.validatePosition(destinationDoor.atPos);
-        me.updatePosition(destinationRoom, newValidPosition);
-        currentEnvironment = me.isIn.env;
+		Data_Door destinationDoor = door.connectsTo;
+		Data_Room destinationRoom = destinationDoor.isIn;
+
+		// Move character within game state
+		float newValidPosition = destinationRoom.env.validatePosition(destinationDoor.atPos);
+		me.updatePosition(destinationRoom, newValidPosition);
+		currentEnvironment = me.isIn.env;
 		me.remainingReactionTime = TIME_TO_REACT;
 
-        // Move character sprite
-        Vector3 targetPosition = new Vector3(newValidPosition, destinationRoom.INDEX * VERTICAL_ROOM_SPACING);
-        transform.Translate(targetPosition - transform.position);
+		// Move character sprite
+		Vector3 targetPosition = new Vector3(newValidPosition, destinationRoom.INDEX * VERTICAL_ROOM_SPACING);
+		transform.Translate(targetPosition - transform.position);
 
-        Debug.Log(me + " walks from door #" + door + " to door #" + destinationDoor + " at position " + targetPosition);
-        
-        // Trigger an autosave upon changing locations
-        Data_GameState.saveToDisk(GS);
-    }
+		// Fade back in
+		MAIN_CAMERA_CONTROL.fadeIn(DOOR_TRANSITION_DURATION / 2);
 
-    // Update the player character's position
-    public void updateCharacterPosition()
-    {
-        Debug.Log(me + " is in room #" + me.isIn + " at position " + me.atPos);
-    }
+		Debug.Log(me + " walks from door #" + door + " to door #" + destinationDoor + " at position " + targetPosition);
+
+		// Trigger an autosave upon changing locations
+		Data_GameState.saveToDisk(GS);
+	}
 
 	// Player withing the attack radius -> reduce time to react
 	public void beingAttacked() {

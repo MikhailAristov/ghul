@@ -1,7 +1,11 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 
 public class Control_Camera : MonoBehaviour
 {
+	public Canvas FADEOUT_CANVAS;
+	private Image fadeoutImage;
+
     private Data_GameState GS;
     private Data_Position focusOn;
     private Environment_Room currentEnvironment;
@@ -9,6 +13,11 @@ public class Control_Camera : MonoBehaviour
     private float PANNING_SPEED;
     private float VERTICAL_ROOM_SPACING;
     
+	void Start() {
+		fadeoutImage = FADEOUT_CANVAS.GetComponent<Image>();
+		fadeoutImage.CrossFadeAlpha(0.0f, 0.0f, false);
+	}
+
     // To make sure the game state is fully initialized before loading it, this function is called by game state class itself
     public void loadGameState(Data_GameState gameState)
     {
@@ -32,12 +41,13 @@ public class Control_Camera : MonoBehaviour
             float displacementX = targetPositionX - transform.position.x;
             // If there is a difference in the vertical direction, close it all at once (provisional)
             if (Mathf.Abs(displacementY) > 0.0f)
-            {
-                // Update the environment
-                this.currentEnvironment = GS.getRoomByIndex(focusOn.RoomId).env;
-                // Reevaluate and apply camera displacement
-                displacementX = currentEnvironment.validateCameraPosition(focusOn.X) - transform.position.x;
-                transform.Translate(displacementX, displacementY, 0);
+			{
+				// Update the environment
+				this.currentEnvironment = GS.getRoomByIndex(focusOn.RoomId).env;
+				// Reevaluate and apply camera displacement
+				displacementX = currentEnvironment.validateCameraPosition(focusOn.X) - transform.position.x;
+				// Move and fade back in
+				transform.Translate(displacementX, displacementY, 0);
                 return;
             }
 
@@ -63,4 +73,14 @@ public class Control_Camera : MonoBehaviour
     {
         Debug.Log("Camera looks at #" + focusOn.RoomId + " at position " + focusOn.X);
     }
+
+	// Asynchronously fades to black
+	public void fadeOut(float duration) {
+		fadeoutImage.CrossFadeAlpha(1.0f, duration, false);
+	}
+
+	// Asynchronously fades back from black
+	public void fadeIn(float duration) {
+		fadeoutImage.CrossFadeAlpha(0.0f, duration, false);
+	}
 }
