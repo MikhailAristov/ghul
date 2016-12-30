@@ -56,24 +56,24 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		this.cadaver = GS.getCadaver();
 
         // Set general movement parameters
-        WALKING_SPEED = GS.getSetting("CHARA_WALKING_SPEED");
-        RUNNING_SPEED = GS.getSetting("CHARA_RUNNING_SPEED");
+        WALKING_SPEED = Global_Settings.read("CHARA_WALKING_SPEED");
+        RUNNING_SPEED = Global_Settings.read("CHARA_RUNNING_SPEED");
 
-        RUNNING_STAMINA_LOSS = GS.getSetting("RUNNING_STAMINA_LOSS");
-        WALKING_STAMINA_GAIN = GS.getSetting("WALKING_STAMINA_GAIN");
-        STANDING_STAMINA_GAIN = GS.getSetting("STANDING_STAMINA_GAIN");
+        RUNNING_STAMINA_LOSS = Global_Settings.read("RUNNING_STAMINA_LOSS");
+        WALKING_STAMINA_GAIN = Global_Settings.read("WALKING_STAMINA_GAIN");
+        STANDING_STAMINA_GAIN = Global_Settings.read("STANDING_STAMINA_GAIN");
 
-        VERTICAL_ROOM_SPACING = GS.getSetting("VERTICAL_ROOM_SPACING");
-		DOOR_TRANSITION_DURATION = GS.getSetting("DOOR_TRANSITION_DURATION");
+        VERTICAL_ROOM_SPACING = Global_Settings.read("VERTICAL_ROOM_SPACING");
+		DOOR_TRANSITION_DURATION = Global_Settings.read("DOOR_TRANSITION_DURATION");
 
-		RESPAWN_TRANSITION_DURATION = GS.getSetting("TOTAL_DEATH_DURATION");
-		TIME_TO_REACT = GS.getSetting("TIME_TO_REACT");
+		RESPAWN_TRANSITION_DURATION = Global_Settings.read("TOTAL_DEATH_DURATION");
+		TIME_TO_REACT = Global_Settings.read("TIME_TO_REACT");
 
-		INVENTORY_DISPLAY_DURATION = GS.getSetting("INVENTORY_DISPLAY_DURATION");
+		INVENTORY_DISPLAY_DURATION = Global_Settings.read("INVENTORY_DISPLAY_DURATION");
 
-		RITUAL_ROOM_INDEX = (int)GS.getSetting("RITUAL_ROOM_INDEX");
-		RITUAL_PENTAGRAM_CENTER = GS.getSetting("RITUAL_PENTAGRAM_CENTER");
-		RITUAL_PENTAGRAM_RADIUS = GS.getSetting("RITUAL_PENTAGRAM_RADIUS");
+		RITUAL_ROOM_INDEX = (int)Global_Settings.read("RITUAL_ROOM_INDEX");
+		RITUAL_PENTAGRAM_CENTER = Global_Settings.read("RITUAL_PENTAGRAM_CENTER");
+		RITUAL_PENTAGRAM_RADIUS = Global_Settings.read("RITUAL_PENTAGRAM_RADIUS");
 
 		me.remainingReactionTime = TIME_TO_REACT;
 		
@@ -250,7 +250,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
 	private void takeItem() {
 		Data_Item currentItem = GS.getCurrentItem();
 		if(me.carriedItem == null && currentItem.isTakeable() && me.isIn == currentItem.isIn &&
-		   Math.Abs(me.atPos - currentItem.atPos) < GS.getSetting("MARGIN_ITEM_COLLECT")) {
+		   Math.Abs(me.atPos - currentItem.atPos) < Global_Settings.read("MARGIN_ITEM_COLLECT")) {
 			// the player got the item with index itemIndex.
 			currentItem.control.moveToInventory();
 			me.carriedItem = currentItem;

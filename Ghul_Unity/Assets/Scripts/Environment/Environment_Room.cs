@@ -34,10 +34,10 @@ public class Environment_Room : MonoBehaviour {
         leftWallPos = -rightWallPos;
 
         // Set general movement parameters
-        MARGIN_SIZE_PHYSICAL = GS.getSetting("HORIZONTAL_ROOM_MARGIN");
-        MARGIN_SIZE_CAMERA = GS.getSetting("SCREEN_SIZE_HORIZONTAL") / 2;
-        MARGIN_DOOR_ENTRANCE = GS.getSetting("MARGIN_DOOR_ENTRANCE");
-		MARGIN_ITEM_COLLECT = GS.getSetting("MARGIN_ITEM_COLLECT");
+        MARGIN_SIZE_PHYSICAL = Global_Settings.read("HORIZONTAL_ROOM_MARGIN");
+        MARGIN_SIZE_CAMERA = Global_Settings.read("SCREEN_SIZE_HORIZONTAL") / 2;
+        MARGIN_DOOR_ENTRANCE = Global_Settings.read("MARGIN_DOOR_ENTRANCE");
+		MARGIN_ITEM_COLLECT = Global_Settings.read("MARGIN_ITEM_COLLECT");
     }
 
     // Update is called once per frame

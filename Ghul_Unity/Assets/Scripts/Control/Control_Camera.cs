@@ -28,8 +28,8 @@ public class Control_Camera : MonoBehaviour
         GS = gameState;
 
         // Set general movement parameters
-        PANNING_SPEED = GS.getSetting("CAMERA_PANNING_SPEED");
-        VERTICAL_ROOM_SPACING = GS.getSetting("VERTICAL_ROOM_SPACING");
+		PANNING_SPEED = Global_Settings.read("CAMERA_PANNING_SPEED");
+		VERTICAL_ROOM_SPACING = Global_Settings.read("VERTICAL_ROOM_SPACING");
     }
 
     // Update is called once per frame

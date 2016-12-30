@@ -14,9 +14,6 @@ public class Data_GameState {
 	[NonSerialized] // Setting this flag makes the game generate a new item
 	public bool NEXT_ITEM_PLEASE = true;
 
-    [NonSerialized]
-    private Dictionary<string, float> SETTINGS;
-
     [SerializeField]
     public SortedList<int, Data_Room> ROOMS;
     [SerializeField]
@@ -40,7 +37,6 @@ public class Data_GameState {
     // Construct an empty game state
     public Data_GameState()
     {
-        SETTINGS = new Dictionary<string, float>();
         ROOMS = new SortedList<int, Data_Room>();
         DOORS = new SortedList<int, Data_Door>();
 		ITEM_SPOTS = new SortedList<int, Data_ItemSpawn>();
@@ -49,57 +45,6 @@ public class Data_GameState {
         MONSTER = null;
 		CADAVER = null;
     }
-
-    public void loadDefaultSetttings()
-    {
-        SETTINGS = new Dictionary<string, float>();
-        // Screen settings
-        SETTINGS.Add("SCREEN_SIZE_HORIZONTAL", 6.4f);   // 640px
-        SETTINGS.Add("SCREEN_SIZE_VERTICAL", 4.8f);     // 480px
-
-        // Level generation setttings
-        SETTINGS.Add("VERTICAL_ROOM_SPACING", -5.0f);   // Must be bigger than SCREEN_SIZE_VERTICAL
-
-        // Level layout setttings
-        SETTINGS.Add("HORIZONTAL_ROOM_MARGIN", 0.9f);   // Prevents movement to screen edge past the margin
-        SETTINGS.Add("HORIZONTAL_DOOR_WIDTH", 1.35f);
-
-		// Ritual room settings
-		SETTINGS.Add("RITUAL_ROOM_INDEX", 0.0f);		// The index of the room with the ritual pentagram (has to be cast to int)
-		SETTINGS.Add("RITUAL_PENTAGRAM_CENTER", 0.05f);	// The center pentagram space (relative to room center)
-		SETTINGS.Add("RITUAL_PENTAGRAM_RADIUS", 1.4f);	// The distance between pentagram center and edge in either direction
-		SETTINGS.Add("RITUAL_ITEMS_REQUIRED", 5.0f);	// How many items are needed for the ritual (has to be cast to int)
-
-        // Door settings
-        SETTINGS.Add("MARGIN_DOOR_ENTRANCE", 0.6f);     // How close a character's center of mass must be to the door's center to use it
-		SETTINGS.Add("DOOR_TRANSITION_DURATION", 0.4f);	// How long it takes to go through a door
-
-        // Character movement settings
-        SETTINGS.Add("CHARA_WALKING_SPEED", 5.0f);
-        SETTINGS.Add("CHARA_RUNNING_SPEED", 8.0f);
-
-		// Monster settings
-		SETTINGS.Add("MONSTER_WALKING_SPEED", 5.2f);
-		SETTINGS.Add("MONSTER_SLOW_WALKING_SPEED", 2.5f); // when the monster randomly walks around
-		SETTINGS.Add("MONSTER_KILL_RADIUS", 1.0f);      // when the player gets this close to the monster, he dies.
-		SETTINGS.Add("TIME_TO_REACT", 0.35f);           // if the player escapes the monster's radius within this timeframe, he isn't killed.
-
-        // Stamina range: 0.0 .. 1.0; increments are applied per second
-        SETTINGS.Add("RUNNING_STAMINA_LOSS", -0.2f);    // Must be negative
-        SETTINGS.Add("WALKING_STAMINA_GAIN", 0.1f);
-		SETTINGS.Add("STANDING_STAMINA_GAIN", 0.4f);
-
-		// Item settings
-		SETTINGS.Add("MARGIN_ITEM_COLLECT", 0.3f);		// How close a character's center must be to an item to be able to collect it
-		SETTINGS.Add("ITEM_CARRY_ELEVATION", -0.33f);	// Distance from the horizontal center of the room at which items are carried by chara
-		SETTINGS.Add("ITEM_FLOOR_LEVEL", -1.8f);		// Distance from the horizontal center of the room at which items are lying on the floor
-		SETTINGS.Add("INVENTORY_DISPLAY_DURATION", 2.0f); // How long the inventory overlay is shown when invoked
-
-        // Miscellaneous setttings
-        SETTINGS.Add("AUTOSAVE_FREQUENCY", 10.0f);      // In seconds
-        SETTINGS.Add("CAMERA_PANNING_SPEED", 9.0f);
-		SETTINGS.Add("TOTAL_DEATH_DURATION", 3.0f);     // When deathDuration of Data_Character reaches this value the player resets to the starting room
-	}
 
     // Adds a room to the game state
     public void addRoom(string gameObjectName)
@@ -186,16 +131,6 @@ public class Data_GameState {
 	{
 		return CADAVER;
 	}
-
-    // Returns the value of a game setting
-    public float getSetting(string Name)
-    {
-        if (SETTINGS.ContainsKey(Name)) {
-            return SETTINGS[Name];
-        } else {
-            throw new System.ArgumentException("Setting " + Name + " is not defined", "original");
-        }
-    }
 
     // Returns a Room object to a given index, if it exists
     public Data_Room getRoomByIndex(int I)

@@ -34,12 +34,12 @@ public class Control_Monster : MonoBehaviour {
 		this.player = gameState.getCHARA();
 		this.currentEnvironment = me.isIn.env;
 
-		MONSTER_WALKING_SPEED = GS.getSetting("MONSTER_WALKING_SPEED");
-		MONSTER_SLOW_WALKING_SPEED = GS.getSetting("MONSTER_SLOW_WALKING_SPEED");
-		MONSTER_KILL_RADIUS = GS.getSetting("MONSTER_KILL_RADIUS");
+		MONSTER_WALKING_SPEED = Global_Settings.read("MONSTER_WALKING_SPEED");
+		MONSTER_SLOW_WALKING_SPEED = Global_Settings.read("MONSTER_SLOW_WALKING_SPEED");
+		MONSTER_KILL_RADIUS = Global_Settings.read("MONSTER_KILL_RADIUS");
 
-		VERTICAL_ROOM_SPACING = GS.getSetting("VERTICAL_ROOM_SPACING");
-		DOOR_TRANSITION_DURATION = GS.getSetting("DOOR_TRANSITION_DURATION");
+		VERTICAL_ROOM_SPACING = Global_Settings.read("VERTICAL_ROOM_SPACING");
+		DOOR_TRANSITION_DURATION = Global_Settings.read("DOOR_TRANSITION_DURATION");
 
         // Move the character sprite directly to where the game state says it should be standing
         Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);

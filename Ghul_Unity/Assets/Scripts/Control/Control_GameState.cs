@@ -46,7 +46,7 @@ public class Control_GameState : MonoBehaviour {
 			// Reset the flag
 			GS.NEXT_ITEM_PLEASE = false;
 			// Check if it's all of them
-			if(GS.ITEMS.Count < GS.getSetting("RITUAL_ITEMS_REQUIRED")) {
+			if(GS.ITEMS.Count < Global_Settings.read("RITUAL_ITEMS_REQUIRED")) {
 				spawnNextItem();
 			} else {
 				triggerEndgame();
@@ -62,7 +62,7 @@ public class Control_GameState : MonoBehaviour {
         MAIN_CAMERA_CONTROL.setFocusOn(GS.getCHARA().pos);
 
         // Initialize autosave
-        AUTOSAVE_FREQUENCY = GS.getSetting("AUTOSAVE_FREQUENCY");
+		AUTOSAVE_FREQUENCY = Global_Settings.read("AUTOSAVE_FREQUENCY");
         NEXT_AUTOSAVE_IN = AUTOSAVE_FREQUENCY;
     }
 
@@ -73,7 +73,6 @@ public class Control_GameState : MonoBehaviour {
         GS = Data_GameState.loadFromDisk();
         // If no game state has been found, initialize it instead
         if(GS == null) { resetGameState(); return; }
-        GS.loadDefaultSetttings();
 
         // Fix door object references first, because Data_Room.fixObjectReferences() relies on them being set
         foreach (Data_Door d in GS.DOORS.Values) {
@@ -114,7 +113,6 @@ public class Control_GameState : MonoBehaviour {
     {
         // Initialize game settings
         GS = new Data_GameState();
-        GS.loadDefaultSetttings();
 
         // INITIALIZE ROOMS
         GS.addRoom("Room00");
