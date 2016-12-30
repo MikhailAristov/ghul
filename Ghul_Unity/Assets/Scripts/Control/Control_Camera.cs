@@ -3,8 +3,10 @@ using UnityEngine.UI;
 
 public class Control_Camera : MonoBehaviour
 {
-	public Canvas FADEOUT_CANVAS;
+	public Canvas FADEOUT_CANVAS;	// Used for scene transitions
 	private Image fadeoutImage;
+	public Canvas REDOUT_CANVAS;	// Used to represent immediate danger
+	private Image redoutImage;
 
     private Data_GameState GS;
     private Data_Position focusOn;
@@ -16,6 +18,8 @@ public class Control_Camera : MonoBehaviour
 	void Start() {
 		fadeoutImage = FADEOUT_CANVAS.GetComponent<Image>();
 		fadeoutImage.CrossFadeAlpha(0.0f, 0.0f, false);
+		redoutImage = REDOUT_CANVAS.GetComponent<Image>();
+		redoutImage.CrossFadeAlpha(0.0f, 0.0f, false);
 	}
 
     // To make sure the game state is fully initialized before loading it, this function is called by game state class itself
@@ -82,5 +86,16 @@ public class Control_Camera : MonoBehaviour
 	// Asynchronously fades back from black
 	public void fadeIn(float duration) {
 		fadeoutImage.CrossFadeAlpha(0.0f, duration, false);
+	}
+
+	// Set red overlay intensity
+	public void setRedOverlay(float intensity) {
+		intensity = Mathf.Min(0.9f, Mathf.Max(0.0f, intensity));
+		REDOUT_CANVAS.GetComponent<CanvasRenderer>().SetAlpha(intensity);
+	}
+
+	// Asynchronously fades back from red
+	public void resetRedOverlay() {
+		redoutImage.CrossFadeAlpha(0.0f, 1.0f, false);
 	}
 }

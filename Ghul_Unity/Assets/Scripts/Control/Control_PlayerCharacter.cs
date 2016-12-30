@@ -31,7 +31,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
 	private float RESPAWN_TRANSITION_DURATION;
 
 	// Gameplay parameters
-	private float timeLeftToEscapeTheMonster;
+	private float TIME_TO_REACT;
 
 	// Graphics parameters
 	private SpriteRenderer stickmanRenderer;
@@ -63,13 +63,13 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		DOOR_TRANSITION_DURATION = GS.getSetting("DOOR_TRANSITION_DURATION");
 
 		RESPAWN_TRANSITION_DURATION = GS.getSetting("TOTAL_DEATH_DURATION");
-		timeLeftToEscapeTheMonster = GS.getSetting("TIME_TO_REACT");
+		TIME_TO_REACT = GS.getSetting("TIME_TO_REACT");
 
 		RITUAL_ROOM_INDEX = (int)GS.getSetting("RITUAL_ROOM_INDEX");
 		RITUAL_PENTAGRAM_CENTER = GS.getSetting("RITUAL_PENTAGRAM_CENTER");
 		RITUAL_PENTAGRAM_RADIUS = GS.getSetting("RITUAL_PENTAGRAM_RADIUS");
 
-		me.remainingReactionTime = timeLeftToEscapeTheMonster;
+		me.remainingReactionTime = TIME_TO_REACT;
 		
         // Move the character sprite directly to where the game state says it should be standing
         Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
@@ -174,7 +174,8 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		float newValidPosition = destinationRoom.env.validatePosition(destinationDoor.atPos);
 		me.updatePosition(destinationRoom, newValidPosition);
 		currentEnvironment = me.isIn.env;
-		me.remainingReactionTime = timeLeftToEscapeTheMonster;
+		me.remainingReactionTime = TIME_TO_REACT;
+		MAIN_CAMERA_CONTROL.resetRedOverlay();
 
 		// Move character sprite
 		Vector3 targetPosition = new Vector3(newValidPosition, destinationRoom.INDEX * VERTICAL_ROOM_SPACING);
@@ -192,13 +193,15 @@ public class Control_PlayerCharacter : MonoBehaviour {
 	// Player withing the attack radius -> reduce time to react
 	public void beingAttacked() {
 		me.remainingReactionTime -= Time.deltaTime;
-		if (me.remainingReactionTime <= 0.0f) {
+		if(me.remainingReactionTime <= 0.0f) {
 			if(me.carriedItem != null) { // First drop the item and reset the timer
 				dropItem();
-				me.remainingReactionTime = timeLeftToEscapeTheMonster;
+				me.remainingReactionTime = TIME_TO_REACT;
 			} else {
 				StartCoroutine(dieAndRespawn());
 			}
+		} else {
+			MAIN_CAMERA_CONTROL.setRedOverlay(1.0f - me.remainingReactionTime / TIME_TO_REACT);
 		}
 	}
 
@@ -206,6 +209,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		// Start cooldown
 		me.etherialCooldown = RESPAWN_TRANSITION_DURATION;
 
+		MAIN_CAMERA_CONTROL.setRedOverlay(0.0f);
 		Debug.Log(me + " died...");
 
 		// Hide chara's sprite and replace it with the cadaver
@@ -231,7 +235,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		MAIN_CAMERA_CONTROL.fadeIn(RESPAWN_TRANSITION_DURATION / 3);
 
 		// Reset the hitpoints
-		me.remainingReactionTime = timeLeftToEscapeTheMonster;
+		me.remainingReactionTime = TIME_TO_REACT;
 
 		// Trigger an autosave upon changing locations
 		Data_GameState.saveToDisk(GS);
@@ -246,7 +250,6 @@ public class Control_PlayerCharacter : MonoBehaviour {
 			currentItem.control.moveToInventory();
 			me.carriedItem = currentItem;
 			Debug.Log("Item #" + currentItem.INDEX + " collected.");
-
 			// Auto save when collecting an item.
 			Data_GameState.saveToDisk(GS);
 		} else {
