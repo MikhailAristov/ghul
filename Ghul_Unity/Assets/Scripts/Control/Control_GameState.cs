@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 
 // This is the controller class that manages the game state data
 public class Control_GameState : MonoBehaviour {
@@ -8,6 +9,7 @@ public class Control_GameState : MonoBehaviour {
 
     private Control_Camera MAIN_CAMERA_CONTROL;
 	public Canvas MAIN_MENU_CANVAS;
+	public GameObject RITUAL_ROOM_SCRIBBLES;
 
     private float AUTOSAVE_FREQUENCY;
     private float NEXT_AUTOSAVE_IN;
@@ -15,7 +17,7 @@ public class Control_GameState : MonoBehaviour {
     // Use this for initialization
     void Start ()
     {
-        MAIN_CAMERA_CONTROL = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Control_Camera>();
+		MAIN_CAMERA_CONTROL = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Control_Camera>();
 		continueFromSavedGameState();
         setAdditionalParameters();
 		GS.SUSPENDED = true; // Suspend the game while in the main menu initially
@@ -104,6 +106,7 @@ public class Control_GameState : MonoBehaviour {
 			item.control.loadGameState(GS, i);
 			item.control.updateGameObjectPosition();
 		}
+		StartCoroutine(updateWallScribbles(0.0f));
     }
 
     // This method initializes the game state back to default
@@ -192,8 +195,32 @@ public class Control_GameState : MonoBehaviour {
 		// Place the new item
 		newItem.control.loadGameState(GS, newItemIndex);
 		newItem.control.resetToSpawnPosition();
+		// Update the wall scribbles
+		StartCoroutine(updateWallScribbles(1.0f));
 		// Save the new game state to disk
 		Data_GameState.saveToDisk(GS);  
+	}
+
+	// Updates the scribbles on the wall in the ritual room, indicating the next item to find
+	private IEnumerator updateWallScribbles(float overTime) {
+		SpriteRenderer rend = RITUAL_ROOM_SCRIBBLES.GetComponent<SpriteRenderer>();
+		Sprite newSprite = GS.getCurrentItem().control.GetComponent<SpriteRenderer>().sprite;
+
+		// If the time given is zero or less, just replace the sprite and exit
+		if(overTime <= 0) { rend.sprite = newSprite; yield break; }
+
+		// Otherwise, first fade out the current scribbles
+		float halfTime = overTime/2;
+		for(float timeLeft = halfTime; timeLeft > 0; timeLeft -= Time.deltaTime) {
+			rend.color -= new Color (0, 0, 0, Time.deltaTime/halfTime);
+			yield return null;
+		}
+		// Then update them and fade back in
+		rend.sprite = newSprite;
+		for(float timeLeft = halfTime; timeLeft > 0; timeLeft -= Time.deltaTime) {
+			rend.color += new Color (0, 0, 0, Time.deltaTime/halfTime);
+			yield return null;
+		}
 	}
 
 	private void triggerEndgame() {
