@@ -12,11 +12,6 @@ public class Factory_PrefabController : MonoBehaviour {
 	private int[] itemSpawnCount;
 	private int totalItemCounter;
 
-	// Use this for initialization
-	void Start () {
-		loadItemIndex();
-	}
-
 	// Loads the index of spawnable items into memory and initializes auxiliary variables
 	private void loadItemIndex() {
 		// Load the item list from the JSON index
@@ -44,10 +39,10 @@ public class Factory_PrefabController : MonoBehaviour {
 
 	// Spawns a random item into existence that has not been spawned yet
 	public GameObject spawnRandomItem(Transform parent, Vector3 localPosition) {
+		if(allItems.list == null) { loadItemIndex(); }
 		// Find a random item that has not been spawned yet
 		int i; do {
 			i = UnityEngine.Random.Range(0, allItems.list.Length);
-			Debug.LogWarning("random");
 		} while(itemSpawnCount[i] >= allItems.list[i].maxInstances);
 		// Generate and return the item
 		return spawnItem(i, parent, localPosition);
@@ -55,7 +50,7 @@ public class Factory_PrefabController : MonoBehaviour {
 
 	// Spawns a specific item from name (for loading old game states)
 	public GameObject spawnNewItemFromName(string oldName, Transform parent, Vector3 localPosition) {
-		int i;
+		int i; if(allItems.list == null) { loadItemIndex(); } 
 		// Parse the name
 		Regex rgx = new Regex(@"\[prefab(\d+)\]", RegexOptions.IgnoreCase);
 		MatchCollection matches = rgx.Matches(oldName);
