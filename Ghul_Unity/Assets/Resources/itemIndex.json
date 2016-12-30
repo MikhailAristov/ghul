@@ -2,67 +2,75 @@
     "list": [
         {
             "prefabName": "PrefabItem_Book",
-            "displayName": "Item: Book",
+            "displayName": "Book",
             "size": {
-                "x": 64.0,
-                "y": 64.0
-            }
+                "x": 0.64,
+                "y": 0.64
+            },
+            "maxInstances": 1
         },
         {
             "prefabName": "PrefabItem_Box",
-            "displayName": "Item: Box",
+            "displayName": "Box",
             "size": {
-                "x": 64.0,
-                "y": 64.0
-            }
+                "x": 0.64,
+                "y": 0.64
+            },
+            "maxInstances": 1
         },
         {
             "prefabName": "PrefabItem_Burger",
-            "displayName": "Item: Hamburger",
+            "displayName": "Hamburger",
             "size": {
-                "x": 64.0,
-                "y": 64.0
-            }
+                "x": 0.64,
+                "y": 0.64
+            },
+            "maxInstances": 1
         },
         {
             "prefabName": "PrefabItem_Cross",
-            "displayName": "Item: Crucifix",
+            "displayName": "Crucifix",
             "size": {
-                "x": 64.0,
-                "y": 64.0
-            }
+                "x": 0.64,
+                "y": 0.64
+            },
+            "maxInstances": 1
         },
         {
             "prefabName": "PrefabItem_Mushroom",
-            "displayName": "Item: Mushroom",
+            "displayName": "Mushroom",
             "size": {
-                "x": 64.0,
-                "y": 64.0
-            }
+                "x": 0.64,
+                "y": 0.64
+            },
+            "maxInstances": 1
         },
         {
             "prefabName": "PrefabItem_Phone",
-            "displayName": "Item: Cellphone",
+            "displayName": "Cellphone",
             "size": {
-                "x": 64.0,
-                "y": 64.0
-            }
+                "x": 0.64,
+                "y": 0.64
+            },
+            "maxInstances": 1
         },
         {
             "prefabName": "PrefabItem_Duck",
-            "displayName": "Item: Rubber Ducky",
+            "displayName": "Rubber Ducky",
             "size": {
-                "x": 64.0,
-                "y": 64.0
-            }
+                "x": 0.64,
+                "y": 0.64
+            },
+            "maxInstances": 1
         },
         {
             "prefabName": "PrefabItem_ToiPa",
-            "displayName": "Item: Toilet Paper",
+            "displayName": "Toilet Paper",
             "size": {
-                "x": 64.0,
-                "y": 64.0
-            }
+                "x": 0.64,
+                "y": 0.64
+            },
+            "maxInstances": 1
         }
     ]
 }

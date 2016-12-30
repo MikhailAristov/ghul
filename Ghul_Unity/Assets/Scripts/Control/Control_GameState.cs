@@ -7,6 +7,7 @@ public class Control_GameState : MonoBehaviour {
     
     private Data_GameState GS;
 
+	public bool AUTOSTART_NEW_GAME;
 	public Canvas MAIN_MENU_CANVAS;
 	public GameObject RITUAL_ROOM_SCRIBBLES;
 
@@ -21,10 +22,13 @@ public class Control_GameState : MonoBehaviour {
     {
 		MAIN_CAMERA_CONTROL = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Control_Camera>();
 		prefabFactory = GetComponent<Factory_PrefabController>();
-		onNewGameSelect();
-		//continueFromSavedGameState();
-        //setAdditionalParameters();
-		//GS.SUSPENDED = true; // Suspend the game while in the main menu initially
+		if(AUTOSTART_NEW_GAME && Debug.isDebugBuild) {
+			onNewGameSelect(); // For debug only
+		} else {
+			continueFromSavedGameState();
+			setAdditionalParameters();
+			GS.SUSPENDED = true; // Suspend the game while in the main menu initially
+		}
     }
 
     // Update is called once per frame
@@ -102,14 +106,18 @@ public class Control_GameState : MonoBehaviour {
 		cadaver.updatePosition(cadaver.isIn, cadaver.atPos);
 
 		// Fix the items
-		int numOfItems = GS.ITEMS.Count;
+		int numOfItems = GS.ITEMS.Count; 
 		for (int i = 0; i < numOfItems; i++) {
 			Data_Item item = GS.getItemByIndex(i);
-			item.fixObjectReferences(GS);
+			item.fixObjectReferences(GS, prefabFactory);
 			item.control.loadGameState(GS, i);
 			item.control.updateGameObjectPosition();
 		}
-		StartCoroutine(updateWallScribbles(0.0f));
+		if(numOfItems < Global_Settings.read("RITUAL_ITEMS_REQUIRED") && GS.getCurrentItem().state == Data_Item.STATE_PLACED) {
+			GS.NEXT_ITEM_PLEASE = true;
+		} else {
+			StartCoroutine(updateWallScribbles(0.0f));
+		}
     }
 
     // This method initializes the game state back to default

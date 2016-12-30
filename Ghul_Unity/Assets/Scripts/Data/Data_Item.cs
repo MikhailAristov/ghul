@@ -75,11 +75,18 @@ public class Data_Item : Data_Character {
 	}
 
 	// Resets game object references, e.g. after a saved state load
-	public void fixObjectReferences(Data_GameState GS)
+	public void fixObjectReferences(Data_GameState GS, Factory_PrefabController prefabFactory)
 	{
-		gameObj = GameObject.Find(_gameObjName);
-		control = gameObj.GetComponent<Control_Item>();
 		isIn = GS.getRoomByIndex(pos.RoomId);
+		// Find the game object or recreate it if necessary
+		gameObj = GameObject.Find(_gameObjName);
+		if(gameObj == null) {
+			Vector3 localPos = new Vector3(atPos, elevation, -0.1f);
+			gameObj = prefabFactory.spawnNewItemFromName(_gameObjName, isIn.env.transform, localPos);
+		}
+
+		// Fix the rest
+		control = gameObj.GetComponent<Control_Item>();
 		if(state == Data_Item.STATE_CARRIED) {
 			GS.getCHARA().carriedItem = this;
 		}
