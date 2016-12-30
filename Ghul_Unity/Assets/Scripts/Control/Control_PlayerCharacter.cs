@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System;
 using System.Collections;
 
@@ -29,6 +30,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
 
     private float DOOR_TRANSITION_DURATION;
 	private float RESPAWN_TRANSITION_DURATION;
+	private float INVENTORY_DISPLAY_DURATION;
 
 	// Gameplay parameters
 	private float TIME_TO_REACT;
@@ -36,11 +38,13 @@ public class Control_PlayerCharacter : MonoBehaviour {
 	// Graphics parameters
 	private SpriteRenderer stickmanRenderer;
 	private Control_Camera MAIN_CAMERA_CONTROL;
+	public Canvas inventoryUI;
 
     // Use this for initialization; note that only local variables are initialized here, game state is loaded later
     void Start () {
 		stickmanRenderer = transform.FindChild("Stickman").GetComponent<SpriteRenderer>(); // Find the child "Stickman", then its Sprite Renderer and then the renderer's sprite
 		MAIN_CAMERA_CONTROL = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Control_Camera>();
+		inventoryUI.transform.FindChild("CurrentItem").GetComponent<Image>().CrossFadeAlpha(0.0f, 0.0f, false);
     }
 
     // To make sure the game state is fully initialized before loading it, this function is called by game state class itself
@@ -65,6 +69,8 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		RESPAWN_TRANSITION_DURATION = GS.getSetting("TOTAL_DEATH_DURATION");
 		TIME_TO_REACT = GS.getSetting("TIME_TO_REACT");
 
+		INVENTORY_DISPLAY_DURATION = GS.getSetting("INVENTORY_DISPLAY_DURATION");
+
 		RITUAL_ROOM_INDEX = (int)GS.getSetting("RITUAL_ROOM_INDEX");
 		RITUAL_PENTAGRAM_CENTER = GS.getSetting("RITUAL_PENTAGRAM_CENTER");
 		RITUAL_PENTAGRAM_RADIUS = GS.getSetting("RITUAL_PENTAGRAM_RADIUS");
@@ -84,17 +90,21 @@ public class Control_PlayerCharacter : MonoBehaviour {
 			return;
 		}
 
-		//FOR DEBUGGIN ONLY - Dying on command
-		if (Debug.isDebugBuild && Input.GetButtonDown("Die")) {
-			StartCoroutine(dieAndRespawn());
-		}
-
 		// Item actions
-		if (Input.GetButtonDown("Action")) { // Take
+		if (Input.GetButtonDown("Action")) { // Take item
 			takeItem();
+		}
+		if (Input.GetButtonDown("Inventory")) { // Show inventory
+			StopCoroutine("displayInventory");
+			StartCoroutine("displayInventory");
 		}
 		if (Debug.isDebugBuild && Input.GetButtonDown("Jump")) { // Drop (debug only)
 			dropItem();
+		}
+
+		// Dying on command (debug only)
+		if (Debug.isDebugBuild && Input.GetButtonDown("Die")) {
+			StartCoroutine(dieAndRespawn());
 		}
 
 		// If conditions for placing the item at the pentagram are right, do just that
@@ -247,6 +257,8 @@ public class Control_PlayerCharacter : MonoBehaviour {
 			Debug.Log("Item #" + currentItem.INDEX + " collected.");
 			// Auto save when collecting an item.
 			Data_GameState.saveToDisk(GS);
+			// Show inventory
+			StartCoroutine("displayInventory");
 		} else {
 			Debug.LogWarning("Can't pick up " + currentItem);
 		}
@@ -289,5 +301,19 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		me.carriedItem = null;
 		// Auto save when placing an item.
 		Data_GameState.saveToDisk(GS);
+	}
+
+	// Shows the currentlly carried item on the UI
+	private IEnumerator displayInventory() {
+		if(me.carriedItem != null) {
+			Image curItemImg = inventoryUI.transform.FindChild("CurrentItem").GetComponent<Image>();
+			// Update the current image sprite
+			curItemImg.sprite = me.carriedItem.control.transform.GetComponent<SpriteRenderer>().sprite;
+			// Quickly fade the image in and wait
+			curItemImg.CrossFadeAlpha(1.0f, INVENTORY_DISPLAY_DURATION / 4, false);
+			yield return new WaitForSeconds(INVENTORY_DISPLAY_DURATION / 2);
+			// Fade it out again slowly
+			curItemImg.CrossFadeAlpha(0.0f, INVENTORY_DISPLAY_DURATION / 2, false);
+		}
 	}
 }

@@ -93,6 +93,7 @@ public class Data_GameState {
 		SETTINGS.Add("MARGIN_ITEM_COLLECT", 0.3f);		// How close a character's center must be to an item to be able to collect it
 		SETTINGS.Add("ITEM_CARRY_ELEVATION", -0.33f);	// Distance from the horizontal center of the room at which items are carried by chara
 		SETTINGS.Add("ITEM_FLOOR_LEVEL", -1.8f);		// Distance from the horizontal center of the room at which items are lying on the floor
+		SETTINGS.Add("INVENTORY_DISPLAY_DURATION", 2.0f); // How long the inventory overlay is shown when invoked
 
         // Miscellaneous setttings
         SETTINGS.Add("AUTOSAVE_FREQUENCY", 10.0f);      // In seconds
