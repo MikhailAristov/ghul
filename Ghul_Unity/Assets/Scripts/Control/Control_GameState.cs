@@ -113,11 +113,7 @@ public class Control_GameState : MonoBehaviour {
 			item.control.loadGameState(GS, i);
 			item.control.updateGameObjectPosition();
 		}
-		if(numOfItems < Global_Settings.read("RITUAL_ITEMS_REQUIRED") && GS.getCurrentItem().state == Data_Item.STATE_PLACED) {
-			GS.NEXT_ITEM_PLEASE = true;
-		} else {
-			StartCoroutine(updateWallScribbles(0.0f));
-		}
+		StartCoroutine(updateWallScribbles(0.0f));
     }
 
     // This method initializes the game state back to default
