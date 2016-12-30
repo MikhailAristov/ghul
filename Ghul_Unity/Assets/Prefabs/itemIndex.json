@@ -1,0 +1,60 @@
+{
+    "list": [
+        {
+            "prefabName": "PrefabItem_Book",
+            "size": {
+                "x": 64.0,
+                "y": 64.0
+            }
+        },
+        {
+            "prefabName": "PrefabItem_Box",
+            "size": {
+                "x": 64.0,
+                "y": 64.0
+            }
+        },
+        {
+            "prefabName": "PrefabItem_Burger",
+            "size": {
+                "x": 64.0,
+                "y": 64.0
+            }
+        },
+        {
+            "prefabName": "PrefabItem_Cross",
+            "size": {
+                "x": 64.0,
+                "y": 64.0
+            }
+        },
+        {
+            "prefabName": "PrefabItem_Mushroom",
+            "size": {
+                "x": 64.0,
+                "y": 64.0
+            }
+        },
+        {
+            "prefabName": "PrefabItem_Phone",
+            "size": {
+                "x": 64.0,
+                "y": 64.0
+            }
+        },
+        {
+            "prefabName": "PrefabItem_Duck",
+            "size": {
+                "x": 64.0,
+                "y": 64.0
+            }
+        },
+        {
+            "prefabName": "PrefabItem_ToiPa",
+            "size": {
+                "x": 64.0,
+                "y": 64.0
+            }
+        }
+    ]
+}
