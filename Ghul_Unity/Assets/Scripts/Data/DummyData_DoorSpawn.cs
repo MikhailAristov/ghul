@@ -6,6 +6,9 @@ using System.Collections.Generic;
 public class DummyData_DoorSpawn {
 
 	[SerializeField]
+	public int roomId;
+
+	[SerializeField]
 	private int _INDEX;
 	public int INDEX {
 		get { return _INDEX; }
@@ -36,18 +39,28 @@ public class DummyData_DoorSpawn {
 		private set { _CONNECTS_TO_SPAWN_ID = value;  }
 	}
 
+	// Constructor
 	public DummyData_DoorSpawn(int I, bool LEFT, bool RIGHT) {
 		INDEX = I;
 		LEFT_SIDE = LEFT;
 		RIGHT_SIDE = RIGHT;
 		CONNECTS_TO_SPAWN_ID = -1;
 	}
+	// Constructor for cloning
+	public DummyData_DoorSpawn(DummyData_DoorSpawn spawn) {
+		INDEX = spawn.INDEX;
+		LEFT_SIDE = spawn.LEFT_SIDE;
+		RIGHT_SIDE = spawn.RIGHT_SIDE;
+		CONNECTS_TO_SPAWN_ID = spawn.CONNECTS_TO_SPAWN_ID;
+	}
+
 
 	// returns true if there is a connection to another door spawn.
 	public bool isConnected() {
 		return (CONNECTS_TO_SPAWN_ID >= 0);
 	}
 
+	// connects the door spawn to the door spawn with ID otherID.
 	public void connectTo(int otherID) {
 		CONNECTS_TO_SPAWN_ID = otherID;
 	}
