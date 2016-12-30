@@ -2,6 +2,7 @@
     "list": [
         {
             "prefabName": "PrefabItem_Book",
+            "displayName": "Item: Book",
             "size": {
                 "x": 64.0,
                 "y": 64.0
@@ -9,6 +10,7 @@
         },
         {
             "prefabName": "PrefabItem_Box",
+            "displayName": "Item: Box",
             "size": {
                 "x": 64.0,
                 "y": 64.0
@@ -16,6 +18,7 @@
         },
         {
             "prefabName": "PrefabItem_Burger",
+            "displayName": "Item: Hamburger",
             "size": {
                 "x": 64.0,
                 "y": 64.0
@@ -23,6 +26,7 @@
         },
         {
             "prefabName": "PrefabItem_Cross",
+            "displayName": "Item: Crucifix",
             "size": {
                 "x": 64.0,
                 "y": 64.0
@@ -30,6 +34,7 @@
         },
         {
             "prefabName": "PrefabItem_Mushroom",
+            "displayName": "Item: Mushroom",
             "size": {
                 "x": 64.0,
                 "y": 64.0
@@ -37,6 +42,7 @@
         },
         {
             "prefabName": "PrefabItem_Phone",
+            "displayName": "Item: Cellphone",
             "size": {
                 "x": 64.0,
                 "y": 64.0
@@ -44,6 +50,7 @@
         },
         {
             "prefabName": "PrefabItem_Duck",
+            "displayName": "Item: Rubber Ducky",
             "size": {
                 "x": 64.0,
                 "y": 64.0
@@ -51,6 +58,7 @@
         },
         {
             "prefabName": "PrefabItem_ToiPa",
+            "displayName": "Item: Toilet Paper",
             "size": {
                 "x": 64.0,
                 "y": 64.0

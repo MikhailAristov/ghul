@@ -7,9 +7,11 @@ public class Control_GameState : MonoBehaviour {
     
     private Data_GameState GS;
 
-    private Control_Camera MAIN_CAMERA_CONTROL;
 	public Canvas MAIN_MENU_CANVAS;
 	public GameObject RITUAL_ROOM_SCRIBBLES;
+
+	private Control_Camera MAIN_CAMERA_CONTROL;
+	private Factory_PrefabController prefabFactory;
 
     private float AUTOSAVE_FREQUENCY;
     private float NEXT_AUTOSAVE_IN;
@@ -18,9 +20,11 @@ public class Control_GameState : MonoBehaviour {
     void Start ()
     {
 		MAIN_CAMERA_CONTROL = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Control_Camera>();
-		continueFromSavedGameState();
-        setAdditionalParameters();
-		GS.SUSPENDED = true; // Suspend the game while in the main menu initially
+		prefabFactory = GetComponent<Factory_PrefabController>();
+		onNewGameSelect();
+		//continueFromSavedGameState();
+        //setAdditionalParameters();
+		//GS.SUSPENDED = true; // Suspend the game while in the main menu initially
     }
 
     // Update is called once per frame
@@ -153,12 +157,6 @@ public class Control_GameState : MonoBehaviour {
             r.env.loadGameState(GS, r.INDEX);
 		}
 
-		// Move all item game objects away (they will be spawned by spawmNextItem())
-		GameObject itemDepo = GameObject.Find("ItemDeposit");
-		foreach (GameObject itemObj in GameObject.FindGameObjectsWithTag("Item")) {
-			itemObj.transform.parent = itemDepo.transform;
-		}
-
 		// INITIALIZE CADAVER
 		GS.setCadaverCharacter("Cadaver");
 		GS.getCadaver().updatePosition(GS.getRoomByIndex(0), GS.getCadaver().gameObj.transform.position.x);
@@ -184,11 +182,14 @@ public class Control_GameState : MonoBehaviour {
 	// Places the next item in a random spot
 	private void spawnNextItem() {
 		int newItemIndex = GS.ITEMS.Count;
-		// TODO: Use prefabs for this stuff...
-		string gameObjName = string.Format("Item{0:00}", newItemIndex + 1);
-		Data_Item newItem = GS.addItem(gameObjName);
-		// Randomize the placement
 		int newSpawnIndex = Random.Range(0, GS.ITEM_SPOTS.Count);
+		// Calculate spawn position
+		Data_ItemSpawn spawnPos = GS.getItemSpawnPointByIndex(newSpawnIndex);
+		Transform parentRoom = GS.getRoomByIndex(spawnPos.RoomId).env.transform;
+		Vector3 gameObjectPos = new Vector3(spawnPos.X, spawnPos.Y, -0.1f);
+		// Spawn a new item from prefabs
+		GameObject newItemObj = prefabFactory.spawnRandomItem(parentRoom, gameObjectPos);
+		Data_Item newItem = GS.addItem(newItemObj.name);
 		GS.setItemSpawnPoint(newItemIndex, newSpawnIndex);
 		// Place the new item
 		newItem.control.loadGameState(GS, newItemIndex);

@@ -6,6 +6,7 @@ public struct Factory_PrefabItems {
 	[System.Serializable]
 	public struct ItemPrefab {
 		public string prefabName;
+		public string displayName;
 		public UnityEngine.Vector2 size;
 	}
 }
