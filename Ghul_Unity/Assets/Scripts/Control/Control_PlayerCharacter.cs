@@ -191,15 +191,10 @@ public class Control_PlayerCharacter : MonoBehaviour {
 	}
 
 	// Player withing the attack radius -> reduce time to react
-	public void beingAttacked() {
+	public void takeDamage() {
 		me.remainingReactionTime -= Time.deltaTime;
 		if(me.remainingReactionTime <= 0.0f) {
-			if(me.carriedItem != null) { // First drop the item and reset the timer
-				dropItem();
-				me.remainingReactionTime = TIME_TO_REACT;
-			} else {
-				StartCoroutine(dieAndRespawn());
-			}
+			StartCoroutine(dieAndRespawn());
 		} else {
 			MAIN_CAMERA_CONTROL.setRedOverlay(1.0f - me.remainingReactionTime / TIME_TO_REACT);
 		}
@@ -258,12 +253,14 @@ public class Control_PlayerCharacter : MonoBehaviour {
 	}
 
 	// The player drops the carried item
-	private void dropItem() {
+	public void dropItem() {
 		if(me.carriedItem != null) {
 			// Drop item down
 			me.carriedItem.control.dropFromInventory();
 			Debug.Log("Item #" + me.carriedItem.INDEX + " dropped");
 			me.carriedItem = null;
+			// Reset the reaction time after dropping the item
+			me.remainingReactionTime = TIME_TO_REACT;
 			// Auto save when dropping an item.
 			Data_GameState.saveToDisk(GS);
 		}

@@ -60,8 +60,13 @@ public class Control_Monster : MonoBehaviour {
 			me.playerDetected = true;
 			me.playerPosLastSeen = player.gameObj.transform.position.x;
 
-			if (Mathf.Abs(transform.position.x - player.gameObj.transform.position.x) <= MONSTER_KILL_RADIUS) {
-				player.control.beingAttacked();
+			float distanceToPlayer = Mathf.Abs(transform.position.x - player.gameObj.transform.position.x);
+			if (distanceToPlayer <= MONSTER_KILL_RADIUS) {
+				// Getting VERY close the monster, e.g. running past it forces CHARA to drop their item
+				if(distanceToPlayer <= MONSTER_KILL_RADIUS / 10) {
+					player.control.dropItem();
+				}
+				player.control.takeDamage();
 			} else {
 				// The monster moves towards the player.
 				moveToPoint(player.gameObj.transform.position.x);
