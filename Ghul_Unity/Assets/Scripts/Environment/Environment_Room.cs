@@ -14,7 +14,6 @@ public class Environment_Room : MonoBehaviour {
     private float MARGIN_SIZE_PHYSICAL;
     private float MARGIN_SIZE_CAMERA;
     private float MARGIN_DOOR_ENTRANCE;
-	private float MARGIN_ITEM_COLLECT;
 
     // Use this for initialization
     void Start () {
@@ -37,7 +36,6 @@ public class Environment_Room : MonoBehaviour {
         MARGIN_SIZE_PHYSICAL = Global_Settings.read("HORIZONTAL_ROOM_MARGIN");
         MARGIN_SIZE_CAMERA = Global_Settings.read("SCREEN_SIZE_HORIZONTAL") / 2;
         MARGIN_DOOR_ENTRANCE = Global_Settings.read("MARGIN_DOOR_ENTRANCE");
-		MARGIN_ITEM_COLLECT = Global_Settings.read("MARGIN_ITEM_COLLECT");
     }
 
     // Checks whether a position X lies within the boundaries of the room

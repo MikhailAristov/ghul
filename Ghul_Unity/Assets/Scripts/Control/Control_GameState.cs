@@ -125,9 +125,9 @@ public class Control_GameState : MonoBehaviour {
 
         // INITIALIZE ROOMS
 		GS.addRoom("Ritual Room");
-        GS.addRoom("Room01");
-        GS.addRoom("Room02");
-        GS.addRoom("Room03");
+		GS.addRoom("Room01").manualAddItemSpawn(0, 0);
+		GS.addRoom("Room02").manualAddItemSpawn(0, 0);
+		GS.addRoom("Room03").manualAddItemSpawn(0, 0);
 
         // INITIALIZE DOORS
         GS.addDoor("Door0-1", 0);
@@ -204,7 +204,7 @@ public class Control_GameState : MonoBehaviour {
 
         // INITIALIZE PLAYER CHARACTER
         GS.setPlayerCharacter("PlayerCharacter");
-        GS.getCHARA().updatePosition(GS.getRoomByIndex(5), 0); // default: starting position is center of pentagram
+        GS.getCHARA().updatePosition(GS.getRoomByIndex(0), 0); // default: starting position is center of pentagram
 		GS.getCHARA().startingPos = new Data_Position(0, 0);
         GS.getCHARA().control.loadGameState(GS);
 
@@ -225,12 +225,14 @@ public class Control_GameState : MonoBehaviour {
 		int newItemIndex = GS.ITEMS.Count;
 		// Calculate spawn position
 		Data_Position spawnPos = GS.getRandomItemSpawn();
-		Transform parentRoom = GS.getRoomByIndex(spawnPos.RoomId).env.transform;
+		Data_Room parentRoom = GS.getRoomByIndex(spawnPos.RoomId);
+		Transform parentRoomTransform = parentRoom.env.transform;
 		Vector3 gameObjectPos = new Vector3(spawnPos.X, spawnPos.Y, -0.1f);
 		// Spawn a new item from prefabs
-		GameObject newItemObj = prefabFactory.spawnRandomItem(parentRoom, gameObjectPos);
+		GameObject newItemObj = prefabFactory.spawnRandomItem(parentRoomTransform, gameObjectPos);
 		Data_Item newItem = GS.addItem(newItemObj.name);
 		// Place the new item
+		newItem.updatePosition(parentRoom, spawnPos.X, spawnPos.Y);
 		newItem.control.loadGameState(GS, newItemIndex);
 		newItem.control.resetToSpawnPosition();
 		// Update the wall scribbles

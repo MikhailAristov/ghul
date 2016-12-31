@@ -94,6 +94,11 @@ public class Data_Room : IComparable<Data_Room> {
 		DOORS = new List<Data_Door>();
 	} 
 
+	// TODO remove this
+	public void manualAddItemSpawn(float xPos, float yPos) {
+		_itemSpawnPoints.Add(new Data_Position(INDEX, xPos, yPos));
+	}
+
     public int CompareTo(Data_Room other) { return INDEX.CompareTo(other.INDEX); }
     public override string ToString() { return INDEX.ToString(); }
 

@@ -44,10 +44,12 @@ public class Data_GameState {
     }
 
     // Adds a room to the game state
-    public void addRoom(string gameObjectName)
+	public Data_Room addRoom(string gameObjectName)
     {
         int INDEX = ROOMS.Count;
-        ROOMS.Add(INDEX, new Data_Room(INDEX, gameObjectName));
+		Data_Room newRoom = new Data_Room(INDEX, gameObjectName);
+		ROOMS.Add(INDEX, newRoom);
+		return newRoom;
 	}
 
 	// Adds a room object to the game state
