@@ -137,22 +137,23 @@ public class Control_GameState : MonoBehaviour {
 		initializeTheRitualRoom();
 
 		// Spawn more rooms from prefabs
-		List<string> prefabNames = new List<string>(new string[] {"Room04: Foyer [prefab03]", "Room05: Foyer [prefab01]"});
-		foreach(string n in prefabNames) {
+		int maxRooms = (int)Global_Settings.read("TOTAL_NUMBER_OF_ROOMS");
+		while(GS.ROOMS.Count < maxRooms) {
 			// Generate the room game object from prefabs
-			GameObject roomObj = prefabFactory.spawnRoomFromName(n, Global_Settings.read("VERTICAL_ROOM_SPACING"));
+			GameObject roomObj = prefabFactory.spawnRandomRoom(Global_Settings.read("VERTICAL_ROOM_SPACING"));
 			Factory_PrefabRooms.RoomPrefab roomPrefab = prefabFactory.getRoomPrefabDetails(roomObj.name);
 			// Load the prefab details into the data object
 			Data_Room newRoom = new Data_Room(GS.ROOMS.Count, roomObj, roomPrefab);
 			GS.addRoom(newRoom);
 			// Add doors
-			if(roomPrefab.doorSpawnLeft && true) {
+			if(roomPrefab.doorSpawnLeft) {
 				spawnDoor(Data_Door.TYPE_LEFT_SIDE, newRoom, roomObj.transform, roomPrefab.size.x, 0);
 			}
 			foreach(float xPos in roomPrefab.doorSpawns) {
 				spawnDoor(Data_Door.TYPE_BACK_DOOR, newRoom, roomObj.transform, roomPrefab.size.x, xPos);
 			}
-			if(roomPrefab.doorSpawnRight && false) {
+			if(roomPrefab.doorSpawnRight && // The next clause ensures an even total number of doors
+				(GS.ROOMS.Count < maxRooms || GS.DOORS.Count % 2 == 1)) {
 				spawnDoor(Data_Door.TYPE_RIGHT_SIDE, newRoom, roomObj.transform, roomPrefab.size.x, 0);
 			}
 			newRoom.env.loadGameState(GS, newRoom.INDEX);
