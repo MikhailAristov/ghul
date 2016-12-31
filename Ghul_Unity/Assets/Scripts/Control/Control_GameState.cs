@@ -145,7 +145,7 @@ public class Control_GameState : MonoBehaviour {
         GS.connectTwoDoors(2, 6);
         GS.connectTwoDoors(4, 7);
         // TODO: Must ensure that side doors never connect to the opposite sides, or it will look weird and cause trouble with room transitions
-		/*
+
 		List<string> prefabNames = new List<string>(new string[] {"Room04: Foyer [prefab02]", "Room05: Foyer [prefab00]"});
 		foreach(string n in prefabNames) {
 			// TODO: GameObject nextRoom = prefabFactory.spawnRandomRoom(Global_Settings.read("VERTICAL_ROOM_SPACING"));
@@ -167,7 +167,7 @@ public class Control_GameState : MonoBehaviour {
 				GameObject bdObj = prefabFactory.spawnBackDoor(roomObj.transform, xPos);
 				Data_Door bd = new Data_Door(GS.DOORS.Count, bdObj, Data_Door.TYPE_BACK_DOOR, newRoom, xPos);
 				GS.addDoor(bd);
-				break;
+				break; // TODO
 			}
 			if(roomPrefab.doorSpawnRight && false) {
 				GameObject rsdObj = prefabFactory.spawnRightSideDoor(roomObj.transform, roomPrefab.size.x);
@@ -191,7 +191,6 @@ public class Control_GameState : MonoBehaviour {
 				}
 			}
 		}
-		*/
 
         // Load game state into room environment scripts
         foreach (Data_Room r in GS.ROOMS.Values) {
@@ -213,11 +212,6 @@ public class Control_GameState : MonoBehaviour {
         GS.getMonster().updatePosition(GS.getRoomByIndex(1), GS.getMonster().gameObj.transform.position.x);
 		GS.getMonster().control.loadGameState(GS);
 		GS.getMonster().setForbiddenRoomIndex(GS.getCHARA().isIn.INDEX);
-    	
-		// Placing the cadaver sprite out of sight
-		Vector3 nirvana = new Vector3 (-100, 0, 0);
-		GS.getCadaver().gameObj.transform.Translate(nirvana - GS.getCadaver().gameObj.transform.position);
-		GS.getCadaver().updatePosition(-100);
 	}
 
 	// Places the next item in a random spot
@@ -234,7 +228,6 @@ public class Control_GameState : MonoBehaviour {
 		// Place the new item
 		newItem.updatePosition(parentRoom, spawnPos.X, spawnPos.Y);
 		newItem.control.loadGameState(GS, newItemIndex);
-		newItem.control.resetToSpawnPosition();
 		// Update the wall scribbles
 		StartCoroutine(updateWallScribbles(1.0f));
 		// Save the new game state to disk

@@ -6,9 +6,6 @@ TagManager:
   tags:
   - Door
   - Room
-  - Monster
-  - Cadaver
-  - ItemSpot
   - Item
   layers:
   - Default

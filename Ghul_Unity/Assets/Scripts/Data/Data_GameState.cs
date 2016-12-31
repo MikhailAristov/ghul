@@ -72,6 +72,12 @@ public class Data_GameState {
 		DOORS.Add(newDoor.INDEX, newDoor);
 	}
 
+	// Connects two doors to each other
+	public void connectTwoDoors(int fromIndex, int toIndex) 
+	{
+		DOORS[fromIndex].connectTo(DOORS[toIndex]);
+	}
+
 	// Adds an item to the game state
 	public Data_Item addItem(string gameObjectName) 
 	{
@@ -81,51 +87,38 @@ public class Data_GameState {
 		return newItem;
 	}
 
-    // Connects two doors to each other
-	public void connectTwoDoors(int fromIndex, int toIndex) 
-	{
-        DOORS[fromIndex].connectTo(DOORS[toIndex]);
-    }
-
     // Sets the player character object
-    public void setPlayerCharacter(string gameObjectName)
-    {
+    public void setPlayerCharacter(string gameObjectName) {
         PLAYER_CHARACTER = new Data_PlayerCharacter(gameObjectName);
     }
 
     // Returns the player character object
-    public Data_PlayerCharacter getCHARA()
-    {
+    public Data_PlayerCharacter getCHARA() {
         return PLAYER_CHARACTER;
     }
 
     // Sets the monster character object
-    public void setMonsterCharacter(string gameObjectName)
-    {
+    public void setMonsterCharacter(string gameObjectName) {
         MONSTER = new Data_Monster(gameObjectName);
     }
 
     // Returns the monster character object
-    public Data_Monster getMonster()
-    {
+    public Data_Monster getMonster() {
         return MONSTER;
     }
 
 	// Sets the cadaver character object
-	public void setCadaverCharacter(string gameObjectName)
-	{
+	public void setCadaverCharacter(string gameObjectName) {
 		CADAVER = new Data_Cadaver(gameObjectName);
 	}
 
 	// Returns the cadaver character object
-	public Data_Cadaver getCadaver()
-	{
+	public Data_Cadaver getCadaver() {
 		return CADAVER;
 	}
 
     // Returns a Room object to a given index, if it exists
-    public Data_Room getRoomByIndex(int I)
-    {
+    public Data_Room getRoomByIndex(int I) {
         if(ROOMS.ContainsKey(I)) {
             return ROOMS[I];
         } else {
@@ -134,24 +127,13 @@ public class Data_GameState {
     }
 
     // Returns a Door object to a given index, if it exists
-    public Data_Door getDoorByIndex(int I)
-    {
+    public Data_Door getDoorByIndex(int I) {
         if (DOORS.ContainsKey(I)) {
             return DOORS[I];
         } else {
             throw new System.ArgumentException("There is no door #" + I);
         }
     }
-
-	// Returns a random item spawn point
-	public Data_Position getRandomItemSpawn() {
-		Data_Room room; Data_Position result;
-		do { // Find a random room with item spawn points and pick one at random
-			room = getRoomByIndex(UnityEngine.Random.Range(0, ROOMS.Count));
-			result = room.getRandomItemSpawnPoint();
-		} while(result == null);
-		return result;
-	}
 
 	// Returns an Item object to a given index, if it exists
 	public Data_Item getItemByIndex(int I)
@@ -166,6 +148,16 @@ public class Data_GameState {
 	// Returns the most recent item that has been spawned
 	public Data_Item getCurrentItem() {
 		return ITEMS[ITEMS.Count - 1];
+	}
+
+	// Returns a random item spawn point
+	public Data_Position getRandomItemSpawn() {
+		Data_Room room; Data_Position result;
+		do { // Find a random room with item spawn points and pick one at random
+			room = getRoomByIndex(UnityEngine.Random.Range(0, ROOMS.Count));
+			result = room.getRandomItemSpawnPoint();
+		} while(result == null);
+		return result;
 	}
 
     // Saves the current game state to disk
