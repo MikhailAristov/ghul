@@ -123,34 +123,12 @@ public class Control_GameState : MonoBehaviour {
         // Initialize game settings
         GS = new Data_GameState();
 
-        // INITIALIZE ROOMS
-		GS.addRoom("Ritual Room");
-		GS.addRoom("Room01").manualAddItemSpawn(0, 0);
-		GS.addRoom("Room02").manualAddItemSpawn(0, 0);
-		GS.addRoom("Room03").manualAddItemSpawn(0, 0);
+		// Initialize the starting ritual room
+		initializeTheRitualRoom();
 
-        // INITIALIZE DOORS
-        GS.addDoor("Door0-1", 0);
-        GS.addDoor("Door0-2", 0);
-        GS.addDoor("Door0-3", 0);
-        GS.addDoor("Door1-1", 1);
-        GS.addDoor("Door1-2", 1);
-        GS.addDoor("Door2-1", 2);
-        GS.addDoor("Door3-1", 3);
-        GS.addDoor("Door3-2", 3);
-
-        // CONNECT DOORS
-        GS.connectTwoDoors(0, 5);
-        GS.connectTwoDoors(1, 3);
-        GS.connectTwoDoors(2, 6);
-        GS.connectTwoDoors(4, 7);
-        // TODO: Must ensure that side doors never connect to the opposite sides, or it will look weird and cause trouble with room transitions
-
-		List<string> prefabNames = new List<string>(new string[] {"Room04: Foyer [prefab02]", "Room05: Foyer [prefab00]"});
+		// Spawn more rooms from prefabs
+		List<string> prefabNames = new List<string>(new string[] {"Room04: Foyer [prefab03]", "Room05: Foyer [prefab01]"});
 		foreach(string n in prefabNames) {
-			// TODO: GameObject nextRoom = prefabFactory.spawnRandomRoom(Global_Settings.read("VERTICAL_ROOM_SPACING"));
-			//prefabFactory.spawnDoorsInARoom(gameObj.transform, roomPrefab.size.x, roomPrefab.doorSpawnLeft, new float[0], roomPrefab.doorSpawnRight);
-
 			// Generate the room game object from prefabs
 			GameObject roomObj = prefabFactory.spawnRoomFromName(n, Global_Settings.read("VERTICAL_ROOM_SPACING"));
 			Factory_PrefabRooms.RoomPrefab roomPrefab = prefabFactory.getRoomPrefabDetails(roomObj.name);
@@ -159,24 +137,18 @@ public class Control_GameState : MonoBehaviour {
 			GS.addRoom(newRoom);
 			// Add doors
 			if(roomPrefab.doorSpawnLeft && true) {
-				GameObject lsdObj = prefabFactory.spawnLeftSideDoor(roomObj.transform, roomPrefab.size.x);
-				Data_Door lsd = new Data_Door(GS.DOORS.Count, lsdObj, Data_Door.TYPE_LEFT_SIDE, newRoom, -roomPrefab.size.x); // Dummy position outside of actual room constraints
-				GS.addDoor(lsd);
+				spawnDoor(Data_Door.TYPE_LEFT_SIDE, newRoom, roomObj.transform, roomPrefab.size.x, 0);
 			}
 			foreach(float xPos in roomPrefab.doorSpawns) {
-				GameObject bdObj = prefabFactory.spawnBackDoor(roomObj.transform, xPos);
-				Data_Door bd = new Data_Door(GS.DOORS.Count, bdObj, Data_Door.TYPE_BACK_DOOR, newRoom, xPos);
-				GS.addDoor(bd);
-				break; // TODO
+				spawnDoor(Data_Door.TYPE_BACK_DOOR, newRoom, roomObj.transform, roomPrefab.size.x, xPos);
 			}
 			if(roomPrefab.doorSpawnRight && false) {
-				GameObject rsdObj = prefabFactory.spawnRightSideDoor(roomObj.transform, roomPrefab.size.x);
-				Data_Door rsd = new Data_Door(GS.DOORS.Count, rsdObj, Data_Door.TYPE_RIGHT_SIDE, newRoom, roomPrefab.size.x); // Dummy position, ditto
-				GS.addDoor(rsd);
+				spawnDoor(Data_Door.TYPE_RIGHT_SIDE, newRoom, roomObj.transform, roomPrefab.size.x, 0);
 			}
 		}
 
 		// TODO: Connect doors properly
+		// TODO: Must ensure that side doors never connect to the opposite sides, or it will look weird and cause trouble with room transitions
 		int connectionCounter = 0;
 		foreach(Data_Door d in GS.DOORS.Values) {
 			if(d.connectsTo == null) {
@@ -199,19 +171,56 @@ public class Control_GameState : MonoBehaviour {
 
 		// INITIALIZE CADAVER
 		GS.setCadaverCharacter("Cadaver");
-		GS.getCadaver().updatePosition(GS.getRoomByIndex(0), GS.getCadaver().gameObj.transform.position.x);
 
         // INITIALIZE PLAYER CHARACTER
         GS.setPlayerCharacter("PlayerCharacter");
-        GS.getCHARA().updatePosition(GS.getRoomByIndex(0), 0); // default: starting position is center of pentagram
-		GS.getCHARA().startingPos = new Data_Position(0, 0);
+        GS.getCHARA().updatePosition(GS.getRoomByIndex(0), 0, 0); // default: starting position is center of pentagram
         GS.getCHARA().control.loadGameState(GS);
 
         // INITIALIZE MONSTER
         GS.setMonsterCharacter("Monster");
-        GS.getMonster().updatePosition(GS.getRoomByIndex(1), GS.getMonster().gameObj.transform.position.x);
+		GS.getMonster().updatePosition(GS.getRoomByIndex(1), 0, 0);
+		GS.getMonster().setForbiddenRoomIndex(0);
 		GS.getMonster().control.loadGameState(GS);
-		GS.getMonster().setForbiddenRoomIndex(GS.getCHARA().isIn.INDEX);
+	}
+
+	// Loads a fake prefab for the ritual room that already exists in the game space from the start
+	private void initializeTheRitualRoom() {
+		// Instantiate the ritual room itself
+		GameObject ritualRoomGameObject = GameObject.Find("Ritual Room");
+		Factory_PrefabRooms.RoomPrefab ritualRoomPrefab = prefabFactory.getRoomPrefabDetails("[prefab00]");
+		Data_Room ritualRoom = new Data_Room(GS.ROOMS.Count, ritualRoomGameObject, ritualRoomPrefab);
+		GS.addRoom(ritualRoom);
+		// Instantiate the ritual room doors
+		spawnDoor(Data_Door.TYPE_LEFT_SIDE, ritualRoom, ritualRoomGameObject.transform, ritualRoomPrefab.size.x, 0);
+		spawnDoor(Data_Door.TYPE_BACK_DOOR, ritualRoom, ritualRoomGameObject.transform, ritualRoomPrefab.size.x, ritualRoomPrefab.doorSpawns[0]);
+		spawnDoor(Data_Door.TYPE_RIGHT_SIDE, ritualRoom, ritualRoomGameObject.transform, ritualRoomPrefab.size.x, 0);
+	}
+
+	// Place a door within both game state and game space
+	private void spawnDoor(int doorType, Data_Room parent, Transform parentTransform, float parentWidth, float xPos) {
+		float horizontalRoomMargin = Global_Settings.read("HORIZONTAL_ROOM_MARGIN");
+		GameObject doorGameObj;
+		// Differentiate by type
+		switch(doorType) {
+		case Data_Door.TYPE_LEFT_SIDE:
+			doorGameObj = prefabFactory.spawnLeftSideDoor(parentTransform, parentWidth);
+			xPos = (horizontalRoomMargin - parentWidth)/2; // Overwrite any specified position with a virtual one outside of actual room constraints
+			break;
+		case Data_Door.TYPE_BACK_DOOR:
+			doorGameObj = prefabFactory.spawnBackDoor(parentTransform, xPos);
+			break;
+		case Data_Door.TYPE_RIGHT_SIDE:
+			doorGameObj = prefabFactory.spawnRightSideDoor(parentTransform, parentWidth);
+			xPos = (parentWidth - horizontalRoomMargin)/2;
+			break;
+		default: // C# won't compile otherwise
+			doorGameObj = new GameObject();
+			break;
+		}
+		// Initialize the door object and add it
+		Data_Door doorObj = new Data_Door(GS.DOORS.Count, doorGameObj, doorType, parent, xPos);
+		GS.addDoor(doorObj);
 	}
 
 	// Places the next item in a random spot

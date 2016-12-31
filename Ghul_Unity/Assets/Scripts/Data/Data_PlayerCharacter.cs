@@ -9,15 +9,6 @@ public class Data_PlayerCharacter : Data_Character {
     [NonSerialized]
     public Control_PlayerCharacter control;
 
-	// Original spawning position of the character
-	[SerializeField]
-	private Data_Position _startingPos;
-	public Data_Position startingPos
-	{ 
-		get { return _startingPos; } 
-		set { _startingPos = value; }
-	}
-
     // Gameplay parameters:
     [SerializeField]
     private float _stamina; // goes from 0.0 to 1.0

@@ -97,7 +97,7 @@ public class Control_Monster : MonoBehaviour {
 							me.remainingThinkingTime = UnityEngine.Random.Range (1, 2);
 							me.isThinking = true;
 						} else {
-							//print ("The monster can't find a door.");
+							print ("The monster can't find a door.");
 							me.isRandomTargetSet = false;
 						}
 					}
@@ -116,7 +116,8 @@ public class Control_Monster : MonoBehaviour {
 
 	// If the door connects to the portal room, the monster isn't allowed to enter it.
 	private bool checkIfForbiddenDoor(Data_Door door) {
-		return door.connectsTo.isIn.INDEX == me.forbiddenRoomIndex;
+		// TODO connectsTo may not be null, so remove this as soon as proper door connections are implemented
+		return (door.connectsTo == null || door.connectsTo.isIn.INDEX == me.forbiddenRoomIndex);
 	}
 
 	// if the monster is in reach for a door, go through it
@@ -182,8 +183,8 @@ public class Control_Monster : MonoBehaviour {
 		case 4:
 		case 5:
 			// going to a door
-			int amountOfDoors = me.isIn.getNumberOfDoors ();
-			int selectedDoor = UnityEngine.Random.Range (0, amountOfDoors);
+			int numberOfDoors = me.isIn.getNumberOfDoors ();
+			int selectedDoor = UnityEngine.Random.Range (0, numberOfDoors);
 
 			bool doorFound = false;
 			int counter = 0;
@@ -197,7 +198,7 @@ public class Control_Monster : MonoBehaviour {
 			}
 			if (!doorFound) { 
 				// Confused...
-				//print("The monster can't find a door.");
+				print("The monster can't find a door.");
 				me.remainingThinkingTime = 2.0f;
 				me.isThinking = true;
 			}
@@ -261,6 +262,6 @@ public class Control_Monster : MonoBehaviour {
 
 		me.playerDetected = false;
 
-		//Debug.Log(me + " walks from door #" + door + " to door #" + destinationDoor + " at position " + targetPosition);
+		Debug.Log(me + " walks from door #" + door + " to door #" + destinationDoor + " at position " + targetPosition);
 	}
 }

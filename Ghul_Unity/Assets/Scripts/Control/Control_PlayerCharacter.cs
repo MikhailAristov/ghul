@@ -233,7 +233,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		// Move the chara sprite back to the starting room
 		me.resetPosition(GS);
 		currentEnvironment = me.isIn.env;
-		transform.position = new Vector3(me.startingPos.X, me.startingPos.RoomId * VERTICAL_ROOM_SPACING);
+		transform.position = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
 		stickmanRenderer.enabled = true;
 
 		// Fade back in

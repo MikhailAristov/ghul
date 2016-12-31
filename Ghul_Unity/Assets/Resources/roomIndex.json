@@ -1,6 +1,19 @@
 {
     "list": [
         {
+            "prefabName": "dummy prefab for convenient instantiation of the Ritual Room",
+            "displayName": "Ritual Room",
+            "size": {
+                "x": 9.6,
+                "y": 4.8
+            },
+            "maxInstances": 0,
+            "doorSpawnLeft": true,
+            "doorSpawnRight": true,
+            "doorSpawns": [ 2.0 ],
+            "itemSpawns": [ ]
+        },
+        {
             "prefabName": "PrefabRoom_Generic",
             "displayName": "Generic",
             "size": {

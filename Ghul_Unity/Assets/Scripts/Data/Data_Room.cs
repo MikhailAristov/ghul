@@ -33,48 +33,24 @@ public class Data_Room : IComparable<Data_Room> {
         private set { _width = value; }
     }
 
-    // List of doors within the current room
-    [SerializeField]
-    private List<int> _doorIds;
-    [NonSerialized]
-    public List<Data_Door> DOORS;
-    
-	// TODO
-	[SerializeField]
-	private List<Data_Position> _itemSpawnPoints;
-	public bool hasItemSpawns {
-		get { return (_itemSpawnPoints.Count > 0); }
-		private set { return; }
-	}
+	// List of doors within the current room
 	[SerializeField]
 	private int _leftSideDoorID;
 	[SerializeField]
 	private int _rightSideDoorID;
 	[SerializeField]
 	private List<int> _backDoorIDs;
+    [NonSerialized]
+    public List<Data_Door> DOORS;
+    
+	// List of item spawn positions in the room
+	[SerializeField]
+	private List<Data_Position> _itemSpawnPoints;
+	public bool hasItemSpawns {
+		get { return (_itemSpawnPoints.Count > 0); }
+		private set { return; }
+	}
 
-    public Data_Room(int I, string gameObjectName)
-    {
-        INDEX = I;
-        _gameObjName = gameObjectName;
-        gameObj = GameObject.Find(gameObjectName);
-        if(gameObj != null)
-        {
-            env = gameObj.GetComponent<Environment_Room>();
-            Transform background = gameObj.transform.FindChild("Background");
-            Renderer bgRenderer = background.GetComponent<Renderer>();
-            width = bgRenderer.bounds.size[0];
-        }
-        else
-        {
-            throw new ArgumentException("Cannot find room: " + gameObjectName);
-        }
-        _doorIds = new List<int>();
-        DOORS = new List<Data_Door>();
-		_itemSpawnPoints = new List<Data_Position>();
-    }
-
-	// TODO
 	public Data_Room(int I, GameObject go, Factory_PrefabRooms.RoomPrefab prefabDetails) {
 		INDEX = I;
 		// Set the game object references
@@ -101,14 +77,6 @@ public class Data_Room : IComparable<Data_Room> {
 
     public int CompareTo(Data_Room other) { return INDEX.CompareTo(other.INDEX); }
     public override string ToString() { return INDEX.ToString(); }
-
-	// Adds a door to this room at a specific position
-    public void addDoor(Data_Door D, float xPos)
-    {
-        D.addToRoom(this, xPos);
-        _doorIds.Add(D.INDEX);
-        DOORS.Add(D);
-	}
 
 	// Adds a door to this room
 	public void addDoor(Data_Door D)
@@ -145,12 +113,21 @@ public class Data_Room : IComparable<Data_Room> {
         env = gameObj.GetComponent<Environment_Room>();
         // Re-associate doors
         DOORS = new List<Data_Door>();
-        foreach (int id in _doorIds)
-        {
-            Data_Door d = GS.getDoorByIndex(id);
-            DOORS.Add(d);
-            d.isIn = this;
-        }
+		if(_leftSideDoorID > 0) {
+			Data_Door d = GS.getDoorByIndex(_leftSideDoorID);
+			DOORS.Add(d);
+			d.isIn = this;
+		}
+		foreach (int id in _backDoorIDs) {
+			Data_Door d = GS.getDoorByIndex(id);
+			DOORS.Add(d);
+			d.isIn = this;
+		}
+		if(_rightSideDoorID > 0) {
+			Data_Door d = GS.getDoorByIndex(_rightSideDoorID);
+			DOORS.Add(d);
+			d.isIn = this;
+		}
     }
 
 	// Returns how many doors are located in this room

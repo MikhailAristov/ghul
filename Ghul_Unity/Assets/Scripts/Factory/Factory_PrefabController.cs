@@ -90,8 +90,8 @@ public class Factory_PrefabController : MonoBehaviour {
 		// Initialize an array to keep track of the room that had been spawned
 		roomSpawnCount = new int[allRooms.list.Length];
 		Array.Clear(roomSpawnCount, 0, allRooms.list.Length); // Sets all elements in the array to 0
-		// TODO: Set the room counter to 1, because the ritual room always starts off already placed
-		totalRoomCounter = 4;
+		// Set the room counter to 1, because the ritual room always starts off already placed
+		totalRoomCounter = 1;
 	}
 
 	// Spawns a random room into existence
@@ -138,7 +138,7 @@ public class Factory_PrefabController : MonoBehaviour {
 		prefabDoorBack = Resources.Load("Doors/PrefabDoor_Back", typeof(GameObject)) as GameObject;
 		prefabDoorLeftSide = Resources.Load("Doors/PrefabDoor_LeftSide", typeof(GameObject)) as GameObject;
 		prefabDoorRightSide = Resources.Load("Doors/PrefabDoor_RightSide", typeof(GameObject)) as GameObject;
-		totalDoorCounter = 8;
+		totalDoorCounter = 0;
 	}
 
 	// Spawns the specified doors within a room, returning all doors in order

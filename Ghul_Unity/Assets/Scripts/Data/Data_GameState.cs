@@ -43,27 +43,10 @@ public class Data_GameState {
 		CADAVER = null;
     }
 
-    // Adds a room to the game state
-	public Data_Room addRoom(string gameObjectName)
-    {
-        int INDEX = ROOMS.Count;
-		Data_Room newRoom = new Data_Room(INDEX, gameObjectName);
-		ROOMS.Add(INDEX, newRoom);
-		return newRoom;
-	}
-
 	// Adds a room object to the game state
 	public void addRoom(Data_Room newRoom)
 	{
 		ROOMS.Add(newRoom.INDEX, newRoom);
-	}
-
-    // Adds a door to the game state, as well as to its containing room
-    public void addDoor(string gameObjectName, int RoomIndex)
-    {
-        int INDEX = DOORS.Count;
-        DOORS.Add(INDEX, new Data_Door(INDEX, gameObjectName));
-        ROOMS[RoomIndex].addDoor(DOORS[INDEX], DOORS[INDEX].gameObj.transform.position.x);
 	}
 
 	// Adds a room object to the game state
