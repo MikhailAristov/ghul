@@ -27,12 +27,7 @@ public class Data_Item : Data_Character {
 
 	// The item spot this item is originally placed in
 	[SerializeField]
-	private int _originalSpawnPoint;
-	public int itemSpotIndex
-	{ 
-		get { return _originalSpawnPoint; } 
-		set { _originalSpawnPoint = value; }
-	}
+	private Data_Position _spawnPoint;
 		
 	// Current position of the item along the Y-axis, relative to the container
 	[SerializeField]

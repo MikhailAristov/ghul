@@ -24,7 +24,7 @@ public class Data_Room : IComparable<Data_Room> {
     [NonSerialized]
     public Environment_Room env;
 
-    // Horizontal span of the room (generally equals its spite width)
+    // TODO: Horizontal span of the room (generally equals its spite width)
     [SerializeField]
     private float _width;
     public float width
@@ -45,6 +45,20 @@ public class Data_Room : IComparable<Data_Room> {
 	[NonSerialized]
 	public List<Data_ItemSpawn> ITEM_SPAWN_POINTS;
     
+	// TODO
+	[SerializeField]
+	private List<Data_Position> _itemSpawnPoints;
+	public bool hasItemSpawns {
+		get { return (_itemSpawnPoints.Count > 0); }
+		private set { return; }
+	}
+	[SerializeField]
+	private int _leftSideDoorID;
+	[SerializeField]
+	private int _rightSideDoorID;
+	[SerializeField]
+	private List<int> _backDoorIDs;
+
     public Data_Room(int I, string gameObjectName)
     {
         INDEX = I;
@@ -65,23 +79,66 @@ public class Data_Room : IComparable<Data_Room> {
         DOORS = new List<Data_Door>();
 		_itemSpotIds = new List<int>();
 		ITEM_SPAWN_POINTS = new List<Data_ItemSpawn>();
+
+		_itemSpawnPoints = new List<Data_Position>();
     }
+
+	// TODO
+	public Data_Room(int I, GameObject go, Factory_PrefabRooms.RoomPrefab prefabDetails) {
+		INDEX = I;
+		// Set the game object references
+		_gameObjName = go.name;
+		gameObj = go;
+		env = go.GetComponent<Environment_Room>();
+		// Get room details from the prefab
+		_width = prefabDetails.size.x;
+		_itemSpawnPoints = new List<Data_Position>();
+		foreach(Vector2 p in prefabDetails.itemSpawns) {
+			_itemSpawnPoints.Add(new Data_Position(I, p));
+		}
+		// Doors are added separately
+		_leftSideDoorID = -1;
+		_rightSideDoorID = -1;
+		_backDoorIDs = new List<int>();
+		DOORS = new List<Data_Door>();
+	} 
 
     public int CompareTo(Data_Room other) { return INDEX.CompareTo(other.INDEX); }
     public override string ToString() { return INDEX.ToString(); }
 
-    // Adds a door to this room at a specific position
+	// Adds a door to this room at a specific position
     public void addDoor(Data_Door D, float xPos)
     {
         D.addToRoom(this, xPos);
         _doorIds.Add(D.INDEX);
         DOORS.Add(D);
-    }
+	}
 
-	// Adds a door to this room at a specific position. NOTE: The y-value is a local coordinate
-	public void addItemSpot(Data_ItemSpawn iSpawnPoint) {
-		_itemSpotIds.Add(iSpawnPoint.INDEX);
-		ITEM_SPAWN_POINTS.Add(iSpawnPoint);
+	// Adds a door to this room
+	public void addDoor(Data_Door D)
+	{
+		switch(D.type) {
+		case Data_Door.TYPE_BACK_DOOR:
+			_backDoorIDs.Add(D.INDEX);
+			break;
+		case Data_Door.TYPE_LEFT_SIDE:
+			_leftSideDoorID = D.INDEX;
+			break;
+		case Data_Door.TYPE_RIGHT_SIDE:
+			_rightSideDoorID = D.INDEX;
+			break;
+		}
+		DOORS.Add(D);
+	}
+
+	// Returns a random item spot, if the room has any (otherwise null)
+	public Data_Position getRandomItemSpawnPoint() {
+		if(_itemSpawnPoints.Count == 0) {
+			return null;
+		} else {
+			int i = UnityEngine.Random.Range(0, _itemSpawnPoints.Count);
+			return _itemSpawnPoints[i].clone();
+		}
 	}
 
     // Resets game object references, e.g. after a saved state load
@@ -109,12 +166,13 @@ public class Data_Room : IComparable<Data_Room> {
     }
 
 	// Returns how many doors are located in this room
-	public int getAmountOfDoors() {
+	public int getNumberOfDoors() {
 		return DOORS.Count;
 	}
 
-	// Returns how many item spots are located in this room
-	public int getAmountOfItemSpots() {
-		return ITEM_SPAWN_POINTS.Count;
+	// Adds a door to this room at a specific position. NOTE: The y-value is a local coordinate
+	public void addItemSpot(Data_ItemSpawn iSpawnPoint) {
+		_itemSpotIds.Add(iSpawnPoint.INDEX);
+		ITEM_SPAWN_POINTS.Add(iSpawnPoint);
 	}
 }

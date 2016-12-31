@@ -182,7 +182,7 @@ public class Control_Monster : MonoBehaviour {
 		case 4:
 		case 5:
 			// going to a door
-			int amountOfDoors = me.isIn.getAmountOfDoors ();
+			int amountOfDoors = me.isIn.getNumberOfDoors ();
 			int selectedDoor = UnityEngine.Random.Range (0, amountOfDoors);
 
 			bool doorFound = false;

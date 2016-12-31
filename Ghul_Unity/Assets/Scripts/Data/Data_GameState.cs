@@ -51,7 +51,13 @@ public class Data_GameState {
     {
         int INDEX = ROOMS.Count;
         ROOMS.Add(INDEX, new Data_Room(INDEX, gameObjectName));
-    }
+	}
+
+	// Adds a room object to the game state
+	public void addRoom(Data_Room newRoom)
+	{
+		ROOMS.Add(newRoom.INDEX, newRoom);
+	}
 
     // Adds a door to the game state, as well as to its containing room
     public void addDoor(string gameObjectName, int RoomIndex)
@@ -59,7 +65,13 @@ public class Data_GameState {
         int INDEX = DOORS.Count;
         DOORS.Add(INDEX, new Data_Door(INDEX, gameObjectName));
         ROOMS[RoomIndex].addDoor(DOORS[INDEX], DOORS[INDEX].gameObj.transform.position.x);
-    }
+	}
+
+	// Adds a room object to the game state
+	public void addDoor(Data_Door newDoor)
+	{
+		DOORS.Add(newDoor.INDEX, newDoor);
+	}
 
 	// Adds an item spot to the game state, as well as to its containing room
 	public void addItemSpot(string gameObjectName, int RoomIndex) 
@@ -160,6 +172,16 @@ public class Data_GameState {
 		} else {
 			throw new System.ArgumentException("There is no item spawn point #" + I);
 		}
+	}
+
+	// Returns a random item spawn point
+	public Data_Position getRandomItemSpawn() {
+		Data_Room room; Data_Position result;
+		do { // Find a random room with item spawn points and pick one at random
+			room = getRoomByIndex(UnityEngine.Random.Range(0, ROOMS.Count));
+			result = room.getRandomItemSpawnPoint();
+		} while(result == null);
+		return result;
 	}
 
 	// Returns an Item object to a given index, if it exists

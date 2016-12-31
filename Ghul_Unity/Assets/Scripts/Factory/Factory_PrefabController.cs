@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 public class Factory_PrefabController : MonoBehaviour {
@@ -141,36 +141,38 @@ public class Factory_PrefabController : MonoBehaviour {
 		totalDoorCounter = 8;
 	}
 
-	// Spawns the specified doors within a room
-	public void spawnDoorsInARoom(Transform parentRoom, float roomWidth, bool leftSideDoor, float[] backDoors, bool rightSideDoor) {
+	// Spawns the specified doors within a room, returning all doors in order
+	public List<GameObject> spawnDoorsInARoom(Transform parentRoom, float roomWidth, bool leftSideDoor, float[] backDoors, bool rightSideDoor) {
+		List<GameObject> result = new List<GameObject>();
 		// If a left side door is wanted, spawn it
 		if(leftSideDoor) {
-			spawnLeftSideDoor(parentRoom, roomWidth);
+			result.Add(spawnLeftSideDoor(parentRoom, roomWidth));
 		}
 		// Then, spawn every back door required
 		foreach(float xPos in backDoors) {
-			spawnBackDoor(parentRoom, xPos);
+			result.Add(spawnBackDoor(parentRoom, xPos));
 		}
 		// Lastly, spawn a right side door if it is wanted
 		if(rightSideDoor) {
-			spawnRightSideDoor(parentRoom, roomWidth);
+			result.Add(spawnRightSideDoor(parentRoom, roomWidth));
 		}
+		return result;
 	}
 
 	// Spawns a back door at the left position of the given room
-	private GameObject spawnBackDoor(Transform parentRoom, float horizontalPosition) {
+	public GameObject spawnBackDoor(Transform parentRoom, float horizontalPosition) {
 		if(prefabDoorBack == null) { loadDoorPrefabs(); }
 		return spawnDoor(prefabDoorBack, parentRoom, new Vector3(horizontalPosition, -0.33f, 0.1f));
 	}
 
 	// Spawns a side door on the left edge of the given room
-	private GameObject spawnLeftSideDoor(Transform parentRoom, float roomWidth) {
+	public GameObject spawnLeftSideDoor(Transform parentRoom, float roomWidth) {
 		if(prefabDoorLeftSide == null) { loadDoorPrefabs(); }
 		return spawnDoor(prefabDoorLeftSide, parentRoom, new Vector3(0.45f - roomWidth/2, -0.6f, 0.1f));
 	}
 
 	// Spawns a side door on the right edge of the given room
-	private GameObject spawnRightSideDoor(Transform parentRoom, float roomWidth) {
+	public GameObject spawnRightSideDoor(Transform parentRoom, float roomWidth) {
 		if(prefabDoorRightSide == null) { loadDoorPrefabs(); }
 		return spawnDoor(prefabDoorRightSide, parentRoom, new Vector3(roomWidth/2 - 0.45f, -0.6f, 0.1f));
 	}

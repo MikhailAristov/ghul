@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using System.Collections.Generic; //TODO
 
 // This is the controller class that manages the game state data
 public class Control_GameState : MonoBehaviour {
@@ -145,10 +146,50 @@ public class Control_GameState : MonoBehaviour {
         GS.connectTwoDoors(4, 7);
         // TODO: Must ensure that side doors never connect to the opposite sides, or it will look weird and cause trouble with room transitions
 
-		{
-			GameObject nextRoom = prefabFactory.spawnRandomRoom(Global_Settings.read("VERTICAL_ROOM_SPACING"));
-			Factory_PrefabRooms.RoomPrefab roomPrefab = prefabFactory.getRoomPrefabDetails(nextRoom.name);
-			prefabFactory.spawnDoorsInARoom(nextRoom.transform, roomPrefab.size.x, roomPrefab.doorSpawnLeft, roomPrefab.doorSpawns, roomPrefab.doorSpawnRight);
+		List<string> prefabNames = new List<string>(new string[] {"Room04: Foyer [prefab02]", "Room05: Foyer [prefab00]"});
+		foreach(string n in prefabNames) {
+			// TODO: GameObject nextRoom = prefabFactory.spawnRandomRoom(Global_Settings.read("VERTICAL_ROOM_SPACING"));
+			//prefabFactory.spawnDoorsInARoom(gameObj.transform, roomPrefab.size.x, roomPrefab.doorSpawnLeft, new float[0], roomPrefab.doorSpawnRight);
+
+			// Generate the room game object from prefabs
+			GameObject roomObj = prefabFactory.spawnRoomFromName(n, Global_Settings.read("VERTICAL_ROOM_SPACING"));
+			Factory_PrefabRooms.RoomPrefab roomPrefab = prefabFactory.getRoomPrefabDetails(roomObj.name);
+			// Load the prefab details into the data object
+			Data_Room newRoom = new Data_Room(GS.ROOMS.Count, roomObj, roomPrefab);
+			GS.addRoom(newRoom);
+			// Add doors
+			if(roomPrefab.doorSpawnLeft && true) {
+				GameObject lsdObj = prefabFactory.spawnLeftSideDoor(roomObj.transform, roomPrefab.size.x);
+				Data_Door lsd = new Data_Door(GS.DOORS.Count, lsdObj, Data_Door.TYPE_LEFT_SIDE, newRoom, -roomPrefab.size.x); // Dummy position outside of actual room constraints
+				GS.addDoor(lsd);
+			}
+			foreach(float xPos in roomPrefab.doorSpawns) {
+				GameObject bdObj = prefabFactory.spawnBackDoor(roomObj.transform, xPos);
+				Data_Door bd = new Data_Door(GS.DOORS.Count, bdObj, Data_Door.TYPE_BACK_DOOR, newRoom, xPos);
+				GS.addDoor(bd);
+				break;
+			}
+			if(roomPrefab.doorSpawnRight && false) {
+				GameObject rsdObj = prefabFactory.spawnRightSideDoor(roomObj.transform, roomPrefab.size.x);
+				Data_Door rsd = new Data_Door(GS.DOORS.Count, rsdObj, Data_Door.TYPE_RIGHT_SIDE, newRoom, roomPrefab.size.x); // Dummy position, ditto
+				GS.addDoor(rsd);
+			}
+		}
+
+		// TODO: Connect doors properly
+		int connectionCounter = 0;
+		foreach(Data_Door d in GS.DOORS.Values) {
+			if(d.connectsTo == null) {
+				Data_Door targetDoor;
+				do {
+					targetDoor = GS.getDoorByIndex(UnityEngine.Random.Range(0, GS.DOORS.Count));
+				} while(targetDoor.connectsTo != null); // TODO || targetDoor.isIn == d.isIn
+				d.connectTo(targetDoor);
+				connectionCounter += 2;
+				if((connectionCounter + 2) > GS.DOORS.Count) {
+					break;
+				}
+			}
 		}
 
 		// INITIALIZE ITEM SPOTS
@@ -173,7 +214,7 @@ public class Control_GameState : MonoBehaviour {
 
         // INITIALIZE PLAYER CHARACTER
         GS.setPlayerCharacter("PlayerCharacter");
-        GS.getCHARA().updatePosition(GS.getRoomByIndex(0), 0); // default: starting position is center of pentagram
+        GS.getCHARA().updatePosition(GS.getRoomByIndex(5), 0); // default: starting position is center of pentagram
 		GS.getCHARA().startingPos = new Data_Position(0, 0);
         GS.getCHARA().control.loadGameState(GS);
 

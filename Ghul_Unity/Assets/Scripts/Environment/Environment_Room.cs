@@ -19,8 +19,8 @@ public class Environment_Room : MonoBehaviour {
     // Use this for initialization
     void Start () {
         Vector3 ROOM_SIZE = transform.Find("Background").GetComponent<Renderer>().bounds.size;
-        leftWallPos = -ROOM_SIZE[0] / 2;
-        rightWallPos = ROOM_SIZE[0] / 2;
+		leftWallPos = -ROOM_SIZE.x/2;
+        rightWallPos = ROOM_SIZE.x/2;
     }
 
     // To make sure the game state is fully initialized before loading it, this function is called by game state class itself
@@ -39,11 +39,6 @@ public class Environment_Room : MonoBehaviour {
         MARGIN_DOOR_ENTRANCE = Global_Settings.read("MARGIN_DOOR_ENTRANCE");
 		MARGIN_ITEM_COLLECT = Global_Settings.read("MARGIN_ITEM_COLLECT");
     }
-
-    // Update is called once per frame
-    void Update () {
-        return;
-	}
 
     // Checks whether a position X lies within the boundaries of the room
     // Returns X if its within the boundaries, or the closest boundary if it is not
@@ -90,34 +85,4 @@ public class Environment_Room : MonoBehaviour {
     // These are just human-readable wrappers for the above:
     public Data_Door getDoorOnTheLeft() { return getSideDoor(true); }
     public Data_Door getDoorOnTheRight() { return getSideDoor(false); }
-
-	// Returns the index of an item object if one can be accessed from the specified position, otherwise returns NULL
-	public int getItemIndexAtPos(float pos)
-	{
-		foreach (Data_ItemSpawn spot in me.ITEM_SPAWN_POINTS) // Loop through all the item spots in this room
-		{
-			if(Mathf.Abs(spot.X - pos) < MARGIN_ITEM_COLLECT)
-			{
-				if (spot.containsItem) { return spot.itemIndex; }
-			}
-		}
-		return -1; // no item nearby
-	}
-
-	// Removes an item from a spot if one can be accessed from the specified position
-	public void removeItemAtPos(float pos)
-	{
-		foreach (Data_ItemSpawn spot in me.ITEM_SPAWN_POINTS) // Loop through all the item spots in this room
-		{
-			if(Mathf.Abs(spot.X - pos) < MARGIN_ITEM_COLLECT)
-			{
-				if (spot.containsItem) { 
-					spot.removeItem();
-					return;
-				}
-			}
-		}
-	}
-
-
 }
