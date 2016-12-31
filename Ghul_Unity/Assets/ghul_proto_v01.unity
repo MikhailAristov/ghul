@@ -1214,7 +1214,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 553f3789f13647b4eb1aa94fc6ff5248, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  AUTOSTART_NEW_GAME: 1
+  AUTOSTART_NEW_GAME: 0
   MAIN_MENU_CANVAS: {fileID: 1028994221}
   RITUAL_ROOM_SCRIBBLES: {fileID: 1677224451}
 --- !u!114 &1333168853
@@ -1530,7 +1530,7 @@ GameObject:
   - 114: {fileID: 1763691762}
   m_Layer: 0
   m_Name: Ritual Room
-  m_TagString: Room
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

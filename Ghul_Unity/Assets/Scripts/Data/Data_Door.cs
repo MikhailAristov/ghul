@@ -18,7 +18,7 @@ public class Data_Door : IComparable<Data_Door> {
         private set { _INDEX = value; }
 	}
 
-	// Type of the door (left, right side, back)
+	// Type of the door (left side, right side, back)
 	[SerializeField]
 	private int _type;
 	public int type {
@@ -78,46 +78,44 @@ public class Data_Door : IComparable<Data_Door> {
     public int CompareTo(Data_Door other) { return INDEX.CompareTo(other.INDEX); }
     public override string ToString() { return INDEX.ToString(); }
 
-    // Adds this door to a specific room at a particular position, with backreference
-    public void addToRoom(Data_Room R, float xPos)
-    {
-        if (isIn == null) // The door's location is not set yet
-        {
-            _pos = new Data_Position(R.INDEX, xPos);
-            isIn = R;
-        }
-        else
-        {
-            throw new System.ArgumentException("Cannot add door #" + this + " to room #" + R + ": door is already in room #" + isIn, "original");
-        }
-    }
-
     // Connects the door to another door
     public void connectTo(Data_Door D)
     {
-        if (D.connectsTo == null) // The other door is not connected to any other yet
-        {
+		if (D.connectsTo == null) { // The other door is not connected to any other yet
             _connectsToDoorIndex = D.INDEX;
             connectsTo = D;
             D.connectTo(this);
         }
-        else if (D.connectsTo == this) // The other door is connected to this one already
-        {
+		else if (D.connectsTo == this) { // The other door is connected to this one already
             _connectsToDoorIndex = D.INDEX;
             connectsTo = D;
         }
-        else
-        {
+        else {
             throw new System.ArgumentException("Cannot connect door #" + this + " to #" + D + ": #" + D + " already connects to #" + D.connectsTo, "original");
         }
     }
 
     // Resets game object references, e.g. after a saved state load
-    public void fixObjectReferences(Data_GameState GS)
-    {
-        gameObj = GameObject.Find(_gameObjName);
+	// MUST be called after its respective room had its references fixed!!
+	public void fixObjectReferences(Data_GameState GS, Factory_PrefabController prefabFactory) {
+		// Relocate or respawn the game object
+		gameObj = GameObject.Find(_gameObjName);
+		if(gameObj == null) {
+			switch(type) {
+			case TYPE_LEFT_SIDE:
+				gameObj = prefabFactory.spawnLeftSideDoor(isIn.env.transform, isIn.width);
+				break;
+			case TYPE_BACK_DOOR:
+				gameObj = prefabFactory.spawnBackDoor(isIn.env.transform, pos.X);
+				break;
+			case TYPE_RIGHT_SIDE:
+				gameObj = prefabFactory.spawnRightSideDoor(isIn.env.transform, isIn.width);
+				break;
+			}
+			_gameObjName = gameObj.name;
+		}
         // Connect to the other door
         connectsTo = GS.getDoorByIndex(_connectsToDoorIndex);
         // Room relations are set in the Data_Room.fixObjectReferences()
-    }
+	}
 }

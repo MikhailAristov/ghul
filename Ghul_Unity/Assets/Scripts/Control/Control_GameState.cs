@@ -15,7 +15,7 @@ public class Control_GameState : MonoBehaviour {
 	private Control_Camera MAIN_CAMERA_CONTROL;
 	private Factory_PrefabController prefabFactory;
 
-    private float AUTOSAVE_FREQUENCY;
+    private float? AUTOSAVE_FREQUENCY;
     private float NEXT_AUTOSAVE_IN;
 
     // Use this for initialization
@@ -39,8 +39,8 @@ public class Control_GameState : MonoBehaviour {
 
 		// Timed autosave
         NEXT_AUTOSAVE_IN -= Time.deltaTime;
-        if (NEXT_AUTOSAVE_IN <= 0.0f) {
-            NEXT_AUTOSAVE_IN = AUTOSAVE_FREQUENCY;
+		if (NEXT_AUTOSAVE_IN <= 0.0f && AUTOSAVE_FREQUENCY != null) {
+			NEXT_AUTOSAVE_IN = (float)AUTOSAVE_FREQUENCY;
             Data_GameState.saveToDisk(GS);
         }
 
@@ -72,7 +72,7 @@ public class Control_GameState : MonoBehaviour {
 
         // Initialize autosave
 		AUTOSAVE_FREQUENCY = Global_Settings.read("AUTOSAVE_FREQUENCY");
-        NEXT_AUTOSAVE_IN = AUTOSAVE_FREQUENCY;
+		NEXT_AUTOSAVE_IN = (float)AUTOSAVE_FREQUENCY;
     }
 
     // This method loads the saved game state to memory
@@ -83,15 +83,16 @@ public class Control_GameState : MonoBehaviour {
         // If no game state has been found, initialize it instead
         if(GS == null) { resetGameState(); return; }
 
-        // Fix door object references first, because Data_Room.fixObjectReferences() relies on them being set
-        foreach (Data_Door d in GS.DOORS.Values) {
-            d.fixObjectReferences(GS);
-        }
-        // Now fix all the room object references, including the door and item spot assignments
+        // Fix all the room object references, including the door and item spot assignments
         foreach (Data_Room r in GS.ROOMS.Values) {
-            r.fixObjectReferences(GS);
+			r.fixObjectReferences(GS, prefabFactory);
             r.env.loadGameState(GS, r.INDEX); // While we are on it, load game state into room environment scripts 
-        }
+		}
+
+		// Fix door object references first, because Data_Room.fixObjectReferences() relies on them being set
+		foreach (Data_Door d in GS.DOORS.Values) {
+			d.fixObjectReferences(GS, prefabFactory);
+		}
 
         // Fix the character, cadaver and monster object references
         GS.getCHARA().fixObjectReferences(GS);
@@ -100,7 +101,7 @@ public class Control_GameState : MonoBehaviour {
         GS.getMonster().control.loadGameState(GS);
 		GS.getCadaver().fixObjectReferences(GS);
 
-		// Placing the cadaver and item sprites in the location they used to be
+		// Placing the cadaver sprite in the location they used to be
 		Data_Cadaver cadaver = GS.getCadaver();
 		Vector3 positionOfCadaver = new Vector3 (cadaver.atPos, cadaver.isIn.gameObj.transform.position.y - 1.55f, 0);
 		cadaver.gameObj.transform.Translate(positionOfCadaver - cadaver.gameObj.transform.position);
@@ -120,6 +121,15 @@ public class Control_GameState : MonoBehaviour {
     // This method initializes the game state back to default
     private void resetGameState()
     {
+		// Remove all doors, rooms and items
+		List<GameObject> oldGameObjects = new List<GameObject>(GameObject.FindGameObjectsWithTag("Item"));
+		oldGameObjects.AddRange(GameObject.FindGameObjectsWithTag("Door"));
+		oldGameObjects.AddRange(GameObject.FindGameObjectsWithTag("Room"));
+		foreach(GameObject go in oldGameObjects) { Destroy(go); }
+
+		// Reset the prefab generator counters
+		prefabFactory.resetAllCounters();
+
         // Initialize game settings
         GS = new Data_GameState();
 
@@ -145,6 +155,7 @@ public class Control_GameState : MonoBehaviour {
 			if(roomPrefab.doorSpawnRight && false) {
 				spawnDoor(Data_Door.TYPE_RIGHT_SIDE, newRoom, roomObj.transform, roomPrefab.size.x, 0);
 			}
+			newRoom.env.loadGameState(GS, newRoom.INDEX);
 		}
 
 		// TODO: Connect doors properly
@@ -164,24 +175,7 @@ public class Control_GameState : MonoBehaviour {
 			}
 		}
 
-        // Load game state into room environment scripts
-        foreach (Data_Room r in GS.ROOMS.Values) {
-            r.env.loadGameState(GS, r.INDEX);
-		}
-
-		// INITIALIZE CADAVER
-		GS.setCadaverCharacter("Cadaver");
-
-        // INITIALIZE PLAYER CHARACTER
-        GS.setPlayerCharacter("PlayerCharacter");
-        GS.getCHARA().updatePosition(GS.getRoomByIndex(0), 0, 0); // default: starting position is center of pentagram
-        GS.getCHARA().control.loadGameState(GS);
-
-        // INITIALIZE MONSTER
-        GS.setMonsterCharacter("Monster");
-		GS.getMonster().updatePosition(GS.getRoomByIndex(1), 0, 0);
-		GS.getMonster().setForbiddenRoomIndex(0);
-		GS.getMonster().control.loadGameState(GS);
+		initializeCharacters();
 	}
 
 	// Loads a fake prefab for the ritual room that already exists in the game space from the start
@@ -195,10 +189,30 @@ public class Control_GameState : MonoBehaviour {
 		spawnDoor(Data_Door.TYPE_LEFT_SIDE, ritualRoom, ritualRoomGameObject.transform, ritualRoomPrefab.size.x, 0);
 		spawnDoor(Data_Door.TYPE_BACK_DOOR, ritualRoom, ritualRoomGameObject.transform, ritualRoomPrefab.size.x, ritualRoomPrefab.doorSpawns[0]);
 		spawnDoor(Data_Door.TYPE_RIGHT_SIDE, ritualRoom, ritualRoomGameObject.transform, ritualRoomPrefab.size.x, 0);
+		// Load the ennviornment
+		ritualRoom.env.loadGameState(GS, 0);
+	}
+
+	// Initializes all characters on a new game
+	private void initializeCharacters() {
+		// INITIALIZE CADAVER
+		GS.setCadaverCharacter("Cadaver");
+		GS.getCadaver().updatePosition(GS.getRoomByIndex(0), -7, 0); // move the cadaver out of sight at first
+
+		// INITIALIZE PLAYER CHARACTER
+		GS.setPlayerCharacter("PlayerCharacter");
+		GS.getCHARA().updatePosition(GS.getRoomByIndex(0), 0, 0); // default: starting position is center of pentagram
+		GS.getCHARA().control.loadGameState(GS);
+
+		// INITIALIZE MONSTER
+		GS.setMonsterCharacter("Monster");
+		GS.getMonster().updatePosition(GS.getRoomByIndex(UnityEngine.Random.Range(1, GS.ROOMS.Count)), 0, 0);
+		GS.getMonster().setForbiddenRoomIndex(0);
+		GS.getMonster().control.loadGameState(GS);
 	}
 
 	// Place a door within both game state and game space
-	private void spawnDoor(int doorType, Data_Room parent, Transform parentTransform, float parentWidth, float xPos) {
+	private Data_Door spawnDoor(int doorType, Data_Room parent, Transform parentTransform, float parentWidth, float xPos) {
 		float horizontalRoomMargin = Global_Settings.read("HORIZONTAL_ROOM_MARGIN");
 		GameObject doorGameObj;
 		// Differentiate by type
@@ -221,10 +235,11 @@ public class Control_GameState : MonoBehaviour {
 		// Initialize the door object and add it
 		Data_Door doorObj = new Data_Door(GS.DOORS.Count, doorGameObj, doorType, parent, xPos);
 		GS.addDoor(doorObj);
+		return doorObj;
 	}
 
 	// Places the next item in a random spot
-	private void spawnNextItem() {
+	private Data_Item spawnNextItem() {
 		int newItemIndex = GS.ITEMS.Count;
 		// Calculate spawn position
 		Data_Position spawnPos = GS.getRandomItemSpawn();
@@ -240,7 +255,8 @@ public class Control_GameState : MonoBehaviour {
 		// Update the wall scribbles
 		StartCoroutine(updateWallScribbles(1.0f));
 		// Save the new game state to disk
-		Data_GameState.saveToDisk(GS);  
+		Data_GameState.saveToDisk(GS);
+		return newItem;
 	}
 
 	// Updates the scribbles on the wall in the ritual room, indicating the next item to find

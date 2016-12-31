@@ -82,11 +82,11 @@ public class Data_Room : IComparable<Data_Room> {
 	public void addDoor(Data_Door D)
 	{
 		switch(D.type) {
-		case Data_Door.TYPE_BACK_DOOR:
-			_backDoorIDs.Add(D.INDEX);
-			break;
 		case Data_Door.TYPE_LEFT_SIDE:
 			_leftSideDoorID = D.INDEX;
+			break;
+		case Data_Door.TYPE_BACK_DOOR:
+			_backDoorIDs.Add(D.INDEX);
 			break;
 		case Data_Door.TYPE_RIGHT_SIDE:
 			_rightSideDoorID = D.INDEX;
@@ -105,15 +105,19 @@ public class Data_Room : IComparable<Data_Room> {
 		}
 	}
 
-    // Resets game object references, e.g. after a saved state load
-    // NOTE: All doors must have their object references fixed before this function is called
-    public void fixObjectReferences(Data_GameState GS)
-    {
-        gameObj = GameObject.Find(_gameObjName);
-        env = gameObj.GetComponent<Environment_Room>();
-        // Re-associate doors
-        DOORS = new List<Data_Door>();
-		if(_leftSideDoorID > 0) {
+	// Resets game object references, e.g. after a saved state load
+	public void fixObjectReferences(Data_GameState GS, Factory_PrefabController prefabFactory)
+	{
+		// Relocate or respawn the game object
+		gameObj = GameObject.Find(_gameObjName);
+		if(gameObj == null) {
+			gameObj = prefabFactory.spawnRoomFromName(_gameObjName, Global_Settings.read("VERTICAL_ROOM_SPACING"));
+			_gameObjName = gameObj.name;
+		}
+		env = gameObj.GetComponent<Environment_Room>();
+		// Re-associate doors
+		DOORS = new List<Data_Door>();
+		if(_leftSideDoorID >= 0) {
 			Data_Door d = GS.getDoorByIndex(_leftSideDoorID);
 			DOORS.Add(d);
 			d.isIn = this;
@@ -123,15 +127,10 @@ public class Data_Room : IComparable<Data_Room> {
 			DOORS.Add(d);
 			d.isIn = this;
 		}
-		if(_rightSideDoorID > 0) {
+		if(_rightSideDoorID >= 0) {
 			Data_Door d = GS.getDoorByIndex(_rightSideDoorID);
 			DOORS.Add(d);
 			d.isIn = this;
 		}
-    }
-
-	// Returns how many doors are located in this room
-	public int getNumberOfDoors() {
-		return DOORS.Count;
 	}
 }

@@ -21,10 +21,13 @@ public class Factory_PrefabController : MonoBehaviour {
 	private GameObject prefabDoorRightSide;
 	private GameObject prefabDoorBack;
 
-	// TODO: Remove
-	void Awake() {
-		//loadRoomIndex();
-		//Debug.LogWarning(JsonUtility.ToJson(allRooms));
+	// Reset all counters (for starting a new game)
+	public void resetAllCounters() {
+		totalDoorCounter = 0;
+		totalItemCounter = 0;
+		Array.Clear(itemSpawnCount, 0, itemSpawnCount.Length);
+		totalRoomCounter = 1; // The ritual room is already placed by default
+		Array.Clear(roomSpawnCount, 0, roomSpawnCount.Length);
 	}
 
 	// Parses the index of the prefab that was used to spawn the object with a particular name
@@ -139,24 +142,6 @@ public class Factory_PrefabController : MonoBehaviour {
 		prefabDoorLeftSide = Resources.Load("Doors/PrefabDoor_LeftSide", typeof(GameObject)) as GameObject;
 		prefabDoorRightSide = Resources.Load("Doors/PrefabDoor_RightSide", typeof(GameObject)) as GameObject;
 		totalDoorCounter = 0;
-	}
-
-	// Spawns the specified doors within a room, returning all doors in order
-	public List<GameObject> spawnDoorsInARoom(Transform parentRoom, float roomWidth, bool leftSideDoor, float[] backDoors, bool rightSideDoor) {
-		List<GameObject> result = new List<GameObject>();
-		// If a left side door is wanted, spawn it
-		if(leftSideDoor) {
-			result.Add(spawnLeftSideDoor(parentRoom, roomWidth));
-		}
-		// Then, spawn every back door required
-		foreach(float xPos in backDoors) {
-			result.Add(spawnBackDoor(parentRoom, xPos));
-		}
-		// Lastly, spawn a right side door if it is wanted
-		if(rightSideDoor) {
-			result.Add(spawnRightSideDoor(parentRoom, roomWidth));
-		}
-		return result;
 	}
 
 	// Spawns a back door at the left position of the given room

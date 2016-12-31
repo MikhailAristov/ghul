@@ -97,7 +97,7 @@ public class Control_Monster : MonoBehaviour {
 							me.remainingThinkingTime = UnityEngine.Random.Range (1, 2);
 							me.isThinking = true;
 						} else {
-							print ("The monster can't find a door.");
+							//print ("The monster can't find a door.");
 							me.isRandomTargetSet = false;
 						}
 					}
@@ -183,7 +183,7 @@ public class Control_Monster : MonoBehaviour {
 		case 4:
 		case 5:
 			// going to a door
-			int numberOfDoors = me.isIn.getNumberOfDoors ();
+			int numberOfDoors = me.isIn.DOORS.Count;
 			int selectedDoor = UnityEngine.Random.Range (0, numberOfDoors);
 
 			bool doorFound = false;
@@ -198,7 +198,7 @@ public class Control_Monster : MonoBehaviour {
 			}
 			if (!doorFound) { 
 				// Confused...
-				print("The monster can't find a door.");
+				//print("The monster can't find a door.");
 				me.remainingThinkingTime = 2.0f;
 				me.isThinking = true;
 			}
@@ -262,6 +262,6 @@ public class Control_Monster : MonoBehaviour {
 
 		me.playerDetected = false;
 
-		Debug.Log(me + " walks from door #" + door + " to door #" + destinationDoor + " at position " + targetPosition);
+		//Debug.Log(me + " walks from door #" + door + " to door #" + destinationDoor + " at position " + targetPosition);
 	}
 }
