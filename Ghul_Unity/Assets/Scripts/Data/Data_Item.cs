@@ -82,7 +82,7 @@ public class Data_Item : Data_Character {
 		gameObj = GameObject.Find(_gameObjName);
 		if(gameObj == null) {
 			Vector3 localPos = new Vector3(atPos, elevation, -0.1f);
-			gameObj = prefabFactory.spawnNewItemFromName(_gameObjName, isIn.env.transform, localPos);
+			gameObj = prefabFactory.spawnItemFromName(_gameObjName, isIn.env.transform, localPos);
 		}
 
 		// Fix the rest

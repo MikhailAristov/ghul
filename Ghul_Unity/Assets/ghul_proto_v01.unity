@@ -369,7 +369,7 @@ Transform:
   - {fileID: 999095029}
   - {fileID: 672996759}
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 8
 --- !u!114 &76259739
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -581,7 +581,7 @@ Transform:
   m_Children:
   - {fileID: 1596318267}
   m_Father: {fileID: 0}
-  m_RootOrder: 10
+  m_RootOrder: 5
 --- !u!1 &347448714
 GameObject:
   m_ObjectHideFlags: 0
@@ -627,7 +627,7 @@ Transform:
   - {fileID: 1393213421}
   - {fileID: 1604531627}
   m_Father: {fileID: 0}
-  m_RootOrder: 9
+  m_RootOrder: 10
 --- !u!1 &495099016
 GameObject:
   m_ObjectHideFlags: 0
@@ -657,7 +657,7 @@ Transform:
   m_Children:
   - {fileID: 1621969376}
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 6
 --- !u!114 &495099018
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -809,7 +809,7 @@ Transform:
   - {fileID: 549877906}
   - {fileID: 1712201632}
   m_Father: {fileID: 0}
-  m_RootOrder: 8
+  m_RootOrder: 9
 --- !u!114 &615612569
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1968,7 +1968,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ItemIndex: {fileID: 4900000, guid: d676e679069ff974691e4219b61e19b4, type: 3}
-  RoomIndex: {fileID: 0}
+  RoomIndex: {fileID: 4900000, guid: 611c911e0b4bbbd4fa4bdd351c5af067, type: 3}
 --- !u!1 &1344317735
 GameObject:
   m_ObjectHideFlags: 0
@@ -2246,7 +2246,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1604531626}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.55, y: -1.18, z: 0}
+  m_LocalPosition: {x: 2.8, y: -0.8, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
@@ -2414,7 +2414,7 @@ GameObject:
   - 4: {fileID: 1763691761}
   - 114: {fileID: 1763691762}
   m_Layer: 0
-  m_Name: Room00
+  m_Name: Ritual Room
   m_TagString: Room
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2437,7 +2437,7 @@ Transform:
   - {fileID: 62670155}
   - {fileID: 1677224452}
   m_Father: {fileID: 0}
-  m_RootOrder: 6
+  m_RootOrder: 7
 --- !u!114 &1763691762
 MonoBehaviour:
   m_ObjectHideFlags: 0

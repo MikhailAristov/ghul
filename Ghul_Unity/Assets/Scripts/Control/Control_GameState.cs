@@ -123,7 +123,7 @@ public class Control_GameState : MonoBehaviour {
         GS = new Data_GameState();
 
         // INITIALIZE ROOMS
-        GS.addRoom("Room00");
+		GS.addRoom("Ritual Room");
         GS.addRoom("Room01");
         GS.addRoom("Room02");
         GS.addRoom("Room03");
@@ -144,6 +144,12 @@ public class Control_GameState : MonoBehaviour {
         GS.connectTwoDoors(2, 6);
         GS.connectTwoDoors(4, 7);
         // TODO: Must ensure that side doors never connect to the opposite sides, or it will look weird and cause trouble with room transitions
+
+		{
+			GameObject nextRoom = prefabFactory.spawnRandomRoom(Global_Settings.read("VERTICAL_ROOM_SPACING"));
+			Factory_PrefabRooms.RoomPrefab roomPrefab = prefabFactory.getRoomPrefabDetails(nextRoom.name);
+			prefabFactory.spawnDoorsInARoom(nextRoom.transform, roomPrefab.size.x, roomPrefab.doorSpawnLeft, roomPrefab.doorSpawns, roomPrefab.doorSpawnRight);
+		}
 
 		// INITIALIZE ITEM SPOTS
 		GS.addItemSpot("ItemSpot1-1", 1);
