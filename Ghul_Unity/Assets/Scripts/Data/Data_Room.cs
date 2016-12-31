@@ -38,12 +38,6 @@ public class Data_Room : IComparable<Data_Room> {
     private List<int> _doorIds;
     [NonSerialized]
     public List<Data_Door> DOORS;
-
-	// List of item spots within the current room
-	[SerializeField]
-	private List<int> _itemSpotIds;
-	[NonSerialized]
-	public List<Data_ItemSpawn> ITEM_SPAWN_POINTS;
     
 	// TODO
 	[SerializeField]
@@ -77,9 +71,6 @@ public class Data_Room : IComparable<Data_Room> {
         }
         _doorIds = new List<int>();
         DOORS = new List<Data_Door>();
-		_itemSpotIds = new List<int>();
-		ITEM_SPAWN_POINTS = new List<Data_ItemSpawn>();
-
 		_itemSpawnPoints = new List<Data_Position>();
     }
 
@@ -155,24 +146,10 @@ public class Data_Room : IComparable<Data_Room> {
             DOORS.Add(d);
             d.isIn = this;
         }
-		// Re-associate item spots
-		ITEM_SPAWN_POINTS = new List<Data_ItemSpawn>();
-		foreach (int id in _itemSpotIds)
-		{
-			Data_ItemSpawn iSpot = GS.getItemSpawnPointByIndex(id);
-			ITEM_SPAWN_POINTS.Add(iSpot);
-			iSpot.RoomId = this.INDEX;
-		}
     }
 
 	// Returns how many doors are located in this room
 	public int getNumberOfDoors() {
 		return DOORS.Count;
-	}
-
-	// Adds a door to this room at a specific position. NOTE: The y-value is a local coordinate
-	public void addItemSpot(Data_ItemSpawn iSpawnPoint) {
-		_itemSpotIds.Add(iSpawnPoint.INDEX);
-		ITEM_SPAWN_POINTS.Add(iSpawnPoint);
 	}
 }

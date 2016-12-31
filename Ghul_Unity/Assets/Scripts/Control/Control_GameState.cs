@@ -145,7 +145,7 @@ public class Control_GameState : MonoBehaviour {
         GS.connectTwoDoors(2, 6);
         GS.connectTwoDoors(4, 7);
         // TODO: Must ensure that side doors never connect to the opposite sides, or it will look weird and cause trouble with room transitions
-
+		/*
 		List<string> prefabNames = new List<string>(new string[] {"Room04: Foyer [prefab02]", "Room05: Foyer [prefab00]"});
 		foreach(string n in prefabNames) {
 			// TODO: GameObject nextRoom = prefabFactory.spawnRandomRoom(Global_Settings.read("VERTICAL_ROOM_SPACING"));
@@ -191,17 +191,7 @@ public class Control_GameState : MonoBehaviour {
 				}
 			}
 		}
-
-		// INITIALIZE ITEM SPOTS
-		GS.addItemSpot("ItemSpot1-1", 1);
-		GS.addItemSpot("ItemSpot1-2", 1);
-		GS.addItemSpot("ItemSpot2-1", 2);
-		GS.addItemSpot("ItemSpot2-2", 2);
-		GS.addItemSpot("ItemSpot2-3", 2);
-		GS.addItemSpot("ItemSpot2-4", 2);
-		GS.addItemSpot("ItemSpot3-1", 3);
-		GS.addItemSpot("ItemSpot3-2", 3);
-		GS.addItemSpot("ItemSpot3-3", 3);
+		*/
 
         // Load game state into room environment scripts
         foreach (Data_Room r in GS.ROOMS.Values) {
@@ -233,15 +223,13 @@ public class Control_GameState : MonoBehaviour {
 	// Places the next item in a random spot
 	private void spawnNextItem() {
 		int newItemIndex = GS.ITEMS.Count;
-		int newSpawnIndex = Random.Range(0, GS.ITEM_SPOTS.Count);
 		// Calculate spawn position
-		Data_ItemSpawn spawnPos = GS.getItemSpawnPointByIndex(newSpawnIndex);
+		Data_Position spawnPos = GS.getRandomItemSpawn();
 		Transform parentRoom = GS.getRoomByIndex(spawnPos.RoomId).env.transform;
 		Vector3 gameObjectPos = new Vector3(spawnPos.X, spawnPos.Y, -0.1f);
 		// Spawn a new item from prefabs
 		GameObject newItemObj = prefabFactory.spawnRandomItem(parentRoom, gameObjectPos);
 		Data_Item newItem = GS.addItem(newItemObj.name);
-		GS.setItemSpawnPoint(newItemIndex, newSpawnIndex);
 		// Place the new item
 		newItem.control.loadGameState(GS, newItemIndex);
 		newItem.control.resetToSpawnPosition();

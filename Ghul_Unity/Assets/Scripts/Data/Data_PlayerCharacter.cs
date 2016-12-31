@@ -54,12 +54,6 @@ public class Data_PlayerCharacter : Data_Character {
 		carriedItem = null;
     }
 
-    // Moves the player character back to the starting position
-    public void resetPosition(Data_GameState GS)
-    {
-        updatePosition(GS.getRoomByIndex(startingPos.RoomId), startingPos.X);
-    }
-
     // Updates the stamina meter with the specified amount (positive or negative), within boundaries
     // Sets the exhausted flag as necessary and returns the final value of the meter
     public float modifyStamina(float Delta)

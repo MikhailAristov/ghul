@@ -35,7 +35,11 @@ public class Data_Character {
     {
         get { return pos.X; }
         private set { return; }
-    }
+	}
+
+	// Position of the character within game space
+	[SerializeField]
+	protected Data_Position _spawnPos;
 
     // Constructor
     public Data_Character(string gameObjectName)
@@ -52,19 +56,29 @@ public class Data_Character {
     public override string ToString() { return name; }
 
     // Complete position specification
-    public void updatePosition(Data_Room R, float xPos)
+	public void updatePosition(Data_Room R, float xPos, float yPos)
     {
         if (_pos == null) { // Initial specification
-            _pos = new Data_Position(R.INDEX, xPos);
+			_pos = new Data_Position(R.INDEX, xPos, yPos);
+			_spawnPos = _pos.clone();
         } else {
             _pos.RoomId = R.INDEX;
-            _pos.X = xPos;
+			_pos.X = xPos;
+			_pos.Y = yPos;
         }
         isIn = R;
     }
-    // Quicker update of horizontal position
+    // Quicker updates
+	public void updatePosition(Data_Room R, float xPos) {
+		float yPos = (_pos == null) ? 0f : _pos.Y;
+		updatePosition(R, xPos, yPos);
+	}
     public void updatePosition(float Pos) {
         _pos.X = Pos;
     }
 
+	// Reset the position back to spawn point
+	public void resetPosition(Data_GameState GS) {
+		updatePosition(GS.getRoomByIndex(_spawnPos.RoomId), _spawnPos.X, _spawnPos.Y);
+	}
 }

@@ -19,8 +19,6 @@ public class Data_GameState {
     [SerializeField]
     public SortedList<int, Data_Door> DOORS;
 	[SerializeField]
-	public SortedList<int, Data_ItemSpawn> ITEM_SPOTS;
-	[SerializeField]
 	public SortedList<int, Data_Item> ITEMS;
 
     [SerializeField]
@@ -39,7 +37,6 @@ public class Data_GameState {
     {
         ROOMS = new SortedList<int, Data_Room>();
         DOORS = new SortedList<int, Data_Door>();
-		ITEM_SPOTS = new SortedList<int, Data_ItemSpawn>();
 		ITEMS = new SortedList<int, Data_Item>();
         PLAYER_CHARACTER = null;
         MONSTER = null;
@@ -73,19 +70,6 @@ public class Data_GameState {
 		DOORS.Add(newDoor.INDEX, newDoor);
 	}
 
-	// Adds an item spot to the game state, as well as to its containing room
-	public void addItemSpot(string gameObjectName, int RoomIndex) 
-	{
-		int index = ITEM_SPOTS.Count;
-		GameObject gameObj = GameObject.Find(gameObjectName);
-		float relativeX = gameObj.transform.localPosition.x;
-		float relativeY = gameObj.transform.localPosition.y;
-
-		Data_ItemSpawn spot = new Data_ItemSpawn(index, RoomIndex, relativeX, relativeY);
-		ITEM_SPOTS.Add(index, spot);
-		ROOMS[RoomIndex].addItemSpot(spot);
-	}
-
 	// Adds an item to the game state
 	public Data_Item addItem(string gameObjectName) 
 	{
@@ -100,13 +84,6 @@ public class Data_GameState {
 	{
         DOORS[fromIndex].connectTo(DOORS[toIndex]);
     }
-
-	// Assigns an item to its spawn point
-	public void setItemSpawnPoint(int itemIndex, int spotIndex) 
-	{
-		Data_Item curItem = getItemByIndex(itemIndex);
-		curItem.itemSpotIndex = spotIndex;
-	}
 
     // Sets the player character object
     public void setPlayerCharacter(string gameObjectName)
@@ -163,16 +140,6 @@ public class Data_GameState {
             throw new System.ArgumentException("There is no door #" + I);
         }
     }
-
-	// Returns an ItemSpot object to a given index, if it exists
-	public Data_ItemSpawn getItemSpawnPointByIndex(int I)
-	{
-		if (ITEM_SPOTS.ContainsKey(I)) {
-			return ITEM_SPOTS[I];
-		} else {
-			throw new System.ArgumentException("There is no item spawn point #" + I);
-		}
-	}
 
 	// Returns a random item spawn point
 	public Data_Position getRandomItemSpawn() {

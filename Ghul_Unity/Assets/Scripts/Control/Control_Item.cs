@@ -13,9 +13,6 @@ public class Control_Item : MonoBehaviour {
 	private float ITEM_FLOOR_LEVEL;
 	private Vector2 ITEM_POSITION_FOR_RITUAL;
 
-	// Use this for initialization
-	void Start() {	}
-
 	// To make sure the game state is fully initialized before loading it, this function is called by game state class itself
 	public void loadGameState(Data_GameState gameState, int ownIndex)
 	{
@@ -93,10 +90,8 @@ public class Control_Item : MonoBehaviour {
 		if(me.state == Data_Item.STATE_ON_CADAVER || me.state == Data_Item.STATE_INITIAL) {
 			// Reset the state
 			me.state = Data_Item.STATE_INITIAL;
-			// Find the original spawn point and reset the position
-			Data_ItemSpawn target = GS.getItemSpawnPointByIndex(me.itemSpotIndex);
-			Data_Room spawnRoom = GS.getRoomByIndex(target.RoomId);
-			me.updatePosition(spawnRoom, target.X, target.Y);
+			// Reset the position back to spawn point in game state and game space
+			me.resetPosition(GS);
 			updateGameObjectPosition();
 			// Show the object
 			GetComponent<Renderer>().enabled = true;

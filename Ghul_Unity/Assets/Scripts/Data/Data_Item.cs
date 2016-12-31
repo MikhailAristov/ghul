@@ -25,19 +25,6 @@ public class Data_Item : Data_Character {
 		private set { _INDEX = value; }
 	}
 
-	// The item spot this item is originally placed in
-	[SerializeField]
-	private Data_Position _spawnPoint;
-		
-	// Current position of the item along the Y-axis, relative to the container
-	[SerializeField]
-	private float _localElevation;
-	public float elevation
-	{
-		get { return _localElevation; }
-		private set { return; }
-	}
-
 	// The current state of the item (available values see above)
 	[SerializeField]
 	private int _itemState;
@@ -47,16 +34,16 @@ public class Data_Item : Data_Character {
 		set { _itemState = value; }
 	}
 
+	// Convenience property
+	public float elevation {
+		get { return _pos.Y; }
+		private set { return; }
+	}
+
 	// Constructor
 	public Data_Item(string gameObjectName) : base(gameObjectName) {
 		control = gameObj.GetComponent<Control_Item>();
 		_itemState = Data_Item.STATE_INITIAL;
-	}
-
-	// Complete position specification
-	public void updatePosition(Data_Room R, float xPos, float relElevation) {
-		base.updatePosition(R, xPos);
-		_localElevation = relElevation;
 	}
 
 	// Check if the item can be picked up
