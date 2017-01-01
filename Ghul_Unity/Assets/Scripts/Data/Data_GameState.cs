@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.CompilerServices;
 using System.Linq;
@@ -117,7 +118,18 @@ public class Data_GameState {
         } else {
             throw new System.ArgumentException("There is no room #" + I);
         }
-    }
+	}
+
+	// Returns the room that is the furthest from the one with the given index
+	public Data_Room getRoomFurthestFrom(int roomIndex) {
+		int result = roomIndex;
+		for(int i = 0; i < ROOMS.Count; i++) {
+			if(distanceBetweenTwoRooms[roomIndex, i] > distanceBetweenTwoRooms[roomIndex, result]) {
+				result = i;
+			}
+		}
+		return ROOMS[result];
+	}
 
     // Returns a Door object to a given index, if it exists
     public Data_Door getDoorByIndex(int I) {
@@ -187,16 +199,21 @@ public class Data_GameState {
             return null;
         }
 
-        Debug.Log("Loading game from " + resettableFilePath);
-        
-        // Prepare opening the file
-        BinaryFormatter bf = new BinaryFormatter();
-        FileStream file = File.Open(resettableFilePath, FileMode.Open);
+		try {
+			Debug.Log("Loading game from " + resettableFilePath);
 
-        // Read the file to memory and close it
-		Data_GameState result = (Data_GameState)bf.Deserialize(file);
-        file.Close();
-        return result;        
+			// Prepare opening the file
+			BinaryFormatter bf = new BinaryFormatter();
+			FileStream file = File.Open(resettableFilePath, FileMode.Open);
+
+			// Read the file to memory and close it
+			Data_GameState result = (Data_GameState)bf.Deserialize(file);
+			file.Close();
+			return result;
+		} catch(SerializationException) {
+			Debug.LogWarning("The saved game " + resettableFilePath + " is corrupted, starting a new game instead");
+			return null;
+		}  
 	}
 
 	// Calculates all-pairs shortest distances between all doors and all rooms,

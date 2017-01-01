@@ -180,7 +180,7 @@ public class Control_GameState : MonoBehaviour {
 		}
 
 		// Initialize all the characters
-		initializeCharacters();
+		initializeCharacters(0);
 	}
 
 	// Loads a fake prefab for the ritual room that already exists in the game space from the start
@@ -199,19 +199,19 @@ public class Control_GameState : MonoBehaviour {
 	}
 
 	// Initializes all characters on a new game
-	private void initializeCharacters() {
+	private void initializeCharacters(int ritualRoomIndex) {
 		// INITIALIZE CADAVER
 		GS.setCadaverCharacter("Cadaver");
-		GS.getCadaver().updatePosition(GS.getRoomByIndex(0), -7, 0); // move the cadaver out of sight at first
+		GS.getCadaver().updatePosition(GS.getRoomByIndex(ritualRoomIndex), -7, 0); // move the cadaver out of sight at first
 
 		// INITIALIZE PLAYER CHARACTER
 		GS.setPlayerCharacter("PlayerCharacter");
-		GS.getCHARA().updatePosition(GS.getRoomByIndex(0), 0, 0); // default: starting position is center of pentagram
+		GS.getCHARA().updatePosition(GS.getRoomByIndex(ritualRoomIndex), 0, 0); // default: starting position is center of pentagram
 		GS.getCHARA().control.loadGameState(GS);
 
 		// INITIALIZE MONSTER
 		GS.setMonsterCharacter("Monster");
-		GS.getMonster().updatePosition(GS.getRoomByIndex(UnityEngine.Random.Range(1, GS.ROOMS.Count)), 0, 0);
+		GS.getMonster().updatePosition(GS.getRoomFurthestFrom(ritualRoomIndex), 0, 0);
 		GS.getMonster().setForbiddenRoomIndex(0);
 		GS.getMonster().control.loadGameState(GS);
 	}
