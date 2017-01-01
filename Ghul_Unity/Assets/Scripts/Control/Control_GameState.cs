@@ -206,6 +206,7 @@ public class Control_GameState : MonoBehaviour {
 		// INITIALIZE CADAVER
 		GS.setCadaverCharacter("Cadaver");
 		GS.getCadaver().updatePosition(GS.getRoomByIndex(ritualRoomIndex), -7, 0); // move the cadaver out of sight at first
+		GS.getCadaver().gameObj.transform.position = new Vector3(-7, 0, 0);
 
 		// INITIALIZE PLAYER CHARACTER
 		GS.setPlayerCharacter("PlayerCharacter");
