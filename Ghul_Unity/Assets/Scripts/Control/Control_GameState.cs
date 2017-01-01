@@ -161,7 +161,6 @@ public class Control_GameState : MonoBehaviour {
 
 		// TODO: Connect doors properly
 		// TODO: Must ensure that side doors never connect to the opposite sides, or it will look weird and cause trouble with room transitions
-		int connectionCounter = 0;
 		foreach(Data_Door d in GS.DOORS.Values) {
 			if(d.connectsTo == null) {
 				Data_Door targetDoor;
@@ -169,15 +168,12 @@ public class Control_GameState : MonoBehaviour {
 					targetDoor = GS.getDoorByIndex(UnityEngine.Random.Range(0, GS.DOORS.Count));
 				} while(targetDoor.connectsTo != null); // TODO || targetDoor.isIn == d.isIn
 				d.connectTo(targetDoor);
-				connectionCounter += 2;
-				if((connectionCounter + 2) > GS.DOORS.Count) {
-					break;
-				}
 			}
 		}
 
 		// Precompute all pairs shorstest distances
-		GS.precomputeAllPairsShortestDistances();
+		// ToDo: proper transition cost
+		GS.precomputeAllPairsShortestDistances(1.337f);
 
 		initializeCharacters();
 	}

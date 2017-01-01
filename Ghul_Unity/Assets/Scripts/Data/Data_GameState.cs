@@ -194,19 +194,19 @@ public class Data_GameState {
         return result;        
 	}
 
-	// Precomputes the complete matrix of distances between doors and rooms
+	// Calculates all-pairs shortest distances between all doors and all rooms,
+	// wherein the shortest distance between two rooms is the shortest door-to-door conection between them,
+	// and stores both as matrices within the game state
 	// See https://en.wikipedia.org/wiki/Floyd%E2%80%93Warshall_algorithm
-	public void precomputeAllPairsShortestDistances() {
-		float doorTransitionCost = 0.0f;
-		precomputeDoorDistances(doorTransitionCost);
-		precomputeRoomDistances(doorTransitionCost);
-	}
-
-	private void precomputeDoorDistances(float doorTransitionCost) {
-		// Prepare the door graph
-		// Assume that the vertices are already ordered and without gaps
+	public void precomputeAllPairsShortestDistances(float doorTransitionCost) {
+		// Prepare the door graph after assuming that the vertices are already ordered and without gaps
 		distanceBetweenTwoDoors = new float[DOORS.Count, DOORS.Count]; // Square distance matrix
 		for(int i = 0; i < DOORS.Count; i++) {
+			// Plausibility check
+			if(DOORS[i].connectsTo == null) {
+				throw new IndexOutOfRangeException(DOORS[i].gameObj.name + " doesn't connect to anything!");
+			}
+			// Initialize the distance to every other door
 			for(int j = 0; j < DOORS.Count; j++) {
 				// Distance := 0 if i == j
 				if(i == j) { 
@@ -220,27 +220,52 @@ public class Data_GameState {
 				else if(DOORS[i].isIn == DOORS[j].isIn) {
 					distanceBetweenTwoDoors[i, j] = Math.Abs(DOORS[i].atPos - DOORS[j].atPos);
 				}
-				// Otherwise, initialize it to infinity
+				// Otherwise, initialize it to half infinity (only half to avoid float overflows)
 				else {
-					distanceBetweenTwoDoors[i, j] = float.MaxValue;
+					distanceBetweenTwoDoors[i, j] = float.MaxValue / 2;
 				}
 			}
 		}
-		// Floyd-Warshall algorithm:
+		// Also prepare the room graph under the same assumption
+		distanceBetweenTwoRooms = new float[ROOMS.Count, ROOMS.Count];
+		for(int i = 0; i < ROOMS.Count; i++) {
+			for(int j = 0; j < ROOMS.Count; j++) {
+				distanceBetweenTwoRooms[i, j] = (i == j) ? 0.0f : float.MaxValue / 2;
+			}
+		}
+		// Floyd-Warshall algorithm (extended)
 		for(int k = 0; k < DOORS.Count; k++) {
 			for(int i = 0; i < DOORS.Count; i++) {
+				int iRoom = DOORS[i].isIn.INDEX;
 				for(int j = 0; j < DOORS.Count; j++) {
+					int jRoom = DOORS[j].isIn.INDEX;
+					// Update the door distance if necessary
 					if(distanceBetweenTwoDoors[i, j] > distanceBetweenTwoDoors[i, k] + distanceBetweenTwoDoors[k, j]) {
 						distanceBetweenTwoDoors[i, j] = distanceBetweenTwoDoors[i, k] + distanceBetweenTwoDoors[k, j];
+					}
+					// Also update the rooms with the new door distance if necessary
+					if(distanceBetweenTwoRooms[iRoom, jRoom] > distanceBetweenTwoDoors[i, j]) {
+						distanceBetweenTwoRooms[iRoom, jRoom] = distanceBetweenTwoDoors[i, j];
 					}
 				}
 			}
 		}
-		// TODO output the results
-		Debug.Log(JsonUtility.ToJson(distanceBetweenTwoDoors, true));
+		/*
+		Debug.Log(matrixToString(distanceBetweenTwoDoors, 2));
+		Debug.Log(matrixToString(distanceBetweenTwoRooms, 2));
+		*/
 	}
 
-	private void precomputeRoomDistances(float doorTransitionCost) {
-
+	// For debug only (outputs a 2D matrix of floats in a human-readable form)
+	private string matrixToString(float[,] matrix, int precision) {
+		string formatString = "{0," + (5 + precision).ToString() + ":0." + (new string('0', precision)) + "}";
+		string result = ""; 
+		for(int i = 0; i < matrix.GetLength(0); i++) {
+			for(int j = 0; j < matrix.GetLength(1); j++) {
+				result += String.Format(formatString, matrix[i, j]);
+			}
+			result += "\n";
+		}
+		return result;
 	}
 }
