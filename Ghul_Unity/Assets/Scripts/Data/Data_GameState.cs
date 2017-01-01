@@ -35,7 +35,7 @@ public class Data_GameState {
 	[SerializeField]
 	private float[,] distanceBetweenTwoRooms;
 	public bool allRoomsReachable {
-		get { return distanceBetweenTwoRooms.Cast<float>().Max() < float.MaxValue; }
+		get { return ( distanceBetweenTwoRooms.Cast<float>().Max() < (float.MaxValue / 2) ); }
 		private set { return; }
 	}
 
@@ -291,4 +291,39 @@ public class Data_GameState {
 		return result;
 	}
 
+	// Find the (horizontal) distance between two arbitrary positions
+	public float getDistance(Data_Position a, Data_Position b) {
+		// Simple case: same room
+		if(a.RoomId == b.RoomId) {
+			return Math.Abs(a.X - b.X);
+		} else {
+			// Different rooms: check door distances
+			float result = float.MaxValue;
+			foreach(Data_Door startingDoor in getRoomByIndex(a.RoomId).DOORS) {
+				float dist = Math.Abs(startingDoor.atPos - a.X) + getDistance(startingDoor, b); // Recycling of the other function
+				if(dist < result) {
+					result = dist;
+				}
+			}
+			return result;
+		}
+	}
+
+	// Find the (horizontal) distance between a particular door and a target position
+	public float getDistance(Data_Door door, Data_Position pos) {
+		// Simple case: same room
+		if(door.isIn.INDEX == pos.RoomId) {
+			return Math.Abs(door.atPos - pos.X);
+		} else {
+			// Different rooms: check door distances
+			float result = float.MaxValue;
+			foreach(Data_Door targetDoor in getRoomByIndex(pos.RoomId).DOORS) {
+				float dist = distanceBetweenTwoDoors[door.INDEX, targetDoor.INDEX] + Math.Abs(targetDoor.atPos - pos.X);
+				if(dist < result) {
+					result = dist;
+				}
+			}
+			return result;
+		}
+	}
 }
