@@ -37,14 +37,16 @@ public class Control_PlayerCharacter : MonoBehaviour {
 
 	// Graphics parameters
 	private SpriteRenderer stickmanRenderer;
-	private Control_Camera MAIN_CAMERA_CONTROL;
+	private Control_Camera mainCameraControl;
+	private Control_Sound soundSystem;
 	public Canvas inventoryUI;
 
     // Use this for initialization; note that only local variables are initialized here, game state is loaded later
     void Start () {
 		stickmanRenderer = transform.FindChild("Stickman").GetComponent<SpriteRenderer>(); // Find the child "Stickman", then its Sprite Renderer and then the renderer's sprite
-		MAIN_CAMERA_CONTROL = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Control_Camera>();
+		mainCameraControl = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Control_Camera>();
 		inventoryUI.transform.FindChild("CurrentItem").GetComponent<Image>().CrossFadeAlpha(0.0f, 0.0f, false);
+		soundSystem = GameObject.Find("GameState").GetComponent<Control_Sound>();
     }
 
     // To make sure the game state is fully initialized before loading it, this function is called by game state class itself
@@ -174,7 +176,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		me.etherialCooldown = DOOR_TRANSITION_DURATION;
 
 		// Fade out and wait
-		MAIN_CAMERA_CONTROL.fadeOut(DOOR_TRANSITION_DURATION / 2);
+		mainCameraControl.fadeOut(DOOR_TRANSITION_DURATION / 2);
 		yield return new WaitForSeconds(DOOR_TRANSITION_DURATION);
 
 		Data_Door destinationDoor = door.connectsTo;
@@ -185,16 +187,17 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		me.updatePosition(destinationRoom, newValidPosition);
 		currentEnvironment = me.isIn.env;
 		me.remainingReactionTime = TIME_TO_REACT;
-		MAIN_CAMERA_CONTROL.resetRedOverlay();
+		mainCameraControl.resetRedOverlay();
 
 		// Move character sprite
 		Vector3 targetPosition = new Vector3(newValidPosition, destinationRoom.INDEX * VERTICAL_ROOM_SPACING);
 		transform.Translate(targetPosition - transform.position);
 
 		// Fade back in
-		MAIN_CAMERA_CONTROL.fadeIn(DOOR_TRANSITION_DURATION / 2);
+		mainCameraControl.fadeIn(DOOR_TRANSITION_DURATION / 2);
 
-		Debug.Log(me + " walks from door #" + door + " to door #" + destinationDoor + " at position " + targetPosition);
+		// Make noise at the original door's location
+		soundSystem.makeNoise(Control_Sound.NOISE_TYPE_DOOR, door.pos);
 
 		// Trigger an autosave upon changing locations
 		Data_GameState.saveToDisk(GS);
@@ -206,7 +209,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		if(me.remainingReactionTime <= 0.0f) {
 			StartCoroutine(dieAndRespawn());
 		} else {
-			MAIN_CAMERA_CONTROL.setRedOverlay(1.0f - me.remainingReactionTime / TIME_TO_REACT);
+			mainCameraControl.setRedOverlay(1.0f - me.remainingReactionTime / TIME_TO_REACT);
 		}
 	}
 
@@ -214,7 +217,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		// Start cooldown
 		me.etherialCooldown = RESPAWN_TRANSITION_DURATION;
 
-		MAIN_CAMERA_CONTROL.setRedOverlay(0.0f);
+		mainCameraControl.setRedOverlay(0.0f);
 		Debug.Log(me + " died...");
 
 		// Hide chara's sprite and replace it with the cadaver
@@ -226,7 +229,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
 
 		// Wait before fading out
 		yield return new WaitForSeconds(RESPAWN_TRANSITION_DURATION / 3);
-		MAIN_CAMERA_CONTROL.fadeOut(RESPAWN_TRANSITION_DURATION / 3);
+		mainCameraControl.fadeOut(RESPAWN_TRANSITION_DURATION / 3);
 		// Wait until fade out is complete before moving the sprite
 		yield return new WaitForSeconds(RESPAWN_TRANSITION_DURATION / 3);
 
@@ -237,7 +240,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		stickmanRenderer.enabled = true;
 
 		// Fade back in
-		MAIN_CAMERA_CONTROL.fadeIn(RESPAWN_TRANSITION_DURATION / 3);
+		mainCameraControl.fadeIn(RESPAWN_TRANSITION_DURATION / 3);
 
 		// Reset the hitpoints
 		me.remainingReactionTime = TIME_TO_REACT;
@@ -255,6 +258,8 @@ public class Control_PlayerCharacter : MonoBehaviour {
 			currentItem.control.moveToInventory();
 			me.carriedItem = currentItem;
 			Debug.Log("Item #" + currentItem.INDEX + " collected.");
+			// Make noise at the current location
+			soundSystem.makeNoise(Control_Sound.NOISE_TYPE_ITEM, me.pos);
 			// Auto save when collecting an item.
 			Data_GameState.saveToDisk(GS);
 			// Show inventory
@@ -273,6 +278,8 @@ public class Control_PlayerCharacter : MonoBehaviour {
 			me.carriedItem = null;
 			// Reset the reaction time after dropping the item
 			me.remainingReactionTime = TIME_TO_REACT;
+			// Make noise at the current location
+			soundSystem.makeNoise(Control_Sound.NOISE_TYPE_ITEM, me.pos);
 			// Auto save when dropping an item.
 			Data_GameState.saveToDisk(GS);
 		}

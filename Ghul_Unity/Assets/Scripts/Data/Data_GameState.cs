@@ -131,6 +131,11 @@ public class Data_GameState {
 		return ROOMS[result];
 	}
 
+	// Get a random room
+	public Data_Room getRandomRoom(bool includeRitualRoom) {
+		return getRoomByIndex(UnityEngine.Random.Range((includeRitualRoom ? 0 : 1), ROOMS.Count));
+	}
+
     // Returns a Door object to a given index, if it exists
     public Data_Door getDoorByIndex(int I) {
         if (DOORS.ContainsKey(I)) {
@@ -157,9 +162,9 @@ public class Data_GameState {
 
 	// Returns a random item spawn point
 	public Data_Position getRandomItemSpawn() {
-		Data_Room room; Data_Position result;
+		Data_Position result;
 		do { // Find a random room with item spawn points and pick one at random
-			room = getRoomByIndex(UnityEngine.Random.Range(0, ROOMS.Count));
+			Data_Room room = getRandomRoom(false);
 			result = room.getRandomItemSpawnPoint();
 		} while(result == null);
 		return result;
@@ -174,8 +179,6 @@ public class Data_GameState {
             // Set the save file paths
             string resettableFilePath = Application.persistentDataPath + "/" + FILENAME_SAVE_RESETTABLE;
             //string permanentFilePath = Application.persistentDataPath + "/" + FILENAME_SAVE_PERMANENT;
-
-            Debug.Log("Saving game to " + resettableFilePath);
 
             // Prepare writing file
             BinaryFormatter bf = new BinaryFormatter();
@@ -272,10 +275,6 @@ public class Data_GameState {
 				}
 			}
 		}
-		/*
-		Debug.Log(matrixToString(distanceBetweenTwoDoors, 2));
-		Debug.Log(matrixToString(distanceBetweenTwoRooms, 2));
-		*/
 	}
 
 	// For debug only (outputs a 2D matrix of floats in a human-readable form)

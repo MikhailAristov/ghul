@@ -23,9 +23,6 @@ public class Control_Monster : MonoBehaviour {
 
 	public bool DEBUG_DANGEROUS; // set to false to make the monster "blind"
 
-	// Use this for initialization
-	void Start () {	}
-
 	// To make sure the game state is fully initialized before loading it, this function is called by game state class itself
 	public void loadGameState(Data_GameState gameState)
 	{
@@ -263,5 +260,10 @@ public class Control_Monster : MonoBehaviour {
 		me.playerDetected = false;
 
 		//Debug.Log(me + " walks from door #" + door + " to door #" + destinationDoor + " at position " + targetPosition);
+	}
+
+	// TODO The sound system triggers this function to inform the monster of incoming sounds
+	public void hearNoise(Data_Door doorway, float loudness) {
+		Debug.LogWarning(me + " hears a noise from door #" + doorway + " at volume " + loudness);
 	}
 }

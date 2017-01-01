@@ -125,6 +125,7 @@ public class Control_GameState : MonoBehaviour {
     private void resetGameState()
     {
 		// Remove all doors, rooms and items
+		StopAllCoroutines();
 		List<GameObject> oldGameObjects = new List<GameObject>(GameObject.FindGameObjectsWithTag("Item"));
 		oldGameObjects.AddRange(GameObject.FindGameObjectsWithTag("Door"));
 		oldGameObjects.AddRange(GameObject.FindGameObjectsWithTag("Room"));
