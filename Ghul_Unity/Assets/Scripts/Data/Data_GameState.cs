@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.CompilerServices;
+using System.Linq;
 
 [Serializable]
 public class Data_GameState {
@@ -32,6 +33,10 @@ public class Data_GameState {
 	private float[,] distanceBetweenTwoDoors;
 	[SerializeField]
 	private float[,] distanceBetweenTwoRooms;
+	public bool allRoomsReachable {
+		get { return distanceBetweenTwoRooms.Cast<float>().Max() < float.MaxValue; }
+		private set { return; }
+	}
 
     private static bool SAVING_DISABLED = false; // For debugging purposes
     private static string FILENAME_SAVE_RESETTABLE = "save1.dat";
@@ -268,4 +273,5 @@ public class Data_GameState {
 		}
 		return result;
 	}
+
 }

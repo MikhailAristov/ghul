@@ -166,15 +166,20 @@ public class Control_GameState : MonoBehaviour {
 				Data_Door targetDoor;
 				do {
 					targetDoor = GS.getDoorByIndex(UnityEngine.Random.Range(0, GS.DOORS.Count));
-				} while(targetDoor.connectsTo != null); // TODO || targetDoor.isIn == d.isIn
+				} while(targetDoor.connectsTo != null);
 				d.connectTo(targetDoor);
 			}
 		}
 
-		// Precompute all pairs shorstest distances
-		// ToDo: proper transition cost
-		GS.precomputeAllPairsShortestDistances(1.337f);
+		// A rough estimation of what "distance" lies between two sides of a door for the all-pairs shortest distance calculation
+		float doorTransitionCost = Global_Settings.read("CHARA_WALKING_SPEED") * Global_Settings.read("DOOR_TRANSITION_DURATION");
+		// Precompute all-pairs shortest distances
+		GS.precomputeAllPairsShortestDistances(doorTransitionCost);
+		if(!GS.allRoomsReachable) {
+			Debug.LogWarning("APSD: Some rooms are unreachable!");
+		}
 
+		// Initialize all the characters
 		initializeCharacters();
 	}
 
