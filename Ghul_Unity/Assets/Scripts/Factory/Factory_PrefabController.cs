@@ -23,11 +23,12 @@ public class Factory_PrefabController : MonoBehaviour {
 
 	// Reset all counters (for starting a new game)
 	public void resetAllCounters() {
+		// Reload all rooms
+		loadRoomIndex();
+		// Reset door index
 		totalDoorCounter = 0;
-		totalItemCounter = 0;
-		Array.Clear(itemSpawnCount, 0, itemSpawnCount.Length);
-		totalRoomCounter = 1; // The ritual room is already placed by default
-		Array.Clear(roomSpawnCount, 0, roomSpawnCount.Length);
+		// Reload all items
+		loadItemIndex();
 	}
 
 	// Parses the index of the prefab that was used to spawn the object with a particular name
