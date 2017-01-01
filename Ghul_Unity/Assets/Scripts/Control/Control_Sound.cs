@@ -11,30 +11,50 @@ public class Control_Sound : MonoBehaviour {
 	private Data_Monster MONSTER;
 	private float DIST;
 
-	public bool ShowMonsterDistance;
 	public Text MonsterDistanceText;
 	public AudioSource AmbientNoise;
+
+	void Start() {
+		AmbientNoise.volume = 0.0f;
+	}
 
 	// Loads the game state
 	public void loadGameState(Data_GameState gameState) {
 		GS = gameState;
 		CHARA = gameState.getCHARA();
 		MONSTER = gameState.getMonster();
+		// (Re)Start sub-controllers
+		StopCoroutine("controlAmbientMusic");
+		StartCoroutine("controlAmbientMusic");
 	}
 
+	/*
 	// Update is called once per frame
 	void Update () {
 		if (GS == null || GS.SUSPENDED) {  // Don't do anything if the game state is not loaded yet or suspended
 			AmbientNoise.volume = 0.0f; // Just turn off the ambient noise...
 			return; 
 		}
+	}
+	*/
 
-		// First, calculate the distance between chara and monster
-		DIST = GS.getDistance(CHARA.pos, MONSTER.pos);
-		if(Debug.isDebugBuild && ShowMonsterDistance) { // For debugging only
-			MonsterDistanceText.text = string.Format("{0:0.0} m", DIST);
+	// Continuously regulates the volume of the ambient creepy music based on the proximity of monster to chara
+	private IEnumerator controlAmbientMusic() {
+		while(true) {
+			float targetVolume;
+			if(GS.SUSPENDED) { // Turn off the music while in menu
+				targetVolume = 0.0f;
+			} else {
+				// First, calculate the distance between chara and monster
+				DIST = GS.getDistance(CHARA.pos, MONSTER.pos);
+				// TODO Debug:
+				MonsterDistanceText.text = string.Format("{0:0.0} m", DIST);
+				// TODO the volume of the noise needs tweaking
+				targetVolume = Mathf.Min(1.0f, Mathf.Exp(-0.3f * DIST));
+			}
+			AmbientNoise.volume = Mathf.Lerp(AmbientNoise.volume, targetVolume, 0.6f);
+			// Because getDistance is computationally intensive, this function is called less often than Update()
+			yield return new WaitForSeconds(0.2f);
 		}
-		// TODO the volume of the noise needs tweaking
-		AmbientNoise.volume = Mathf.Min(1.0f, Mathf.Exp(-0.3f * DIST));
 	}
 }

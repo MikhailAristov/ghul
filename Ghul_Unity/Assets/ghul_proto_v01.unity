@@ -465,7 +465,7 @@ GameObject:
   - 222: {fileID: 482152118}
   - 114: {fileID: 482152117}
   m_Layer: 0
-  m_Name: MonsterDistance
+  m_Name: TextOutput
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
