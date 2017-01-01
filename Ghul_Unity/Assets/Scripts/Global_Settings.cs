@@ -31,6 +31,7 @@ public class Global_Settings {
 			// Character movement settings
 			{ "CHARA_WALKING_SPEED",			5.0f },
 			{ "CHARA_RUNNING_SPEED",			8.0f },
+			{ "CHARA_SINGLE_STEP_LENGTH",		1.4f },		// this is how many (virtual) meters chara can walk before making a noise
 			{ "TIME_TO_REACT",					0.35f },	// if the player escapes the monster's radius within this timeframe, he isn't killed.
 
 			// Monster settings

@@ -19,6 +19,8 @@ public class Control_PlayerCharacter : MonoBehaviour {
 
     private float WALKING_SPEED;
     private float RUNNING_SPEED;
+	private float SINGLE_STEP_LENGTH;
+	private float walkingDistanceSinceLastNoise;
 
     private float RUNNING_STAMINA_LOSS;
     private float WALKING_STAMINA_GAIN;
@@ -47,6 +49,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		mainCameraControl = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Control_Camera>();
 		inventoryUI.transform.FindChild("CurrentItem").GetComponent<Image>().CrossFadeAlpha(0.0f, 0.0f, false);
 		soundSystem = GameObject.Find("GameState").GetComponent<Control_Sound>();
+		walkingDistanceSinceLastNoise = 0;
     }
 
     // To make sure the game state is fully initialized before loading it, this function is called by game state class itself
@@ -60,6 +63,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
         // Set general movement parameters
         WALKING_SPEED = Global_Settings.read("CHARA_WALKING_SPEED");
         RUNNING_SPEED = Global_Settings.read("CHARA_RUNNING_SPEED");
+		SINGLE_STEP_LENGTH = Global_Settings.read("CHARA_SINGLE_STEP_LENGTH");
 
         RUNNING_STAMINA_LOSS = Global_Settings.read("RUNNING_STAMINA_LOSS");
         WALKING_STAMINA_GAIN = Global_Settings.read("WALKING_STAMINA_GAIN");
@@ -133,9 +137,10 @@ public class Control_PlayerCharacter : MonoBehaviour {
 			stickmanRenderer.flipX = (Input.GetAxis("Horizontal") < 0.0f) ? true : false;
 
             // Determine movement speed
-            float velocity = WALKING_SPEED;
+			float velocity = WALKING_SPEED; int noiseType = Control_Sound.NOISE_TYPE_WALK;
             if (Input.GetButton("Run") && !me.exhausted) {
                 velocity = RUNNING_SPEED;
+				noiseType = Control_Sound.NOISE_TYPE_RUN;
                 me.modifyStamina(RUNNING_STAMINA_LOSS * Time.deltaTime);
             } else {
                 me.modifyStamina(WALKING_STAMINA_GAIN * Time.deltaTime);
@@ -165,6 +170,12 @@ public class Control_PlayerCharacter : MonoBehaviour {
             {
                 transform.Translate(validDisplacement, 0, 0);
             }
+
+			// Make noise (if necessary)
+			walkingDistanceSinceLastNoise += Mathf.Abs(displacement);
+			if(walkingDistanceSinceLastNoise > SINGLE_STEP_LENGTH) {
+				soundSystem.makeNoise(noiseType, me.pos);
+			}
         } else
         { // Regain stamina while standing still
             me.modifyStamina(STANDING_STAMINA_GAIN * Time.deltaTime);
@@ -198,6 +209,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
 
 		// Make noise at the original door's location
 		soundSystem.makeNoise(Control_Sound.NOISE_TYPE_DOOR, door.pos);
+		walkingDistanceSinceLastNoise = 0;
 
 		// Trigger an autosave upon changing locations
 		Data_GameState.saveToDisk(GS);
