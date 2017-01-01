@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
-using System.Collections.Generic; //TODO
+using System.Collections.Generic;
 
 // This is the controller class that manages the game state data
 public class Control_GameState : MonoBehaviour {
@@ -73,6 +73,9 @@ public class Control_GameState : MonoBehaviour {
         // Initialize autosave
 		AUTOSAVE_FREQUENCY = Global_Settings.read("AUTOSAVE_FREQUENCY");
 		NEXT_AUTOSAVE_IN = (float)AUTOSAVE_FREQUENCY;
+
+		// Initialize the sound system
+		GetComponent<Control_Sound>().loadGameState(GS);
     }
 
     // This method loads the saved game state to memory
