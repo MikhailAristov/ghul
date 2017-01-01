@@ -176,6 +176,9 @@ public class Control_GameState : MonoBehaviour {
 			}
 		}
 
+		// Precompute all pairs shorstest distances
+		GS.precomputeAllPairsShortestDistances();
+
 		initializeCharacters();
 	}
 

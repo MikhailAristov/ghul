@@ -28,6 +28,11 @@ public class Data_GameState {
 	[SerializeField]
 	private Data_Cadaver CADAVER;
 
+	[SerializeField]
+	private float[,] distanceBetweenTwoDoors;
+	[SerializeField]
+	private float[,] distanceBetweenTwoRooms;
+
     private static bool SAVING_DISABLED = false; // For debugging purposes
     private static string FILENAME_SAVE_RESETTABLE = "save1.dat";
     //private static string FILENAME_SAVE_PERMANENT  = "save2.dat";
@@ -187,5 +192,55 @@ public class Data_GameState {
 		Data_GameState result = (Data_GameState)bf.Deserialize(file);
         file.Close();
         return result;        
-    }
+	}
+
+	// Precomputes the complete matrix of distances between doors and rooms
+	// See https://en.wikipedia.org/wiki/Floyd%E2%80%93Warshall_algorithm
+	public void precomputeAllPairsShortestDistances() {
+		float doorTransitionCost = 0.0f;
+		precomputeDoorDistances(doorTransitionCost);
+		precomputeRoomDistances(doorTransitionCost);
+	}
+
+	private void precomputeDoorDistances(float doorTransitionCost) {
+		// Prepare the door graph
+		// Assume that the vertices are already ordered and without gaps
+		distanceBetweenTwoDoors = new float[DOORS.Count, DOORS.Count]; // Square distance matrix
+		for(int i = 0; i < DOORS.Count; i++) {
+			for(int j = 0; j < DOORS.Count; j++) {
+				// Distance := 0 if i == j
+				if(i == j) { 
+					distanceBetweenTwoDoors[i, j] = 0.0f; 
+				}
+				// Distance := door transition cost, if door i connects to door j
+				else if(DOORS[i].connectsTo == DOORS[j]) {
+					distanceBetweenTwoDoors[i, j] = doorTransitionCost;
+				}
+				// Distance := actual spacing, if door i and j are in the same room
+				else if(DOORS[i].isIn == DOORS[j].isIn) {
+					distanceBetweenTwoDoors[i, j] = Math.Abs(DOORS[i].atPos - DOORS[j].atPos);
+				}
+				// Otherwise, initialize it to infinity
+				else {
+					distanceBetweenTwoDoors[i, j] = float.MaxValue;
+				}
+			}
+		}
+		// Floyd-Warshall algorithm:
+		for(int k = 0; k < DOORS.Count; k++) {
+			for(int i = 0; i < DOORS.Count; i++) {
+				for(int j = 0; j < DOORS.Count; j++) {
+					if(distanceBetweenTwoDoors[i, j] > distanceBetweenTwoDoors[i, k] + distanceBetweenTwoDoors[k, j]) {
+						distanceBetweenTwoDoors[i, j] = distanceBetweenTwoDoors[i, k] + distanceBetweenTwoDoors[k, j];
+					}
+				}
+			}
+		}
+		// TODO output the results
+		Debug.Log(JsonUtility.ToJson(distanceBetweenTwoDoors, true));
+	}
+
+	private void precomputeRoomDistances(float doorTransitionCost) {
+
+	}
 }
