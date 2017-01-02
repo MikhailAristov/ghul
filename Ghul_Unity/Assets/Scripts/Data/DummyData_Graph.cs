@@ -75,7 +75,7 @@ public class DummyData_Graph {
 	// Given two room ids, this method connects two door spawns.
 	// Room 1's door spawn is the next free one, Room 2's is the one that comes after door spawn with index spawnIndex.
 	// If that spot is taken, all door spawns after it get moved one spot to the back of the list.
-	public bool connectRoomAfterConnection(int id1, int id2, int spawnIndex) {
+	public bool connectRoomsAfterConnection(int id1, int id2, int spawnIndex) {
 		DummyData_AbstractRoom room1 = ABSTRACT_ROOMS[id1];
 		DummyData_AbstractRoom room2 = ABSTRACT_ROOMS[id2];
 		if (!room1.hasEmptyDoorSpawns() || !room2.hasEmptyDoorSpawns()) { 
@@ -96,5 +96,47 @@ public class DummyData_Graph {
 		room1.updateNumDoors();
 		room2.updateNumDoors();
 		return true;
+	}
+
+	// Similar to connectRooms, but instead of taking the next free spawn in order, random spawns are selected for both rooms.
+	// Returns the index of the door spawn chosen in room 2.
+	public int connectRoomsFullyRandomly(int id1, int id2) {
+		DummyData_AbstractRoom room1 = ABSTRACT_ROOMS[id1];
+		DummyData_AbstractRoom room2 = ABSTRACT_ROOMS[id2];
+		if (!room1.hasEmptyDoorSpawns() || !room2.hasEmptyDoorSpawns()) { 
+			Debug.Log("Tried to connect rooms " + room1.INDEX + " and " + room2.INDEX + ", but at least one has no empty door spawn.");
+			return -1;
+		}
+
+		DummyData_DoorSpawn doorSpawn1 = room1.getRandomEmptyDoorSpawn();
+		DummyData_DoorSpawn doorSpawn2 = room2.getRandomEmptyDoorSpawn();
+		doorSpawn1.connectTo(doorSpawn2.INDEX);
+		doorSpawn2.connectTo(doorSpawn1.INDEX);
+		room1.updateNumDoors();
+		room2.updateNumDoors();
+		return doorSpawn2.INDEX;
+	}
+
+	// Similar to connectRooms, but instead of taking the next free spawn in order, the first rooms spawn ID is already given
+	// and the one in the second room is chosen randomly. Returns the randomly selected door spawn ID.
+	public int connectRoomsSemiRandomly(int id1, int id2, int spawn1ID) {
+		DummyData_AbstractRoom room1 = ABSTRACT_ROOMS[id1];
+		DummyData_AbstractRoom room2 = ABSTRACT_ROOMS[id2];
+		if (!room2.hasEmptyDoorSpawns()) { 
+			Debug.Log("Tried to connect rooms " + room1.INDEX + " and " + room2.INDEX + ", but the later one has no empty door spawn.");
+			return -1;
+		}
+
+		DummyData_DoorSpawn doorSpawn1 = room1.DOOR_SPAWNS[spawn1ID];
+		if (doorSpawn1 == null) {
+			Debug.Log("Tried to get door spawn with ID " + spawn1ID + " in room " + room1 + " but it's not there.");
+			return -1;
+		}
+		DummyData_DoorSpawn doorSpawn2 = room2.getRandomEmptyDoorSpawn();
+		doorSpawn1.connectTo(doorSpawn2.INDEX);
+		doorSpawn2.connectTo(doorSpawn1.INDEX);
+		room1.updateNumDoors();
+		room2.updateNumDoors();
+		return doorSpawn2.INDEX;
 	}
 }

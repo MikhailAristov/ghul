@@ -66,7 +66,7 @@ public class DummyData_AbstractRoom {
 		return false;
 	}
 
-	// Returns a door spawn that isn't connected yet or null otherwise.
+	// Returns the first door spawn that isn't connected yet or null otherwise.
 	public DummyData_DoorSpawn getEmptyDoorSpawn() {
 		foreach (DummyData_DoorSpawn dSpawn in DOOR_SPAWNS.Values) {
 			if (!dSpawn.isConnected()) { return dSpawn; }
@@ -74,6 +74,31 @@ public class DummyData_AbstractRoom {
 		return null;
 	}
 
+	// Returns a random empty door spawn or null if none exists.
+	public DummyData_DoorSpawn getRandomEmptyDoorSpawn() {
+		if (!hasEmptyDoorSpawns())
+			return null;
+		int rand = UnityEngine.Random.Range(0, DOOR_SPAWNS.Count);
+		DummyData_DoorSpawn spawn = DOOR_SPAWNS.Values[rand];
+		while (spawn.isConnected()) {
+			rand = UnityEngine.Random.Range(0, DOOR_SPAWNS.Count);
+			spawn = DOOR_SPAWNS.Values[rand];
+		}
+		return spawn;
+	}
+
+	// Returns a random connected door spawn or null if none exists.
+	public DummyData_DoorSpawn getRandomConnectedDoorSpawn() {
+		if (!hasConnectedDoorSpawns())
+			return null;
+		int rand = UnityEngine.Random.Range(0, DOOR_SPAWNS.Count);
+		DummyData_DoorSpawn spawn = DOOR_SPAWNS.Values[rand];
+		while (!spawn.isConnected()) {
+			rand = UnityEngine.Random.Range(0, DOOR_SPAWNS.Count);
+			spawn = DOOR_SPAWNS.Values[rand];
+		}
+		return spawn;
+	}
 
 	// Returns the door spawn after a specified other door spawn. The one returned must be empty.
 	// If that is not the case, all the following ones must be pushed to the back.
