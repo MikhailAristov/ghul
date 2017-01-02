@@ -73,6 +73,13 @@ public class Test_Graph : MonoBehaviour {
 		graph.addDoorSpawn(roomIndex, false, false);
 		graph.addDoorSpawn(roomIndex, false, false);
 		graph.addDoorSpawn(roomIndex, false, true);
+
+		roomIndex++;
+		graph.addRoom(4);
+		graph.addDoorSpawn(roomIndex, true, false);
+		graph.addDoorSpawn(roomIndex, false, false);
+		graph.addDoorSpawn(roomIndex, false, false);
+		graph.addDoorSpawn(roomIndex, false, true);
 	}
 
 	// Prints for each room the number of door spawns and whether they are on the left/right side
@@ -99,6 +106,8 @@ public class Test_Graph : MonoBehaviour {
 
 	// Prints for each room which door spawns are in use and where they connect to.
 	private void printCompleteGraphInformation() {
+		if (!factory.graphCalculated)
+			return;
 		string infoText = "Complete Graph Information:\n";
 		infoText += "The graph has " + graph.getTotalNumberOfRooms() + " rooms and " 
 				+ graph.getTotalNumberOfDoorSpawns() + " door spawns.\n";

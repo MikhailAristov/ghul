@@ -139,4 +139,34 @@ public class DummyData_Graph {
 		room2.updateNumDoors();
 		return doorSpawn2.INDEX;
 	}
+
+	// Given a door spawn, this method returns the ID of the next spawn in the room.
+	public DummyData_DoorSpawn getNextLeftSpawn(int spawnID) {
+		int roomID = DOOR_SPAWN_IS_IN_ROOM[spawnID];
+		return ABSTRACT_ROOMS[roomID].getNextConnectedSpawn(spawnID);
+	}
+
+	// Returns a random connected door spawn from one random room.
+	public DummyData_DoorSpawn getRandomConnectedDoorSpawn() {
+		int rand = UnityEngine.Random.Range(0, ABSTRACT_ROOMS.Count);
+		DummyData_AbstractRoom room = ABSTRACT_ROOMS[rand];
+		DummyData_DoorSpawn spawn = room.getRandomConnectedDoorSpawn();
+		if (spawn != null) {
+			return spawn;
+		}
+
+		int maxPatience = 1000;
+		int counter = 0;
+		while (counter < maxPatience) {
+			rand = UnityEngine.Random.Range(0, ABSTRACT_ROOMS.Count);
+			room = ABSTRACT_ROOMS[rand];
+			spawn = room.getRandomConnectedDoorSpawn();
+			if (spawn != null) {
+				return spawn;
+			}
+			counter++;
+		}
+
+		return null;
+	}
 }

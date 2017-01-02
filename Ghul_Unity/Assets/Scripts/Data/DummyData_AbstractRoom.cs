@@ -111,6 +111,9 @@ public class DummyData_AbstractRoom {
 		// Get the door spawn after the one with the specified index. It will be used for the new connection.
 		int followUpListPlace = DOOR_SPAWNS.IndexOfKey(index) + 1; 	// a bit confusing. the spawn index is the key of the list.
 																	// IndexOfKey gets the index of the element in the list
+		if (followUpListPlace >= DOOR_SPAWNS.Count) {
+			followUpListPlace = 0;
+		}
 		DummyData_DoorSpawn newConnectionSpawn = DOOR_SPAWNS.Values[followUpListPlace];
 
 		// Reconnecting everything in the list from that point on.
@@ -156,5 +159,23 @@ public class DummyData_AbstractRoom {
 				return true;
 		}
 		return false;
+	}
+
+	// Returns the next connected door spawn after the one given as a parameter
+	public DummyData_DoorSpawn getNextConnectedSpawn(int spawnID) {
+		if (!hasDoorSpawnWithIndex(spawnID))
+			return null;
+		int endlessLoopPrevention = DOOR_SPAWNS.IndexOfKey(spawnID);
+		int position = DOOR_SPAWNS.IndexOfKey(spawnID) + 1;
+		if (position >= DOOR_SPAWNS.Count) { position = 0; }
+
+		while (position != endlessLoopPrevention) {
+			if (DOOR_SPAWNS.Values[position].isConnected()) {
+				return DOOR_SPAWNS.Values[position];
+			}
+			position++;
+			if (position >= DOOR_SPAWNS.Count) { position = 0; }
+		}
+		return DOOR_SPAWNS[spawnID]; // There's only one connected spawn here. Go back to where you came from.
 	}
 }

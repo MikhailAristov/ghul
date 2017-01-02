@@ -6,7 +6,7 @@ using System.Collections;
 public class Factory_Graph : MonoBehaviour {
 
 	private DummyData_Graph graph;
-	private bool graphCalculated;
+	public bool graphCalculated;
 
 	void Start() {
 		graphCalculated = false;
@@ -47,7 +47,8 @@ public class Factory_Graph : MonoBehaviour {
 		// Step 2: Connect vertices to the connected graph such that the resulting graph is planar again.
 		connectAllRooms();
 
-		// Step 3: Adjust degrees.
+		// Step 3: Make sure two left doors and two right doors never connect. Rotate rooms if necessary.
+		// ERINERRUNG: Bei Basis-Graph-Konstruktion die Raeume zufaellig waehlen, sonst wiederholt sich viel.
 
 		if (!checkWhetherUnconnectedRoomExists()) {
 			graphCalculated = true;
@@ -86,17 +87,17 @@ public class Factory_Graph : MonoBehaviour {
 
 		switch (graphNr) {
 		case 1:
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 2);
+			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 3); // one extra slot
 			if (roomNr == -1)
 				return;
 			room1 = roomNr;
 
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 3);
+			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 4); // one extra slot
 			if (roomNr == -1)
 				return;
 			room2 = roomNr;
 
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 2);
+			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 3); // one extra slot
 			if (roomNr == -1)
 				return;
 			room3 = roomNr;
@@ -111,22 +112,22 @@ public class Factory_Graph : MonoBehaviour {
 			break;
 
 		case 2:
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 2);
+			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 3); // one extra slot
 			if (roomNr == -1)
 				return;
 			room1 = roomNr;
 
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 2);
+			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 3); // one extra slot
 			if (roomNr == -1)
 				return;
 			room2 = roomNr;
 
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 3);
+			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 4); // one extra slot
 			if (roomNr == -1)
 				return;
 			room3 = roomNr;
 
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 2);
+			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 3); // one extra slot
 			if (roomNr == -1)
 				return;
 			room4 = roomNr;
@@ -142,22 +143,22 @@ public class Factory_Graph : MonoBehaviour {
 			break;
 
 		case 3:
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 2);
+			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 3); // one extra slot
 			if (roomNr == -1)
 				return;
 			room1 = roomNr;
 
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 3);
+			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 4); // one extra slot
 			if (roomNr == -1)
 				return;
 			room2 = roomNr;
 
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 2);
+			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 3); // one extra slot
 			if (roomNr == -1)
 				return;
 			room3 = roomNr;
 
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 2);
+			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 3); // one extra slot
 			if (roomNr == -1)
 				return;
 			room4 = roomNr;
@@ -173,22 +174,22 @@ public class Factory_Graph : MonoBehaviour {
 			break;
 
 		case 4:
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 3);
+			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 4); // one extra slot
 			if (roomNr == -1)
 				return;
 			room1 = roomNr;
 
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 3);
+			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 4); // one extra slot
 			if (roomNr == -1)
 				return;
 			room2 = roomNr;
 
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 3);
+			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 4); // one extra slot
 			if (roomNr == -1)
 				return;
 			room3 = roomNr;
 
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 2);
+			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 3); // one extra slot
 			if (roomNr == -1)
 				return;
 			room4 = roomNr;
@@ -205,12 +206,12 @@ public class Factory_Graph : MonoBehaviour {
 			break;
 
 		case 5:
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 3);
+			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 4); // one extra slot
 			if (roomNr == -1)
 				return;
 			room1 = roomNr;
 
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 3);
+			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 4); // one extra slot
 			if (roomNr == -1)
 				return;
 			room2 = roomNr;
@@ -220,7 +221,7 @@ public class Factory_Graph : MonoBehaviour {
 				return;
 			room3 = roomNr;
 
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 3);
+			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 4); // one extra slot
 			if (roomNr == -1)
 				return;
 			room4 = roomNr;
@@ -253,9 +254,6 @@ public class Factory_Graph : MonoBehaviour {
 
 				// Decide randomly, how to connect.
 				int rand = UnityEngine.Random.Range(1,4);
-				// DEBUG -----------------------
-				rand = UnityEngine.Random.Range(1,3);
-				// END OF DEBUG ----------------
 				switch (rand) {
 				case 1:
 				// Case 1: Connect it as a degree-1 vertex to any not-full room.
@@ -289,8 +287,69 @@ public class Factory_Graph : MonoBehaviour {
 					break;
 
 				case 3:
-				// Case 3: Select an arbitrary face (may require reselection if face doesn't provide free spots). Place the new vertex in the "middle" of it.
+				// Case 3: Select an arbitrary face. Place the new vertex in the "middle" of it.
 				//		   Connect it to a number of vertices incident to the face.
+					if (graph.ABSTRACT_ROOMS[i].MAX_NUM_OF_DOORS == 1)
+						goto case 1;
+
+					// We find a cycle by always using the leftest edge.
+					// We store the ingoing ends of edges because we use the "connectRoomsAFTERConnection"-method later on
+					List<int> spawnIDsOnCycle = new List<int>();
+					List<int> roomIDsOnCycle = new List<int>();
+					DummyData_DoorSpawn spawn = graph.getRandomConnectedDoorSpawn();
+					if (spawn == null) {
+						goto case 2;
+					}
+					int spawnID = spawn.INDEX;
+					spawnIDsOnCycle.Add(spawnID);
+					roomIDsOnCycle.Add(graph.DOOR_SPAWN_IS_IN_ROOM[spawnID]);
+					spawn = graph.getNextLeftSpawn(spawnID); // left of the first one, in the same room.
+					spawnID = spawn.CONNECTS_TO_SPAWN_ID; // ingoing door spawn in the next room
+
+					while (spawnID != spawnIDsOnCycle[0]) {
+						spawnIDsOnCycle.Add(spawnID);
+						roomIDsOnCycle.Add(graph.DOOR_SPAWN_IS_IN_ROOM[spawnID]);
+
+						spawn = graph.getNextLeftSpawn(spawnID);
+						spawnID = spawn.CONNECTS_TO_SPAWN_ID;
+					}
+
+					// The cycle is found. Compute how many new connections are feasible.
+					int maxPossibleConnections = graph.getRoomsMaxDoors(i);
+					int count = 0;
+					foreach (int r in roomIDsOnCycle) {
+						if (!graph.isRoomFullyConnected(r))
+							count++;
+					}
+					maxPossibleConnections = Mathf.Min(maxPossibleConnections, count);
+					if (maxPossibleConnections <= 1) {
+						int otherRand = UnityEngine.Random.Range(1, 3);
+						if (otherRand == 1)
+							goto case 1;
+						else
+							goto case 2;
+					}
+
+					// Select random (non-full) rooms on the cycle to use for new connections
+					int numOfNewConnections = UnityEngine.Random.Range(2, maxPossibleConnections + 1);
+					List<int> randomRoomIDs = new List<int>();
+					count = 0;
+					while (count < numOfNewConnections) {
+						int randomRoomID = roomIDsOnCycle[UnityEngine.Random.Range(0, roomIDsOnCycle.Count)];
+						if (!randomRoomIDs.Contains(randomRoomID)
+						    	&& graph.ABSTRACT_ROOMS[randomRoomID].hasEmptyDoorSpawns()) {
+							randomRoomIDs.Add(randomRoomID);
+							count++;
+						}
+					}
+
+					// Connect the new room to the selected ones in clockwise order. (backwards from how they were found)
+					for (int j = roomIDsOnCycle.Count - 1; j >= 0; j--) {
+						int rID = roomIDsOnCycle[j];
+						if (randomRoomIDs.Contains(rID)) {
+							graph.connectRoomsAfterConnection(i, rID, spawnIDsOnCycle[j]);
+						}
+					}
 
 					break;
 
@@ -361,4 +420,5 @@ public class Factory_Graph : MonoBehaviour {
 		}
 		return roomIndex;
 	}
+		
 }
