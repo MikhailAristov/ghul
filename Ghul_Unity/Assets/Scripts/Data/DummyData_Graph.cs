@@ -12,6 +12,7 @@ public class DummyData_Graph {
 
 	public DummyData_Graph() {
 		ABSTRACT_ROOMS = new SortedList<int, DummyData_AbstractRoom>();
+		DOOR_SPAWN_IS_IN_ROOM = new SortedList<int, int>();
 	}
 
 	// Adds an abstract room to the list which has maxDoors door spawns.
@@ -32,6 +33,9 @@ public class DummyData_Graph {
 
 	public int getTotalNumberOfRooms() {
 		return ABSTRACT_ROOMS.Count;
+	}
+	public int getTotalNumberOfDoorSpawns() {
+		return DOOR_SPAWN_IS_IN_ROOM.Count;
 	}
 
 	// Returns how many doors a room can support.

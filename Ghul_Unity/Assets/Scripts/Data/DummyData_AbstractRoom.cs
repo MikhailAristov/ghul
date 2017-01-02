@@ -50,6 +50,14 @@ public class DummyData_AbstractRoom {
 		DOOR_SPAWNS.Add(index, spawn);
 	}
 
+	// returns true if at least one door spawn is connected.
+	public bool hasConnectedDoorSpawns() {
+		foreach (DummyData_DoorSpawn dSpawn in DOOR_SPAWNS.Values) {
+			if (dSpawn.isConnected()) { return true; }
+		}
+		return false;
+	}
+
 	// returns true if at least one doorspawn isn't connected yet.
 	public bool hasEmptyDoorSpawns() {
 		foreach (DummyData_DoorSpawn dSpawn in DOOR_SPAWNS.Values) {

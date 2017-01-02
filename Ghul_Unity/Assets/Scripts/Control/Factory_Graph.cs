@@ -69,7 +69,7 @@ public class Factory_Graph : MonoBehaviour {
 	The numbers in the images may not be the actual room index if the room with the shown index has too few door spawns.
 	*/
 	private void formBasicGraph(int graphNr) {
-		int roomNr = 1;
+		int roomNr = 0;
 		int room1, room2, room3, room4;
 
 		switch (graphNr) {
@@ -155,8 +155,8 @@ public class Factory_Graph : MonoBehaviour {
 			graph.connectRooms(0, room3);
 			graph.connectRooms(0, room4);
 			graph.connectRooms(room1, room2);
-			graph.connectRooms(room2, room3);
 			graph.connectRooms(room2, room4);
+			graph.connectRooms(room2, room3);
 
 			break;
 
@@ -235,11 +235,16 @@ public class Factory_Graph : MonoBehaviour {
 
 	// Finds the next room's id which has at least the specified degree (max door spawns).
 	private int findNextRoomWithDegreeAtLeast(int startingID, int minDegree) {
-		int infiniteLoopPrevention = startingID;
-		int roomNr = startingID;
-		while (graph.getRoomsMaxDoors(roomNr) < minDegree) { 
+		int infiniteLoopPrevention = startingID + 1;
+		int roomNr = startingID + 1;
+		if (roomNr >= graph.getTotalNumberOfRooms()) {
+			infiniteLoopPrevention = 1;
+			roomNr = 1;
+		}
+
+		while (graph.getRoomsMaxDoors(roomNr) < minDegree || graph.ABSTRACT_ROOMS[roomNr].hasConnectedDoorSpawns()) { 
 			roomNr++;
-			if (roomNr > graph.getTotalNumberOfRooms()) {
+			if (roomNr >= graph.getTotalNumberOfRooms()) {
 				roomNr = 1;
 			}
 			if (roomNr == infiniteLoopPrevention) {
@@ -247,6 +252,7 @@ public class Factory_Graph : MonoBehaviour {
 				return -1;
 			}
 		}
+
 		return roomNr;
 	}
 }
