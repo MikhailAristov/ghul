@@ -48,7 +48,9 @@ public class Factory_Graph : MonoBehaviour {
 		connectAllRooms();
 
 		// Step 3: Make sure two left doors and two right doors never connect. Rotate rooms if necessary.
-		// ERINERRUNG: Bei Basis-Graph-Konstruktion die Raeume zufaellig waehlen, sonst wiederholt sich viel.
+		// These connections can't be prevented in all scenarios but two checks should get rid of most.
+		checkSideConnections();
+		checkSideConnections();
 
 		if (!checkWhetherUnconnectedRoomExists()) {
 			graphCalculated = true;
@@ -87,17 +89,21 @@ public class Factory_Graph : MonoBehaviour {
 
 		switch (graphNr) {
 		case 1:
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 3); // one extra slot
+			roomNr = findRandomRoomWithDegreeAtLeast(3); // one extra slot
 			if (roomNr == -1)
 				return;
 			room1 = roomNr;
 
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 4); // one extra slot
+			while (roomNr == room1) {
+				roomNr = findRandomRoomWithDegreeAtLeast(4); // one extra slot
+			}
 			if (roomNr == -1)
 				return;
 			room2 = roomNr;
 
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 3); // one extra slot
+			while (roomNr == room1 || roomNr == room2) {
+				roomNr = findRandomRoomWithDegreeAtLeast(3); // one extra slot
+			}
 			if (roomNr == -1)
 				return;
 			room3 = roomNr;
@@ -112,22 +118,28 @@ public class Factory_Graph : MonoBehaviour {
 			break;
 
 		case 2:
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 3); // one extra slot
+			roomNr = findRandomRoomWithDegreeAtLeast(3); // one extra slot
 			if (roomNr == -1)
 				return;
 			room1 = roomNr;
 
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 3); // one extra slot
+			while (roomNr == room1) {
+				roomNr = findRandomRoomWithDegreeAtLeast(3); // one extra slot
+			}
 			if (roomNr == -1)
 				return;
 			room2 = roomNr;
 
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 4); // one extra slot
+			while (roomNr == room1 || roomNr == room2) {
+				roomNr = findRandomRoomWithDegreeAtLeast(4); // one extra slot
+			}
 			if (roomNr == -1)
 				return;
 			room3 = roomNr;
 
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 3); // one extra slot
+			while (roomNr == room1 || roomNr == room2 || roomNr == room3) {
+				roomNr = findRandomRoomWithDegreeAtLeast(3); // one extra slot
+			}
 			if (roomNr == -1)
 				return;
 			room4 = roomNr;
@@ -143,22 +155,28 @@ public class Factory_Graph : MonoBehaviour {
 			break;
 
 		case 3:
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 3); // one extra slot
+			roomNr = findRandomRoomWithDegreeAtLeast(3); // one extra slot
 			if (roomNr == -1)
 				return;
 			room1 = roomNr;
 
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 4); // one extra slot
+			while (roomNr == room1) {
+				roomNr = findRandomRoomWithDegreeAtLeast(4); // one extra slot
+			}
 			if (roomNr == -1)
 				return;
 			room2 = roomNr;
 
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 3); // one extra slot
+			while (roomNr == room1 || roomNr == room2) {
+				roomNr = findRandomRoomWithDegreeAtLeast(3); // one extra slot
+			}
 			if (roomNr == -1)
 				return;
 			room3 = roomNr;
 
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 3); // one extra slot
+			while (roomNr == room1 || roomNr == room2 || roomNr == room3) {
+				roomNr = findRandomRoomWithDegreeAtLeast(3); // one extra slot
+			}
 			if (roomNr == -1)
 				return;
 			room4 = roomNr;
@@ -174,22 +192,28 @@ public class Factory_Graph : MonoBehaviour {
 			break;
 
 		case 4:
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 4); // one extra slot
+			roomNr = findRandomRoomWithDegreeAtLeast(4); // one extra slot
 			if (roomNr == -1)
 				return;
 			room1 = roomNr;
 
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 4); // one extra slot
+			while (roomNr == room1) {
+				roomNr = findRandomRoomWithDegreeAtLeast(4); // one extra slot
+			}
 			if (roomNr == -1)
 				return;
 			room2 = roomNr;
 
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 4); // one extra slot
+			while (roomNr == room1 || roomNr == room2) {
+				roomNr = findRandomRoomWithDegreeAtLeast(4); // one extra slot
+			}
 			if (roomNr == -1)
 				return;
 			room3 = roomNr;
 
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 3); // one extra slot
+			while (roomNr == room1 || roomNr == room2 || roomNr == room3) {
+				roomNr = findRandomRoomWithDegreeAtLeast(3); // one extra slot
+			}
 			if (roomNr == -1)
 				return;
 			room4 = roomNr;
@@ -206,22 +230,28 @@ public class Factory_Graph : MonoBehaviour {
 			break;
 
 		case 5:
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 4); // one extra slot
+			roomNr = findRandomRoomWithDegreeAtLeast(4); // one extra slot
 			if (roomNr == -1)
 				return;
 			room1 = roomNr;
 
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 4); // one extra slot
+			while (roomNr == room1) {
+				roomNr = findRandomRoomWithDegreeAtLeast(4); // one extra slot
+			}
 			if (roomNr == -1)
 				return;
 			room2 = roomNr;
 
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 4);
+			while (roomNr == room1 || roomNr == room2) {
+				roomNr = findRandomRoomWithDegreeAtLeast(4);
+			}
 			if (roomNr == -1)
 				return;
 			room3 = roomNr;
 
-			roomNr = findNextRoomWithDegreeAtLeast(roomNr, 4); // one extra slot
+			while (roomNr == room1 || roomNr == room2 || roomNr == room3) {
+				roomNr = findRandomRoomWithDegreeAtLeast(4); // one extra slot
+			}
 			if (roomNr == -1)
 				return;
 			room4 = roomNr;
@@ -360,24 +390,20 @@ public class Factory_Graph : MonoBehaviour {
 		}
 	}
 
-	// Finds the next room's id which has at least the specified degree (max door spawns).
-	private int findNextRoomWithDegreeAtLeast(int startingID, int minDegree) {
-		int infiniteLoopPrevention = startingID + 1;
-		int roomNr = startingID + 1;
-		if (roomNr >= graph.getTotalNumberOfRooms()) {
-			infiniteLoopPrevention = 1;
-			roomNr = 1;
-		}
+	// Finds random (unused) room's id which has at least the specified degree (max door spawns).
+	private int findRandomRoomWithDegreeAtLeast(int minDegree) {
+		int maxPatience = 1000;
+		int roomNr = UnityEngine.Random.Range(1, graph.getTotalNumberOfRooms());
+		int count = 0;
 
 		while (graph.getRoomsMaxDoors(roomNr) < minDegree || graph.ABSTRACT_ROOMS[roomNr].hasConnectedDoorSpawns()) { 
-			roomNr++;
-			if (roomNr >= graph.getTotalNumberOfRooms()) {
-				roomNr = 1;
-			}
-			if (roomNr == infiniteLoopPrevention) {
-				Debug.Log("Impossible to construct the desired graph.");
+			count++;
+			if (count > maxPatience) {
+				Debug.Log("Cannot find an unused room with degree at least " + minDegree);
 				return -1;
 			}
+
+			roomNr = UnityEngine.Random.Range(1, graph.getTotalNumberOfRooms());
 		}
 
 		return roomNr;
@@ -420,5 +446,33 @@ public class Factory_Graph : MonoBehaviour {
 		}
 		return roomIndex;
 	}
-		
+
+	// Checks whether two left sides or two right sides are connected. If true, rotates rooms.
+	// This can't solve every possible case. In an unlucky situations a room may be connected only to left side doors.
+	private void checkSideConnections() {
+		DummyData_AbstractRoom room, otherRoom;
+		DummyData_DoorSpawn spawn, otherSpawn;
+
+		for (int i = 0; i < graph.getTotalNumberOfRooms(); i++) {
+			// Iterate over all rooms
+			room = graph.ABSTRACT_ROOMS[i];
+
+			for (int j = 0; j < room.MAX_NUM_OF_DOORS; j++) {
+				// Iterate over all door spawns
+				spawn = room.DOOR_SPAWNS.Values[j];
+				if (spawn.isConnected() && (spawn.LEFT_SIDE || spawn.RIGHT_SIDE)) {
+					int otherSpawnID = spawn.CONNECTS_TO_SPAWN_ID;
+					int otherRoomID = graph.DOOR_SPAWN_IS_IN_ROOM[otherSpawnID];
+					otherRoom = graph.ABSTRACT_ROOMS[otherRoomID];
+					otherSpawn = otherRoom.DOOR_SPAWNS[otherSpawnID];
+
+					if ((spawn.LEFT_SIDE && otherSpawn.LEFT_SIDE) || (spawn.RIGHT_SIDE && otherSpawn.RIGHT_SIDE)) {
+						// Unwanted connection. Rotate otherRoom
+						otherRoom.rotate();
+					}
+				}
+			}
+		}
+	}
+
 }

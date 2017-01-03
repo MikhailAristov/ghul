@@ -143,6 +143,42 @@ public class DummyData_AbstractRoom {
 		return newConnectionSpawn;
 	}
 
+	// Moves all spawn door connections by one.
+	public void rotate() {
+		if (MAX_NUM_OF_DOORS <= 1)
+			return;
+		int listPlace = 0;
+		DummyData_DoorSpawn iteratingSpawn = DOOR_SPAWNS.Values[listPlace];
+		int spawnIndexThereOld = iteratingSpawn.CONNECTS_TO_SPAWN_ID;
+		bool fullCircle = false;
+		int roomIndexThereOld = -1;
+		DummyData_AbstractRoom roomThereOld = null;
+		DummyData_DoorSpawn spawnThereOld = null;
+
+		while (!fullCircle) {
+			if (spawnIndexThereOld != -1) {
+				roomIndexThereOld = graph.DOOR_SPAWN_IS_IN_ROOM[spawnIndexThereOld];
+				roomThereOld = graph.ABSTRACT_ROOMS[roomIndexThereOld];
+				spawnThereOld = roomThereOld.DOOR_SPAWNS[spawnIndexThereOld];
+			}
+
+			listPlace++;
+			if (listPlace == DOOR_SPAWNS.Count) { 
+				listPlace = 0; 
+				fullCircle = true;
+			}
+			iteratingSpawn = DOOR_SPAWNS.Values[listPlace];
+			int spawnIndexHereNew = iteratingSpawn.INDEX;
+
+			if (spawnIndexThereOld != -1) {
+				spawnThereOld.connectTo(spawnIndexHereNew); // Connect spawn from other room to the next one here
+			}
+			int spawnIndexThereOldTMP = spawnIndexThereOld;
+			spawnIndexThereOld = iteratingSpawn.CONNECTS_TO_SPAWN_ID; // for the next loop
+			iteratingSpawn.connectTo(spawnIndexThereOldTMP); // Connect next one here to the spawn from other room
+		}
+	}
+
 	// Calculates how many door spawns are connected.
 	public void updateNumDoors() {
 		int counter = 0;

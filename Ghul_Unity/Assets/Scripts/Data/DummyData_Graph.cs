@@ -26,6 +26,10 @@ public class DummyData_Graph {
 	// Adds a door spawn to the specified room. left/rightSide determine whether the door is located on the left or right end of the room.
 	// IMPORTANT: The door spawn index doesn't know how many spawns there are in other rooms so insert them in order!
 	public void addDoorSpawn(int roomIndex, bool leftSide, bool rightSide) {
+		if (leftSide && rightSide) {
+			Debug.Log("Cannot add a door spawn that is on the left AND on the right side.");
+			return;
+		}
 		int doorSpawnIndex = DOOR_SPAWN_IS_IN_ROOM.Count;
 		DOOR_SPAWN_IS_IN_ROOM.Add(doorSpawnIndex, roomIndex);
 		ABSTRACT_ROOMS[roomIndex].addDoorSpawn(doorSpawnIndex, leftSide, rightSide);

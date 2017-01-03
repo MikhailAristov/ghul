@@ -80,6 +80,35 @@ public class Test_Graph : MonoBehaviour {
 		graph.addDoorSpawn(roomIndex, false, false);
 		graph.addDoorSpawn(roomIndex, false, false);
 		graph.addDoorSpawn(roomIndex, false, true);
+
+		roomIndex++;
+		graph.addRoom(2);
+		graph.addDoorSpawn(roomIndex, false, false);
+		graph.addDoorSpawn(roomIndex, false, true);
+
+		roomIndex++;
+		graph.addRoom(3);
+		graph.addDoorSpawn(roomIndex, true, false);
+		graph.addDoorSpawn(roomIndex, false, false);
+		graph.addDoorSpawn(roomIndex, false, true);
+
+		roomIndex++;
+		graph.addRoom(5);
+		graph.addDoorSpawn(roomIndex, true, false);
+		graph.addDoorSpawn(roomIndex, false, false);
+		graph.addDoorSpawn(roomIndex, false, false);
+		graph.addDoorSpawn(roomIndex, false, false);
+		graph.addDoorSpawn(roomIndex, false, true);
+
+		roomIndex++;
+		graph.addRoom(7);
+		graph.addDoorSpawn(roomIndex, true, false);
+		graph.addDoorSpawn(roomIndex, false, false);
+		graph.addDoorSpawn(roomIndex, false, false);
+		graph.addDoorSpawn(roomIndex, false, false);
+		graph.addDoorSpawn(roomIndex, false, false);
+		graph.addDoorSpawn(roomIndex, false, false);
+		graph.addDoorSpawn(roomIndex, false, true);
 	}
 
 	// Prints for each room the number of door spawns and whether they are on the left/right side
@@ -111,6 +140,25 @@ public class Test_Graph : MonoBehaviour {
 		string infoText = "Complete Graph Information:\n";
 		infoText += "The graph has " + graph.getTotalNumberOfRooms() + " rooms and " 
 				+ graph.getTotalNumberOfDoorSpawns() + " door spawns.\n";
+
+		// Calculate the vertex degrees.
+		int[] degreeDistribution = new int[] {0,0,0,0,0,0,0,0,0,0};
+		int maxDegree = 0;
+		for (int k = 0; k < graph.getTotalNumberOfRooms(); k++) {
+			int deg = graph.ABSTRACT_ROOMS[k].NUM_OF_DOORS;
+			maxDegree = Mathf.Max(maxDegree, deg);
+			if (deg <= 0 || deg >= 10) {
+				Debug.Log("Room " + k + "has a degree it should not have.");
+				return;
+			}
+			degreeDistribution[deg]++;
+		}
+		infoText += "Degree Distribution:\n";
+		for (int l = 1; l <= maxDegree; l++) {
+			infoText += "\tDegree " + l + ": " + degreeDistribution[l] + " rooms.\n";
+		}
+		infoText += "\n";
+
 		for (int i = 0; i <= roomIndex; i++) {
 			DummyData_AbstractRoom room = graph.ABSTRACT_ROOMS[i];
 			infoText += "Room " + i + ": " + room.MAX_NUM_OF_DOORS + " door spawns total. " 
