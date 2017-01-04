@@ -14,6 +14,7 @@ public class Data_Graph {
 
 	public Data_Graph() {
 		ABSTRACT_ROOMS = new SortedList<int, Data_GraphRoomVertice>();
+		DOOR_SPAWNS = new SortedList<int, Data_GraphDoorSpawn>();
 		DOOR_SPAWN_IS_IN_ROOM = new SortedList<int, int>();
 	}
 
@@ -34,8 +35,8 @@ public class Data_Graph {
 		}
 		int doorSpawnIndex = DOOR_SPAWN_IS_IN_ROOM.Count;
 		DOOR_SPAWN_IS_IN_ROOM.Add(doorSpawnIndex, roomIndex);
-		Data_GraphDoorSpawn newSpan = ABSTRACT_ROOMS[roomIndex].addDoorSpawn(doorSpawnIndex, leftSide, rightSide);
-		DOOR_SPAWNS.Add(doorSpawnIndex, newSpan);
+		Data_GraphDoorSpawn newSpawn = ABSTRACT_ROOMS[roomIndex].addDoorSpawn(doorSpawnIndex, leftSide, rightSide);
+		DOOR_SPAWNS.Add(doorSpawnIndex, newSpawn);
 	}
 
 	public int getTotalNumberOfRooms() {
@@ -175,5 +176,42 @@ public class Data_Graph {
 		}
 
 		return null;
+	}
+
+	// Returns a list of all unique room-to-room connections in following format
+	// thisRoomID | localSpawnPointID | thisSpawnPointType | otherRoomID | otherLocalSpawnPointID | otherSpawnPointType
+	// The spawn point types are the same as defined in the Data_Door
+	public int[,] exportAllRoom2RoomConnections() {
+		// Prepare the list of the spawn connections
+		Dictionary<int, int> spawn2SpawnConnections = new Dictionary<int, int>();
+		foreach(Data_GraphDoorSpawn ds in DOOR_SPAWNS.Values) {
+			if(ds.isConnected()) {
+				if(!spawn2SpawnConnections.ContainsValue(ds.INDEX)) {
+					spawn2SpawnConnections.Add(ds.INDEX, ds.CONNECTS_TO_SPAWN_ID);
+				}
+			}
+		}
+		// Initialize the output
+		int[,] result = new int[spawn2SpawnConnections.Count,6];
+		// Set the output
+		int counter = 0;
+		foreach(int fromGlobalIndex in spawn2SpawnConnections.Keys) {
+			int toGlobalIndex = spawn2SpawnConnections[fromGlobalIndex];
+			// Get door objects
+			Data_GraphDoorSpawn fromSpawn = DOOR_SPAWNS[fromGlobalIndex];
+			Data_GraphDoorSpawn toSpawn = DOOR_SPAWNS[toGlobalIndex];
+			// Get room objects
+			Data_GraphRoomVertice fromRoom = ABSTRACT_ROOMS[fromSpawn.roomId];
+			Data_GraphRoomVertice toRoom = ABSTRACT_ROOMS[toSpawn.roomId];
+			// Set the output values
+			result[counter, 0] = fromRoom.INDEX;
+			result[counter, 1] = fromRoom.getLocalSpawnIndex(fromGlobalIndex);
+			result[counter, 2] = fromSpawn.LEFT_SIDE ? Data_Door.TYPE_LEFT_SIDE : (fromSpawn.RIGHT_SIDE ? Data_Door.TYPE_RIGHT_SIDE : Data_Door.TYPE_BACK_DOOR);
+			result[counter, 3] = toRoom.INDEX;
+			result[counter, 4] = toRoom.getLocalSpawnIndex(toGlobalIndex);
+			result[counter, 5] = toSpawn.LEFT_SIDE ? Data_Door.TYPE_LEFT_SIDE : (toSpawn.RIGHT_SIDE ? Data_Door.TYPE_RIGHT_SIDE : Data_Door.TYPE_BACK_DOOR);
+			counter += 1;
+		}
+		return result;
 	}
 }

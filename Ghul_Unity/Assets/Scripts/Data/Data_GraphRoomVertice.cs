@@ -215,4 +215,17 @@ public class Data_GraphRoomVertice {
 		}
 		return DOOR_SPAWNS[spawnID]; // There's only one connected spawn here. Go back to where you came from.
 	}
+
+	// Returns the local index of the door spawn given its global index
+	public int getLocalSpawnIndex(int globalIndex) {
+		int i = 0;
+		foreach(Data_GraphDoorSpawn ds in DOOR_SPAWNS.Values) {
+			if(ds.INDEX == globalIndex) {
+				return i;
+			} else {
+				i += 1;
+			}
+		}
+		throw new IndexOutOfRangeException("GRAPH: The spawn point with global index #" + globalIndex + " is no in the room vertice #" + _INDEX);
+	}
 }

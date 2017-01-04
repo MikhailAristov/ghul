@@ -184,51 +184,29 @@ public class Control_GameState : MonoBehaviour {
 
 		// Create a house graph
 		graphFactory.computePlanarGraph(houseGraph);
-		// Spawn all the necessary doors
-		foreach(Data_GraphRoomVertice room in houseGraph.ABSTRACT_ROOMS.Values) {
-			Data_Room curRoom = GS.getRoomByIndex(room.INDEX);
-			foreach(Data_GraphDoorSpawn spawn in room.DOOR_SPAWNS.Values) {
-				if(spawn.isConnected()) {
-					// Spawn the door there
-					int doorType = Data_Door.TYPE_BACK_DOOR;
-					if(spawn.LEFT_SIDE) {
-						doorType = Data_Door.TYPE_LEFT_SIDE;
-					} else if(spawn.RIGHT_SIDE) {
-						doorType = Data_Door.TYPE_RIGHT_SIDE;
-					}
-					spawnDoor(doorType, curRoom, curRoom.gameObj.transform, curRoom.width, curRoom.getDoorSpawnPosition(spawn.INDEX));
-				}
-			}
-		}
-		// Connect all doors
-		foreach(Data_GraphRoomVertice room in houseGraph.ABSTRACT_ROOMS.Values) {
-			Data_Room curRoom = GS.getRoomByIndex(room.INDEX);
-			foreach(Data_GraphDoorSpawn spawn in room.DOOR_SPAWNS.Values) {
-				if(spawn.isConnected()) {
-					Data_Door localDoor = curRoom.getDoorAtSpawn(spawn.INDEX);
-					// Get the door it connects to
-					Data_GraphDoorSpawn otherSpawn = houseGraph.DOOR_SPAWNS[spawn.CONNECTS_TO_SPAWN_ID];
-					Data_Room otherRoom = GS.getRoomByIndex(houseGraph.DOOR_SPAWN_IS_IN_ROOM[spawn.CONNECTS_TO_SPAWN_ID]);
-					Data_Door remoteDoor = otherRoom.getDoorAtSpawn(otherSpawn.INDEX);
-					// Connect the two doors
-					localDoor.connectTo(remoteDoor);
-				}
-			}
-		}
 
-		/*
-		// TODO: Connect doors properly
-		// TODO: Must ensure that side doors never connect to the opposite sides, or it will look weird and cause trouble with room transitions
-		foreach(Data_Door d in GS.DOORS.Values) {
-			if(d.connectsTo == null) {
-				Data_Door targetDoor;
-				do {
-					targetDoor = GS.getDoorByIndex(UnityEngine.Random.Range(0, GS.DOORS.Count));
-				} while(targetDoor.connectsTo != null);
-				d.connectTo(targetDoor);
-			}
+		// Spawn and connect the doors
+		int[,] doorSpawnConnections = houseGraph.exportAllRoom2RoomConnections();
+		//Debug.Log(doorConnections.GetLength(0) + "x" + doorConnections.GetLength(1));
+		for(int i = 0; i < doorSpawnConnections.GetLength(0); i++) {
+			// Parse the return matrix
+			int thisRoomID = doorSpawnConnections[i, 0];
+			int thisDoorSpawnIDrelativeToRoom = doorSpawnConnections[i, 1];
+			int thisDoorSpawnType = doorSpawnConnections[i, 2];
+			int otherRoomID = doorSpawnConnections[i, 3];
+			int otherDoorSpawnIDrelativeToRoom = doorSpawnConnections[i, 4];
+			int otherDoorSpawnType = doorSpawnConnections[i, 5];
+			// Find the respective game state objects
+			Data_Room thisRoom = GS.getRoomByIndex(thisRoomID);
+			Data_Room otherRoom = GS.getRoomByIndex(otherRoomID);
+			float thisSpawnPos = thisRoom.getDoorSpawnPosition(thisDoorSpawnIDrelativeToRoom);
+			float otherSpawnPos = otherRoom.getDoorSpawnPosition(otherDoorSpawnIDrelativeToRoom);
+			// Spawn both doors
+			Data_Door thisDoor = spawnDoor(thisDoorSpawnType, thisRoom, thisSpawnPos);
+			Data_Door otherDoor = spawnDoor(otherDoorSpawnType, otherRoom, otherSpawnPos);
+			// Connect the doors
+			thisDoor.connectTo(otherDoor);
 		}
-		*/
 
 		// A rough estimation of what "distance" lies between two sides of a door for the all-pairs shortest distance calculation
 		float doorTransitionCost = Global_Settings.read("CHARA_WALKING_SPEED") * Global_Settings.read("DOOR_TRANSITION_DURATION");
@@ -251,11 +229,11 @@ public class Control_GameState : MonoBehaviour {
 		GS.addRoom(ritualRoom);
 		// Instantiate the ritual room doors
 		GS.HOUSE_GRAPH.addRoom(3); // adds the ritual room with three door spawns to the house graph
-		spawnDoor(Data_Door.TYPE_LEFT_SIDE, ritualRoom, ritualRoomGameObject.transform, ritualRoomPrefab.size.x, 0);
+		//spawnDoor(Data_Door.TYPE_LEFT_SIDE, ritualRoom, ritualRoomGameObject.transform, ritualRoomPrefab.size.x, 0);
 		GS.HOUSE_GRAPH.addDoorSpawn(ritualRoom.INDEX, true, false);
-		spawnDoor(Data_Door.TYPE_BACK_DOOR, ritualRoom, ritualRoomGameObject.transform, ritualRoomPrefab.size.x, ritualRoomPrefab.doorSpawns[0]);
+		//spawnDoor(Data_Door.TYPE_BACK_DOOR, ritualRoom, ritualRoomGameObject.transform, ritualRoomPrefab.size.x, ritualRoomPrefab.doorSpawns[0]);
 		GS.HOUSE_GRAPH.addDoorSpawn(ritualRoom.INDEX, false, false);
-		spawnDoor(Data_Door.TYPE_RIGHT_SIDE, ritualRoom, ritualRoomGameObject.transform, ritualRoomPrefab.size.x, 0);
+		//spawnDoor(Data_Door.TYPE_RIGHT_SIDE, ritualRoom, ritualRoomGameObject.transform, ritualRoomPrefab.size.x, 0);
 		GS.HOUSE_GRAPH.addDoorSpawn(ritualRoom.INDEX, false, true);
 		// Load the ennviornment
 		ritualRoom.env.loadGameState(GS, 0);
@@ -281,8 +259,10 @@ public class Control_GameState : MonoBehaviour {
 	}
 
 	// Place a door within both game state and game space
-	private Data_Door spawnDoor(int doorType, Data_Room parent, Transform parentTransform, float parentWidth, float xPos) {
+	private Data_Door spawnDoor(int doorType, Data_Room parent, float xPos) {
 		float horizontalRoomMargin = Global_Settings.read("HORIZONTAL_ROOM_MARGIN");
+		Transform parentTransform = parent.gameObj.transform;
+		float parentWidth = parent.width;
 		GameObject doorGameObj;
 		// Differentiate by type
 		switch(doorType) {
@@ -304,7 +284,6 @@ public class Control_GameState : MonoBehaviour {
 		// Initialize the door object and add it
 		Data_Door doorObj = new Data_Door(GS.DOORS.Count, doorGameObj, doorType, parent, xPos);
 		GS.addDoor(doorObj);
-		GS.HOUSE_GRAPH.addDoorSpawn(doorObj.INDEX, (doorObj.type == Data_Door.TYPE_LEFT_SIDE),  (doorObj.type == Data_Door.TYPE_RIGHT_SIDE));
 		return doorObj;
 	}
 
