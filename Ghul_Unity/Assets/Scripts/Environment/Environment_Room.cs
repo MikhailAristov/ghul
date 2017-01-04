@@ -15,13 +15,6 @@ public class Environment_Room : MonoBehaviour {
     private float MARGIN_SIZE_CAMERA;
     private float MARGIN_DOOR_ENTRANCE;
 
-    // Use this for initialization
-    void Start () {
-        Vector3 ROOM_SIZE = transform.Find("Background").GetComponent<Renderer>().bounds.size;
-		leftWallPos = -ROOM_SIZE.x/2;
-        rightWallPos = ROOM_SIZE.x/2;
-    }
-
     // To make sure the game state is fully initialized before loading it, this function is called by game state class itself
     public void loadGameState(Data_GameState gameState, int ownIndex)
     {
@@ -31,6 +24,12 @@ public class Environment_Room : MonoBehaviour {
         me = GS.getRoomByIndex(ownIndex);
         rightWallPos = me.width / 2;
         leftWallPos = -rightWallPos;
+
+		// In debug builds, set room background to a random hue to make navigation easier
+		if(Debug.isDebugBuild && ownIndex > 0) {
+			SpriteRenderer backgroundRenderer = transform.Find ("Background").GetComponent<SpriteRenderer>();
+			backgroundRenderer.color = UnityEngine.Random.ColorHSV (0f, 1f, 1f, 1f, 1f, 1f, 1f, 1f);
+		}
 
         // Set general movement parameters
         MARGIN_SIZE_PHYSICAL = Global_Settings.read("HORIZONTAL_ROOM_MARGIN");
