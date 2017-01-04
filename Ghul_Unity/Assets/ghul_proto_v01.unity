@@ -1381,6 +1381,8 @@ GameObject:
   - 114: {fileID: 1333168852}
   - 114: {fileID: 1333168854}
   - 114: {fileID: 1333168853}
+  - 114: {fileID: 1333168856}
+  - 114: {fileID: 1333168855}
   m_Layer: 0
   m_Name: GameState
   m_TagString: Untagged
@@ -1441,6 +1443,29 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MonsterDistanceText: {fileID: 482152117}
   AmbientNoise: {fileID: 325353678}
+--- !u!114 &1333168855
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1333168850}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ec47c7263421d140b85ede7da4c4023, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  graphCalculated: 0
+--- !u!114 &1333168856
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1333168850}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2e245e72e4e2564e891fdc496c6754a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1344317735
 GameObject:
   m_ObjectHideFlags: 0
