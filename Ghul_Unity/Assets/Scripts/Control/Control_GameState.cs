@@ -96,7 +96,7 @@ public class Control_GameState : MonoBehaviour {
             r.env.loadGameState(GS, r.INDEX); // While we are on it, load game state into room environment scripts 
 		}
 
-		// Fix door object references first, because Data_Room.fixObjectReferences() relies on them being set
+		// Now fix all door object references
 		foreach (Data_Door d in GS.DOORS.Values) {
 			d.fixObjectReferences(GS, prefabFactory);
 		}
@@ -134,60 +134,89 @@ public class Control_GameState : MonoBehaviour {
 		oldGameObjects.AddRange(GameObject.FindGameObjectsWithTag("Door"));
 		oldGameObjects.AddRange(GameObject.FindGameObjectsWithTag("Room"));
 		foreach(GameObject go in oldGameObjects) { Destroy(go); }
-
 		// Reset the prefab generator counters
 		prefabFactory.resetAllCounters();
 
-        // Initialize game settings
+        // Create an new game state
         GS = new Data_GameState();
-		Data_Graph houseGraph = GS.HOUSE_GRAPH;
 
-		// Initialize the starting ritual room
+		// Initialize all rooms, starting with the ritual room
 		initializeTheRitualRoom();
+		spawnAllOtherRooms((int)Global_Settings.read("TOTAL_NUMBER_OF_ROOMS"));
 
-		// Spawn more rooms from prefabs
+		// Create the house graph
+		graphFactory.computePlanarGraph(GS.HOUSE_GRAPH);
+
+		// Spawn and connect the doors in pairs
+		spawnAndConnectAllDoors();
+
+		// Precompute all-pairs shortest distances
+		precomputeAllDistances();
+
+		// Initialize all the characters
+		initializeCharacters();
+	}
+
+	// Loads a fake prefab for the ritual room that already exists in the game space from the start
+	private void initializeTheRitualRoom() {
+		// Instantiate the ritual room itself
+		GameObject ritualRoomGameObject = GameObject.Find("Ritual Room");
+		Factory_PrefabRooms.RoomPrefab ritualRoomPrefab = prefabFactory.getRoomPrefabDetails("[prefab00]");
+		Data_Room ritualRoom = new Data_Room(GS.ROOMS.Count, ritualRoomGameObject, ritualRoomPrefab);
+		GS.addRoom(ritualRoom);
+		// Load the environment
+		ritualRoom.env.loadGameState(GS, 0);
+	}
+
+	// Spawn all other rooms randomly from prefabs up to a certain count
+	private void spawnAllOtherRooms(int totalRoomCount) {
 		float verticalRoomSpacing = Global_Settings.read("VERTICAL_ROOM_SPACING");
-		int maxRooms = (int)Global_Settings.read("TOTAL_NUMBER_OF_ROOMS");
 		int minRoomsWith4DoorSpawns = 4; // Graph API prerequisite
-		//int doorSpawnCounter = 2; // The first three spawns are in the ritual room
-		while(GS.ROOMS.Count < maxRooms) {
+		while(GS.ROOMS.Count < totalRoomCount) {
 			// Check how many door spawns are required
-			int minDoorSpawns = 0;
-			if(minRoomsWith4DoorSpawns > 0) {
-				minDoorSpawns = 4;
-				minRoomsWith4DoorSpawns -= 1;
-			}
-			// Generate the room game object from prefabs
-			GameObject roomObj = prefabFactory.spawnRandomRoom(minDoorSpawns, verticalRoomSpacing);
-			Factory_PrefabRooms.RoomPrefab roomPrefab = prefabFactory.getRoomPrefabDetails(roomObj.name);
-			// Load the prefab details into the data object
-			Data_Room newRoom = new Data_Room(GS.ROOMS.Count, roomObj, roomPrefab);
-			GS.addRoom(newRoom);
-			houseGraph.addRoom(roomPrefab.maxDoors); // TODO move it this to GameState itself...
-			// Add doors
-			if(roomPrefab.doorSpawnLeft) {
-				//spawnDoor(Data_Door.TYPE_LEFT_SIDE, newRoom, roomObj.transform, roomPrefab.size.x, 0);
-				houseGraph.addDoorSpawn(newRoom.INDEX, true, false);
-			}
-			foreach(float xPos in roomPrefab.doorSpawns) {
-				//spawnDoor(Data_Door.TYPE_BACK_DOOR, newRoom, roomObj.transform, roomPrefab.size.x, xPos);
-				houseGraph.addDoorSpawn(newRoom.INDEX, false, false);
-			}
-			//if(roomPrefab.doorSpawnRight && // The next clause ensures an even total number of doors
-				//(GS.ROOMS.Count < maxRooms || GS.DOORS.Count % 2 == 1)) {
-				//spawnDoor(Data_Door.TYPE_RIGHT_SIDE, newRoom, roomObj.transform, roomPrefab.size.x, 0);
-			if(roomPrefab.doorSpawnRight) {
-				houseGraph.addDoorSpawn(newRoom.INDEX, false, true);
-			}
-			newRoom.env.loadGameState(GS, newRoom.INDEX);
+			int minDoorSpawns = (minRoomsWith4DoorSpawns-- > 0) ? 4 : 0;
+			// Spawn the new room
+			spawnRandomRoom(minDoorSpawns, verticalRoomSpacing);
 		}
+	}
 
-		// Create a house graph
-		graphFactory.computePlanarGraph(houseGraph);
+	// Spawns a random new room in the game space (very similar to initializeTheRitualRoom)
+	private void spawnRandomRoom(int minDoorSpawns, float verticalRoomSpacing) {
+		// Generate the room game object from prefabs
+		GameObject roomObj = prefabFactory.spawnRandomRoom(minDoorSpawns, verticalRoomSpacing);
+		Factory_PrefabRooms.RoomPrefab roomPrefab = prefabFactory.getRoomPrefabDetails(roomObj.name);
+		// Load the prefab details into the data object
+		Data_Room newRoom = new Data_Room(GS.ROOMS.Count, roomObj, roomPrefab);
+		GS.addRoom(newRoom);
+		// Load the environment
+		newRoom.env.loadGameState(GS, newRoom.INDEX);
+	}
 
-		// Spawn and connect the doors
-		int[,] doorSpawnConnections = houseGraph.exportAllRoom2RoomConnections();
-		//Debug.Log(doorConnections.GetLength(0) + "x" + doorConnections.GetLength(1));
+	// Initializes all characters on a new game
+	private void initializeCharacters() {
+		int ritualRoomIndex = 0;
+
+		// INITIALIZE CADAVER
+		GS.setCadaverCharacter("Cadaver");
+		GS.getCadaver().updatePosition(GS.getRoomByIndex(ritualRoomIndex), -7, 0); // move the cadaver out of sight at first
+		GS.getCadaver().gameObj.transform.position = new Vector3(-7, 0, 0);
+
+		// INITIALIZE PLAYER CHARACTER
+		GS.setPlayerCharacter("PlayerCharacter");
+		GS.getCHARA().updatePosition(GS.getRoomByIndex(ritualRoomIndex), 0, 0); // default: starting position is center of pentagram
+		GS.getCHARA().control.loadGameState(GS);
+
+		// INITIALIZE MONSTER
+		GS.setMonsterCharacter("Monster");
+		GS.getMonster().updatePosition(GS.getRoomFurthestFrom(ritualRoomIndex), 0, 0);
+		GS.getMonster().setForbiddenRoomIndex(0);
+		GS.getMonster().control.loadGameState(GS);
+	}
+
+	// Spawns all doors from the door graph
+	private void spawnAndConnectAllDoors() {
+		// The the spawn-to-spawn connection matrix
+		int[,] doorSpawnConnections = GS.HOUSE_GRAPH.exportAllRoom2RoomConnections();
 		for(int i = 0; i < doorSpawnConnections.GetLength(0); i++) {
 			// Parse the return matrix
 			int thisRoomID = doorSpawnConnections[i, 0];
@@ -207,55 +236,6 @@ public class Control_GameState : MonoBehaviour {
 			// Connect the doors
 			thisDoor.connectTo(otherDoor);
 		}
-
-		// A rough estimation of what "distance" lies between two sides of a door for the all-pairs shortest distance calculation
-		float doorTransitionCost = Global_Settings.read("CHARA_WALKING_SPEED") * Global_Settings.read("DOOR_TRANSITION_DURATION");
-		// Precompute all-pairs shortest distances
-		GS.precomputeAllPairsShortestDistances(doorTransitionCost);
-		if(!GS.allRoomsReachable) {
-			Debug.LogWarning("APSD: Some rooms are unreachable!");
-		}
-
-		// Initialize all the characters
-		initializeCharacters(0);
-	}
-
-	// Loads a fake prefab for the ritual room that already exists in the game space from the start
-	private void initializeTheRitualRoom() {
-		// Instantiate the ritual room itself
-		GameObject ritualRoomGameObject = GameObject.Find("Ritual Room");
-		Factory_PrefabRooms.RoomPrefab ritualRoomPrefab = prefabFactory.getRoomPrefabDetails("[prefab00]");
-		Data_Room ritualRoom = new Data_Room(GS.ROOMS.Count, ritualRoomGameObject, ritualRoomPrefab);
-		GS.addRoom(ritualRoom);
-		// Instantiate the ritual room doors
-		GS.HOUSE_GRAPH.addRoom(3); // adds the ritual room with three door spawns to the house graph
-		//spawnDoor(Data_Door.TYPE_LEFT_SIDE, ritualRoom, ritualRoomGameObject.transform, ritualRoomPrefab.size.x, 0);
-		GS.HOUSE_GRAPH.addDoorSpawn(ritualRoom.INDEX, true, false);
-		//spawnDoor(Data_Door.TYPE_BACK_DOOR, ritualRoom, ritualRoomGameObject.transform, ritualRoomPrefab.size.x, ritualRoomPrefab.doorSpawns[0]);
-		GS.HOUSE_GRAPH.addDoorSpawn(ritualRoom.INDEX, false, false);
-		//spawnDoor(Data_Door.TYPE_RIGHT_SIDE, ritualRoom, ritualRoomGameObject.transform, ritualRoomPrefab.size.x, 0);
-		GS.HOUSE_GRAPH.addDoorSpawn(ritualRoom.INDEX, false, true);
-		// Load the ennviornment
-		ritualRoom.env.loadGameState(GS, 0);
-	}
-
-	// Initializes all characters on a new game
-	private void initializeCharacters(int ritualRoomIndex) {
-		// INITIALIZE CADAVER
-		GS.setCadaverCharacter("Cadaver");
-		GS.getCadaver().updatePosition(GS.getRoomByIndex(ritualRoomIndex), -7, 0); // move the cadaver out of sight at first
-		GS.getCadaver().gameObj.transform.position = new Vector3(-7, 0, 0);
-
-		// INITIALIZE PLAYER CHARACTER
-		GS.setPlayerCharacter("PlayerCharacter");
-		GS.getCHARA().updatePosition(GS.getRoomByIndex(ritualRoomIndex), 0, 0); // default: starting position is center of pentagram
-		GS.getCHARA().control.loadGameState(GS);
-
-		// INITIALIZE MONSTER
-		GS.setMonsterCharacter("Monster");
-		GS.getMonster().updatePosition(GS.getRoomFurthestFrom(ritualRoomIndex), 0, 0);
-		GS.getMonster().setForbiddenRoomIndex(0);
-		GS.getMonster().control.loadGameState(GS);
 	}
 
 	// Place a door within both game state and game space
@@ -285,6 +265,17 @@ public class Control_GameState : MonoBehaviour {
 		Data_Door doorObj = new Data_Door(GS.DOORS.Count, doorGameObj, doorType, parent, xPos);
 		GS.addDoor(doorObj);
 		return doorObj;
+	}
+
+	// Calls the game state to compute distances between all rooms and doors and checks if some are unreachable
+	private void precomputeAllDistances() {
+		// A rough estimation of what "distance" lies between two sides of a door for the all-pairs shortest distance calculation
+		float doorTransitionCost = Global_Settings.read("CHARA_WALKING_SPEED") * Global_Settings.read("DOOR_TRANSITION_DURATION");
+		// Precompute all-pairs shortest distances
+		GS.precomputeAllPairsShortestDistances(doorTransitionCost);
+		if(!GS.allRoomsReachable) {
+			Debug.LogWarning("APSD: Some rooms are unreachable!");
+		}
 	}
 
 	// Places the next item in a random spot

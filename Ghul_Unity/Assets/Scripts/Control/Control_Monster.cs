@@ -113,8 +113,7 @@ public class Control_Monster : MonoBehaviour {
 
 	// If the door connects to the portal room, the monster isn't allowed to enter it.
 	private bool checkIfForbiddenDoor(Data_Door door) {
-		// TODO connectsTo may not be null, so remove this as soon as proper door connections are implemented
-		return (door.connectsTo == null || door.connectsTo.isIn.INDEX == me.forbiddenRoomIndex);
+		return (door.connectsTo.isIn.INDEX == me.forbiddenRoomIndex);
 	}
 
 	// if the monster is in reach for a door, go through it

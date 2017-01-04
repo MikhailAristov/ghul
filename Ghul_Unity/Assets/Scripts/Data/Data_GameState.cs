@@ -62,18 +62,23 @@ public class Data_GameState {
 	public void addRoom(Data_Room newRoom)
 	{
 		ROOMS.Add(newRoom.INDEX, newRoom);
+		// Also update the house graph
+		HOUSE_GRAPH.addRoom(newRoom.countAllDoorSpawns);
+		if(newRoom.hasLeftSideDoorSpawn) {
+			HOUSE_GRAPH.addDoorSpawn(newRoom.INDEX, true, false);
+		}
+		for(int i = 0; i < newRoom.countBackDoorSpawns; i++) {
+			HOUSE_GRAPH.addDoorSpawn(newRoom.INDEX, false, false);
+		}
+		if(newRoom.hasRightSideDoorSpawn) {
+			HOUSE_GRAPH.addDoorSpawn(newRoom.INDEX, false, true);
+		}
 	}
 
 	// Adds a room object to the game state
 	public void addDoor(Data_Door newDoor)
 	{
 		DOORS.Add(newDoor.INDEX, newDoor);
-	}
-
-	// Connects two doors to each other
-	public void connectTwoDoors(int fromIndex, int toIndex) 
-	{
-		DOORS[fromIndex].connectTo(DOORS[toIndex]);
 	}
 
 	// Adds an item to the game state
@@ -279,19 +284,6 @@ public class Data_GameState {
 				}
 			}
 		}
-	}
-
-	// For debug only (outputs a 2D matrix of floats in a human-readable form)
-	private string matrixToString(float[,] matrix, int precision) {
-		string formatString = "{0," + (5 + precision).ToString() + ":0." + (new string('0', precision)) + "}";
-		string result = ""; 
-		for(int i = 0; i < matrix.GetLength(0); i++) {
-			for(int j = 0; j < matrix.GetLength(1); j++) {
-				result += String.Format(formatString, matrix[i, j]);
-			}
-			result += "\n";
-		}
-		return result;
 	}
 
 	// Find the (horizontal) distance between two arbitrary positions

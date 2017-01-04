@@ -24,7 +24,7 @@ public class Data_Room : IComparable<Data_Room> {
     [NonSerialized]
     public Environment_Room env;
 
-    // TODO: Horizontal span of the room (generally equals its spite width)
+    // Horizontal span of the room (generally equals its spite width)
     [SerializeField]
     private float _width;
     public float width
@@ -54,6 +54,23 @@ public class Data_Room : IComparable<Data_Room> {
 	// List of door spawn positions in the room
 	[SerializeField]
 	private List<float> _doorSpawnPoints;
+	public bool hasLeftSideDoorSpawn {
+		get { return (_doorSpawnPoints[0] < -_width); }
+		private set { return; }
+	}
+	public bool hasRightSideDoorSpawn {
+		get { return (_doorSpawnPoints[_doorSpawnPoints.Count - 1] > _width); }
+		private set { return; }
+	}
+	public int countAllDoorSpawns {
+		get { return _doorSpawnPoints.Count; }
+		private set { return; }
+	}
+	public int countBackDoorSpawns {
+		get { return (countAllDoorSpawns - (hasLeftSideDoorSpawn ? 1 : 0) - (hasRightSideDoorSpawn ? 1 : 0)); }
+		private set { return; }
+	}
+
 
 	public Data_Room(int I, GameObject go, Factory_PrefabRooms.RoomPrefab prefabDetails) {
 		INDEX = I;
@@ -92,11 +109,11 @@ public class Data_Room : IComparable<Data_Room> {
 		}
 	}
 
-	// TODO Is this still necessary? Can this be reused in Environment class?
-	// TODO otherwise check the _leftDoor... indices
-	public Data_Door getDoorAtPosition(float xPos) {
+	// Returns the door at the specified spawn position, if any
+	public Data_Door getDoorAtSpawn(int spawnIndex) {
 		float horizontalRoomMargin = Global_Settings.read("HORIZONTAL_ROOM_MARGIN");
 		float marginOfError = Global_Settings.read("HORIZONTAL_DOOR_WIDTH") / 2;
+		float xPos = getDoorSpawnPosition(spawnIndex);
 		// Loop through the doors
 		foreach(Data_Door door in DOORS) {
 			if( (door.type == Data_Door.TYPE_LEFT_SIDE	&& xPos <= (horizontalRoomMargin - this._width / 2)) ||
@@ -106,9 +123,6 @@ public class Data_Room : IComparable<Data_Room> {
 			}
 		}
 		return null;
-	}
-	public Data_Door getDoorAtSpawn(int spawnIndex) {
-		return getDoorAtPosition(getDoorSpawnPosition(spawnIndex));
 	}
 
 	// Adds a door to this room
