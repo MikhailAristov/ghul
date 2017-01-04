@@ -16,7 +16,7 @@ public class Data_GameState {
 	[NonSerialized] // Setting this flag makes the game generate a new item
 	public bool NEXT_ITEM_PLEASE = true;
 
-	[NonSerialized]
+	[SerializeField]
 	public Data_Graph HOUSE_GRAPH;
 
     [SerializeField]
