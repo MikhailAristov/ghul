@@ -16,6 +16,9 @@ public class Data_GameState {
 	[NonSerialized] // Setting this flag makes the game generate a new item
 	public bool NEXT_ITEM_PLEASE = true;
 
+	[NonSerialized]
+	public Data_Graph HOUSE_GRAPH;
+
     [SerializeField]
     public SortedList<int, Data_Room> ROOMS;
     [SerializeField]
@@ -46,6 +49,7 @@ public class Data_GameState {
     // Construct an empty game state
     public Data_GameState()
     {
+		HOUSE_GRAPH = new Data_Graph();
         ROOMS = new SortedList<int, Data_Room>();
         DOORS = new SortedList<int, Data_Door>();
 		ITEMS = new SortedList<int, Data_Item>();

@@ -51,6 +51,10 @@ public class Data_Room : IComparable<Data_Room> {
 		private set { return; }
 	}
 
+	// List of door spawn positions in the room
+	[SerializeField]
+	private List<float> _doorSpawnPoints;
+
 	public Data_Room(int I, GameObject go, Factory_PrefabRooms.RoomPrefab prefabDetails) {
 		INDEX = I;
 		// Set the game object references
@@ -63,20 +67,49 @@ public class Data_Room : IComparable<Data_Room> {
 		foreach(Vector2 p in prefabDetails.itemSpawns) {
 			_itemSpawnPoints.Add(new Data_Position(I, p));
 		}
+		// Load door spawnpoints
+		_doorSpawnPoints = new List<float>();
+		if(prefabDetails.doorSpawnLeft) { _doorSpawnPoints.Add(float.MinValue); }
+		_doorSpawnPoints.AddRange(prefabDetails.doorSpawns);
+		if(prefabDetails.doorSpawnRight) { _doorSpawnPoints.Add(float.MaxValue); }
+		_doorSpawnPoints.Sort();
 		// Doors are added separately
 		_leftSideDoorID = -1;
 		_rightSideDoorID = -1;
 		_backDoorIDs = new List<int>();
 		DOORS = new List<Data_Door>();
-	} 
-
-	// TODO remove this
-	public void manualAddItemSpawn(float xPos, float yPos) {
-		_itemSpawnPoints.Add(new Data_Position(INDEX, xPos, yPos));
 	}
 
     public int CompareTo(Data_Room other) { return INDEX.CompareTo(other.INDEX); }
     public override string ToString() { return INDEX.ToString(); }
+
+	// Returns a door spawn position of the specified index
+	public float getDoorSpawnPosition(int spawnIndex) {
+		if(spawnIndex < _doorSpawnPoints.Count) {
+			return _doorSpawnPoints[spawnIndex];
+		} else {
+			throw new IndexOutOfRangeException("No door spawn exists in room #" + this + " with index #" + spawnIndex);
+		}
+	}
+
+	// TODO Is this still necessary? Can this be reused in Environment class?
+	// TODO otherwise check the _leftDoor... indices
+	public Data_Door getDoorAtPosition(float xPos) {
+		float horizontalRoomMargin = Global_Settings.read("HORIZONTAL_ROOM_MARGIN");
+		float marginOfError = Global_Settings.read("HORIZONTAL_DOOR_WIDTH") / 2;
+		// Loop through the doors
+		foreach(Data_Door door in DOORS) {
+			if( (door.type == Data_Door.TYPE_LEFT_SIDE	&& xPos <= (horizontalRoomMargin - this._width / 2)) ||
+				(door.type == Data_Door.TYPE_BACK_DOOR	&& Math.Abs(xPos - door.atPos) < marginOfError) ||
+				(door.type == Data_Door.TYPE_RIGHT_SIDE	&& xPos >= (this._width / 2 - horizontalRoomMargin))) {
+				return door;
+			}
+		}
+		return null;
+	}
+	public Data_Door getDoorAtSpawn(int spawnIndex) {
+		return getDoorAtPosition(getDoorSpawnPosition(spawnIndex));
+	}
 
 	// Adds a door to this room
 	public void addDoor(Data_Door D)

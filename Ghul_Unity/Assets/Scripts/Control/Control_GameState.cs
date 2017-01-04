@@ -14,6 +14,7 @@ public class Control_GameState : MonoBehaviour {
 
 	private Control_Camera MAIN_CAMERA_CONTROL;
 	private Factory_PrefabController prefabFactory;
+	private Factory_Graph graphFactory;
 
     private float? AUTOSAVE_FREQUENCY;
     private float NEXT_AUTOSAVE_IN;
@@ -22,7 +23,10 @@ public class Control_GameState : MonoBehaviour {
     void Start ()
     {
 		MAIN_CAMERA_CONTROL = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Control_Camera>();
+		// Initialize factories
 		prefabFactory = GetComponent<Factory_PrefabController>();
+		graphFactory = GetComponent<Factory_Graph>();
+		// Start or continue the game
 		if(AUTOSTART_NEW_GAME && Debug.isDebugBuild) {
 			onNewGameSelect(); // For debug only
 		} else {
@@ -136,33 +140,83 @@ public class Control_GameState : MonoBehaviour {
 
         // Initialize game settings
         GS = new Data_GameState();
+		Data_Graph houseGraph = GS.HOUSE_GRAPH;
 
 		// Initialize the starting ritual room
 		initializeTheRitualRoom();
 
 		// Spawn more rooms from prefabs
+		float verticalRoomSpacing = Global_Settings.read("VERTICAL_ROOM_SPACING");
 		int maxRooms = (int)Global_Settings.read("TOTAL_NUMBER_OF_ROOMS");
+		int minRoomsWith4DoorSpawns = 4; // Graph API prerequisite
+		//int doorSpawnCounter = 2; // The first three spawns are in the ritual room
 		while(GS.ROOMS.Count < maxRooms) {
+			// Check how many door spawns are required
+			int minDoorSpawns = 0;
+			if(minRoomsWith4DoorSpawns > 0) {
+				minDoorSpawns = 4;
+				minRoomsWith4DoorSpawns -= 1;
+			}
 			// Generate the room game object from prefabs
-			GameObject roomObj = prefabFactory.spawnRandomRoom(Global_Settings.read("VERTICAL_ROOM_SPACING"));
+			GameObject roomObj = prefabFactory.spawnRandomRoom(minDoorSpawns, verticalRoomSpacing);
 			Factory_PrefabRooms.RoomPrefab roomPrefab = prefabFactory.getRoomPrefabDetails(roomObj.name);
 			// Load the prefab details into the data object
 			Data_Room newRoom = new Data_Room(GS.ROOMS.Count, roomObj, roomPrefab);
 			GS.addRoom(newRoom);
+			houseGraph.addRoom(roomPrefab.maxDoors); // TODO move it this to GameState itself...
 			// Add doors
 			if(roomPrefab.doorSpawnLeft) {
-				spawnDoor(Data_Door.TYPE_LEFT_SIDE, newRoom, roomObj.transform, roomPrefab.size.x, 0);
+				//spawnDoor(Data_Door.TYPE_LEFT_SIDE, newRoom, roomObj.transform, roomPrefab.size.x, 0);
+				houseGraph.addDoorSpawn(newRoom.INDEX, true, false);
 			}
 			foreach(float xPos in roomPrefab.doorSpawns) {
-				spawnDoor(Data_Door.TYPE_BACK_DOOR, newRoom, roomObj.transform, roomPrefab.size.x, xPos);
+				//spawnDoor(Data_Door.TYPE_BACK_DOOR, newRoom, roomObj.transform, roomPrefab.size.x, xPos);
+				houseGraph.addDoorSpawn(newRoom.INDEX, false, false);
 			}
-			if(roomPrefab.doorSpawnRight && // The next clause ensures an even total number of doors
-				(GS.ROOMS.Count < maxRooms || GS.DOORS.Count % 2 == 1)) {
-				spawnDoor(Data_Door.TYPE_RIGHT_SIDE, newRoom, roomObj.transform, roomPrefab.size.x, 0);
+			//if(roomPrefab.doorSpawnRight && // The next clause ensures an even total number of doors
+				//(GS.ROOMS.Count < maxRooms || GS.DOORS.Count % 2 == 1)) {
+				//spawnDoor(Data_Door.TYPE_RIGHT_SIDE, newRoom, roomObj.transform, roomPrefab.size.x, 0);
+			if(roomPrefab.doorSpawnRight) {
+				houseGraph.addDoorSpawn(newRoom.INDEX, false, true);
 			}
 			newRoom.env.loadGameState(GS, newRoom.INDEX);
 		}
 
+		// Create a house graph
+		graphFactory.computePlanarGraph(houseGraph);
+		// Spawn all the necessary doors
+		foreach(Data_GraphRoomVertice room in houseGraph.ABSTRACT_ROOMS.Values) {
+			Data_Room curRoom = GS.getRoomByIndex(room.INDEX);
+			foreach(Data_GraphDoorSpawn spawn in room.DOOR_SPAWNS.Values) {
+				if(spawn.isConnected()) {
+					// Spawn the door there
+					int doorType = Data_Door.TYPE_BACK_DOOR;
+					if(spawn.LEFT_SIDE) {
+						doorType = Data_Door.TYPE_LEFT_SIDE;
+					} else if(spawn.RIGHT_SIDE) {
+						doorType = Data_Door.TYPE_RIGHT_SIDE;
+					}
+					spawnDoor(doorType, curRoom, curRoom.gameObj.transform, curRoom.width, curRoom.getDoorSpawnPosition(spawn.INDEX));
+				}
+			}
+		}
+		// Connect all doors
+		foreach(Data_GraphRoomVertice room in houseGraph.ABSTRACT_ROOMS.Values) {
+			Data_Room curRoom = GS.getRoomByIndex(room.INDEX);
+			foreach(Data_GraphDoorSpawn spawn in room.DOOR_SPAWNS.Values) {
+				if(spawn.isConnected()) {
+					Data_Door localDoor = curRoom.getDoorAtSpawn(spawn.INDEX);
+					// Get the door it connects to
+					Data_GraphDoorSpawn otherSpawn = houseGraph.DOOR_SPAWNS[spawn.CONNECTS_TO_SPAWN_ID];
+					Data_Room otherRoom = GS.getRoomByIndex(houseGraph.DOOR_SPAWN_IS_IN_ROOM[spawn.CONNECTS_TO_SPAWN_ID]);
+					Data_Door remoteDoor = otherRoom.getDoorAtSpawn(otherSpawn.INDEX);
+					// Connect the two doors
+					localDoor.connectTo(remoteDoor);
+				}
+			}
+		}
+
+		/*
 		// TODO: Connect doors properly
 		// TODO: Must ensure that side doors never connect to the opposite sides, or it will look weird and cause trouble with room transitions
 		foreach(Data_Door d in GS.DOORS.Values) {
@@ -174,6 +228,7 @@ public class Control_GameState : MonoBehaviour {
 				d.connectTo(targetDoor);
 			}
 		}
+		*/
 
 		// A rough estimation of what "distance" lies between two sides of a door for the all-pairs shortest distance calculation
 		float doorTransitionCost = Global_Settings.read("CHARA_WALKING_SPEED") * Global_Settings.read("DOOR_TRANSITION_DURATION");
@@ -195,9 +250,13 @@ public class Control_GameState : MonoBehaviour {
 		Data_Room ritualRoom = new Data_Room(GS.ROOMS.Count, ritualRoomGameObject, ritualRoomPrefab);
 		GS.addRoom(ritualRoom);
 		// Instantiate the ritual room doors
+		GS.HOUSE_GRAPH.addRoom(3); // adds the ritual room with three door spawns to the house graph
 		spawnDoor(Data_Door.TYPE_LEFT_SIDE, ritualRoom, ritualRoomGameObject.transform, ritualRoomPrefab.size.x, 0);
+		GS.HOUSE_GRAPH.addDoorSpawn(ritualRoom.INDEX, true, false);
 		spawnDoor(Data_Door.TYPE_BACK_DOOR, ritualRoom, ritualRoomGameObject.transform, ritualRoomPrefab.size.x, ritualRoomPrefab.doorSpawns[0]);
+		GS.HOUSE_GRAPH.addDoorSpawn(ritualRoom.INDEX, false, false);
 		spawnDoor(Data_Door.TYPE_RIGHT_SIDE, ritualRoom, ritualRoomGameObject.transform, ritualRoomPrefab.size.x, 0);
+		GS.HOUSE_GRAPH.addDoorSpawn(ritualRoom.INDEX, false, true);
 		// Load the ennviornment
 		ritualRoom.env.loadGameState(GS, 0);
 	}
@@ -245,6 +304,7 @@ public class Control_GameState : MonoBehaviour {
 		// Initialize the door object and add it
 		Data_Door doorObj = new Data_Door(GS.DOORS.Count, doorGameObj, doorType, parent, xPos);
 		GS.addDoor(doorObj);
+		GS.HOUSE_GRAPH.addDoorSpawn(doorObj.INDEX, (doorObj.type == Data_Door.TYPE_LEFT_SIDE),  (doorObj.type == Data_Door.TYPE_RIGHT_SIDE));
 		return doorObj;
 	}
 

@@ -8,6 +8,8 @@ public class Data_Graph {
 	[SerializeField]
 	public SortedList<int, Data_GraphRoomVertice> ABSTRACT_ROOMS;
 	[SerializeField]
+	public SortedList<int, Data_GraphDoorSpawn> DOOR_SPAWNS;
+	[SerializeField]
 	public SortedList<int, int> DOOR_SPAWN_IS_IN_ROOM; // given a door spawn index, this saves the room index of the room the spawn is in.
 
 	public Data_Graph() {
@@ -32,7 +34,8 @@ public class Data_Graph {
 		}
 		int doorSpawnIndex = DOOR_SPAWN_IS_IN_ROOM.Count;
 		DOOR_SPAWN_IS_IN_ROOM.Add(doorSpawnIndex, roomIndex);
-		ABSTRACT_ROOMS[roomIndex].addDoorSpawn(doorSpawnIndex, leftSide, rightSide);
+		Data_GraphDoorSpawn newSpan = ABSTRACT_ROOMS[roomIndex].addDoorSpawn(doorSpawnIndex, leftSide, rightSide);
+		DOOR_SPAWNS.Add(doorSpawnIndex, newSpan);
 	}
 
 	public int getTotalNumberOfRooms() {

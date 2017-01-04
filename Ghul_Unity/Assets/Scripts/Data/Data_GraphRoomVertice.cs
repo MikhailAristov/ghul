@@ -44,10 +44,11 @@ public class Data_GraphRoomVertice {
 	// - Note - When does the linking of doors to door spawns happen exactly?
 
 	// Adds a door spawn to the list
-	public void addDoorSpawn(int index, bool leftSide, bool rightSide) {
+	public Data_GraphDoorSpawn addDoorSpawn(int index, bool leftSide, bool rightSide) {
 		Data_GraphDoorSpawn spawn = new Data_GraphDoorSpawn(index, leftSide, rightSide);
 		spawn.roomId = INDEX; // The room's index, not the door's!
 		DOOR_SPAWNS.Add(index, spawn);
+		return spawn;
 	}
 
 	// returns true if at least one door spawn is connected.

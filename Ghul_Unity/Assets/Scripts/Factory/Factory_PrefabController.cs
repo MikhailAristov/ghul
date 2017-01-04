@@ -98,13 +98,15 @@ public class Factory_PrefabController : MonoBehaviour {
 		totalRoomCounter = 1;
 	}
 
-	// Spawns a random room into existence
-	public GameObject spawnRandomRoom(float verticalRoomSpacing) {
+	// Spawns a random room into existence with a specified minimum number of door spawns
+	public GameObject spawnRandomRoom(int minDoorSpawns, float verticalRoomSpacing) {
 		if(allRooms.list == null) { loadRoomIndex(); }
 		// Find a random room that has not been spawned over the limit yet
 		int i; do {
 			i = UnityEngine.Random.Range(0, allRooms.list.Length);
-		} while(roomSpawnCount[i] >= allRooms.list[i].maxInstances);
+			// The while clause below checks whether the currently picked prefab has been overuser OR doesn't have enough door spawns
+			// In that case, another one is picked
+		} while(roomSpawnCount[i] >= allRooms.list[i].maxInstances || allRooms.list[i].maxDoors < minDoorSpawns);
 		// Generate and return the room
 		Vector3 pos = new Vector3(0, verticalRoomSpacing * totalRoomCounter, 0);
 		return spawnRoom(i, pos);
