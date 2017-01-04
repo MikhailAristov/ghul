@@ -5,7 +5,7 @@ using System.Collections;
 
 public class Factory_Graph : MonoBehaviour {
 
-	private DummyData_Graph graph;
+	private Data_Graph graph;
 	public bool graphCalculated;
 
 	void Start() {
@@ -13,7 +13,7 @@ public class Factory_Graph : MonoBehaviour {
 	}
 
 	// Returns the complete graph or null if it's not computed yet.
-	public DummyData_Graph GetGraph() {
+	public Data_Graph GetGraph() {
 		if (graphCalculated)
 			return graph;
 		else
@@ -27,7 +27,7 @@ public class Factory_Graph : MonoBehaviour {
 	}
 
 	// Generates the planar graph given a basic edge-less graph. (i.e. no door spawns are connected)
-	public void computePlanarGraph(DummyData_Graph g) {
+	public void computePlanarGraph(Data_Graph g) {
 		if (graphCalculated) {
 			Debug.Log("Trying to generate a graph but there is already one computed. Use deleteGraph() before generating a new one.");
 			return;
@@ -302,7 +302,7 @@ public class Factory_Graph : MonoBehaviour {
 						Debug.Log("This should never happen. Cannot find a connected room.");
 						return;
 					}
-					DummyData_DoorSpawn spawn1 = graph.ABSTRACT_ROOMS[room1ID].getRandomConnectedDoorSpawn();
+					Data_GraphDoorSpawn spawn1 = graph.ABSTRACT_ROOMS[room1ID].getRandomConnectedDoorSpawn();
 					if (spawn1 == null) {
 						Debug.Log("Tried to find a connected door spawn from non-empty room " + room1ID + ", but failed.");
 						return;
@@ -326,7 +326,7 @@ public class Factory_Graph : MonoBehaviour {
 					// We store the ingoing ends of edges because we use the "connectRoomsAFTERConnection"-method later on
 					List<int> spawnIDsOnCycle = new List<int>();
 					List<int> roomIDsOnCycle = new List<int>();
-					DummyData_DoorSpawn spawn = graph.getRandomConnectedDoorSpawn();
+					Data_GraphDoorSpawn spawn = graph.getRandomConnectedDoorSpawn();
 					if (spawn == null) {
 						goto case 2;
 					}
@@ -450,8 +450,8 @@ public class Factory_Graph : MonoBehaviour {
 	// Checks whether two left sides or two right sides are connected. If true, rotates rooms.
 	// This can't solve every possible case. In an unlucky situations a room may be connected only to left side doors.
 	private void checkSideConnections() {
-		DummyData_AbstractRoom room, otherRoom;
-		DummyData_DoorSpawn spawn, otherSpawn;
+		Data_GraphRoomVertice room, otherRoom;
+		Data_GraphDoorSpawn spawn, otherSpawn;
 
 		for (int i = 0; i < graph.getTotalNumberOfRooms(); i++) {
 			// Iterate over all rooms

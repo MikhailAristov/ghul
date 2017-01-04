@@ -4,7 +4,7 @@ using System.Collections;
 // Testing of graph creation.
 public class Test_Graph : MonoBehaviour {
 
-	private DummyData_Graph graph;
+	private Data_Graph graph;
 	private Factory_Graph factory;
 	int roomIndex;
 
@@ -13,7 +13,7 @@ public class Test_Graph : MonoBehaviour {
 		Debug.Log("GRAPH TESTER START");
 
 		factory = GetComponent<Factory_Graph>();
-		graph = new DummyData_Graph();
+		graph = new Data_Graph();
 		roomIndex = 0;
 
 		// Construction of rooms and door spawns (without any connections).
@@ -117,9 +117,9 @@ public class Test_Graph : MonoBehaviour {
 		infoText += "The graph has " + graph.getTotalNumberOfRooms() + " rooms and " 
 			+ graph.getTotalNumberOfDoorSpawns() + " door spawns.\n";
 		for (int i = 0; i <= roomIndex; i++) {
-			DummyData_AbstractRoom room = graph.ABSTRACT_ROOMS[i];
+			Data_GraphRoomVertice room = graph.ABSTRACT_ROOMS[i];
 			infoText += "Room " + i + ": " + room.MAX_NUM_OF_DOORS + " door spawns total. Spawns: ";
-			foreach (DummyData_DoorSpawn spawn in room.DOOR_SPAWNS.Values) {
+			foreach (Data_GraphDoorSpawn spawn in room.DOOR_SPAWNS.Values) {
 				infoText += "" + spawn.INDEX;
 				if (spawn.LEFT_SIDE)
 					infoText += " LEFT";
@@ -160,10 +160,10 @@ public class Test_Graph : MonoBehaviour {
 		infoText += "\n";
 
 		for (int i = 0; i <= roomIndex; i++) {
-			DummyData_AbstractRoom room = graph.ABSTRACT_ROOMS[i];
+			Data_GraphRoomVertice room = graph.ABSTRACT_ROOMS[i];
 			infoText += "Room " + i + ": " + room.MAX_NUM_OF_DOORS + " door spawns total. " 
 				+ room.NUM_OF_DOORS + " connections total.\n";
-			foreach (DummyData_DoorSpawn spawn in room.DOOR_SPAWNS.Values) {
+			foreach (Data_GraphDoorSpawn spawn in room.DOOR_SPAWNS.Values) {
 				infoText += "\tSpawn " + spawn.INDEX;
 				if (spawn.LEFT_SIDE)
 					infoText += " LEFT";
