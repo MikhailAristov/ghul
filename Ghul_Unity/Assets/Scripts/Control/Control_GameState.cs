@@ -145,10 +145,11 @@ public class Control_GameState : MonoBehaviour {
 		spawnAllOtherRooms((int)Global_Settings.read("TOTAL_NUMBER_OF_ROOMS"));
 
 		// Create the house graph
+		graphFactory.deleteGraph();
 		graphFactory.computePlanarGraph(GS.HOUSE_GRAPH);
 
 		// Spawn and connect the doors in pairs
-		spawnAndConnectAllDoors();
+		respawnAndConnectAllDoors();
 
 		// Precompute all-pairs shortest distances
 		precomputeAllDistances();
@@ -214,9 +215,13 @@ public class Control_GameState : MonoBehaviour {
 	}
 
 	// Spawns all doors from the door graph
-	private void spawnAndConnectAllDoors() {
-		// The the spawn-to-spawn connection matrix
+	private void respawnAndConnectAllDoors() {
+		// Remove all existing doors
+		GS.removeAllDoors();
+		foreach(GameObject go in GameObject.FindGameObjectsWithTag("Door")) { Destroy(go); }
+		// Get the spawn-to-spawn connection matrix
 		int[,] doorSpawnConnections = GS.HOUSE_GRAPH.exportAllRoom2RoomConnections();
+		// Spawn and connect all the doors anew
 		for(int i = 0; i < doorSpawnConnections.GetLength(0); i++) {
 			// Parse the return matrix
 			int thisRoomID = doorSpawnConnections[i, 0];

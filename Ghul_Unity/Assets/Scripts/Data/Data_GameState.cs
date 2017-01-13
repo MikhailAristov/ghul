@@ -75,10 +75,19 @@ public class Data_GameState {
 		}
 	}
 
-	// Adds a room object to the game state
+	// Adds a door object to the game state
 	public void addDoor(Data_Door newDoor)
 	{
 		DOORS.Add(newDoor.INDEX, newDoor);
+	}
+
+	// Completely removes all door objects from the game state,
+	// so that they can generated anew
+	public void removeAllDoors() {
+		foreach(Data_Room r in ROOMS.Values) {
+			r.removeAllDoors();
+		}
+		DOORS = new SortedList<int, Data_Door>();
 	}
 
 	// Adds an item to the game state

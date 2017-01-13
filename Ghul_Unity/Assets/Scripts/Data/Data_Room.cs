@@ -71,7 +71,6 @@ public class Data_Room : IComparable<Data_Room> {
 		private set { return; }
 	}
 
-
 	public Data_Room(int I, GameObject go, Factory_PrefabRooms.RoomPrefab prefabDetails) {
 		INDEX = I;
 		// Set the game object references
@@ -91,14 +90,19 @@ public class Data_Room : IComparable<Data_Room> {
 		if(prefabDetails.doorSpawnRight) { _doorSpawnPoints.Add(float.MaxValue); }
 		_doorSpawnPoints.Sort();
 		// Doors are added separately
+		removeAllDoors();
+	}
+
+    public int CompareTo(Data_Room other) { return INDEX.CompareTo(other.INDEX); }
+    public override string ToString() { return INDEX.ToString(); }
+
+	// Initializes the room with no doors
+	public void removeAllDoors() {
 		_leftSideDoorID = -1;
 		_rightSideDoorID = -1;
 		_backDoorIDs = new List<int>();
 		DOORS = new List<Data_Door>();
 	}
-
-    public int CompareTo(Data_Room other) { return INDEX.CompareTo(other.INDEX); }
-    public override string ToString() { return INDEX.ToString(); }
 
 	// Returns a door spawn position of the specified index
 	public float getDoorSpawnPosition(int spawnIndex) {
