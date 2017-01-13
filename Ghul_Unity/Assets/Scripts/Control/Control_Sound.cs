@@ -35,7 +35,7 @@ public class Control_Sound : MonoBehaviour {
 	// Loads the game state
 	public void loadGameState(Data_GameState gameState) {
 		GS = gameState;
-		CHARA = gameState.getCHARA();
+		CHARA = gameState.getToni();
 		MONSTER = gameState.getMonster();
 		// (Re)Start sub-controllers
 		StopCoroutine("generateRandomNoises");

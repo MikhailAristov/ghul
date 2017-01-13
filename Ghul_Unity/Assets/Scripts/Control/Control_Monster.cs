@@ -11,7 +11,7 @@ public class Control_Monster : MonoBehaviour {
     [NonSerialized]
     private Data_Monster me;
     [NonSerialized]
-    private Data_PlayerCharacter player;
+	private Data_PlayerCharacter Toni;
 
     private float VERTICAL_ROOM_SPACING;
 
@@ -28,7 +28,7 @@ public class Control_Monster : MonoBehaviour {
 	{
 		this.GS = gameState;
         this.me = gameState.getMonster();
-		this.player = gameState.getCHARA();
+		this.Toni = gameState.getToni();
 		this.currentEnvironment = me.isIn.env;
 
 		MONSTER_WALKING_SPEED = Global_Settings.read("MONSTER_WALKING_SPEED");
@@ -51,22 +51,22 @@ public class Control_Monster : MonoBehaviour {
 			return;
 		}
 
-		if (me.isIn.INDEX == player.isIn.INDEX && DEBUG_DANGEROUS && !player.isInvulnerable()) {
+		if (me.isIn.INDEX == Toni.isIn.INDEX && DEBUG_DANGEROUS && !Toni.isInvulnerable()) {
 			// The monster is in the same room as the player.
 			me.playerInSight = true;
 			me.playerDetected = true;
-			me.playerPosLastSeen = player.gameObj.transform.position.x;
+			me.playerPosLastSeen = Toni.gameObj.transform.position.x;
 
-			float distanceToPlayer = Mathf.Abs(transform.position.x - player.gameObj.transform.position.x);
+			float distanceToPlayer = Mathf.Abs(transform.position.x - Toni.gameObj.transform.position.x);
 			if (distanceToPlayer <= MONSTER_KILL_RADIUS) {
 				// Getting VERY close the monster, e.g. running past it forces CHARA to drop their item
 				if(distanceToPlayer <= MONSTER_KILL_RADIUS / 10) {
-					player.control.dropItem();
+					Toni.control.dropItem();
 				}
-				player.control.takeDamage();
+				Toni.control.takeDamage();
 			} else {
 				// The monster moves towards the player.
-				moveToPoint(player.gameObj.transform.position.x);
+				moveToPoint(Toni.gameObj.transform.position.x);
 			}
 
 		} else {

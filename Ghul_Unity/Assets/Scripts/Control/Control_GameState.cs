@@ -72,7 +72,7 @@ public class Control_GameState : MonoBehaviour {
     {
         // Train the camera on the main character
         MAIN_CAMERA_CONTROL.loadGameState(GS);
-        MAIN_CAMERA_CONTROL.setFocusOn(GS.getCHARA().pos);
+        MAIN_CAMERA_CONTROL.setFocusOn(GS.getToni().pos);
 
         // Initialize autosave
 		AUTOSAVE_FREQUENCY = Global_Settings.read("AUTOSAVE_FREQUENCY");
@@ -102,8 +102,8 @@ public class Control_GameState : MonoBehaviour {
 		}
 
         // Fix the character, cadaver and monster object references
-        GS.getCHARA().fixObjectReferences(GS);
-        GS.getCHARA().control.loadGameState(GS);
+        GS.getToni().fixObjectReferences(GS);
+        GS.getToni().control.loadGameState(GS);
         GS.getMonster().fixObjectReferences(GS);
         GS.getMonster().control.loadGameState(GS);
 		GS.getCadaver().fixObjectReferences(GS);
@@ -203,8 +203,8 @@ public class Control_GameState : MonoBehaviour {
 
 		// INITIALIZE PLAYER CHARACTER
 		GS.setPlayerCharacter("PlayerCharacter");
-		GS.getCHARA().updatePosition(GS.getRoomByIndex(ritualRoomIndex), 0, 0); // default: starting position is center of pentagram
-		GS.getCHARA().control.loadGameState(GS);
+		GS.getToni().updatePosition(GS.getRoomByIndex(ritualRoomIndex), 0, 0); // default: starting position is center of pentagram
+		GS.getToni().control.loadGameState(GS);
 
 		// INITIALIZE MONSTER
 		GS.setMonsterCharacter("Monster");

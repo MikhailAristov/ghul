@@ -56,7 +56,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
     public void loadGameState(Data_GameState gameState)
     {
         this.GS = gameState;
-        this.me = gameState.getCHARA();
+        this.me = gameState.getToni();
         this.currentEnvironment = me.isIn.env;
 		this.cadaver = GS.getCadaver();
 

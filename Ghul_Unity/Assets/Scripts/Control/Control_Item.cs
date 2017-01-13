@@ -40,7 +40,7 @@ public class Control_Item : MonoBehaviour {
 
 		// Set the position of the item to chara's position as long as it is carried
 		if(me.state == Data_Item.STATE_CARRIED) {
-			Data_PlayerCharacter chara = GS.getCHARA();
+			Data_PlayerCharacter chara = GS.getToni();
 			me.updatePosition(chara.isIn, chara.pos.X, ITEM_CARRY_ELEVATION);
 			updateGameObjectPosition();
 		}

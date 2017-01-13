@@ -27,7 +27,7 @@ public class Data_GameState {
 	public SortedList<int, Data_Item> ITEMS;
 
     [SerializeField]
-    private Data_PlayerCharacter PLAYER_CHARACTER;
+	private Data_PlayerCharacter TONI;
     [SerializeField]
     private Data_Monster MONSTER;
 	[SerializeField]
@@ -53,7 +53,7 @@ public class Data_GameState {
         ROOMS = new SortedList<int, Data_Room>();
         DOORS = new SortedList<int, Data_Door>();
 		ITEMS = new SortedList<int, Data_Item>();
-        PLAYER_CHARACTER = null;
+        TONI = null;
         MONSTER = null;
 		CADAVER = null;
     }
@@ -92,12 +92,12 @@ public class Data_GameState {
 
     // Sets the player character object
     public void setPlayerCharacter(string gameObjectName) {
-        PLAYER_CHARACTER = new Data_PlayerCharacter(gameObjectName);
+        TONI = new Data_PlayerCharacter(gameObjectName);
     }
 
     // Returns the player character object
-    public Data_PlayerCharacter getCHARA() {
-        return PLAYER_CHARACTER;
+    public Data_PlayerCharacter getToni() {
+        return TONI;
     }
 
     // Sets the monster character object
@@ -183,7 +183,7 @@ public class Data_GameState {
     [MethodImpl(MethodImplOptions.Synchronized)] // Synchronized to avoid simultaneous calls from parallel threads
     public static void saveToDisk(Data_GameState GS)
     {
-		if(!SAVING_DISABLED && GS.getCHARA().etherialCooldown < 0.1f) // The second clause is just to avoid saving weird in-between states
+		if(!SAVING_DISABLED && GS.getToni().etherialCooldown < 0.1f) // The second clause is just to avoid saving weird in-between states
         {
             // Set the save file paths
             string resettableFilePath = Application.persistentDataPath + "/" + FILENAME_SAVE_RESETTABLE;
