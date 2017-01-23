@@ -34,6 +34,13 @@ public class Data_PlayerCharacter : Data_Character {
 	[NonSerialized]
 	public Data_Item carriedItem;
 
+	[SerializeField]
+	private int _deaths;
+	public int deaths {
+		get { return _deaths; }
+		set { _deaths = value; }
+	}
+
     // Constructor
     public Data_PlayerCharacter(string gameObjectName) : base(gameObjectName)
     {
@@ -43,6 +50,7 @@ public class Data_PlayerCharacter : Data_Character {
         stamina = 1.0f;
         exhausted = false;
 		carriedItem = null;
+		deaths = 0;
     }
 
     // Updates the stamina meter with the specified amount (positive or negative), within boundaries

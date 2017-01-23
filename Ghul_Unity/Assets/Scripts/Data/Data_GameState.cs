@@ -16,6 +16,9 @@ public class Data_GameState {
 	[NonSerialized] // Setting this flag makes the game generate a new item
 	public bool NEXT_ITEM_PLEASE = true;
 
+	[NonSerialized] // Setting this flag activates the house graph mix up
+	public bool KILLED = false;
+
 	[SerializeField]
 	public Data_Graph HOUSE_GRAPH;
 
@@ -27,7 +30,7 @@ public class Data_GameState {
 	public SortedList<int, Data_Item> ITEMS;
 
     [SerializeField]
-	private Data_PlayerCharacter TONI;
+	public Data_PlayerCharacter TONI;
     [SerializeField]
     private Data_Monster MONSTER;
 	[SerializeField]
@@ -330,4 +333,5 @@ public class Data_GameState {
 			return result;
 		}
 	}
+
 }

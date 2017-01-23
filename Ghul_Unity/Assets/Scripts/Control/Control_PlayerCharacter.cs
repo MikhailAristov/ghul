@@ -193,6 +193,8 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		Data_Door destinationDoor = door.connectsTo;
 		Data_Room destinationRoom = destinationDoor.isIn;
 
+		Debug.Log("Changed Room: " + door.isIn.INDEX + "->" + destinationRoom.INDEX); //------------------
+
 		// Move character within game state
 		float newValidPosition = destinationRoom.env.validatePosition(destinationDoor.atPos);
 		me.updatePosition(destinationRoom, newValidPosition);
@@ -203,6 +205,10 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		// Move character sprite
 		Vector3 targetPosition = new Vector3(newValidPosition, destinationRoom.INDEX * VERTICAL_ROOM_SPACING);
 		transform.Translate(targetPosition - transform.position);
+
+		// Increase number of door uses
+		GS.HOUSE_GRAPH.DOOR_SPAWNS[door.INDEX].increaseNumUses();
+		GS.HOUSE_GRAPH.DOOR_SPAWNS[destinationDoor.INDEX].increaseNumUses();
 
 		// Fade back in
 		mainCameraControl.fadeIn(DOOR_TRANSITION_DURATION / 2);
@@ -231,6 +237,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
 
 		mainCameraControl.setRedOverlay(0.0f);
 		Debug.Log(me + " died...");
+		me.deaths++;
 
 		// Hide chara's sprite and replace it with the cadaver
 		stickmanRenderer.enabled = false;
@@ -250,6 +257,9 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		currentEnvironment = me.isIn.env;
 		transform.position = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
 		stickmanRenderer.enabled = true;
+
+		// Trigger the house mix up
+		GS.KILLED = true;
 
 		// Fade back in
 		mainCameraControl.fadeIn(RESPAWN_TRANSITION_DURATION / 3);

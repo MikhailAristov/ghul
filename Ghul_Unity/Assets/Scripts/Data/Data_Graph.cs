@@ -188,6 +188,7 @@ public class Data_Graph {
 			if(ds.isConnected()) {
 				if(!spawn2SpawnConnections.ContainsValue(ds.INDEX)) {
 					spawn2SpawnConnections.Add(ds.INDEX, ds.CONNECTS_TO_SPAWN_ID);
+					Debug.Log("Connection: " + ds.INDEX + "," + ds.CONNECTS_TO_SPAWN_ID + " in rooms " + DOOR_SPAWN_IS_IN_ROOM[ds.INDEX] + "," + DOOR_SPAWN_IS_IN_ROOM[ds.CONNECTS_TO_SPAWN_ID]); //----------------------
 				}
 			}
 		}

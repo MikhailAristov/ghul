@@ -41,8 +41,6 @@ public class Data_GraphRoomVertice {
 		graph = g;
 	}
 
-	// - Note - When does the linking of doors to door spawns happen exactly?
-
 	// Adds a door spawn to the list
 	public Data_GraphDoorSpawn addDoorSpawn(int index, bool leftSide, bool rightSide) {
 		Data_GraphDoorSpawn spawn = new Data_GraphDoorSpawn(index, leftSide, rightSide);

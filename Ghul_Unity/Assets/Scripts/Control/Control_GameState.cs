@@ -65,6 +65,12 @@ public class Control_GameState : MonoBehaviour {
 				triggerEndgame();
 			}
 		}
+
+		// Check if player died to trigger house mix up
+		if (GS.KILLED == true) {
+			GS.KILLED = false;
+			houseMixup(GS.TONI.deaths);
+		}
     }
 
     // This method updates parameters after loading or resetting the game
@@ -329,6 +335,16 @@ public class Control_GameState : MonoBehaviour {
 	private void triggerEndgame() {
 		// TODO: Proper endgame
 		Debug.LogError("Congratulations, you've won the game!");
+	}
+
+	public void houseMixup(int deaths) {
+		int itemCount = GS.ITEMS.Count;
+		float evilness = Mathf.Max(1.0f, (float)itemCount * 0.5f + ((float)deaths * 0.2f));
+		//if (deaths < 3) {
+		//	evilness = 0.0f; // No mix up until the third death
+		//}
+		GS.HOUSE_GRAPH = Control_GraphMixup.MixUpGraph(GS.HOUSE_GRAPH, (int)evilness);
+		respawnAndConnectAllDoors();
 	}
 
     // This method is called when the New Game button is activated from the main menu
