@@ -13,9 +13,6 @@ public class Control_GraphMixup : MonoBehaviour {
 		if (degreeOfEvilness <= 0) { return graph; }
 		if (degreeOfEvilness > MAX_EVILNESS) { degreeOfEvilness = MAX_EVILNESS; }
 
-		// DEBUG ---------------------
-		degreeOfEvilness = MAX_EVILNESS;
-
 		for (int i = 0; i < degreeOfEvilness; i++) {
 			// Find a connection that has been used the most, but don't take the ritual room's doors too often.
 			int maxUses = 0;
@@ -67,10 +64,6 @@ public class Control_GraphMixup : MonoBehaviour {
 			if (!ritualRoomDoorChosen) { techniqueNr = (int)UnityEngine.Random.Range(1.0f, 4.0f); } // Possible values: 1,2,3
 			else { techniqueNr = 2; } // Only rotation
 
-			// DEBUG ------------------------------------------
-			techniqueNr = 1;
-			Debug.Log("Chosen Spawn: " + chosenSpawn.INDEX + ", uses: " + chosenSpawn.NUM_USES);
-
 			switch (techniqueNr) {
 			case 1:
 				// Remove the connection (if possible)
@@ -109,6 +102,7 @@ public class Control_GraphMixup : MonoBehaviour {
 
 		bool connectionIsSeparator = false;
 		bool ritualRoomPotentiallySeparator = false;
+		bool otherError = false;
 		// Remove the connection. If the mix up fails, reconnect it afterwards.
 		spawn.disconnect();
 		otherSpawn.disconnect();
@@ -130,8 +124,12 @@ public class Control_GraphMixup : MonoBehaviour {
 				ritualRoomPotentiallySeparator = true;
 				break;
 			}
-			Debug.Log("iteratorspawn.connectsTo: " + iteratorSpawn.CONNECTS_TO_SPAWN_ID); //----------------------------------------
-			Debug.Log("is in room: " + graph.DOOR_SPAWN_IS_IN_ROOM[iteratorSpawn.CONNECTS_TO_SPAWN_ID]);
+			if (iteratorSpawn.CONNECTS_TO_SPAWN_ID == -1) {
+				// Error, got an unconnected spawn.
+				Debug.Log("Tried accessing a connected spawn during mixup but got an unconnected.");
+				otherError = true;
+				break;
+			}
 			Data_GraphRoomVertice nextRoom = graph.ABSTRACT_ROOMS[graph.DOOR_SPAWN_IS_IN_ROOM[iteratorSpawn.CONNECTS_TO_SPAWN_ID]];
 			if (nextRoom.hasDoorSpawnWithIndex(otherSpawn.INDEX)) {
 				// Found a different path to the other room.
@@ -145,12 +143,12 @@ public class Control_GraphMixup : MonoBehaviour {
 			iteratorSpawn = nextRoom.getNextConnectedSpawn(iteratorSpawn.CONNECTS_TO_SPAWN_ID);
 		}
 			
-		if (connectionIsSeparator || ritualRoomPotentiallySeparator) {
+		if (connectionIsSeparator || ritualRoomPotentiallySeparator || otherError) {
 			// Removal failed
 			spawn.connectTo(otherSpawn.INDEX);
 			otherSpawn.connectTo(spawn.INDEX);
-			Debug.Log("Cannot remove connection between door spawns " + spawn.INDEX + " and " + otherSpawn.INDEX);
-			Debug.Log("connection is separator: " + connectionIsSeparator + ", ritualRoomNearby: " + ritualRoomPotentiallySeparator);
+			//Debug.Log("Cannot remove connection between door spawns " + spawn.INDEX + " and " + otherSpawn.INDEX);
+			//Debug.Log("connection is separator: " + connectionIsSeparator + ", ritualRoomNearby: " + ritualRoomPotentiallySeparator + ", other Error: " + otherError);
 		} else {
 			Debug.Log("Removed connection between door spawns " + spawn.INDEX + " and " + otherSpawn.INDEX);
 		}
@@ -194,6 +192,7 @@ public class Control_GraphMixup : MonoBehaviour {
 
 		bool connectionIsSeparator = false;
 		bool ritualRoomPotentiallySeparator = false;
+		bool otherError = false;
 		// Remove the connection. If the mix up fails, reconnect it afterwards.
 		spawn.disconnect();
 		otherSpawn.disconnect();
@@ -218,6 +217,12 @@ public class Control_GraphMixup : MonoBehaviour {
 				ritualRoomPotentiallySeparator = true;
 				break;
 			}
+			if (iteratorSpawn.CONNECTS_TO_SPAWN_ID == -1) {
+				// Error, got an unconnected spawn.
+				Debug.Log("Tried accessing a connected spawn during mixup but got an unconnected.");
+				otherError = true;
+				break;
+			}
 			Data_GraphRoomVertice nextRoom = graph.ABSTRACT_ROOMS[graph.DOOR_SPAWN_IS_IN_ROOM[iteratorSpawn.CONNECTS_TO_SPAWN_ID]];
 			if (nextRoom.hasDoorSpawnWithIndex(otherSpawn.INDEX)) {
 				// Found a different path to the other room.
@@ -232,11 +237,12 @@ public class Control_GraphMixup : MonoBehaviour {
 			outgoingSpawnIdsOnCycle.Add(iteratorSpawn.INDEX);
 		}
 
-		if (connectionIsSeparator || ritualRoomPotentiallySeparator) {
+		if (connectionIsSeparator || ritualRoomPotentiallySeparator || otherError) {
 			// Removal failed
 			spawn.connectTo(otherSpawn.INDEX);
 			otherSpawn.connectTo(spawn.INDEX);
-			Debug.Log("Cannot reconnect door spawns " + spawn.INDEX + " and " + otherSpawn.INDEX + "with other spawns.");
+			//Debug.Log("Cannot reconnect door spawns " + spawn.INDEX + " and " + otherSpawn.INDEX + "with other spawns.");
+			//Debug.Log("connection is separator: " + connectionIsSeparator + ", ritualRoomNearby: " + ritualRoomPotentiallySeparator + ", other Error: " + otherError);
 		} else {
 			// Select a random connection on the cycle.
 			int r = (int)UnityEngine.Random.Range(0.0f, outgoingSpawnIdsOnCycle.Count);
