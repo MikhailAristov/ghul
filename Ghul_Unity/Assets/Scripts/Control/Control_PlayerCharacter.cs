@@ -184,6 +184,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
 
 	// This function transitions the character through a door
 	private IEnumerator goThroughTheDoor(Data_Door door) {
+		Data_Room currentRoom = me.isIn;
 		me.etherialCooldown = DOOR_TRANSITION_DURATION;
 
 		// Fade out and wait
@@ -192,8 +193,6 @@ public class Control_PlayerCharacter : MonoBehaviour {
 
 		Data_Door destinationDoor = door.connectsTo;
 		Data_Room destinationRoom = destinationDoor.isIn;
-
-		Debug.Log("Changed Room: " + door.isIn.INDEX + "->" + destinationRoom.INDEX); //------------------
 
 		// Move character within game state
 		float newValidPosition = destinationRoom.env.validatePosition(destinationDoor.atPos);
@@ -206,9 +205,35 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		Vector3 targetPosition = new Vector3(newValidPosition, destinationRoom.INDEX * VERTICAL_ROOM_SPACING);
 		transform.Translate(targetPosition - transform.position);
 
-		// Increase number of door uses
-		GS.HOUSE_GRAPH.DOOR_SPAWNS[door.INDEX].increaseNumUses();
-		GS.HOUSE_GRAPH.DOOR_SPAWNS[destinationDoor.INDEX].increaseNumUses();
+		// Increase number of door uses. Needs door spawn IDs, not door IDs.
+		int spawn1Index = -1;
+		int spawn2Index = -1;
+		Data_Door iteratorDoor;
+		// Find the corresponding door spawn IDs.
+		for (int i = 0; i < currentRoom.countAllDoorSpawns; i++) {
+			iteratorDoor = currentRoom.getDoorAtSpawn(i);
+			if (iteratorDoor != null) {
+				if (iteratorDoor.INDEX == door.INDEX) {
+					spawn1Index = GS.HOUSE_GRAPH.ABSTRACT_ROOMS[currentRoom.INDEX].DOOR_SPAWNS.Values[i].INDEX; // Should work, if room ID and vertex ID really are the same...
+					break;
+				}
+			}
+		}
+		for (int i = 0; i < destinationRoom.countAllDoorSpawns; i++) {
+			iteratorDoor = destinationRoom.getDoorAtSpawn(i);
+			if (iteratorDoor != null) {
+				if (iteratorDoor.INDEX == destinationDoor.INDEX) {
+					spawn2Index = GS.HOUSE_GRAPH.ABSTRACT_ROOMS[destinationRoom.INDEX].DOOR_SPAWNS.Values[i].INDEX; // Should work, if room ID and vertex ID really are the same...
+					break;
+				}
+			}
+		}
+		if (spawn1Index != -1 && spawn2Index != -1) {
+			GS.HOUSE_GRAPH.DOOR_SPAWNS[spawn1Index].increaseNumUses();
+			GS.HOUSE_GRAPH.DOOR_SPAWNS[spawn2Index].increaseNumUses();
+		} else {
+			Debug.Log("Cannot find door spawn ID for at least one of these doors: " + door.INDEX + "," + destinationDoor.INDEX + ". Just got spawn IDs " + spawn1Index + ", " + spawn2Index);
+		}
 
 		// Fade back in
 		mainCameraControl.fadeIn(DOOR_TRANSITION_DURATION / 2);

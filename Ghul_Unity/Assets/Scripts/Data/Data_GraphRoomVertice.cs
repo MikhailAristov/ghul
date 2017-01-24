@@ -224,6 +224,6 @@ public class Data_GraphRoomVertice {
 				i += 1;
 			}
 		}
-		throw new IndexOutOfRangeException("GRAPH: The spawn point with global index #" + globalIndex + " is no in the room vertice #" + _INDEX);
+		throw new IndexOutOfRangeException("GRAPH: The spawn point with global index #" + globalIndex + " is not in the room vertice #" + _INDEX);
 	}
 }

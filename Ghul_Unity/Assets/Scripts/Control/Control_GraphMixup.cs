@@ -153,7 +153,6 @@ public class Control_GraphMixup : MonoBehaviour {
 			Debug.Log("connection is separator: " + connectionIsSeparator + ", ritualRoomNearby: " + ritualRoomPotentiallySeparator);
 		} else {
 			Debug.Log("Removed connection between door spawns " + spawn.INDEX + " and " + otherSpawn.INDEX);
-			Debug.Log("Proof: " + spawn.CONNECTS_TO_SPAWN_ID + ", " + otherSpawn.CONNECTS_TO_SPAWN_ID);
 		}
 
 		return graph;
