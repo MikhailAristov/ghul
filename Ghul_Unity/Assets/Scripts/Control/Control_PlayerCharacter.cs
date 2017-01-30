@@ -136,6 +136,11 @@ public class Control_PlayerCharacter : MonoBehaviour {
 			StartCoroutine(dieAndRespawn());
 		}
 
+		// Debug: Make New Game Button clickable again.
+		if (Debug.isDebugBuild && Input.GetButtonDown("MakeResettable")) {
+			GS.RITUAL_PERFORMED = false;
+		}
+
 		// If conditions for placing the item at the pentagram are right, do just that
 		if(me.carriedItem != null && me.isIn.INDEX == RITUAL_ROOM_INDEX &&
 		    Math.Abs(RITUAL_PENTAGRAM_CENTER - me.atPos) <= RITUAL_PENTAGRAM_RADIUS) {
