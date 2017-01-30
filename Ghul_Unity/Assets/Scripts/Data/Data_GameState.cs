@@ -25,6 +25,9 @@ public class Data_GameState {
 	[SerializeField] // Setting this flag changes Toni's sprite to a monster
 	public bool RITUAL_PERFORMED = false;
 
+	[SerializeField] // Setting this flag kills (the monster or) the civilian
+	public bool CIVILIAN_KILLED = false;
+
     [SerializeField]
     public SortedList<int, Data_Room> ROOMS;
     [SerializeField]

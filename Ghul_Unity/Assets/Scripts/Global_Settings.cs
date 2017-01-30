@@ -37,7 +37,7 @@ public class Global_Settings {
 			// Monster settings
 			{ "MONSTER_WALKING_SPEED",			5.2f },
 			{ "MONSTER_SLOW_WALKING_SPEED",		2.5f },		// when the monster randomly walks around
-			{ "MONSTER_KILL_RADIUS",			1.0f },		// when the player gets this close to the monster, he dies.
+			{ "MONSTER_KILL_RADIUS",			1.0f },		// when the player gets this close to the monster, he dies. Also used the other way around after the ritual.
 
 			// Stamina range: 0.0 .. 1.0; increments are applied per second
 			{ "RUNNING_STAMINA_LOSS",			-0.2f },	// Must be negative

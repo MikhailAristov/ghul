@@ -63,8 +63,10 @@ public class Control_Sound : MonoBehaviour {
 	// Continuously regulates the volume of the ambient creepy music based on the proximity of monster to chara
 	private IEnumerator controlAmbientMusic() {
 		while(true) {
-			float targetVolume = GS.SUSPENDED ? 0.0f : Mathf.Min(1.0f, Mathf.Exp(-0.3f * DIST));
-			AmbientNoise.volume = Mathf.Lerp(AmbientNoise.volume, targetVolume, 0.6f);
+			if (!GS.RITUAL_PERFORMED) {
+				float targetVolume = GS.SUSPENDED ? 0.0f : Mathf.Min(1.0f, Mathf.Exp(-0.3f * DIST));
+				AmbientNoise.volume = Mathf.Lerp(AmbientNoise.volume, targetVolume, 0.6f);
+			}
 			yield return new WaitForSeconds(0.1f);
 		}
 	}

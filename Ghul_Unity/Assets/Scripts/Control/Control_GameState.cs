@@ -34,6 +34,12 @@ public class Control_GameState : MonoBehaviour {
 			setAdditionalParameters();
 			GS.SUSPENDED = true; // Suspend the game while in the main menu initially
 		}
+
+		if (GS.RITUAL_PERFORMED) {
+			GameObject newGameButton = GameObject.Find("NewGameButton");
+			Color col = new Color(100f / 255f, 0f, 0f);
+			newGameButton.GetComponent<Image>().color = col;
+		}
     }
 
     // Update is called once per frame
@@ -335,6 +341,9 @@ public class Control_GameState : MonoBehaviour {
 	private void triggerEndgame() {
 		// TODO: Proper endgame
 		GS.RITUAL_PERFORMED = true;
+		GameObject newGameButton = GameObject.Find("NewGameButton");
+		Color col = new Color(100f / 255f, 0f, 0f);
+		newGameButton.GetComponent<Image>().color = col;
 	}
 
 	public void houseMixup(int deaths) {
@@ -350,10 +359,13 @@ public class Control_GameState : MonoBehaviour {
     // This method is called when the New Game button is activated from the main menu
     void onNewGameSelect()
     {
-        resetGameState();                   // Reset the game state
-        setAdditionalParameters();          // Refocus camera and such
-        MAIN_MENU_CANVAS.enabled = false;   // Dismiss the main menu
-		GS.SUSPENDED = false;               // Continue playing
+		// Can only be clicked if not transformed into a monster yet.
+		if (!GS.RITUAL_PERFORMED) {
+        	resetGameState();                   // Reset the game state
+        	setAdditionalParameters();          // Refocus camera and such
+        	MAIN_MENU_CANVAS.enabled = false;   // Dismiss the main menu
+			GS.SUSPENDED = false;               // Continue playing
+		}
     }
 
     // This method is called when the Continue button is activated from the main menu

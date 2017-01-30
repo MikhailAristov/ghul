@@ -21,7 +21,24 @@ public class Control_Monster : MonoBehaviour {
 	private float TIME_TO_REACT;
 	private float DOOR_TRANSITION_DURATION;
 
-	public bool DEBUG_DANGEROUS; // set to false to make the monster "blind"
+	public bool IS_DANGEROUS; // set to false to make (the monster "blind" or) the civilians walk around aimlessly.
+	private bool IS_CIVILIAN = false;
+
+	public Transform tombstone; // prefab, to be placed for each death
+
+	// Graphics parameters
+	private GameObject monsterImageObject;
+	private SpriteRenderer monsterRenderer;
+	private GameObject civilianObject;
+	private SpriteRenderer civilianRenderer;
+
+	void Start() {
+		IS_DANGEROUS = true;
+		monsterImageObject = GameObject.Find("MonsterImage");
+		monsterRenderer = monsterImageObject.GetComponent<SpriteRenderer>(); // Find the child "Stickman", then its Sprite Renderer and then the renderer's sprite
+		civilianObject = GameObject.Find("StickmanCivilian");
+		civilianRenderer = civilianObject.GetComponent<SpriteRenderer>();
+	}
 
 	// To make sure the game state is fully initialized before loading it, this function is called by game state class itself
 	public void loadGameState(Data_GameState gameState)
@@ -51,7 +68,20 @@ public class Control_Monster : MonoBehaviour {
 			return;
 		}
 
-		if (me.isIn.INDEX == Toni.isIn.INDEX && DEBUG_DANGEROUS && !Toni.isInvulnerable()) {
+		if (GS.RITUAL_PERFORMED) {
+			// TODO: Move monster to ritual room, standing before only usable door
+			IS_DANGEROUS = false;
+			monsterImageObject.SetActive(false);
+		} else {
+			civilianObject.SetActive(false); // Monster-Toni not visible at first.
+		}
+
+		if (GS.CIVILIAN_KILLED) {
+			GS.CIVILIAN_KILLED = false;
+			dieAndRespawn();
+		}
+
+		if (me.isIn.INDEX == Toni.isIn.INDEX && IS_DANGEROUS && !Toni.isInvulnerable()) {
 			// The monster is in the same room as the player.
 			me.playerInSight = true;
 			me.playerDetected = true;
@@ -218,7 +248,8 @@ public class Control_Monster : MonoBehaviour {
 		float direction = (-1) * Mathf.Sign(transform.position.x - targetPos);
 
 		// Flip the sprite as necessary
-		transform.Find("MonsterImage").GetComponent<SpriteRenderer>().flipX = (direction > 0.0f) ? true : false;
+		monsterRenderer.flipX = (direction > 0.0f) ? true : false;
+		civilianRenderer.flipX = (direction > 0.0f) ? false : true;
 
 		// Calculate the new position
 		float displacement = direction * Time.deltaTime * velocity;
@@ -265,4 +296,31 @@ public class Control_Monster : MonoBehaviour {
 	public void hearNoise(Data_Door doorway, float loudness) {
 		Debug.LogWarning(me + " hears a noise from door #" + doorway + " at volume " + loudness);
 	}
+
+	// Killing the monster / civilian during endgame
+	public void dieAndRespawn() {
+		Vector3 pos = transform.position;
+
+		if (!IS_CIVILIAN) {
+			Debug.Log("The monster died.");
+			monsterImageObject.SetActive(false);
+			civilianObject.SetActive(true);
+			IS_CIVILIAN = true;
+		} else {
+			Debug.Log("A civilian died.");
+		}
+		// Place a tombstone where the death occured
+		Instantiate(tombstone, new Vector3(pos.x, pos.y - 1.7f, pos.z), Quaternion.identity);
+
+		// Move the civilian to a distant room
+		me.updatePosition(GS.getRoomFurthestFrom(me.isIn.INDEX), 0, 0);
+		// Move the character sprite directly to where the game state says it should be standing
+		Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
+		transform.Translate(savedPosition - transform.position);
+		me.setForbiddenRoomIndex(-1); // Civilians are allowed to enter the ritual room.
+
+		// Trigger an autosave after killing
+		Data_GameState.saveToDisk(GS);
+	}
+
 }

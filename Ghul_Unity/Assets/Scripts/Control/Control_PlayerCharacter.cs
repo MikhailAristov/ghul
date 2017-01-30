@@ -115,9 +115,13 @@ public class Control_PlayerCharacter : MonoBehaviour {
 			isTransformed = true;
 		}
 
-		// Item actions
-		if (Input.GetButtonDown("Action")) { // Take item
-			takeItem();
+		// Item actions or attack after ritual
+		if (Input.GetButtonDown("Action")) {
+			if (!GS.RITUAL_PERFORMED) {
+				takeItem();
+			} else {
+				attack();
+			}
 		}
 		if (Input.GetButtonDown("Inventory")) { // Show inventory
 			StopCoroutine("displayInventory");
@@ -284,7 +288,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		Debug.Log(me + " died...");
 		me.deaths++;
 
-		// Hide chara's sprite and replace it with the cadaver
+		// Hide Toni's sprite and replace it with the cadaver
 		stickmanRenderer.enabled = false;
 		cadaver.gameObj.transform.position = transform.position + (new Vector3(0, -1.55f));
 		cadaver.updatePosition(me.isIn, me.atPos);
@@ -297,7 +301,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		// Wait until fade out is complete before moving the sprite
 		yield return new WaitForSeconds(RESPAWN_TRANSITION_DURATION / 3);
 
-		// Move the chara sprite back to the starting room
+		// Move the Toni sprite back to the starting room
 		me.resetPosition(GS);
 		currentEnvironment = me.isIn.env;
 		transform.position = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
@@ -390,4 +394,15 @@ public class Control_PlayerCharacter : MonoBehaviour {
 			curItemImg.CrossFadeAlpha(0.0f, INVENTORY_DISPLAY_DURATION / 2, false);
 		}
 	}
+
+	// Attack and kill the other monster / civilians after the ritual has been performed
+	private void attack() {
+		if (me.isIn.INDEX == GS.getMonster().isIn.INDEX) {
+			if (Mathf.Abs(transform.position.x - GS.getMonster().gameObj.transform.position.x) <= Global_Settings.read("MONSTER_KILL_RADIUS")) {
+				// Kill the monster or civilian
+				GS.CIVILIAN_KILLED = true;
+			}
+		}
+	}
+
 }
