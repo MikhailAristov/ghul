@@ -67,7 +67,7 @@ public class Global_Settings {
 		if (LIST.ContainsKey(Name)) {
 			return LIST[Name];
 		} else {
-			throw new System.ArgumentException("Setting " + Name + " is not defined");
+			throw new System.ArgumentException("Setting " + Name + " is not defined"); //Nabil was here
 		}
 	} 
 }
