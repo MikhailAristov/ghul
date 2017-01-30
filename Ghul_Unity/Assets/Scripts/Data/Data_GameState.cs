@@ -22,6 +22,9 @@ public class Data_GameState {
 	[SerializeField]
 	public Data_Graph HOUSE_GRAPH;
 
+	[SerializeField] // Setting this flag changes Toni's sprite to a monster
+	public bool RITUAL_PERFORMED = false;
+
     [SerializeField]
     public SortedList<int, Data_Room> ROOMS;
     [SerializeField]

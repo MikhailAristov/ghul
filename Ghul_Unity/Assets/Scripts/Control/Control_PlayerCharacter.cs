@@ -36,16 +36,25 @@ public class Control_PlayerCharacter : MonoBehaviour {
 
 	// Gameplay parameters
 	private float TIME_TO_REACT;
+	private bool isTransformed;
 
 	// Graphics parameters
+	private GameObject stickmanObject;
 	private SpriteRenderer stickmanRenderer;
+	private GameObject monsterToniObject;
+	private SpriteRenderer monsterToniRenderer;
 	private Control_Camera mainCameraControl;
 	private Control_Sound soundSystem;
 	public Canvas inventoryUI;
 
     // Use this for initialization; note that only local variables are initialized here, game state is loaded later
     void Start () {
-		stickmanRenderer = transform.FindChild("Stickman").GetComponent<SpriteRenderer>(); // Find the child "Stickman", then its Sprite Renderer and then the renderer's sprite
+		stickmanObject = GameObject.Find("Stickman");
+		stickmanRenderer = stickmanObject.GetComponent<SpriteRenderer>(); // Find the child "Stickman", then its Sprite Renderer and then the renderer's sprite
+		monsterToniObject = GameObject.Find("MonsterToniImage");
+		monsterToniRenderer = monsterToniObject.GetComponent<SpriteRenderer>();
+		monsterToniObject.SetActive(false); // Monster-Toni not visible at first.
+		isTransformed = false;
 		mainCameraControl = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Control_Camera>();
 		inventoryUI.transform.FindChild("CurrentItem").GetComponent<Image>().CrossFadeAlpha(0.0f, 0.0f, false);
 		soundSystem = GameObject.Find("GameState").GetComponent<Control_Sound>();
@@ -96,6 +105,16 @@ public class Control_PlayerCharacter : MonoBehaviour {
 			return;
 		}
 
+		// Transformation into monster
+		if (!isTransformed && GS.RITUAL_PERFORMED) {
+			stickmanObject.SetActive(false);
+			monsterToniObject.SetActive(true);
+			if (!stickmanRenderer.flipX) {
+				monsterToniRenderer.flipX = true;
+			}
+			isTransformed = true;
+		}
+
 		// Item actions
 		if (Input.GetButtonDown("Action")) { // Take item
 			takeItem();
@@ -135,6 +154,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
         {
             // Flip the sprite as necessary
 			stickmanRenderer.flipX = (Input.GetAxis("Horizontal") < 0.0f) ? true : false;
+			monsterToniRenderer.flipX = (Input.GetAxis("Horizontal") < 0.0f) ? false : true;
 
             // Determine movement speed
 			float velocity = WALKING_SPEED; int noiseType = Control_Sound.NOISE_TYPE_WALK;

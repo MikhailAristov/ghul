@@ -334,7 +334,7 @@ public class Control_GameState : MonoBehaviour {
 
 	private void triggerEndgame() {
 		// TODO: Proper endgame
-		Debug.LogError("Congratulations, you've won the game!");
+		GS.RITUAL_PERFORMED = true;
 	}
 
 	public void houseMixup(int deaths) {
