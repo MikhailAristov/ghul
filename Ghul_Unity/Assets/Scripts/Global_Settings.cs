@@ -49,6 +49,7 @@ public class Global_Settings {
 			{ "ITEM_CARRY_ELEVATION",			-0.33f },	// Distance from the horizontal center of the room at which items are carried by chara
 			{ "ITEM_FLOOR_LEVEL",				-1.8f },	// Distance from the horizontal center of the room at which items are lying on the floor
 			{ "INVENTORY_DISPLAY_DURATION",		2.0f },		// How long the inventory overlay is shown when invoked
+			{ "TOTAL_NUMBER_OF_ITEMS_PLACED",	8.0f },	// needs casting to int when used
 
 			// Miscellaneous setttings
 			{ "AUTOSAVE_FREQUENCY",				10.0f },	// In seconds

@@ -22,7 +22,7 @@ public class Data_Item : Data_Character {
 	public int INDEX
 	{
 		get { return _INDEX; }
-		private set { _INDEX = value; }
+		set { _INDEX = value; }
 	}
 
 	// The current state of the item (available values see above)

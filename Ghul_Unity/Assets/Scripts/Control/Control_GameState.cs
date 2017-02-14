@@ -65,8 +65,8 @@ public class Control_GameState : MonoBehaviour {
 			// Reset the flag
 			GS.NEXT_ITEM_PLEASE = false;
 			// Check if it's all of them
-			if(GS.ITEMS.Count < Global_Settings.read("RITUAL_ITEMS_REQUIRED")) {
-				spawnNextItem();
+			if(GS.numItemsCollected < Global_Settings.read("RITUAL_ITEMS_REQUIRED")) {
+				StartCoroutine(updateWallScribbles(1.0f));
 			} else {
 				triggerEndgame();
 			}
@@ -168,6 +168,13 @@ public class Control_GameState : MonoBehaviour {
 
 		// Initialize all the characters
 		initializeCharacters();
+
+		// Spawn all items
+		GS.indexOfSearchedItem = 0;
+		for (int i = 0; i < (int)Global_Settings.read("TOTAL_NUMBER_OF_ITEMS_PLACED"); i++) {
+			spawnNextItem();
+		}
+		StartCoroutine(updateWallScribbles(1.0f));
 	}
 
 	// Loads a fake prefab for the ritual room that already exists in the game space from the start
@@ -298,21 +305,36 @@ public class Control_GameState : MonoBehaviour {
 	// Places the next item in a random spot
 	private Data_Item spawnNextItem() {
 		int newItemIndex = GS.ITEMS.Count;
-		// Calculate spawn position
-		Data_Position spawnPos = GS.getRandomItemSpawn();
+
+		// Calculate spawn position that isn't used yet
+		Data_Position spawnPos = null;
+		bool alreadyTakenPos = true;
+		while (alreadyTakenPos) {
+			alreadyTakenPos = false;
+			spawnPos = GS.getRandomItemSpawn();
+			foreach (Data_Item item in GS.ITEMS.Values) {
+				if (spawnPos.RoomId == item.pos.RoomId && spawnPos.X == item.pos.X && spawnPos.Y == item.pos.Y) {
+					alreadyTakenPos = true;
+				}
+			}
+		}
+
 		Data_Room parentRoom = GS.getRoomByIndex(spawnPos.RoomId);
 		Transform parentRoomTransform = parentRoom.env.transform;
 		Vector3 gameObjectPos = new Vector3(spawnPos.X, spawnPos.Y, -0.1f);
+
 		// Spawn a new item from prefabs
 		GameObject newItemObj = prefabFactory.spawnRandomItem(parentRoomTransform, gameObjectPos);
 		Data_Item newItem = GS.addItem(newItemObj.name);
+		newItem.INDEX = newItemIndex;
+
 		// Place the new item
 		newItem.updatePosition(parentRoom, spawnPos.X, spawnPos.Y);
 		newItem.control.loadGameState(GS, newItemIndex);
-		// Update the wall scribbles
-		StartCoroutine(updateWallScribbles(1.0f));
+
 		// Save the new game state to disk
 		Data_GameState.saveToDisk(GS);
+
 		return newItem;
 	}
 

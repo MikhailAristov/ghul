@@ -35,6 +35,11 @@ public class Data_GameState {
 	[SerializeField]
 	public SortedList<int, Data_Item> ITEMS;
 
+	[SerializeField]
+	public int numItemsCollected;
+	[SerializeField]
+	public int indexOfSearchedItem;
+
     [SerializeField]
 	public Data_PlayerCharacter TONI;
     [SerializeField]
@@ -65,6 +70,7 @@ public class Data_GameState {
         TONI = null;
         MONSTER = null;
 		CADAVER = null;
+		numItemsCollected = 0;
     }
 
 	// Adds a room object to the game state
@@ -182,9 +188,9 @@ public class Data_GameState {
 		}
 	}
 
-	// Returns the most recent item that has been spawned
+	// Returns the item the player has to find at the moment (or bring back to the ritual room, if already in possession)
 	public Data_Item getCurrentItem() {
-		return ITEMS[ITEMS.Count - 1];
+		return ITEMS[indexOfSearchedItem];
 	}
 
 	// Returns a random item spawn point

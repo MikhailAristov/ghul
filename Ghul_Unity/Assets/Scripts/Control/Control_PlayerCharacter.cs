@@ -47,6 +47,12 @@ public class Control_PlayerCharacter : MonoBehaviour {
 	private Control_Sound soundSystem;
 	public Canvas inventoryUI;
 
+	// Zapping-effect parameters
+	private GameObject zappingSoundObject;
+	private AudioSource zappingSound;
+	private GameObject zappingParticleObject;
+	private ParticleSystem zappingParticles;
+
     // Use this for initialization; note that only local variables are initialized here, game state is loaded later
     void Start () {
 		stickmanObject = GameObject.Find("Stickman");
@@ -54,6 +60,11 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		monsterToniObject = GameObject.Find("MonsterToniImage");
 		monsterToniRenderer = monsterToniObject.GetComponent<SpriteRenderer>();
 		monsterToniObject.SetActive(false); // Monster-Toni not visible at first.
+		zappingSoundObject = GameObject.Find("ZappingSound");
+		zappingSound = zappingSoundObject.GetComponent<AudioSource>();
+		zappingParticleObject = GameObject.Find("ZapEffect");
+		zappingParticles = zappingParticleObject.GetComponent<ParticleSystem>();
+
 		isTransformed = false;
 		mainCameraControl = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Control_Camera>();
 		inventoryUI.transform.FindChild("CurrentItem").GetComponent<Image>().CrossFadeAlpha(0.0f, 0.0f, false);
@@ -144,6 +155,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		// If conditions for placing the item at the pentagram are right, do just that
 		if(me.carriedItem != null && me.isIn.INDEX == RITUAL_ROOM_INDEX &&
 		    Math.Abs(RITUAL_PENTAGRAM_CENTER - me.atPos) <= RITUAL_PENTAGRAM_RADIUS) {
+			GS.indexOfSearchedItem++; // now the next item is to be searched
 			putItemOntoPentagram();
 		}
 
@@ -333,6 +345,7 @@ public class Control_PlayerCharacter : MonoBehaviour {
 			// the player got the item with index itemIndex.
 			currentItem.control.moveToInventory();
 			me.carriedItem = currentItem;
+			GS.numItemsCollected++;
 			Debug.Log("Item #" + currentItem.INDEX + " collected.");
 			// Make noise at the current location
 			soundSystem.makeNoise(Control_Sound.NOISE_TYPE_ITEM, me.pos);
@@ -341,6 +354,23 @@ public class Control_PlayerCharacter : MonoBehaviour {
 			// Show inventory
 			StartCoroutine("displayInventory");
 		} else {
+			// Check whether other item is within picking-distance
+			bool itemNearby = false;
+			Vector3 destPos = new Vector3(); // to place the zap-particle where the item is located
+			foreach (Data_Item item in GS.ITEMS.Values) {
+				if (me.isIn == item.isIn && Math.Abs(me.atPos - item.atPos) < Global_Settings.read("MARGIN_ITEM_COLLECT") && item.INDEX != currentItem.INDEX) {
+					itemNearby = true;
+					destPos = item.gameObj.transform.position;
+				}
+			}
+			if (itemNearby) {
+				// emit zapping sound and visual effect
+				zappingParticleObject.transform.Translate(destPos - zappingParticleObject.transform.position);
+				zappingParticles.Play();
+				zappingSound.Play();
+				soundSystem.makeNoise(Control_Sound.NOISE_TYPE_ZAP, me.pos);
+			}
+
 			Debug.LogWarning("Can't pick up " + currentItem);
 		}
 	}
