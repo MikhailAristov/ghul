@@ -3,22 +3,15 @@ using UnityEngine.UI;
 using System;
 using System.Collections;
 
-public class Control_PlayerCharacter : MonoBehaviour {
+public class Control_PlayerCharacter : Control_Character {
 
-    [NonSerialized]
-    private Data_GameState GS;
-    [NonSerialized]
-    private Environment_Room currentEnvironment;
-    [NonSerialized]
-    private Data_PlayerCharacter me;
+	[NonSerialized]
+	private Data_PlayerCharacter me;
+	protected override Data_Character getMe() { return me as Data_Character; }
 	[NonSerialized]
 	private Data_Cadaver cadaver;
 
 	// General settings
-    private float VERTICAL_ROOM_SPACING;
-
-    private float WALKING_SPEED;
-    private float RUNNING_SPEED;
 	private float SINGLE_STEP_LENGTH;
 	private float walkingDistanceSinceLastNoise;
 
@@ -30,7 +23,6 @@ public class Control_PlayerCharacter : MonoBehaviour {
 	private float RITUAL_PENTAGRAM_CENTER;
 	private float RITUAL_PENTAGRAM_RADIUS;
 
-    private float DOOR_TRANSITION_DURATION;
 	private float RESPAWN_TRANSITION_DURATION;
 	private float INVENTORY_DISPLAY_DURATION;
 
@@ -171,121 +163,40 @@ public class Control_PlayerCharacter : MonoBehaviour {
         }
 			
         // Horizontal movement
-        if (Input.GetAxis("Horizontal") > 0.01f || Input.GetAxis("Horizontal") < -0.01f)
+		if (Mathf.Abs(Input.GetAxis("Horizontal")) > 0.01f)
         {
-            // Flip the sprite as necessary
-			stickmanRenderer.flipX = (Input.GetAxis("Horizontal") < 0.0f) ? true : false;
-			monsterToniRenderer.flipX = (Input.GetAxis("Horizontal") < 0.0f) ? false : true;
-
-            // Determine movement speed
-			float velocity = WALKING_SPEED; int noiseType = Control_Sound.NOISE_TYPE_WALK;
-            if (Input.GetButton("Run") && !me.exhausted) {
-                velocity = RUNNING_SPEED;
-				noiseType = Control_Sound.NOISE_TYPE_RUN;
-                me.modifyStamina(RUNNING_STAMINA_LOSS * Time.deltaTime);
-            } else {
-                me.modifyStamina(WALKING_STAMINA_GAIN * Time.deltaTime);
-            }
-
-            // Calculate the new position
-            float displacement = Input.GetAxis("Horizontal") * Time.deltaTime * velocity;
-            float newPosition = transform.position.x + displacement;
-            float validPosition = currentEnvironment.validatePosition(transform.position.x + displacement);
-            
-            // If validated position is different from the calculated position, we have reached the side of the room
-			if(validPosition > newPosition) {		// moving left (negative direction) gets us through the left door
-                Data_Door leftDoor = currentEnvironment.getDoorOnTheLeft();
-				if (leftDoor != null) { StartCoroutine(goThroughTheDoor(leftDoor)); }
-                return;
-            }
-			else if (validPosition < newPosition) {	// moving right (positive direction) gets us through the right door
-                Data_Door rightDoor = currentEnvironment.getDoorOnTheRight();
-				if (rightDoor != null) { StartCoroutine(goThroughTheDoor(rightDoor)); }
-                return;
-            }
-
-            // Move the sprite to the new valid position
-            me.updatePosition(validPosition);
-            float validDisplacement = validPosition - transform.position.x;
-            if (Mathf.Abs(validDisplacement) > 0.0f)
-            {
-                transform.Translate(validDisplacement, 0, 0);
-            }
-
-			// Make noise (if necessary)
-			walkingDistanceSinceLastNoise += Mathf.Abs(displacement);
-			if(walkingDistanceSinceLastNoise > SINGLE_STEP_LENGTH) {
-				soundSystem.makeNoise(noiseType, me.pos);
+			Data_Door walkIntoDoor = walk(Input.GetAxis("Horizontal"), Input.GetButton("Run"));
+			if(walkIntoDoor != null) {
+				// Walk through the door if triggered
+				StartCoroutine(goThroughTheDoor(walkIntoDoor));
 			}
-        } else
-        { // Regain stamina while standing still
-            me.modifyStamina(STANDING_STAMINA_GAIN * Time.deltaTime);
-        }
-    }
-
-	// This function transitions the character through a door
-	private IEnumerator goThroughTheDoor(Data_Door door) {
-		Data_Room currentRoom = me.isIn;
-		Data_Door destinationDoor = door.connectsTo;
-		Data_Room destinationRoom = destinationDoor.isIn;
-		activateCooldown(DOOR_TRANSITION_DURATION);
-
-		// Open doors
-		door.gameObj.GetComponent<Control_Door>().open();
-		destinationDoor.gameObj.GetComponent<Control_Door>().open();
-
-		// Fade out and wait
-		cameraFadeOut(DOOR_TRANSITION_DURATION / 2);
-		yield return new WaitForSeconds(DOOR_TRANSITION_DURATION);
-
-		// Move character within game state
-		float newValidPosition = destinationRoom.env.validatePosition(destinationDoor.atPos);
-		me.updatePosition(destinationRoom, newValidPosition);
-		currentEnvironment = me.isIn.env;
-		resetReactionTime();
-
-		// Move character sprite
-		Vector3 targetPosition = new Vector3(newValidPosition, destinationRoom.INDEX * VERTICAL_ROOM_SPACING);
-		transform.Translate(targetPosition - transform.position);
-
-		// Increase number of door uses. Needs door spawn IDs, not door IDs.
-		int spawn1Index = -1;
-		int spawn2Index = -1;
-		Data_Door iteratorDoor;
-		// Find the corresponding door spawn IDs.
-		for (int i = 0; i < currentRoom.countAllDoorSpawns; i++) {
-			iteratorDoor = currentRoom.getDoorAtSpawn(i);
-			if (iteratorDoor != null) {
-				if (iteratorDoor.INDEX == door.INDEX) {
-					spawn1Index = GS.HOUSE_GRAPH.ABSTRACT_ROOMS[currentRoom.INDEX].DOOR_SPAWNS.Values[i].INDEX; // Should work, if room ID and vertex ID really are the same...
-					break;
-				}
-			}
-		}
-		for (int i = 0; i < destinationRoom.countAllDoorSpawns; i++) {
-			iteratorDoor = destinationRoom.getDoorAtSpawn(i);
-			if (iteratorDoor != null) {
-				if (iteratorDoor.INDEX == destinationDoor.INDEX) {
-					spawn2Index = GS.HOUSE_GRAPH.ABSTRACT_ROOMS[destinationRoom.INDEX].DOOR_SPAWNS.Values[i].INDEX; // Should work, if room ID and vertex ID really are the same...
-					break;
-				}
-			}
-		}
-		if (spawn1Index != -1 && spawn2Index != -1) {
-			GS.HOUSE_GRAPH.DOOR_SPAWNS[spawn1Index].increaseNumUses();
-			GS.HOUSE_GRAPH.DOOR_SPAWNS[spawn2Index].increaseNumUses();
 		} else {
-			Debug.Log("Cannot find door spawn ID for at least one of these doors: " + door.INDEX + "," + destinationDoor.INDEX + ". Just got spawn IDs " + spawn1Index + ", " + spawn2Index);
+			regainStamina();
+        }
+	}
+	// Superclass functions implemented
+	protected override void setSpriteFlip(bool state) {
+		stickmanRenderer.flipX = state;
+		monsterToniRenderer.flipX = !state;
+	}
+	protected override bool canRun() {
+		return !me.exhausted; 
+	}
+	protected override void updateStamina(bool isRunning) {
+		if(isRunning) {
+			me.modifyStamina(RUNNING_STAMINA_LOSS * Time.deltaTime);
+		} else {
+			me.modifyStamina(WALKING_STAMINA_GAIN * Time.deltaTime);
 		}
-
-		// Fade back in
-		cameraFadeIn(DOOR_TRANSITION_DURATION / 2);
-
-		// Make noise at the original door's location
-		makeNoise(Control_Sound.NOISE_TYPE_DOOR, door.pos);
-
-		// Trigger an autosave upon changing locations
-		Data_GameState.saveToDisk(GS);
+	}
+	protected override void regainStamina() {
+		me.modifyStamina(STANDING_STAMINA_GAIN * Time.deltaTime);
+	}
+	protected override void makeWalkingNoise(float walkedDistance, int type, Data_Position atPos) {
+		walkingDistanceSinceLastNoise += Mathf.Abs(walkedDistance);
+		if(walkingDistanceSinceLastNoise > SINGLE_STEP_LENGTH) {
+			soundSystem.makeNoise(type, atPos);
+		}
 	}
 
 	// Player withing the attack radius -> reduce time to react
@@ -441,23 +352,55 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		}
 	}
 
-	// Dummy functions to be implemented 
-	private void activateCooldown(float duration) {
+	// Superclass functions implemented 
+	protected override void activateCooldown(float duration) {
 		me.etherialCooldown = duration;
 	}
-	private void cameraFadeOut(float duration) {
+	protected override void cameraFadeOut(float duration) {
 		mainCameraControl.fadeOut(duration);
 	}
-	private void cameraFadeIn(float duration) {
+	protected override void cameraFadeIn(float duration) {
 		mainCameraControl.fadeIn(duration);
 	}
-	private void resetReactionTime() {
+	protected override void resetAttackStatus() {
 		me.remainingReactionTime = TIME_TO_REACT;
 		mainCameraControl.resetRedOverlay();
 	}
-	private void makeNoise(int type, Data_Position atPos) {
+	protected override void makeNoise(int type, Data_Position atPos) {
 		soundSystem.makeNoise(type, atPos);
 		walkingDistanceSinceLastNoise = 0;
 	}
-
+	protected override void updateDoorUsageStatistic(Data_Door door, Data_Room currentRoom, Data_Door destinationDoor, Data_Room destinationRoom) {
+		int spawn1Index = -1;
+		int spawn2Index = -1;
+		Data_Door iteratorDoor;
+		// Find the corresponding door spawn IDs.
+		for(int i = 0; i < currentRoom.countAllDoorSpawns; i++) {
+			iteratorDoor = currentRoom.getDoorAtSpawn(i);
+			if(iteratorDoor != null) {
+				if(iteratorDoor.INDEX == door.INDEX) {
+					spawn1Index = GS.HOUSE_GRAPH.ABSTRACT_ROOMS[currentRoom.INDEX].DOOR_SPAWNS.Values[i].INDEX;
+					// Should work, if room ID and vertex ID really are the same...
+					break;
+				}
+			}
+		}
+		for(int i = 0; i < destinationRoom.countAllDoorSpawns; i++) {
+			iteratorDoor = destinationRoom.getDoorAtSpawn(i);
+			if(iteratorDoor != null) {
+				if(iteratorDoor.INDEX == destinationDoor.INDEX) {
+					spawn2Index = GS.HOUSE_GRAPH.ABSTRACT_ROOMS[destinationRoom.INDEX].DOOR_SPAWNS.Values[i].INDEX;
+					// Should work, if room ID and vertex ID really are the same...
+					break;
+				}
+			}
+		}
+		if(spawn1Index != -1 && spawn2Index != -1) {
+			GS.HOUSE_GRAPH.DOOR_SPAWNS[spawn1Index].increaseNumUses();
+			GS.HOUSE_GRAPH.DOOR_SPAWNS[spawn2Index].increaseNumUses();
+		}
+		else {
+			Debug.Log("Cannot find door spawn ID for at least one of these doors: " + door.INDEX + "," + destinationDoor.INDEX + ". Just got spawn IDs " + spawn1Index + ", " + spawn2Index);
+		}
+	}
 }

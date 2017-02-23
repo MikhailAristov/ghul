@@ -2,24 +2,16 @@
 using System;
 using System.Collections;
 
-public class Control_Monster : MonoBehaviour {
-
+public class Control_Monster : Control_Character {
+	
     [NonSerialized]
-    private Data_GameState GS;
-    [NonSerialized]
-    private Environment_Room currentEnvironment;
-    [NonSerialized]
-    private Data_Monster me;
+	private Data_Monster me;
+	protected override Data_Character getMe() { return me as Data_Character; }
     [NonSerialized]
 	private Data_PlayerCharacter Toni;
 
-    private float VERTICAL_ROOM_SPACING;
-
-	private float MONSTER_WALKING_SPEED;
-	private float MONSTER_SLOW_WALKING_SPEED;
 	private float MONSTER_KILL_RADIUS;
 	private float TIME_TO_REACT;
-	private float DOOR_TRANSITION_DURATION;
 
 	public bool IS_DANGEROUS; // set to false to make (the monster "blind" or) the civilians walk around aimlessly.
 	private bool IS_CIVILIAN = false;
@@ -48,8 +40,8 @@ public class Control_Monster : MonoBehaviour {
 		this.Toni = gameState.getToni();
 		this.currentEnvironment = me.isIn.env;
 
-		MONSTER_WALKING_SPEED = Global_Settings.read("MONSTER_WALKING_SPEED");
-		MONSTER_SLOW_WALKING_SPEED = Global_Settings.read("MONSTER_SLOW_WALKING_SPEED");
+		RUNNING_SPEED = Global_Settings.read("MONSTER_WALKING_SPEED");
+		WALKING_SPEED = Global_Settings.read("MONSTER_SLOW_WALKING_SPEED");
 		MONSTER_KILL_RADIUS = Global_Settings.read("MONSTER_KILL_RADIUS");
 
 		VERTICAL_ROOM_SPACING = Global_Settings.read("VERTICAL_ROOM_SPACING");
@@ -239,61 +231,8 @@ public class Control_Monster : MonoBehaviour {
 
 	// The monster approaches the target position
 	private void moveToPoint(float targetPos) {
-		float velocity;
-		if (me.playerDetected) {
-			velocity = MONSTER_WALKING_SPEED;
-		} else {
-			velocity = MONSTER_SLOW_WALKING_SPEED;
-		}
-		float direction = (-1) * Mathf.Sign(transform.position.x - targetPos);
-
-		// Flip the sprite as necessary
-		monsterRenderer.flipX = (direction > 0.0f) ? true : false;
-		civilianRenderer.flipX = (direction > 0.0f) ? false : true;
-
-		// Calculate the new position
-		float displacement = direction * Time.deltaTime * velocity;
-		float validPosition = currentEnvironment.validatePosition(transform.position.x + displacement);
-
-        // Move the sprite to the new valid position
-        me.updatePosition(validPosition);
-        float validDisplacement = validPosition - transform.position.x;
-		if (Mathf.Abs(validDisplacement) > 0.0f)
-		{
-			transform.Translate(validDisplacement, 0, 0);
-		}
-	}
-
-	// This function transitions the monster through a door
-	private IEnumerator goThroughTheDoor(Data_Door door)
-	{
-		Data_Door destinationDoor = door.connectsTo;
-		Data_Room destinationRoom = destinationDoor.isIn;
-
-		// Open doors
-		door.gameObj.GetComponent<Control_Door>().open();
-		destinationDoor.gameObj.GetComponent<Control_Door>().open();
-
-		// Hide the sprite
-		GetComponentInChildren<Renderer>().enabled = false;
-
-		// Then wait
-		me.etherialCooldown = DOOR_TRANSITION_DURATION;
-		yield return new WaitForSeconds(DOOR_TRANSITION_DURATION);
-
-        // Move character within game state
-        float newValidPosition = destinationRoom.env.validatePosition(destinationDoor.atPos);
-        me.updatePosition(destinationRoom, newValidPosition);
-        currentEnvironment = me.isIn.env;
-
-        // Move character sprite and show it again
-		Vector3 targetPosition = new Vector3(newValidPosition, destinationRoom.INDEX * VERTICAL_ROOM_SPACING);
-		transform.Translate(targetPosition - transform.position);
-		GetComponentInChildren<Renderer>().enabled = true;
-
-		me.playerDetected = false;
-
-		//Debug.Log(me + " walks from door #" + door + " to door #" + destinationDoor + " at position " + targetPosition);
+		float direction = Mathf.Sign(targetPos - transform.position.x);
+		walk(direction, me.playerDetected);
 	}
 
 	// TODO The sound system triggers this function to inform the monster of incoming sounds
@@ -327,4 +266,24 @@ public class Control_Monster : MonoBehaviour {
 		Data_GameState.saveToDisk(GS);
 	}
 
+	// Superclass functions implemented
+	protected override void setSpriteFlip(bool state) {
+		monsterRenderer.flipX = !state;
+		civilianRenderer.flipX = state;
+	}
+	protected override bool canRun() {
+		return true; // The monster can always run
+	}
+	protected override void resetAttackStatus() {
+		me.playerDetected = false;
+	}
+	// The rest stays empty for now (only relevant for Toni)...
+	protected override void updateStamina(bool isRunning) {}
+	protected override void regainStamina() {}
+	protected override void makeWalkingNoise(float walkedDistance, int type, Data_Position atPos) {}
+	protected override void activateCooldown(float duration) { me.etherialCooldown = duration; }
+	protected override void cameraFadeOut(float duration) {}
+	protected override void cameraFadeIn(float duration) {}
+	protected override void makeNoise(int type, Data_Position atPos) {}
+	protected override void updateDoorUsageStatistic(Data_Door door, Data_Room currentRoom, Data_Door destinationDoor, Data_Room destinationRoom) {}
 }

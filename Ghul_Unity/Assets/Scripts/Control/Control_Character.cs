@@ -2,27 +2,77 @@
 using System;
 using System.Collections;
 
-public class Control_Character : MonoBehaviour {
+public abstract class Control_Character : MonoBehaviour {
 
 	[NonSerialized]
-	private Data_GameState GS;
+	protected Data_GameState GS;
 	[NonSerialized]
-	private Environment_Room currentEnvironment;
-	[NonSerialized]
-	private Data_Character me;
+	protected Environment_Room currentEnvironment;
+	protected abstract Data_Character getMe();
 
 	// General movement settings
-	private float VERTICAL_ROOM_SPACING;
-	private float WALKING_SPEED;
-	private float RUNNING_SPEED;
-	private float DOOR_TRANSITION_DURATION;
+	protected float VERTICAL_ROOM_SPACING;
+	protected float WALKING_SPEED;
+	protected float RUNNING_SPEED;
+	protected float DOOR_TRANSITION_DURATION;
+
+	// The functions moves the character left or right
+	// Direction is negative for left, positive for right
+	// Returns a door object if the character runs into it
+	protected virtual Data_Door walk(float direction, bool run) {
+		// Flip the sprite as necessary
+		setSpriteFlip(direction < 0);
+
+		// Determine movement speed
+		float velocity = WALKING_SPEED; int noiseType = Control_Sound.NOISE_TYPE_WALK;
+		if (run && canRun()) {
+			velocity = RUNNING_SPEED;
+			noiseType = Control_Sound.NOISE_TYPE_RUN;
+			updateStamina(true);
+		} else {
+			updateStamina(false);
+		}
+
+		// Calculate the new position
+		float displacement = direction * velocity * Time.deltaTime;
+		float newPosition = transform.position.x + displacement;
+		float validPosition = currentEnvironment.validatePosition(newPosition);
+
+		// If validated position is different from the calculated position, we have reached the side of the room
+		if(validPosition > newPosition) {		// moving left (negative direction) gets us through the left door
+			Data_Door leftDoor = currentEnvironment.getDoorOnTheLeft();
+			return leftDoor;
+		}
+		else if (validPosition < newPosition) {	// moving right (positive direction) gets us through the right door
+			Data_Door rightDoor = currentEnvironment.getDoorOnTheRight();
+			return rightDoor;
+		}
+
+		// Move the sprite to the new valid position
+		float validDisplacement = validPosition - transform.position.x;
+		if (Mathf.Abs(validDisplacement) > 0.0f) {
+			getMe().updatePosition(validPosition);
+			transform.Translate(validDisplacement, 0, 0);
+		}
+
+		// Make noise (if necessary)
+		makeWalkingNoise(validDisplacement, noiseType, getMe().pos);
+
+		return null;
+	}
+	protected abstract void setSpriteFlip(bool state);
+	protected abstract bool canRun();
+	protected abstract void updateStamina(bool isRunning);
+	protected abstract void regainStamina();
+	protected abstract void makeWalkingNoise(float walkedDistance, int type, Data_Position atPos);
 
 	// This function transitions the character through a door
-	private IEnumerator goThroughTheDoor(Data_Door door) {
-		Data_Room currentRoom = me.isIn;
+	protected IEnumerator goThroughTheDoor(Data_Door door) {
+		Data_Room currentRoom = getMe().isIn;
 		Data_Door destinationDoor = door.connectsTo;
 		Data_Room destinationRoom = destinationDoor.isIn;
 		activateCooldown(DOOR_TRANSITION_DURATION);
+
 
 		// Open doors
 		door.gameObj.GetComponent<Control_Door>().open();
@@ -34,43 +84,15 @@ public class Control_Character : MonoBehaviour {
 
 		// Move character within game state
 		float newValidPosition = destinationRoom.env.validatePosition(destinationDoor.atPos);
-		me.updatePosition(destinationRoom, newValidPosition);
-		currentEnvironment = me.isIn.env;
-		resetReactionTime();
+		getMe().updatePosition(destinationRoom, newValidPosition);
+		currentEnvironment = getMe().isIn.env;
+		resetAttackStatus();
 
 		// Move character sprite
 		Vector3 targetPosition = new Vector3(newValidPosition, destinationRoom.INDEX * VERTICAL_ROOM_SPACING);
 		transform.Translate(targetPosition - transform.position);
 
-		// Increase number of door uses. Needs door spawn IDs, not door IDs.
-		int spawn1Index = -1;
-		int spawn2Index = -1;
-		Data_Door iteratorDoor;
-		// Find the corresponding door spawn IDs.
-		for (int i = 0; i < currentRoom.countAllDoorSpawns; i++) {
-			iteratorDoor = currentRoom.getDoorAtSpawn(i);
-			if (iteratorDoor != null) {
-				if (iteratorDoor.INDEX == door.INDEX) {
-					spawn1Index = GS.HOUSE_GRAPH.ABSTRACT_ROOMS[currentRoom.INDEX].DOOR_SPAWNS.Values[i].INDEX; // Should work, if room ID and vertex ID really are the same...
-					break;
-				}
-			}
-		}
-		for (int i = 0; i < destinationRoom.countAllDoorSpawns; i++) {
-			iteratorDoor = destinationRoom.getDoorAtSpawn(i);
-			if (iteratorDoor != null) {
-				if (iteratorDoor.INDEX == destinationDoor.INDEX) {
-					spawn2Index = GS.HOUSE_GRAPH.ABSTRACT_ROOMS[destinationRoom.INDEX].DOOR_SPAWNS.Values[i].INDEX; // Should work, if room ID and vertex ID really are the same...
-					break;
-				}
-			}
-		}
-		if (spawn1Index != -1 && spawn2Index != -1) {
-			GS.HOUSE_GRAPH.DOOR_SPAWNS[spawn1Index].increaseNumUses();
-			GS.HOUSE_GRAPH.DOOR_SPAWNS[spawn2Index].increaseNumUses();
-		} else {
-			Debug.Log("Cannot find door spawn ID for at least one of these doors: " + door.INDEX + "," + destinationDoor.INDEX + ". Just got spawn IDs " + spawn1Index + ", " + spawn2Index);
-		}
+		updateDoorUsageStatistic(door, currentRoom, destinationDoor, destinationRoom);
 
 		// Fade back in
 		cameraFadeIn(DOOR_TRANSITION_DURATION / 2);
@@ -82,9 +104,10 @@ public class Control_Character : MonoBehaviour {
 		Data_GameState.saveToDisk(GS);
 	}
 	// Dummy functions to be implemented 
-	protected void activateCooldown(float duration) {}
-	protected void cameraFadeOut(float duration) {}
-	protected void cameraFadeIn(float duration) {}
-	protected void resetReactionTime() {}
-	protected void makeNoise(int type, Data_Position atPos) {}
+	protected abstract void activateCooldown(float duration);
+	protected abstract void cameraFadeOut(float duration);
+	protected abstract void cameraFadeIn(float duration);
+	protected abstract void resetAttackStatus();
+	protected abstract void makeNoise(int type, Data_Position atPos);
+	protected abstract void updateDoorUsageStatistic(Data_Door door, Data_Room currentRoom, Data_Door destinationDoor, Data_Room destinationRoom);
 }
