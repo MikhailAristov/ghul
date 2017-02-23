@@ -228,22 +228,21 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		Data_Room currentRoom = me.isIn;
 		Data_Door destinationDoor = door.connectsTo;
 		Data_Room destinationRoom = destinationDoor.isIn;
-		me.etherialCooldown = DOOR_TRANSITION_DURATION;
+		activateCooldown(DOOR_TRANSITION_DURATION);
 
 		// Open doors
 		door.gameObj.GetComponent<Control_Door>().open();
 		destinationDoor.gameObj.GetComponent<Control_Door>().open();
 
 		// Fade out and wait
-		mainCameraControl.fadeOut(DOOR_TRANSITION_DURATION / 2);
+		cameraFadeOut(DOOR_TRANSITION_DURATION / 2);
 		yield return new WaitForSeconds(DOOR_TRANSITION_DURATION);
 
 		// Move character within game state
 		float newValidPosition = destinationRoom.env.validatePosition(destinationDoor.atPos);
 		me.updatePosition(destinationRoom, newValidPosition);
 		currentEnvironment = me.isIn.env;
-		me.remainingReactionTime = TIME_TO_REACT;
-		mainCameraControl.resetRedOverlay();
+		resetReactionTime();
 
 		// Move character sprite
 		Vector3 targetPosition = new Vector3(newValidPosition, destinationRoom.INDEX * VERTICAL_ROOM_SPACING);
@@ -280,11 +279,10 @@ public class Control_PlayerCharacter : MonoBehaviour {
 		}
 
 		// Fade back in
-		mainCameraControl.fadeIn(DOOR_TRANSITION_DURATION / 2);
+		cameraFadeIn(DOOR_TRANSITION_DURATION / 2);
 
 		// Make noise at the original door's location
-		soundSystem.makeNoise(Control_Sound.NOISE_TYPE_DOOR, door.pos);
-		walkingDistanceSinceLastNoise = 0;
+		makeNoise(Control_Sound.NOISE_TYPE_DOOR, door.pos);
 
 		// Trigger an autosave upon changing locations
 		Data_GameState.saveToDisk(GS);
@@ -441,6 +439,25 @@ public class Control_PlayerCharacter : MonoBehaviour {
 				GS.CIVILIAN_KILLED = true;
 			}
 		}
+	}
+
+	// Dummy functions to be implemented 
+	private void activateCooldown(float duration) {
+		me.etherialCooldown = duration;
+	}
+	private void cameraFadeOut(float duration) {
+		mainCameraControl.fadeOut(duration);
+	}
+	private void cameraFadeIn(float duration) {
+		mainCameraControl.fadeIn(duration);
+	}
+	private void resetReactionTime() {
+		me.remainingReactionTime = TIME_TO_REACT;
+		mainCameraControl.resetRedOverlay();
+	}
+	private void makeNoise(int type, Data_Position atPos) {
+		soundSystem.makeNoise(type, atPos);
+		walkingDistanceSinceLastNoise = 0;
 	}
 
 }
