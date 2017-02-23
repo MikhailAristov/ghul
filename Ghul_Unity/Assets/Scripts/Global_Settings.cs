@@ -27,6 +27,7 @@ public class Global_Settings {
 			// Door settings
 			{ "MARGIN_DOOR_ENTRANCE",			0.6f },		// How close a character's center of mass must be to the door's center to use it
 			{ "DOOR_TRANSITION_DURATION",		0.4f },		// How long it takes to go through a door
+			{ "DOOR_OPEN_DURATION",				1.0f },		// How long a door stays open after someone goes through it
 
 			// Character movement settings
 			{ "CHARA_WALKING_SPEED",			5.0f },

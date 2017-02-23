@@ -226,14 +226,17 @@ public class Control_PlayerCharacter : MonoBehaviour {
 	// This function transitions the character through a door
 	private IEnumerator goThroughTheDoor(Data_Door door) {
 		Data_Room currentRoom = me.isIn;
+		Data_Door destinationDoor = door.connectsTo;
+		Data_Room destinationRoom = destinationDoor.isIn;
 		me.etherialCooldown = DOOR_TRANSITION_DURATION;
+
+		// Open doors
+		door.gameObj.GetComponent<Control_Door>().open();
+		destinationDoor.gameObj.GetComponent<Control_Door>().open();
 
 		// Fade out and wait
 		mainCameraControl.fadeOut(DOOR_TRANSITION_DURATION / 2);
 		yield return new WaitForSeconds(DOOR_TRANSITION_DURATION);
-
-		Data_Door destinationDoor = door.connectsTo;
-		Data_Room destinationRoom = destinationDoor.isIn;
 
 		// Move character within game state
 		float newValidPosition = destinationRoom.env.validatePosition(destinationDoor.atPos);

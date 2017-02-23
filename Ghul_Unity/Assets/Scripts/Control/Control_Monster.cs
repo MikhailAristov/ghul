@@ -267,15 +267,19 @@ public class Control_Monster : MonoBehaviour {
 	// This function transitions the monster through a door
 	private IEnumerator goThroughTheDoor(Data_Door door)
 	{
+		Data_Door destinationDoor = door.connectsTo;
+		Data_Room destinationRoom = destinationDoor.isIn;
+
+		// Open doors
+		door.gameObj.GetComponent<Control_Door>().open();
+		destinationDoor.gameObj.GetComponent<Control_Door>().open();
+
 		// Hide the sprite
 		GetComponentInChildren<Renderer>().enabled = false;
 
 		// Then wait
 		me.etherialCooldown = DOOR_TRANSITION_DURATION;
 		yield return new WaitForSeconds(DOOR_TRANSITION_DURATION);
-
-		Data_Door destinationDoor = door.connectsTo;
-		Data_Room destinationRoom = destinationDoor.isIn;
 
         // Move character within game state
         float newValidPosition = destinationRoom.env.validatePosition(destinationDoor.atPos);
