@@ -113,6 +113,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ClosedSprite: {fileID: 1000013755607284}
   OpenSprite: {fileID: 1000013002750682}
+  CurrentState: 
+  TimeUntilClosing: 0
 --- !u!212 &212000012013996470
 SpriteRenderer:
   m_ObjectHideFlags: 1
@@ -175,7 +177,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: 2e07d683bb4da3f479e62baded2a4108, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0

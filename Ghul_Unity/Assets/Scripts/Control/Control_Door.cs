@@ -6,15 +6,15 @@ public class Control_Door : MonoBehaviour {
 	public GameObject ClosedSprite;
 	public GameObject OpenSprite;
 
-	public string CurrentState;
-	public float TimeUntilClosing;
+	private string currentState;
+	private float timeUntilClosing;
 
 	private float doorOpenDuration;
 	private float doorOpenCheckFrequency;
 
 	// Use this for initialization
 	void Start () {
-		CurrentState = "CLOSED";
+		currentState = "CLOSED";
 		OpenSprite.SetActive(false);
 		doorOpenDuration = Global_Settings.read("DOOR_OPEN_DURATION");
 		doorOpenCheckFrequency = doorOpenDuration / 10f;
@@ -22,11 +22,11 @@ public class Control_Door : MonoBehaviour {
 
 	// Opens the door if it's closed, keeps it open longer otherwise
 	public void open() {
-		TimeUntilClosing = doorOpenDuration;
-		if(CurrentState != "OPEN") {
+		timeUntilClosing = doorOpenDuration;
+		if(currentState != "OPEN") {
 			ClosedSprite.SetActive(false);
 			OpenSprite.SetActive(true);
-			CurrentState = "OPEN";
+			currentState = "OPEN";
 			StartCoroutine(waitForClosure());
 		}
 		// If the door is already open, it just stays so for longer
@@ -34,12 +34,12 @@ public class Control_Door : MonoBehaviour {
 
 	// Closes the door after it has been open long enough
 	private IEnumerator waitForClosure() {
-		while(TimeUntilClosing > 0f) {
+		while(timeUntilClosing > 0f) {
 			yield return new WaitForSeconds(doorOpenCheckFrequency);
-			TimeUntilClosing -= doorOpenCheckFrequency;
+			timeUntilClosing -= doorOpenCheckFrequency;
 		}
 		OpenSprite.SetActive(false);
 		ClosedSprite.SetActive(true);
-		CurrentState = "CLOSED";
+		currentState = "CLOSED";
 	}
 }
