@@ -57,7 +57,7 @@ public class AI_PlayerModel {
 			double probOfGoingThroughADoor = (1.0 - probOfStaying) / doorsHere.Count;
 			// Loop through all doors in the current room and add the transition probabilities to neighbouring rooms
 			foreach(Data_Door door in doorsHere) {
-				TRANSITION_MATRIX[sourceRoomIndex, door.connectsTo.INDEX] += probOfGoingThroughADoor;
+				TRANSITION_MATRIX[sourceRoomIndex, door.connectsTo.isIn.INDEX] += probOfGoingThroughADoor;
 				// This also correctly handles the case when rooms are connected by more than one door:
 				// the probability of transitioning to such a room is double (or more) than to any other room
 			}
