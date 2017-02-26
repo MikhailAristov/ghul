@@ -188,6 +188,18 @@ public class Data_GameState {
 		}
 	}
 
+	// Returns a list of all items currently in the room, if any
+	public List<Data_Item> getItemsInRoom(int roomIndex) {
+		List<Data_Item> result = new List<Data_Item>();
+		foreach(Data_Item item in ITEMS.Values) {
+			if(item.isIn.INDEX == roomIndex) {
+				result.Add(item);
+			}
+		}
+		return result;
+	}
+
+
 	// Returns the item the player has to find at the moment (or bring back to the ritual room, if already in possession)
 	public Data_Item getCurrentItem() {
 		return ITEMS[indexOfSearchedItem];

@@ -34,7 +34,7 @@ public abstract class Control_Character : MonoBehaviour {
 		}
 
 		// Calculate the new position
-		float displacement = direction * velocity * Time.deltaTime;
+		float displacement = direction * velocity * Time.deltaTime; // TODO: Generalize Time out
 		float newPosition = transform.position.x + displacement;
 		float validPosition = currentEnvironment.validatePosition(newPosition);
 
