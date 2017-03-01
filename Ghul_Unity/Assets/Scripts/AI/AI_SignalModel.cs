@@ -82,7 +82,7 @@ public class AI_SignalModel  {
 		double cumulativeLikelihoodOfToniMakingNoise = 0;
 		foreach(Data_Room room in GS.ROOMS.Values) {
 			for(int noise = 0; noise < noiseCount; noise++) {
-				cumulativeLikelihoodOfToniMakingNoise += playerModel.noiseLikelihood(noise, room);
+				cumulativeLikelihoodOfToniMakingNoise += playerModel.noiseLikelihood(noise, room.INDEX);
 			}
 		}
 		// Now normalize Toni's noise making over all rooms (uniform distribution)
@@ -94,7 +94,7 @@ public class AI_SignalModel  {
 	}
 
 	// f( perceivedVolume, atDoor | Toni is in tonisRoom )
-	public double signalLikelihood(float volume, Data_Door door, Data_Room tonisRoom) {
+	public double signalLikelihood(float volume, Data_Door door, int tonisRoom) {
 		double result = 0;
 		// This is some crazy stochastic shit...
 		for(int r = 0; r < roomCount; r++) {
@@ -121,7 +121,7 @@ public class AI_SignalModel  {
 	}
 
 	// f( noise type, origin room | atDoor, Toni is in tonisRoom )
-	private double noiseAndOriginLikelihood(int noiseType, int origin, Data_Door door, Data_Room tonisRoom) {
+	private double noiseAndOriginLikelihood(int noiseType, int origin, Data_Door door, int tonisRoom) {
 		double result = 0;
 		// Case 1: The noise was made by Toni
 		result += noiseLikelihood(noiseType, origin, tonisRoom, true) * originLikelihood(origin, door, tonisRoom, true) * Likelihood_NoiseWasMadeByToni;
@@ -131,7 +131,7 @@ public class AI_SignalModel  {
 	}
 
 	// f( noise type | origin room, Toni is in tonisRoom, whether Toni was the one who made that noise )
-	private double noiseLikelihood(int noiseType, int origin, Data_Room tonisRoom, bool toniMadeThisNoise) {
+	private double noiseLikelihood(int noiseType, int origin, int tonisRoom, bool toniMadeThisNoise) {
 		return ( toniMadeThisNoise ? playerModel.noiseLikelihood(noiseType, tonisRoom) : noiseLikelihoodByHouse(noiseType) );
 	}
 
@@ -142,11 +142,11 @@ public class AI_SignalModel  {
 	}
 
 	// f( origin room | atDoor, Toni is in tonisRoom, whether Toni was the one who made that noise )
-	private double originLikelihood(int origin, Data_Door door, Data_Room tonisRoom, bool toniMadeThisNoise) {
+	private double originLikelihood(int origin, Data_Door door, int tonisRoom, bool toniMadeThisNoise) {
 		// Otherwise, proceed depending on who sent the signal
 		if(toniMadeThisNoise) {
 			// Kind of trivial, but still correct...
-			if(origin == tonisRoom.INDEX) {
+			if(origin == tonisRoom) {
 				return 1.0;
 			} else {
 				return 0;

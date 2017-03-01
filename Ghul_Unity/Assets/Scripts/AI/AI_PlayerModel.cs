@@ -8,9 +8,12 @@ using System.Collections.Generic;
 public class AI_PlayerModel {
 
 	public double[,] TRANSITION_MATRIX;
+
+	private int roomCount;
 	private double[] meanWalkingDistance; // Per room
 	private double[] meanStayingTime;
-	private int roomCount;
+	private int[] roomDoorCount;
+	private bool[] roomHasItemSpawns;
 
 	// Global settings
 	private float TIME_STEP;
@@ -45,10 +48,14 @@ public class AI_PlayerModel {
 		roomCount = GS.ROOMS.Count;
 		TRANSITION_MATRIX = new double[roomCount, roomCount];
 		Array.Clear(TRANSITION_MATRIX, 0, roomCount * roomCount);
-		// For each room, calculate mean staying time in time step units
+		// For each room, read and save the relevant informations from the game state
 		meanWalkingDistance = new double[roomCount];
 		meanStayingTime 	= new double[roomCount];
+		roomDoorCount 		= new int[roomCount];
+		roomHasItemSpawns 	= new bool[roomCount];
 		for(int i = 0; i < roomCount; i++) {
+			roomDoorCount[i] = GS.getRoomByIndex(i).DOORS.Count;
+			roomHasItemSpawns[i] = GS.getRoomByIndex(i).hasItemSpawns;
 			meanStayingTime[i] = calculateMeanStayingTime(GS, i);
 		}
 		// Build a Markov chain representing transition probabilities from one state/room to another after a single time step
@@ -91,9 +98,9 @@ public class AI_PlayerModel {
 	}
 
 	// f( noise type | the room Toni was in when he made the sound )
-	public double noiseLikelihood(int noiseType, Data_Room tonisRoom) {
+	public double noiseLikelihood(int noiseType, int roomIndex) {
 		// At any given point in time, this is the probability of Toni making a walking or running noise
-		double probWalkingNoise = (meanWalkingDistance[tonisRoom.INDEX] / TONI_SINGLE_STEP_LENGTH) / meanStayingTime[tonisRoom.INDEX];
+		double probWalkingNoise = (meanWalkingDistance[roomIndex] / TONI_SINGLE_STEP_LENGTH) / meanStayingTime[roomIndex];
 		// Likelihood depends on the noise type
 		switch(noiseType) {
 		case Control_Sound.NOISE_TYPE_WALK:
@@ -104,13 +111,13 @@ public class AI_PlayerModel {
 			return (probWalkingNoise * Param_RunningProb);
 		case Control_Sound.NOISE_TYPE_DOOR:
 			// The more doors the room has, the higher the chance of walking through one
-			return (tonisRoom.DOORS.Count / meanStayingTime[tonisRoom.INDEX]);
+			return (roomDoorCount[roomIndex] / meanStayingTime[roomIndex]);
 		case Control_Sound.NOISE_TYPE_ITEM:
 		case Control_Sound.NOISE_TYPE_ZAP:
 			// If the room has item spawns, there is a small chance Toni will try picking an item up
 			// Note that the model doesn't actually track items in the house, as that would give the
 			// monster an unfair advantage of knowing at a distance where all items are
-			return (tonisRoom.hasItemSpawns ? (1.0 / meanStayingTime[tonisRoom.INDEX]) : 0);
+			return (roomHasItemSpawns[roomIndex] ? (1.0 / meanStayingTime[roomIndex]) : 0);
 		default:
 			// Most the time, actually, Toni makes no sound at all,
 			// but this doesn't matter when considering the likelihood of a specific sound
