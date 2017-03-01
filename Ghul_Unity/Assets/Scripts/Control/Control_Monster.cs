@@ -30,6 +30,7 @@ public class Control_Monster : Control_Character {
 		monsterRenderer = monsterImageObject.GetComponent<SpriteRenderer>(); // Find the child "Stickman", then its Sprite Renderer and then the renderer's sprite
 		civilianObject = GameObject.Find("StickmanCivilian");
 		civilianRenderer = civilianObject.GetComponent<SpriteRenderer>();
+		civilianObject.SetActive(false); // Civ-Monster not visible at first.
 	}
 
 	// To make sure the game state is fully initialized before loading it, this function is called by game state class itself
