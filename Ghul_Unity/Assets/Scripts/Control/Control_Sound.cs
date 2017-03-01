@@ -75,25 +75,30 @@ public class Control_Sound : MonoBehaviour {
 	// Whenever chara makes noise, this is where it is "heard"
 	public void makeNoise(int noiseType, Data_Position origin) {
 		// Calculate the intrinsic loudness of the noise
-		float loudness;
+		float loudness = getInitialLoudness(noiseType);
+		// Transmit the noise to the monster
+		transmitNoiseToMonster(loudness, origin);
+	}
+
+	// Returns the initial noise loudness by type
+	public static float getInitialLoudness(int noiseType) {
+		float result;
 		switch(noiseType) {
 		case NOISE_TYPE_WALK:
 		default:
-			loudness = NOISE_VOL_QUIET;
+			result = NOISE_VOL_QUIET;
 			break;
 		case NOISE_TYPE_DOOR:
 		case NOISE_TYPE_ITEM:
-			loudness = NOISE_VOL_MEDIUM;
+			result = NOISE_VOL_MEDIUM;
 			break;
 		case NOISE_TYPE_RUN:
-			loudness = NOISE_VOL_LOUD;
-			break;
 		case NOISE_TYPE_ZAP:
-			loudness = NOISE_VOL_LOUD;
+			result = NOISE_VOL_LOUD;
+			result = NOISE_VOL_LOUD;
 			break;
 		}
-		// Transmit the noise to the monster
-		transmitNoiseToMonster(loudness, origin);
+		return result;
 	}
 
 	// Transmits the noise to the monster
@@ -127,8 +132,9 @@ public class Control_Sound : MonoBehaviour {
 			// Only proceed if the game isn't suspended
 			if(!GS.SUSPENDED) {
 				// Generate a random fake signal from "somewhere" within the house
-				float loudness = UnityEngine.Random.Range(NOISE_VOL_QUIET, NOISE_VOL_LOUD);
-				Data_Position origin = new Data_Position(GS.getRandomRoom(false).INDEX, 0);
+				float loudness = getInitialLoudness(UnityEngine.Random.Range(NOISE_TYPE_WALK, NOISE_TYPE_ZAP));
+				Data_Room originRoom = GS.getRandomRoom(false);
+				Data_Position origin = new Data_Position(originRoom.INDEX, UnityEngine.Random.Range(originRoom.leftWalkBoundary, originRoom.rightWalkBoundary));
 				// Transmit the signal to the monster (as long as it's not in the same room)
 				transmitNoiseToMonster(loudness, origin);
 			}

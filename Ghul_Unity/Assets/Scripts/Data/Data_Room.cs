@@ -26,12 +26,24 @@ public class Data_Room : IComparable<Data_Room> {
 
     // Horizontal span of the room (generally equals its spite width)
     [SerializeField]
-    private float _width;
+	private float _width;
     public float width
     {
         get { return _width; }
         private set { _width = value; }
-    }
+	}
+	[NonSerialized]
+	private float walkMargin;
+	public float leftWalkBoundary
+	{
+		get { return (walkMargin - _width/2); }
+		private set { return; }
+	}
+	public float rightWalkBoundary
+	{
+		get { return (_width/2 - walkMargin); }
+		private set { return; }
+	}
 
 	// List of doors within the current room
 	[SerializeField]
@@ -83,6 +95,7 @@ public class Data_Room : IComparable<Data_Room> {
 		foreach(Vector2 p in prefabDetails.itemSpawns) {
 			_itemSpawnPoints.Add(new Data_Position(I, p));
 		}
+		walkMargin = Global_Settings.read("HORIZONTAL_ROOM_MARGIN");
 		// Load door spawnpoints
 		_doorSpawnPoints = new List<float>();
 		if(prefabDetails.doorSpawnLeft) { _doorSpawnPoints.Add(float.MinValue); }
@@ -166,6 +179,7 @@ public class Data_Room : IComparable<Data_Room> {
 			_gameObjName = gameObj.name;
 		}
 		env = gameObj.GetComponent<Environment_Room>();
+		walkMargin = Global_Settings.read("HORIZONTAL_ROOM_MARGIN");
 		// Re-associate doors
 		DOORS = new List<Data_Door>();
 		if(_leftSideDoorID >= 0) {
