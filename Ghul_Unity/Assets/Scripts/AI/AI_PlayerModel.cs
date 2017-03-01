@@ -19,10 +19,10 @@ public class AI_PlayerModel {
 	private double MEAN_TONI_VELOCITY;
 
 	// Player model weights
-	const double Param_ExplorationWalk	= 0.3;
-	const double Param_ItemFetchWalk	= 1.0;
-	const double Param_DoorToDoorWalk	= 0.8;
-	const double Param_RunningProb		= 0.1;
+	public const double Param_ExplorationWalk	= 0.3;
+	public const double Param_ItemFetchWalk		= 1.0;
+	public const double Param_DoorToDoorWalk	= 0.8;
+	public const double Param_RunningProb		= 0.1;
 
 	public AI_PlayerModel(Data_GameState GS) {
 		// First, some global settings
