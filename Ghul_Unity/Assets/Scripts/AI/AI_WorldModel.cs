@@ -9,16 +9,13 @@ public class AI_WorldModel {
 	private AI_PlayerModel playerModel;
 	private AI_SignalModel signalModel;
 
-	private Data_Room myCurrentRoom;
 	private int roomCount;
-
 	public double[] probabilityThatToniIsInRoom;
 	private double[] newVector; // Performance optimization
 
 	public AI_WorldModel(Data_GameState GS) {
 		// Initialize global parameters
 		roomCount = GS.ROOMS.Count;
-		myCurrentRoom = GS.getMonster().isIn;
 		// Initialize the room probability vector
 		probabilityThatToniIsInRoom = new double[roomCount];
 		newVector = new double[roomCount];
@@ -41,7 +38,6 @@ public class AI_WorldModel {
 
 	// Update the world model after entering a new room
 	public void updateMyRoom(Data_Room room, bool toniIsHere) {
-		myCurrentRoom = room;
 		if(toniIsHere) {
 			toniKnownToBeInRoom(room);
 		} else { // This room is empty, update other probabilities, as well
