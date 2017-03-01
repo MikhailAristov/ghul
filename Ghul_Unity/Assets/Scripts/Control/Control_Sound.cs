@@ -14,6 +14,10 @@ public class Control_Sound : MonoBehaviour {
 	public Text MonsterDistanceText;
 	public AudioSource AmbientNoise;
 
+	// Random noise settings
+	public const float RANDOM_NOISE_MIN_DELAY = 0.5f;
+	public const float RANDOM_NOISE_MAX_DELAY = 5.0f;
+
 	// Noise types:
 	public const int NOISE_TYPE_WALK = 0;
 	public const int NOISE_TYPE_RUN = 1;
@@ -127,7 +131,7 @@ public class Control_Sound : MonoBehaviour {
 	private IEnumerator generateRandomNoises() {
 		while(true) {
 			// First, wait a random interval
-			float nextDelay = UnityEngine.Random.Range(0.5f, 5.0f);
+			float nextDelay = UnityEngine.Random.Range(RANDOM_NOISE_MIN_DELAY, RANDOM_NOISE_MAX_DELAY);
 			yield return new WaitForSeconds(nextDelay);
 			// Only proceed if the game isn't suspended
 			if(!GS.SUSPENDED) {

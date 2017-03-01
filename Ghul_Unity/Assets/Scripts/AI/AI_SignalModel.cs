@@ -73,8 +73,8 @@ public class AI_SignalModel  {
 	// Precomputes the likelihoods of a given noise being made by Toni or by the house
 	private void precomputeNoiseMakerLikelihoods(Data_GameState GS) {
 		// First, calculate the raw probability of a noise being made by the house
-		// The house makes random noises every 0.5 to 5.0 seconds
-		float meanTimeStepsBetweenHouseNoises = ( (5.0f - 0.5f) / 2 ) / Global_Settings.read("TIME_STEP");
+		// The house makes random noises every so often, and the monster knows it
+		float meanTimeStepsBetweenHouseNoises = ( (Control_Sound.RANDOM_NOISE_MAX_DELAY - Control_Sound.RANDOM_NOISE_MIN_DELAY) / 2 ) / Global_Settings.read("TIME_STEP");
 		// So this is the probability of the house making a noise at any given point in time
 		double probHouseMakingNoise = 1.0 / meanTimeStepsBetweenHouseNoises;
 
