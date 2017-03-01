@@ -107,7 +107,7 @@ public class Control_Sound : MonoBehaviour {
 		if(MONSTER.isIn.INDEX == origin.RoomId) { return; }
 		// Otherwise, find the door through which the monster would hear the noise
 		float distance = float.MaxValue; int doorId = -1;
-		foreach(Data_Door d in MONSTER.isIn.DOORS) {
+		foreach(Data_Door d in MONSTER.isIn.DOORS.Values) {
 			float tentativeDist = GS.getDistance(d, origin);
 			if(tentativeDist < distance) {
 				distance = tentativeDist;

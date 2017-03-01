@@ -27,20 +27,17 @@ public class Data_Room : IComparable<Data_Room> {
     // Horizontal span of the room (generally equals its spite width)
     [SerializeField]
 	private float _width;
-    public float width
-    {
+    public float width {
         get { return _width; }
         private set { _width = value; }
 	}
 	[NonSerialized]
 	private float walkMargin;
-	public float leftWalkBoundary
-	{
+	public float leftWalkBoundary {
 		get { return (walkMargin - _width/2); }
 		private set { return; }
 	}
-	public float rightWalkBoundary
-	{
+	public float rightWalkBoundary {
 		get { return (_width/2 - walkMargin); }
 		private set { return; }
 	}
@@ -52,8 +49,17 @@ public class Data_Room : IComparable<Data_Room> {
 	private int _rightSideDoorID;
 	[SerializeField]
 	private List<int> _backDoorIDs;
+	// The door list is autosorted by horizontal position
     [NonSerialized]
-    public List<Data_Door> DOORS;
+	public SortedList<float, Data_Door> DOORS;
+	public Data_Door leftmostDoor {
+		get { return DOORS[0]; }
+		private set { return; }
+	}
+	public Data_Door rightmostDoor {
+		get { return DOORS[DOORS.Count - 1]; }
+		private set { return; }
+	}
     
 	// List of item spawn positions in the room
 	[SerializeField]
@@ -114,7 +120,7 @@ public class Data_Room : IComparable<Data_Room> {
 		_leftSideDoorID = -1;
 		_rightSideDoorID = -1;
 		_backDoorIDs = new List<int>();
-		DOORS = new List<Data_Door>();
+		DOORS = new SortedList<float, Data_Door>();
 	}
 
 	// Returns a door spawn position of the specified index
@@ -132,7 +138,7 @@ public class Data_Room : IComparable<Data_Room> {
 		float marginOfError = Global_Settings.read("HORIZONTAL_DOOR_WIDTH") / 2;
 		float xPos = getDoorSpawnPosition(spawnIndex);
 		// Loop through the doors
-		foreach(Data_Door door in DOORS) {
+		foreach(Data_Door door in DOORS.Values) {
 			if( (door.type == Data_Door.TYPE_LEFT_SIDE	&& xPos <= (horizontalRoomMargin - this._width / 2)) ||
 				(door.type == Data_Door.TYPE_BACK_DOOR	&& Math.Abs(xPos - door.atPos) < marginOfError) ||
 				(door.type == Data_Door.TYPE_RIGHT_SIDE	&& xPos >= (this._width / 2 - horizontalRoomMargin))) {
@@ -156,7 +162,7 @@ public class Data_Room : IComparable<Data_Room> {
 			_rightSideDoorID = D.INDEX;
 			break;
 		}
-		DOORS.Add(D);
+		DOORS.Add(D.atPos, D);
 	}
 
 	// Returns a random item spot, if the room has any (otherwise null)
@@ -181,20 +187,20 @@ public class Data_Room : IComparable<Data_Room> {
 		env = gameObj.GetComponent<Environment_Room>();
 		walkMargin = Global_Settings.read("HORIZONTAL_ROOM_MARGIN");
 		// Re-associate doors
-		DOORS = new List<Data_Door>();
+		DOORS = new SortedList<float, Data_Door>();
 		if(_leftSideDoorID >= 0) {
 			Data_Door d = GS.getDoorByIndex(_leftSideDoorID);
-			DOORS.Add(d);
+			DOORS.Add(d.atPos, d);
 			d.isIn = this;
 		}
 		foreach (int id in _backDoorIDs) {
 			Data_Door d = GS.getDoorByIndex(id);
-			DOORS.Add(d);
+			DOORS.Add(d.atPos, d);
 			d.isIn = this;
 		}
 		if(_rightSideDoorID >= 0) {
 			Data_Door d = GS.getDoorByIndex(_rightSideDoorID);
-			DOORS.Add(d);
+			DOORS.Add(d.atPos, d);
 			d.isIn = this;
 		}
 	}

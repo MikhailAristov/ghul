@@ -48,7 +48,7 @@ public class Data_GameState {
 	private Data_Cadaver CADAVER;
 
 	[SerializeField]
-	private float[,] distanceBetweenTwoDoors;
+	public float[,] distanceBetweenTwoDoors;
 	[SerializeField]
 	private float[,] distanceBetweenTwoRooms;
 	public bool allRoomsReachable {
@@ -330,7 +330,7 @@ public class Data_GameState {
 		} else {
 			// Different rooms: check door distances
 			float result = float.MaxValue;
-			foreach(Data_Door startingDoor in getRoomByIndex(a.RoomId).DOORS) {
+			foreach(Data_Door startingDoor in getRoomByIndex(a.RoomId).DOORS.Values) {
 				float dist = Math.Abs(startingDoor.atPos - a.X) + getDistance(startingDoor, b); // Recycling of the other function
 				if(dist < result) {
 					result = dist;
@@ -348,7 +348,7 @@ public class Data_GameState {
 		} else {
 			// Different rooms: check door distances
 			float result = float.MaxValue;
-			foreach(Data_Door targetDoor in getRoomByIndex(pos.RoomId).DOORS) {
+			foreach(Data_Door targetDoor in getRoomByIndex(pos.RoomId).DOORS.Values) {
 				float dist = distanceBetweenTwoDoors[door.INDEX, targetDoor.INDEX] + Math.Abs(targetDoor.atPos - pos.X);
 				if(dist < result) {
 					result = dist;

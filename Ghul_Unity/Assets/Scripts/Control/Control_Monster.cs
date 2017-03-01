@@ -207,7 +207,7 @@ public class Control_Monster : Control_Character {
 
 			bool doorFound = false;
 			int counter = 0;
-			foreach (Data_Door d in me.isIn.DOORS) {
+			foreach (Data_Door d in me.isIn.DOORS.Values) {
 				if (counter == selectedDoor) {
 					me.randomTargetPos = d.atPos;
 					doorFound = true;

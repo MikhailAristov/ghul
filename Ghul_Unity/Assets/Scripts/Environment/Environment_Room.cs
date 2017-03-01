@@ -53,7 +53,7 @@ public class Environment_Room : MonoBehaviour {
     // Returns a door object if one can be accessed from the specified position, otherwise returns NULL
     public Data_Door getDoorAtPos(float pos)
     {
-        foreach (Data_Door d in me.DOORS) // Loop through all the doors in this room
+		foreach (Data_Door d in me.DOORS.Values) // Loop through all the doors in this room
         {
             if(Mathf.Abs(d.atPos) < (rightWallPos - MARGIN_SIZE_PHYSICAL) // Ignore side doors
                 && Mathf.Abs(d.atPos - pos) < MARGIN_DOOR_ENTRANCE)
@@ -67,7 +67,7 @@ public class Environment_Room : MonoBehaviour {
     // Returns a door object if there is one on the specified edge of the room, otherwise returns NULL
     private Data_Door getSideDoor(bool Left) // "Left = true" means "left edge", "false" means "right edge"
     {
-        foreach (Data_Door d in me.DOORS) // Loop through all the doors in this room
+		foreach (Data_Door d in me.DOORS.Values) // Loop through all the doors in this room
         {
             if (Mathf.Abs(d.atPos) > (rightWallPos - MARGIN_SIZE_PHYSICAL)) // The door must be beyond the margins
             {
