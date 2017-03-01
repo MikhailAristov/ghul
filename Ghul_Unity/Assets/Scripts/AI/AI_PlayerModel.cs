@@ -8,6 +8,7 @@ using System.Collections.Generic;
 public class AI_PlayerModel {
 
 	public double[,] TRANSITION_MATRIX;
+	private double[] meanWalkingDistance; // Per room
 	private double[] meanStayingTime;
 	private int roomCount;
 
@@ -16,6 +17,7 @@ public class AI_PlayerModel {
 	private float SCREEN_SIZE_HORIZONTAL;
 	private float HORIZONTAL_ROOM_MARGIN;
 	private float DOOR_TRANSITION_DURATION;
+	private float TONI_SINGLE_STEP_LENGTH;
 	private double MEAN_TONI_VELOCITY;
 
 	// Player model weights
@@ -29,9 +31,11 @@ public class AI_PlayerModel {
 		TIME_STEP 					= Global_Settings.read("TIME_STEP");
 		SCREEN_SIZE_HORIZONTAL		= Global_Settings.read("SCREEN_SIZE_HORIZONTAL");
 		HORIZONTAL_ROOM_MARGIN		= Global_Settings.read("HORIZONTAL_ROOM_MARGIN");
+		// Walking settings
+		MEAN_TONI_VELOCITY = (1.0 - Param_RunningProb) * Global_Settings.read("CHARA_WALKING_SPEED")
+								  + Param_RunningProb  * Global_Settings.read("CHARA_RUNNING_SPEED");
 		DOOR_TRANSITION_DURATION	= Global_Settings.read("DOOR_TRANSITION_DURATION");
-		MEAN_TONI_VELOCITY = (1.0 - Param_RunningProb) * Global_Settings.read("CHARA_WALKING_SPEED") + Param_RunningProb * Global_Settings.read("CHARA_RUNNING_SPEED");
-
+		TONI_SINGLE_STEP_LENGTH		= Global_Settings.read("CHARA_SINGLE_STEP_LENGTH");
 		// Then, initialize the transition matrix
 		recalculate(GS);
 	}
@@ -42,7 +46,8 @@ public class AI_PlayerModel {
 		TRANSITION_MATRIX = new double[roomCount, roomCount];
 		Array.Clear(TRANSITION_MATRIX, 0, roomCount * roomCount);
 		// For each room, calculate mean staying time in time step units
-		meanStayingTime = new double[roomCount];
+		meanWalkingDistance = new double[roomCount];
+		meanStayingTime 	= new double[roomCount];
 		for(int i = 0; i < roomCount; i++) {
 			meanStayingTime[i] = calculateMeanStayingTime(GS, i);
 		}
@@ -53,10 +58,10 @@ public class AI_PlayerModel {
 			double probOfStaying = Math.Exp(-1.0 / meanStayingTime[sourceRoomIndex]);
 			TRANSITION_MATRIX[sourceRoomIndex, sourceRoomIndex] = probOfStaying;
 			// The probability of transitioning through a door is assumed uniformly distributed across all doors
-			List<Data_Door> doorsHere = GS.getRoomByIndex(sourceRoomIndex).DOORS;
-			double probOfGoingThroughADoor = (1.0 - probOfStaying) / doorsHere.Count;
+			Data_Room thisRoom = GS.getRoomByIndex(sourceRoomIndex);
+			double probOfGoingThroughADoor = (1.0 - probOfStaying) / thisRoom.DOORS.Count;
 			// Loop through all doors in the current room and add the transition probabilities to neighbouring rooms
-			foreach(Data_Door door in doorsHere) {
+			foreach(Data_Door door in thisRoom.DOORS.Values) {
 				TRANSITION_MATRIX[sourceRoomIndex, door.connectsTo.isIn.INDEX] += probOfGoingThroughADoor;
 				// This also correctly handles the case when rooms are connected by more than one door:
 				// the probability of transitioning to such a room is double (or more) than to any other room
@@ -76,12 +81,41 @@ public class AI_PlayerModel {
 		int doorCount = thisRoom.DOORS.Count;
 		double meanDoorToDoorDistance = DOOR_TRANSITION_DURATION * MEAN_TONI_VELOCITY + ((doorCount > 1) ? (effectiveWidth / (doorCount - 1)) : 0);
 		// Combine the results according to their parametrized weight
-		double meanWalkingDistance = Param_ExplorationWalk * meanExplorationDistance +
-		                             Param_ItemFetchWalk * meanItemFetchDistance +
-		                             Param_DoorToDoorWalk * meanDoorToDoorDistance;
+		meanWalkingDistance[roomIndex] = Param_ExplorationWalk * meanExplorationDistance +
+										 Param_ItemFetchWalk * meanItemFetchDistance +
+										 Param_DoorToDoorWalk * meanDoorToDoorDistance;
 		// Convert the walking distance into mean staying time and return it
-		double meanStayingTimeInSeconds = meanWalkingDistance / MEAN_TONI_VELOCITY;
+		double meanStayingTimeInSeconds = meanWalkingDistance[roomIndex] / MEAN_TONI_VELOCITY;
 		double meanStayingTimeInTimeSteps = meanStayingTimeInSeconds / TIME_STEP;
 		return meanStayingTimeInTimeSteps;
+	}
+
+	// f( noise type | the room Toni was in when he made the sound )
+	public double noiseLikelihood(int noiseType, Data_Room tonisRoom) {
+		// At any given point in time, this is the probability of Toni making a walking or running noise
+		double probWalkingNoise = (meanWalkingDistance[tonisRoom.INDEX] / TONI_SINGLE_STEP_LENGTH) / meanStayingTime[tonisRoom.INDEX];
+		// Likelihood depends on the noise type
+		switch(noiseType) {
+		case Control_Sound.NOISE_TYPE_WALK:
+			// Return probability of a walking noise while NOT running
+			return (probWalkingNoise * (1 - Param_RunningProb));
+		case Control_Sound.NOISE_TYPE_RUN:
+			// Return probability of a walking noise while running
+			return (probWalkingNoise * Param_RunningProb);
+		case Control_Sound.NOISE_TYPE_DOOR:
+			// The more doors the room has, the higher the chance of walking through one
+			return (tonisRoom.DOORS.Count / meanStayingTime[tonisRoom.INDEX]);
+		case Control_Sound.NOISE_TYPE_ITEM:
+		case Control_Sound.NOISE_TYPE_ZAP:
+			// If the room has item spawns, there is a small chance Toni will try picking an item up
+			// Note that the model doesn't actually track items in the house, as that would give the
+			// monster an unfair advantage of knowing at a distance where all items are
+			return (tonisRoom.hasItemSpawns ? (1.0 / meanStayingTime[tonisRoom.INDEX]) : 0);
+		default:
+			// Most the time, actually, Toni makes no sound at all,
+			// but this doesn't matter when considering the likelihood of a specific sound
+			// that has already been made
+			return 0;
+		}
 	}
 }
