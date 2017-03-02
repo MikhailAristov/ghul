@@ -58,7 +58,7 @@ public class Data_GameState {
 	[SerializeField]
 	public float[,] distanceBetweenTwoDoors;
 	[SerializeField]
-	private float[,] distanceBetweenTwoRooms;
+	public float[,] distanceBetweenTwoRooms;
 	public bool allRoomsReachable {
 		get { return ( distanceBetweenTwoRooms.Cast<float>().Max() < (float.MaxValue / 2) ); }
 		private set { return; }
