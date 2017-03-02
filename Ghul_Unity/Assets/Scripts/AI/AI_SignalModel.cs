@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 // TODO: Precompute as much as possible
 public class AI_SignalModel  {
@@ -82,6 +83,8 @@ public class AI_SignalModel  {
 				// Yeah, it's ugly, but whatcha gonna do about it
 			}
 		}
+		AI_Util.displayMatrix("SIGNAL MODEL: door2roomMinSignalDistance", door2roomMinSignalDistance);
+		AI_Util.displayMatrix("SIGNAL MODEL: door2roomMaxSignalDistance", door2roomMaxSignalDistance);
 	}
 
 	// Precomputes the likelihoods of a noise of a specific type from a specific room being heard at a particular door

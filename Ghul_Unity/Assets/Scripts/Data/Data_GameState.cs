@@ -50,6 +50,10 @@ public class Data_GameState {
 		get { return (TONI.isIn == MONSTER.isIn); }
 		private set { return; }
 	}
+	public float distanceToToni {
+		get { return ((TONI.isIn == MONSTER.isIn) ? Math.Abs(TONI.atPos - MONSTER.atPos) : float.NaN); }
+		private set { return; }
+	}
 
 	[SerializeField]
 	public float[,] distanceBetweenTwoDoors;

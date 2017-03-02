@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System;
 using System.Collections;
+using System.Linq;
 
 public class Control_Monster : Control_Character {
 	
@@ -12,8 +13,11 @@ public class Control_Monster : Control_Character {
 	[NonSerialized]
 	private AI_WorldModel worldModel;
 
-	private float MONSTER_KILL_RADIUS;
+	private float KILL_RADIUS;
 	private float TIME_TO_REACT;
+	private float ATTACK_RANGE;
+	private float ATTACK_MARGIN;
+	private float ATTACK_DURATION;
 
 	// Artificial intelligence controls
 	public bool IS_DANGEROUS; // set to false to make (the monster "blind" or) the civilians walk around aimlessly.
@@ -23,7 +27,20 @@ public class Control_Monster : Control_Character {
 	private Data_Door lastNoiseHeardFrom;
 	private float lastNoiseVolume;
 
-	public Transform tombstone; // prefab, to be placed for each death
+	// Monster AI states
+	public const int STATE_WANDERING = 0;
+	public const int STATE_SEARCHING = 1;
+	public const int STATE_STALKING = 2;
+	public const int STATE_PURSUING = 3;
+	public const int STATE_ATTACKING = 4;
+	public const int STATE_FLEEING = 5;
+
+	public int myState;
+	private float stateUpdateCooldown;
+	private double certaintyThresholdToStartPursuing;
+
+	// prefab, to be placed for each death
+	public Transform tombstone; 
 
 	// Graphics parameters
 	private GameObject monsterImageObject;
@@ -50,7 +67,11 @@ public class Control_Monster : Control_Character {
 
 		RUNNING_SPEED = Global_Settings.read("MONSTER_WALKING_SPEED");
 		WALKING_SPEED = Global_Settings.read("MONSTER_SLOW_WALKING_SPEED");
-		MONSTER_KILL_RADIUS = Global_Settings.read("MONSTER_KILL_RADIUS");
+		KILL_RADIUS = Global_Settings.read("MONSTER_KILL_RADIUS");
+
+		ATTACK_RANGE = Global_Settings.read("MONSTER_ATTACK_RANGE");
+		ATTACK_MARGIN = Global_Settings.read("MONSTER_ATTACK_MARGIN");
+		ATTACK_DURATION = Global_Settings.read("MONSTER_ATTACK_DURATION");
 
 		VERTICAL_ROOM_SPACING = Global_Settings.read("VERTICAL_ROOM_SPACING");
 		DOOR_TRANSITION_DURATION = Global_Settings.read("DOOR_TRANSITION_DURATION");
@@ -61,7 +82,11 @@ public class Control_Monster : Control_Character {
 
 		// Artificial intelligence
 		worldModel = new AI_WorldModel(gameState);
-		StartCoroutine(displayWorldState(0.1f));
+		StartCoroutine(displayWorldState(1/60));
+		// Initialize the state machine
+		myState = STATE_SEARCHING;
+		stateUpdateCooldown = -1.0f;
+		certaintyThresholdToStartPursuing = 0.5;
     }
 
 	private IEnumerator displayWorldState(float interval) {
@@ -78,6 +103,15 @@ public class Control_Monster : Control_Character {
 	void FixedUpdate() {
 		if (GS == null || GS.SUSPENDED) { return; } // Don't do anything if the game state is not loaded yet or suspended
 
+		// Sanity check: if there are NaNs in world state, reset the whole thing
+		for(int i = 0; i < worldModel.probabilityThatToniIsInRoom.Length; i++) {
+			if(double.IsNaN(worldModel.probabilityThatToniIsInRoom[i])) {
+				Debug.LogWarning("NaN detected, resetting world model");
+				worldModel.reset(GS);
+				break;
+			}
+		}
+
 		// If monster sees Toni, everything else is irrelevant
 		if(GS.monsterSeesToni) {
 			worldModel.toniKnownToBeInRoom(me.isIn);
@@ -90,6 +124,9 @@ public class Control_Monster : Control_Character {
 				newNoiseHeard = false;
 			}
 		}
+
+		// Update monster state as necessary
+		updateState();
 	}
 
 	// The sound system triggers this function to inform the monster of incoming sounds
@@ -97,6 +134,74 @@ public class Control_Monster : Control_Character {
 		lastNoiseVolume = loudness;
 		lastNoiseHeardFrom = doorway;
 		newNoiseHeard = true;
+	}
+
+	// Updates the internal state if necessary
+	private void updateState() {
+		// Check the state update cooldown
+		if(stateUpdateCooldown > 0) {
+			stateUpdateCooldown -= Time.fixedDeltaTime;
+			return;
+		}
+
+		// Update AI state 
+		if(!IS_DANGEROUS && myState != STATE_FLEEING) {
+			myState = STATE_WANDERING;
+		} else {
+			switch(myState) {
+			// If, while searching, a definitive position is established, start stalking
+			case STATE_SEARCHING:
+				if(worldModel.certainty >= certaintyThresholdToStartPursuing) {
+					myState = STATE_STALKING;
+				}
+				break;
+			// If, while stalking, monster sees Toni, start pursuing
+			// But if Tonis position no longer certain, start searching again
+			case STATE_STALKING:
+				if(GS.monsterSeesToni) {
+					myState = STATE_PURSUING;
+				} else if(worldModel.certainty < certaintyThresholdToStartPursuing) {
+					myState = STATE_SEARCHING;
+				}
+				break;
+			// If, while pursuing, monster sees Toni is within attack range, initiate an attack
+			// On the other hand, if Toni cannot be seen, start stalking again
+			case STATE_PURSUING:
+				if(GS.monsterSeesToni && Math.Abs(GS.distanceToToni - ATTACK_RANGE) <= ATTACK_MARGIN) {
+					myState = STATE_ATTACKING;
+					stateUpdateCooldown = ATTACK_DURATION;
+				} else if(!GS.monsterSeesToni) {
+					myState = STATE_STALKING;
+				}
+				break;
+			// If, after attacking, the monster still sees Toni, but he is out of range, start pursuing again
+			// On the other hand, if Toni cannot be seen, start stalking again
+			case STATE_ATTACKING:
+				if(GS.monsterSeesToni && Math.Abs(GS.distanceToToni - ATTACK_RANGE) > ATTACK_MARGIN) {
+					myState = STATE_PURSUING;
+				} else if(!GS.monsterSeesToni) {
+					myState = STATE_STALKING;
+				}
+				break;
+			// Wandering is a special case: if the ritual has been performed, start fleeing from Toni
+			case STATE_WANDERING:
+				if(GS.monsterSeesToni && GS.RITUAL_PERFORMED) {
+					myState = STATE_FLEEING;
+				}
+				break;
+			// Stop fleeing if Toni is no longer seen
+			case STATE_FLEEING:
+				if(!GS.monsterSeesToni) {
+					myState = STATE_WANDERING;
+				}
+				break;
+			// Searching is the default state
+			default:
+				myState = STATE_SEARCHING;
+				break;
+			}
+		}
+
 	}
 
 	// Update is called once per frame
@@ -126,10 +231,10 @@ public class Control_Monster : Control_Character {
 			me.playerDetected = true;
 			me.playerPosLastSeen = Toni.gameObj.transform.position.x;
 
-			float distanceToPlayer = Mathf.Abs(transform.position.x - Toni.gameObj.transform.position.x);
-			if (distanceToPlayer <= MONSTER_KILL_RADIUS) {
+			float distanceToPlayer = GS.distanceToToni;
+			if (distanceToPlayer <= KILL_RADIUS) {
 				// Getting VERY close the monster, e.g. running past it forces CHARA to drop their item
-				if(distanceToPlayer <= MONSTER_KILL_RADIUS / 10) {
+				if(distanceToPlayer <= KILL_RADIUS / 10) {
 					Toni.control.dropItem();
 				}
 				Toni.control.takeDamage();

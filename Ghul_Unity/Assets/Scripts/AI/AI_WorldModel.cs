@@ -14,6 +14,13 @@ public class AI_WorldModel {
 	private double[] newVector; // Performance optimization
 
 	private int currentRoomIndex;
+	public double certainty {
+		get { 
+			double[] sorted = probabilityThatToniIsInRoom.OrderByDescending(x => x).ToArray();
+			return (sorted[0] - sorted[1]);
+		}
+		private set { return; }
+	}
 
 	public AI_WorldModel(Data_GameState GS) {
 		// Initialize global parameters
@@ -27,9 +34,11 @@ public class AI_WorldModel {
 		signalModel = new AI_SignalModel(GS, playerModel);
 	}
 
-	public void recalculateAllModels(Data_GameState GS) {
-		playerModel.recalculate(GS);
-		signalModel.recalculate(GS);
+	public void reset(Data_GameState GS) {
+		double uniformDistribution = 1.0 / roomCount;
+		for(int i = 0; i < roomCount; i++) {
+			probabilityThatToniIsInRoom[i] = uniformDistribution;
+		}
 	}
 
 	// Update the world model with the knowledge that Toni is currently seen in a specific room
