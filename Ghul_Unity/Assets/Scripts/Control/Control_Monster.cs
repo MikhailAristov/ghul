@@ -9,6 +9,8 @@ public class Control_Monster : Control_Character {
 	protected override Data_Character getMe() { return me as Data_Character; }
     [NonSerialized]
 	private Data_PlayerCharacter Toni;
+	[NonSerialized]
+	private AI_WorldModel worldModel;
 
 	private float MONSTER_KILL_RADIUS;
 	private float TIME_TO_REACT;
@@ -50,7 +52,10 @@ public class Control_Monster : Control_Character {
 
         // Move the character sprite directly to where the game state says it should be standing
         Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
-        transform.Translate(savedPosition - transform.position);
+		transform.Translate(savedPosition - transform.position);
+
+		// Artificial intelligence
+		worldModel = new AI_WorldModel(gameState);
     }
 
 	// Update is called once per frame

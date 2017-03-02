@@ -65,10 +65,9 @@ public class AI_PlayerModel {
 			double probOfStaying = Math.Exp(-1.0 / meanStayingTime[sourceRoomIndex]);
 			TRANSITION_MATRIX[sourceRoomIndex, sourceRoomIndex] = probOfStaying;
 			// The probability of transitioning through a door is assumed uniformly distributed across all doors
-			Data_Room thisRoom = GS.getRoomByIndex(sourceRoomIndex);
-			double probOfGoingThroughADoor = (1.0 - probOfStaying) / thisRoom.DOORS.Count;
+			double probOfGoingThroughADoor = (1.0 - probOfStaying) / roomDoorCount[sourceRoomIndex];
 			// Loop through all doors in the current room and add the transition probabilities to neighbouring rooms
-			foreach(Data_Door door in thisRoom.DOORS.Values) {
+			foreach(Data_Door door in GS.getRoomByIndex(sourceRoomIndex).DOORS.Values) {
 				TRANSITION_MATRIX[sourceRoomIndex, door.connectsTo.isIn.INDEX] += probOfGoingThroughADoor;
 				// This also correctly handles the case when rooms are connected by more than one door:
 				// the probability of transitioning to such a room is double (or more) than to any other room
@@ -78,15 +77,14 @@ public class AI_PlayerModel {
 
 	private double calculateMeanStayingTime(Data_GameState GS, int roomIndex) {
 		// Calculate effective (traversable) size (width) of the room in question
-		Data_Room thisRoom = GS.getRoomByIndex(roomIndex);
-		double effectiveWidth = thisRoom.width - HORIZONTAL_ROOM_MARGIN * 2;
+		double effectiveWidth = GS.getRoomByIndex(roomIndex).width - HORIZONTAL_ROOM_MARGIN * 2;
 		// Calculate the mean time for raw room exploration
 		double meanExplorationDistance = 1.5 * effectiveWidth - SCREEN_SIZE_HORIZONTAL;
 		// If there are items currently in here, calculate the mean distance needed to fetch one of them
-		double meanItemFetchDistance = (GS.getItemsInRoom(roomIndex).Count > 0) ? effectiveWidth / 3 : 0;
+		double meanItemFetchDistance  =roomHasItemSpawns[roomIndex] ? (effectiveWidth / 3) : 0;
 		// If there is more than one door in the room, calculate the average path between two neighbouring doors
-		int doorCount = thisRoom.DOORS.Count;
-		double meanDoorToDoorDistance = DOOR_TRANSITION_DURATION * MEAN_TONI_VELOCITY + ((doorCount > 1) ? (effectiveWidth / (doorCount - 1)) : 0);
+		double meanDoorToDoorDistance = DOOR_TRANSITION_DURATION * MEAN_TONI_VELOCITY
+			+ ((roomDoorCount[roomIndex] > 1) ? (effectiveWidth / (roomDoorCount[roomIndex] - 1)) : 0);
 		// Combine the results according to their parametrized weight
 		meanWalkingDistance[roomIndex] = Param_ExplorationWalk * meanExplorationDistance +
 										 Param_ItemFetchWalk * meanItemFetchDistance +

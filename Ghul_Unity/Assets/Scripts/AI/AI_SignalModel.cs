@@ -58,17 +58,18 @@ public class AI_SignalModel  {
 				float door2roomLeftEdge = float.MaxValue;
 				float door2roomRightEdge = float.MaxValue;
 				// Go through all local door pairs within the current room and update the distance-to-remote-door boundaries accordingly
+				//UnityEngine.Debug.Log(String.Join(", ", new List<float>(room.DOORS.Keys).ConvertAll(i => i.ToString()).ToArray()));
 				for(int n = 0; n < room.DOORS.Count; n++) {
-					int nGlobalIndex = room.DOORS[n].INDEX;
+					int nGlobalIndex = room.DOORS.Values[n].INDEX;
 					// Update MinSignalDistance if smaller
 					door2roomMinSignalDistance[d, r] = Math.Min(GS.distanceBetweenTwoDoors[d, nGlobalIndex], door2roomMinSignalDistance[d, r]);
 					// Update the minimal distance from the door to the left and right edges of the room
-					float doorPos = Math.Min(Math.Max(room.DOORS[n].atPos, room.leftWalkBoundary), room.rightWalkBoundary);
+					float doorPos = Math.Min(Math.Max(room.DOORS.Values[n].atPos, room.leftWalkBoundary), room.rightWalkBoundary);
 					door2roomLeftEdge = Math.Min(GS.distanceBetweenTwoDoors[d, nGlobalIndex] + doorPos - room.leftWalkBoundary, door2roomMaxSignalDistance[d, r]);
 					door2roomRightEdge = Math.Min(GS.distanceBetweenTwoDoors[d, nGlobalIndex] + room.rightWalkBoundary - doorPos, door2roomMaxSignalDistance[d, r]);
 					// Then go to other doors for MaxSignalDistance (all door pairs)
 					for(int m = n + 1; m < room.DOORS.Count; m++) {
-						int mGlobalIndex = room.DOORS[m].INDEX;
+						int mGlobalIndex = room.DOORS.Values[m].INDEX;
 						// Update MaxSignalDistance if greater
 						float maxDistance = (GS.distanceBetweenTwoDoors[d, nGlobalIndex]
 						                     + GS.distanceBetweenTwoDoors[d, mGlobalIndex]
@@ -132,6 +133,8 @@ public class AI_SignalModel  {
 		// Finally, normalize the noise likelihoods
 		Likelihood_NoiseWasMadeByToni = probToniMakingNoise / (probToniMakingNoise + probHouseMakingNoise);
 		Likelihood_NoiseWasMadeByHouse = probHouseMakingNoise / (probToniMakingNoise + probHouseMakingNoise);
+
+		UnityEngine.Debug.Log("SIGNAL MODEL: Likelihood_NoiseWasMadeByToni = " + Likelihood_NoiseWasMadeByToni + ", Likelihood_NoiseWasMadeByHouse = " + Likelihood_NoiseWasMadeByHouse);
 	}
 
 	// f( perceivedVolume, atDoor | Toni is in tonisRoom )
