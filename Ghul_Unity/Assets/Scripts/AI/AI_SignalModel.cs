@@ -52,14 +52,18 @@ public class AI_SignalModel  {
 				Data_Room room = GS.getRoomByIndex(r);
 				// Set the initial value for MinSignalDistance to infinity
 				door2roomMinSignalDistance[d, r] = float.MaxValue;
-				// Calculate the initial value for MaxSignalDistance (voodoo magic)
-				door2roomMaxSignalDistance[d, r] = Math.Max(0,
-					Math.Max(room.leftmostDoor.atPos - room.leftWalkBoundary, room.rightWalkBoundary - room.rightmostDoor.atPos));
+				// Prepare the min distance from the target door to the left and right room edges
+				float door2roomLeftEdge = float.MaxValue;
+				float door2roomRightEdge = float.MaxValue;
 				// Go through all local door pairs within the current room and update the distance-to-remote-door boundaries accordingly
 				for(int n = 0; n < room.DOORS.Count; n++) {
 					int nGlobalIndex = room.DOORS[n].INDEX;
 					// Update MinSignalDistance if smaller
 					door2roomMinSignalDistance[d, r] = Math.Min(GS.distanceBetweenTwoDoors[d, nGlobalIndex], door2roomMinSignalDistance[d, r]);
+					// Update the minimal distance from the door to the left and right edges of the room
+					float doorPos = Math.Min(Math.Max(room.DOORS[n].atPos, room.leftWalkBoundary), room.rightWalkBoundary);
+					door2roomLeftEdge = Math.Min(GS.distanceBetweenTwoDoors[d, nGlobalIndex] + doorPos - room.leftWalkBoundary, door2roomMaxSignalDistance[d, r]);
+					door2roomRightEdge = Math.Min(GS.distanceBetweenTwoDoors[d, nGlobalIndex] + room.rightWalkBoundary - doorPos, door2roomMaxSignalDistance[d, r]);
 					// Then go to other doors for MaxSignalDistance
 					for(int m = n + 1; m < room.DOORS.Count; m++) {
 						int mGlobalIndex = room.DOORS[m].INDEX;
@@ -69,6 +73,8 @@ public class AI_SignalModel  {
 						                     + GS.distanceBetweenTwoDoors[nGlobalIndex, mGlobalIndex]) / 2;
 						door2roomMaxSignalDistance[d, r] = Math.Max(maxDistance, door2roomMaxSignalDistance[d, r]);
 					}
+					// Update max signal distance if the distance from current door to its room's boundaries is greater
+					door2roomMaxSignalDistance[d, r] = Math.Max(Math.Max(door2roomLeftEdge, door2roomRightEdge), door2roomMaxSignalDistance[d, r]);
 				}
 				// Yeah, it's ugly, but whatcha gonna do about it
 			}
