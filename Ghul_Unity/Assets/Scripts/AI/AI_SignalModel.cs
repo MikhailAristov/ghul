@@ -59,16 +59,11 @@ public class AI_SignalModel  {
 				float door2roomLeftEdge = float.MaxValue;
 				float door2roomRightEdge = float.MaxValue;
 				// Go through all local door pairs within the current room and update the distance-to-remote-door boundaries accordingly
-				//UnityEngine.Debug.Log(String.Join(", ", new List<float>(room.DOORS.Keys).ConvertAll(i => i.ToString()).ToArray()));
 				for(int n = 0; n < room.DOORS.Count; n++) {
 					int nGlobalIndex = room.DOORS.Values[n].INDEX;
 					// Update MinSignalDistance if smaller
 					door2roomMinSignalDistance[d, r] = Math.Min(GS.distanceBetweenTwoDoors[d, nGlobalIndex], door2roomMinSignalDistance[d, r]);
-					// Update the minimal distance from the door to the left and right edges of the room
-					float doorPos = Math.Min(Math.Max(room.DOORS.Values[n].atPos, room.leftWalkBoundary), room.rightWalkBoundary);
-					door2roomLeftEdge = Math.Min(GS.distanceBetweenTwoDoors[d, nGlobalIndex] + doorPos - room.leftWalkBoundary, door2roomMaxSignalDistance[d, r]);
-					door2roomRightEdge = Math.Min(GS.distanceBetweenTwoDoors[d, nGlobalIndex] + room.rightWalkBoundary - doorPos, door2roomMaxSignalDistance[d, r]);
-					// Then go to other doors for MaxSignalDistance (all door pairs)
+					// Go through all door pairs
 					for(int m = n + 1; m < room.DOORS.Count; m++) {
 						int mGlobalIndex = room.DOORS.Values[m].INDEX;
 						// Update MaxSignalDistance if greater
@@ -77,14 +72,24 @@ public class AI_SignalModel  {
 						                     + GS.distanceBetweenTwoDoors[nGlobalIndex, mGlobalIndex]) / 2;
 						door2roomMaxSignalDistance[d, r] = Math.Max(maxDistance, door2roomMaxSignalDistance[d, r]);
 					}
+					// Update the minimal distance from the door to the left and right edges of the room
+					float doorPos = Math.Min(Math.Max(room.DOORS.Values[n].atPos, room.leftWalkBoundary), room.rightWalkBoundary);
+					if(room.DOORS.Count < 2) {
+						door2roomLeftEdge = GS.distanceBetweenTwoDoors[d, nGlobalIndex] + doorPos - room.leftWalkBoundary;
+						door2roomRightEdge = GS.distanceBetweenTwoDoors[d, nGlobalIndex] + room.rightWalkBoundary - doorPos;
+					} else {
+						door2roomLeftEdge = Math.Min(GS.distanceBetweenTwoDoors[d, nGlobalIndex] + doorPos - room.leftWalkBoundary, door2roomMaxSignalDistance[d, r]);
+						door2roomRightEdge = Math.Min(GS.distanceBetweenTwoDoors[d, nGlobalIndex] + room.rightWalkBoundary - doorPos, door2roomMaxSignalDistance[d, r]);
+					}
 					// Update max signal distance if the distance from current door to its room's boundaries is greater
 					door2roomMaxSignalDistance[d, r] = Math.Max(Math.Max(door2roomLeftEdge, door2roomRightEdge), door2roomMaxSignalDistance[d, r]);
 				}
 				// Yeah, it's ugly, but whatcha gonna do about it
 			}
 		}
-		AI_Util.displayMatrix("SIGNAL MODEL: door2roomMinSignalDistance", door2roomMinSignalDistance);
-		AI_Util.displayMatrix("SIGNAL MODEL: door2roomMaxSignalDistance", door2roomMaxSignalDistance);
+		//AI_Util.displayMatrix("SIGNAL MODEL: door2roomMinSignalDistance", door2roomMinSignalDistance);
+		//AI_Util.displayMatrix("SIGNAL MODEL: door2roomMaxSignalDistance", door2roomMaxSignalDistance);
+		//AI_Util.displayMatrix("SIGNAL MODEL: door2room ranges", AI_Util.subtractMatrices(door2roomMaxSignalDistance, door2roomMinSignalDistance));
 	}
 
 	// Precomputes the likelihoods of a noise of a specific type from a specific room being heard at a particular door

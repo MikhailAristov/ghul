@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Linq;
 using System.Collections;
 
@@ -44,5 +45,23 @@ public class AI_Util {
 		output += ("\nSUM: " + input.Sum().ToString());
 
 		Debug.Log(output);
+	}
+
+	public static float[,] subtractMatrices(float[,] minuend, float[,] subtrahend) {
+		int height = minuend.GetLength(0);
+		int width = minuend.GetLength(1);
+
+		if(height != subtrahend.GetLength(0) || width != subtrahend.GetLength(1)) {
+			throw new ArgumentException();
+		}
+
+		float[,] result = new float[height, width];
+		for(int i = 0; i < height; i++) {
+			for(int j = 0; j < width; j++) {
+				result[i, j] = minuend[i, j] - subtrahend[i, j];
+			}
+		}
+
+		return result;
 	}
 }
