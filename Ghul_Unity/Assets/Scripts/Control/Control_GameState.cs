@@ -229,7 +229,6 @@ public class Control_GameState : MonoBehaviour {
 		// INITIALIZE MONSTER
 		GS.setMonsterCharacter("Monster");
 		GS.getMonster().updatePosition(GS.getRoomFurthestFrom(ritualRoomIndex), 0, 0);
-		GS.getMonster().setForbiddenRoomIndex(0);
 		GS.getMonster().control.loadGameState(GS);
 	}
 

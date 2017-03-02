@@ -16,7 +16,6 @@ public class Data_Monster : Data_Character {
     public float randomTargetPos;
     public bool isThinking;
     public float remainingThinkingTime;
-	public int forbiddenRoomIndex; // index of the portal room. The monster can't access it.
 
 	// While this value is above zero, it marks the character as uncontrollable and invulnerable, e.g. upon entering a door or dying
 	[SerializeField]
@@ -33,12 +32,7 @@ public class Data_Monster : Data_Character {
         randomTargetPos = 0.0f;
         isThinking = false;
         remainingThinkingTime = 0.0f;
-		forbiddenRoomIndex = 0;
     }
-
-	public void setForbiddenRoomIndex(int index) {
-		forbiddenRoomIndex = index;
-	}
 
     // Resets game object references, e.g. after a saved state load
     public void fixObjectReferences(Data_GameState GS)
