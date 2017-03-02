@@ -144,6 +144,9 @@ public class AI_SignalModel  {
 		for(int r = 0; r < roomCount; r++) {
 			for(int n = 0; n < noiseCount; n++) {
 				result += signalLikelihood(volume, door, n, r) * likelihoodNoiseHeardAtDoor[n, r, door.INDEX] * noiseAndOriginLikelihood(n, r, tonisRoom);
+				if(double.IsNaN(result)) {
+					throw new DivideByZeroException("signalLikelihood1");
+				}
 			}
 		}
 		return result;

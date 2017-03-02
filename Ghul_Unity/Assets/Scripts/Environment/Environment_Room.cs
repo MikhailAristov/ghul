@@ -3,6 +3,8 @@ using System;
 
 public class Environment_Room : MonoBehaviour {
 
+	public GameObject DangerIndicator;
+
     [NonSerialized]
     private Data_GameState GS;
     [NonSerialized]
@@ -82,4 +84,12 @@ public class Environment_Room : MonoBehaviour {
     // These are just human-readable wrappers for the above:
     public Data_Door getDoorOnTheLeft() { return getSideDoor(true); }
     public Data_Door getDoorOnTheRight() { return getSideDoor(false); }
+
+	// Updates the size of the DangerIndicator sprite
+	public void updateDangerIndicator(double dangerLevel) {
+		if(DangerIndicator != null) {
+			float scaleFactor = 0.1f + 0.9f * (float)Math.Max(0.0, Math.Min(1.0, dangerLevel));
+			DangerIndicator.transform.localScale = new Vector3(scaleFactor, scaleFactor, scaleFactor);
+		}
+	}
 }

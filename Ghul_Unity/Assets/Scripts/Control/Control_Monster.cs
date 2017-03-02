@@ -15,8 +15,13 @@ public class Control_Monster : Control_Character {
 	private float MONSTER_KILL_RADIUS;
 	private float TIME_TO_REACT;
 
+	// Artificial intelligence controls
 	public bool IS_DANGEROUS; // set to false to make (the monster "blind" or) the civilians walk around aimlessly.
 	private bool IS_CIVILIAN = false;
+
+	private bool newNoiseHeard;
+	private Data_Door lastNoiseHeardFrom;
+	private float lastNoiseVolume;
 
 	public Transform tombstone; // prefab, to be placed for each death
 
@@ -56,21 +61,42 @@ public class Control_Monster : Control_Character {
 
 		// Artificial intelligence
 		worldModel = new AI_WorldModel(gameState);
-		//StartCoroutine(displayWorldState(3.0f));
+		StartCoroutine(displayWorldState(0.1f));
     }
 
 	private IEnumerator displayWorldState(float interval) {
 		while(true) {
-			AI_Util.displayVector("WORLD MODEL: Toni position distribution", worldModel.probabilityThatToniIsInRoom);
-			yield return new WaitForSeconds(interval);
+			if(!GS.SUSPENDED) {
+				foreach(Data_Room room in GS.ROOMS.Values) {
+					room.env.updateDangerIndicator(worldModel.probabilityThatToniIsInRoom[room.INDEX]);
+				}
+			}
+			yield return new WaitForSecondsRealtime(interval);
 		}
 	}
 
 	void FixedUpdate() {
 		if (GS == null || GS.SUSPENDED) { return; } // Don't do anything if the game state is not loaded yet or suspended
-		
-		// First of all, predict Toni's movements according to blind model
-		worldModel.predictOneTimeStep();
+
+		// If monster sees Toni, everything else is irrelevant
+		if(GS.monsterSeesToni) {
+			worldModel.toniKnownToBeInRoom(me.isIn);
+		} else {
+			// Otherwise, predict Toni's movements according to blind transition model
+			worldModel.predictOneTimeStep();
+			// And if a noise has been heard, update the model accordingly
+			if(newNoiseHeard) {
+				worldModel.filter(lastNoiseVolume, lastNoiseHeardFrom);
+				newNoiseHeard = false;
+			}
+		}
+	}
+
+	// The sound system triggers this function to inform the monster of incoming sounds
+	public void hearNoise(Data_Door doorway, float loudness) {
+		lastNoiseVolume = loudness;
+		lastNoiseHeardFrom = doorway;
+		newNoiseHeard = true;
 	}
 
 	// Update is called once per frame
@@ -94,7 +120,7 @@ public class Control_Monster : Control_Character {
 			dieAndRespawn();
 		}
 
-		if (me.isIn.INDEX == Toni.isIn.INDEX && IS_DANGEROUS && !Toni.isInvulnerable()) {
+		if (GS.monsterSeesToni && IS_DANGEROUS && !Toni.isInvulnerable()) {
 			// The monster is in the same room as the player.
 			me.playerInSight = true;
 			me.playerDetected = true;
@@ -256,11 +282,6 @@ public class Control_Monster : Control_Character {
 		walk(direction, me.playerDetected);
 	}
 
-	// TODO The sound system triggers this function to inform the monster of incoming sounds
-	public void hearNoise(Data_Door doorway, float loudness) {
-		Debug.LogWarning(me + " hears a noise from door #" + doorway + " at volume " + loudness);
-	}
-
 	// Killing the monster / civilian during endgame
 	public void dieAndRespawn() {
 		Vector3 pos = transform.position;
@@ -298,6 +319,10 @@ public class Control_Monster : Control_Character {
 	protected override void resetAttackStatus() {
 		me.playerDetected = false;
 	}
+	// Instead of making noise, the monster updates its position in the world model and checks whether it sees Toni
+	protected override void makeNoise(int type, Data_Position atPos) {
+		worldModel.updateMyRoom(me.isIn, GS.monsterSeesToni);
+	}
 	// The rest stays empty for now (only relevant for Toni)...
 	protected override void updateStamina(bool isRunning) {}
 	protected override void regainStamina() {}
@@ -305,6 +330,5 @@ public class Control_Monster : Control_Character {
 	protected override void activateCooldown(float duration) { me.etherialCooldown = duration; }
 	protected override void cameraFadeOut(float duration) {}
 	protected override void cameraFadeIn(float duration) {}
-	protected override void makeNoise(int type, Data_Position atPos) {}
 	protected override void updateDoorUsageStatistic(Data_Door door, Data_Room currentRoom, Data_Door destinationDoor, Data_Room destinationRoom) {}
 }

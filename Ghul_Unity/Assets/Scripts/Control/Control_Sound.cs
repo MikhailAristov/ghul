@@ -28,9 +28,9 @@ public class Control_Sound : MonoBehaviour {
 
 	// Noise loudness values:
 	public const float NOISE_INAUDIBLE = 0.2f; // This is the effective volume at which the noise is no longer transmitted to the monster
-	public const float NOISE_VOL_QUIET = 1.0f;
-	public const float NOISE_VOL_MEDIUM = 2.0f;
-	public const float NOISE_VOL_LOUD = 4.0f;
+	public const float NOISE_VOL_QUIET = 2.0f;
+	public const float NOISE_VOL_MEDIUM = 5.0f;
+	public const float NOISE_VOL_LOUD = 10.0f;
 	// TODO: Fine-tune the values above
 
 	void Start() {

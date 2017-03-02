@@ -46,6 +46,10 @@ public class Data_GameState {
     private Data_Monster MONSTER;
 	[SerializeField]
 	private Data_Cadaver CADAVER;
+	public bool monsterSeesToni {
+		get { return (TONI.isIn == MONSTER.isIn); }
+		private set { return; }
+	}
 
 	[SerializeField]
 	public float[,] distanceBetweenTwoDoors;

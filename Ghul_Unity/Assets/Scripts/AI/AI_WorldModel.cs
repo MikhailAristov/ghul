@@ -13,6 +13,8 @@ public class AI_WorldModel {
 	public double[] probabilityThatToniIsInRoom;
 	private double[] newVector; // Performance optimization
 
+	private int currentRoomIndex;
+
 	public AI_WorldModel(Data_GameState GS) {
 		// Initialize global parameters
 		roomCount = GS.ROOMS.Count;
@@ -38,13 +40,9 @@ public class AI_WorldModel {
 
 	// Update the world model after entering a new room
 	public void updateMyRoom(Data_Room room, bool toniIsHere) {
+		currentRoomIndex = room.INDEX;
 		if(toniIsHere) {
 			toniKnownToBeInRoom(room);
-		} else { // This room is empty, update other probabilities, as well
-			double scaleUpFactor = 1.0 - probabilityThatToniIsInRoom[room.INDEX];
-			for(int i = 0; i < roomCount; i++) {
-				probabilityThatToniIsInRoom[i] = (i == room.INDEX) ? 0 : probabilityThatToniIsInRoom[i] / scaleUpFactor;
-			}
 		}
 	}
 
@@ -59,8 +57,11 @@ public class AI_WorldModel {
 				newVector[matrixRow] += playerModel.TRANSITION_MATRIX[matrixColumn, matrixRow] * probabilityThatToniIsInRoom[matrixColumn];
 			}
 		}
-		// Replace the old distribution with the new vector
-		newVector.CopyTo(probabilityThatToniIsInRoom, 0);
+		// Toni is obviously not in the current room, otherwise toniKnownToBeInRoom() would have been called instead
+		double normalizationConstant = 1.0 - newVector[currentRoomIndex];
+		for(int j = 0; j < roomCount; j++) {
+			probabilityThatToniIsInRoom[j] = ((j == currentRoomIndex) ? 0 : newVector[j] / normalizationConstant);
+		}
 	}
 
 	// Update the world model with a given measurement
