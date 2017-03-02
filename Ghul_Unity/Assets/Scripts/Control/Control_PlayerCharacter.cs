@@ -165,7 +165,7 @@ public class Control_PlayerCharacter : Control_Character {
         // Horizontal movement
 		if (Mathf.Abs(Input.GetAxis("Horizontal")) > 0.01f)
         {
-			Data_Door walkIntoDoor = walk(Input.GetAxis("Horizontal"), Input.GetButton("Run"));
+			Data_Door walkIntoDoor = walk(Input.GetAxis("Horizontal"), Input.GetButton("Run"), Time.deltaTime);
 			if(walkIntoDoor != null) {
 				// Walk through the door if triggered
 				StartCoroutine(goThroughTheDoor(walkIntoDoor));

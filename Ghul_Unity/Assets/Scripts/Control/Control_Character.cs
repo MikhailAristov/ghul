@@ -19,7 +19,7 @@ public abstract class Control_Character : MonoBehaviour {
 	// The functions moves the character left or right
 	// Direction is negative for left, positive for right
 	// Returns a door object if the character runs into it
-	protected virtual Data_Door walk(float direction, bool run) {
+	protected virtual Data_Door walk(float direction, bool run, float deltaTime) {
 		// Flip the sprite as necessary
 		setSpriteFlip(direction < 0);
 
@@ -34,7 +34,8 @@ public abstract class Control_Character : MonoBehaviour {
 		}
 
 		// Calculate the new position
-		float displacement = direction * velocity * Time.deltaTime; // TODO: Generalize Time out
+		direction = Math.Max(-1f, Math.Min(1f, direction)); // limit direction to the allowed interval
+		float displacement = direction * velocity * deltaTime;
 		float newPosition = transform.position.x + displacement;
 		float validPosition = currentEnvironment.validatePosition(newPosition);
 
