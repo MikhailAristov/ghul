@@ -27,7 +27,9 @@ public class AI_PlayerModel {
 	public const double Param_ExplorationWalk	= 0.3;
 	public const double Param_ItemFetchWalk		= 1.0;
 	public const double Param_DoorToDoorWalk	= 0.8;
+	// The two parameters below must sum up to < 1.0
 	public const double Param_RunningProb		= 0.1;
+	public const double Param_StandingStillProb	= 0.3;
 
 	public AI_PlayerModel(Data_GameState GS) {
 		// First, some global settings
@@ -35,8 +37,8 @@ public class AI_PlayerModel {
 		SCREEN_SIZE_HORIZONTAL		= Global_Settings.read("SCREEN_SIZE_HORIZONTAL");
 		HORIZONTAL_ROOM_MARGIN		= Global_Settings.read("HORIZONTAL_ROOM_MARGIN");
 		// Walking settings
-		MEAN_TONI_VELOCITY = (1.0 - Param_RunningProb) * Global_Settings.read("CHARA_WALKING_SPEED")
-								  + Param_RunningProb  * Global_Settings.read("CHARA_RUNNING_SPEED");
+		MEAN_TONI_VELOCITY = Global_Settings.read("CHARA_WALKING_SPEED") * (1.0 - Param_RunningProb - Param_StandingStillProb) +
+							 Global_Settings.read("CHARA_RUNNING_SPEED") * Param_RunningProb;
 		DOOR_TRANSITION_DURATION	= Global_Settings.read("DOOR_TRANSITION_DURATION");
 		TONI_SINGLE_STEP_LENGTH		= Global_Settings.read("CHARA_SINGLE_STEP_LENGTH");
 		// Then, initialize the transition matrix
