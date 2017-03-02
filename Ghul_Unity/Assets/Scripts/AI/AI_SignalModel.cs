@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
+// TODO: Precompute as much as possible
 public class AI_SignalModel  {
 
 	// Will need the current player model for the sound emission likelyhoods
@@ -9,6 +10,8 @@ public class AI_SignalModel  {
 
 	public float[,] door2roomMinSignalDistance;
 	public float[,] door2roomMaxSignalDistance;
+	// f( door | noise origin room, noise type ) = double[noise type, room index, door index]
+	public double[,,] likelihoodNoiseHeardAtDoor;
 
 	private int roomCount;
 	private int doorCount;
@@ -29,6 +32,8 @@ public class AI_SignalModel  {
 		noiseCount = 5;
 		// Recalculate distance boundaries between each door and room
 		precomputeDoorToRoomDistanceBounds(GS);
+		// Recalculate the likelihoods of specific noises from specific room being heard at certain doors
+		precomputeDoorAudibilityLikelihoods(GS);
 		// Recalculate noise making likelihoods
 		precomputeNoiseMakerLikelihoods(GS);
 	}
@@ -70,6 +75,34 @@ public class AI_SignalModel  {
 		}
 	}
 
+	// Precomputes the likelihoods of a noise of a specific type from a specific room being heard at a particular door
+	// MUST be called after precomputeDoorToRoomDistanceBounds()
+	private void precomputeDoorAudibilityLikelihoods(Data_GameState GS) {
+		likelihoodNoiseHeardAtDoor = new double[noiseCount, roomCount, doorCount];
+		Array.Clear(likelihoodNoiseHeardAtDoor, 0, noiseCount * roomCount * doorCount);
+		// For each noise, first determine its maximumum traveling distance
+		double singleDoorProb = 1.0 / doorCount; int reachableDoorCount;
+		for(int noise = 0; noise < noiseCount; noise++) {
+			double maxNoiseTravelDistance = Math.Sqrt(Control_Sound.getInitialLoudness(noise) / Control_Sound.NOISE_INAUDIBLE);
+			// For reach room, compute which doors are reachable
+			foreach(Data_Room room in GS.ROOMS.Values) {
+				reachableDoorCount = 0;
+				foreach(Data_Door door in GS.DOORS.Values) {
+					// TODO: Check whether a door's reachability isn't dominated by another door in the same room
+					if(!room.DOORS.ContainsValue(door) &&
+					   door2roomMinSignalDistance[door.INDEX, room.INDEX] <= maxNoiseTravelDistance) {
+						likelihoodNoiseHeardAtDoor[noise, room.INDEX, door.INDEX] = singleDoorProb;
+						reachableDoorCount += 1;
+					}
+				}
+				// Lastly, update the values based on how many doors are reachable
+				for(int d = 0; d < doorCount; d++) {
+					likelihoodNoiseHeardAtDoor[noise, room.INDEX, d] *= reachableDoorCount;
+				}
+			}
+		}
+	}
+		
 	// Precomputes the likelihoods of a given noise being made by Toni or by the house
 	private void precomputeNoiseMakerLikelihoods(Data_GameState GS) {
 		// First, calculate the raw probability of a noise being made by the house
@@ -99,22 +132,20 @@ public class AI_SignalModel  {
 		// This is some crazy stochastic shit...
 		for(int r = 0; r < roomCount; r++) {
 			for(int n = 0; n < noiseCount; n++) {
-				result += signalLikelihood(volume, door, n, r) * noiseAndOriginLikelihood(n, r, door, tonisRoom);
+				result += signalLikelihood(volume, door, n, r) * likelihoodNoiseHeardAtDoor[n, r, door.INDEX] * noiseAndOriginLikelihood(n, r, door, tonisRoom);
 			}
 		}
 		return result;
 	}
 
-	// f( perceivedVolume, atDoor | noise type, origin room )
+	// f( perceivedVolume | atDoor, noise type, origin room )
 	private double signalLikelihood(float volume, Data_Door door, int noiseType, int origin) {
 		// Estimate the distance the signal must have traveled
 		double estimatedDistanceToOrigin = Math.Sqrt(Control_Sound.getInitialLoudness(noiseType) / volume);
 		// Check whether the room can be reached from the specified door within that distance
 		if(estimatedDistanceToOrigin >= door2roomMinSignalDistance[door.INDEX, origin]
 		   && estimatedDistanceToOrigin <= door2roomMaxSignalDistance[door.INDEX, origin]) {
-			// TODO: Check if a better approximation is possible
-			return 1.0;
-			// 1.0 / (door2roomMaxSignalDistance - door2roomMinSignalDistance)?
+			return ( (estimatedDistanceToOrigin - door2roomMinSignalDistance[door.INDEX, origin]) / (door2roomMaxSignalDistance[door.INDEX, origin] - door2roomMinSignalDistance[door.INDEX, origin]));
 		} else {
 			return 0;
 		}
