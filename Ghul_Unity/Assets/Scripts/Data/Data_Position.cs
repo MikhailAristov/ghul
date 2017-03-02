@@ -39,4 +39,6 @@ public class Data_Position {
     {
         return new Data_Position(RoomId, X, Y);
     }
+
+	public override string ToString() { return String.Format("R{0:D}:{1:F2}/{2:F2}", RoomId, X, Y); }
 }
