@@ -73,6 +73,8 @@ public class AI_PlayerModel {
 				// the probability of transitioning to such a room is double (or more) than to any other room
 			}
 		}
+
+		AI_Util.displayMatrix("PLAYER MODEL: Room transition matrix", TRANSITION_MATRIX);
 	}
 
 	private double calculateMeanStayingTime(Data_GameState GS, int roomIndex) {

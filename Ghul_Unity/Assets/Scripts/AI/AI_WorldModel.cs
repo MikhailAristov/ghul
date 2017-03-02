@@ -51,12 +51,12 @@ public class AI_WorldModel {
 	// Update the world model in absence of measurements
 	// MUST be called every FixedUpdate unless Toni is directly visible!
 	public void predictOneTimeStep() {
-		// Simple matrix multiplication of player model transition matrix
+		// Simple matrix multiplication of player model transition matrix (transposed)
 		// and the current position distribution vector
 		for(int matrixRow = 0; matrixRow < roomCount; matrixRow++) {
 			newVector[matrixRow] = 0;
 			for(int matrixColumn = 0; matrixColumn < roomCount; matrixColumn++) {
-				newVector[matrixRow] += playerModel.TRANSITION_MATRIX[matrixRow, matrixColumn] * probabilityThatToniIsInRoom[matrixColumn];
+				newVector[matrixRow] += playerModel.TRANSITION_MATRIX[matrixColumn, matrixRow] * probabilityThatToniIsInRoom[matrixColumn];
 			}
 		}
 		// Replace the old distribution with the new vector

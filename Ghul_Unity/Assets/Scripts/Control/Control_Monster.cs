@@ -56,7 +56,22 @@ public class Control_Monster : Control_Character {
 
 		// Artificial intelligence
 		worldModel = new AI_WorldModel(gameState);
+		//StartCoroutine(displayWorldState(3.0f));
     }
+
+	private IEnumerator displayWorldState(float interval) {
+		while(true) {
+			AI_Util.displayVector("WORLD MODEL: Toni position distribution", worldModel.probabilityThatToniIsInRoom);
+			yield return new WaitForSeconds(interval);
+		}
+	}
+
+	void FixedUpdate() {
+		if (GS == null || GS.SUSPENDED) { return; } // Don't do anything if the game state is not loaded yet or suspended
+		
+		// First of all, predict Toni's movements according to blind model
+		worldModel.predictOneTimeStep();
+	}
 
 	// Update is called once per frame
 	void Update () {
