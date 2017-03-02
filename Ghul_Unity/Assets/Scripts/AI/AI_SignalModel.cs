@@ -10,15 +10,17 @@ public class AI_SignalModel  {
 
 	public float[,] door2roomMinSignalDistance;
 	public float[,] door2roomMaxSignalDistance;
-	// f( door | noise origin room, noise type ) = double[noise type, room index, door index]
-	public double[,,] likelihoodNoiseHeardAtDoor;
 
 	private int roomCount;
 	private int doorCount;
 	private int noiseCount;
 
+	// f( noise source = Toni | noise occurred )
 	private double Likelihood_NoiseWasMadeByToni;
+	// f( noise source = house | noise occurred )
 	private double Likelihood_NoiseWasMadeByHouse;
+	// f( door | noise origin room, noise type ) = double[noise type, room index, door index]
+	public double[,,] likelihoodNoiseHeardAtDoor;
 
 	public AI_SignalModel(Data_GameState GS, AI_PlayerModel PM) {
 		playerModel = PM;
@@ -64,7 +66,7 @@ public class AI_SignalModel  {
 					float doorPos = Math.Min(Math.Max(room.DOORS[n].atPos, room.leftWalkBoundary), room.rightWalkBoundary);
 					door2roomLeftEdge = Math.Min(GS.distanceBetweenTwoDoors[d, nGlobalIndex] + doorPos - room.leftWalkBoundary, door2roomMaxSignalDistance[d, r]);
 					door2roomRightEdge = Math.Min(GS.distanceBetweenTwoDoors[d, nGlobalIndex] + room.rightWalkBoundary - doorPos, door2roomMaxSignalDistance[d, r]);
-					// Then go to other doors for MaxSignalDistance
+					// Then go to other doors for MaxSignalDistance (all door pairs)
 					for(int m = n + 1; m < room.DOORS.Count; m++) {
 						int mGlobalIndex = room.DOORS[m].INDEX;
 						// Update MaxSignalDistance if greater
@@ -182,12 +184,7 @@ public class AI_SignalModel  {
 	private double originLikelihood(int origin, Data_Door door, int tonisRoom, bool toniMadeThisNoise) {
 		// Otherwise, proceed depending on who sent the signal
 		if(toniMadeThisNoise) {
-			// Kind of trivial, but still correct...
-			if(origin == tonisRoom) {
-				return 1.0;
-			} else {
-				return 0;
-			}
+			return (origin == tonisRoom ? 1.0 : 0.0);
 		} else {
 			// Uniform distribution over all rooms
 			return (1.0 / roomCount);
