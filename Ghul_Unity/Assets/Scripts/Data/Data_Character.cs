@@ -36,6 +36,8 @@ public class Data_Character {
         get { return pos.X; }
         private set { return; }
 	}
+	[NonSerialized]
+	public float currentVelocity; // in m/s
 
 	// Position of the character within game space
 	[SerializeField]

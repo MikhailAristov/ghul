@@ -163,6 +163,7 @@ public class Control_PlayerCharacter : Control_Character {
         }
 			
         // Horizontal movement
+		me.currentVelocity = 0;
 		if (Mathf.Abs(Input.GetAxis("Horizontal")) > 0.01f)
         {
 			Data_Door walkIntoDoor = walk(Input.GetAxis("Horizontal"), Input.GetButton("Run"), Time.deltaTime);
@@ -207,6 +208,9 @@ public class Control_PlayerCharacter : Control_Character {
 		} else {
 			mainCameraControl.setRedOverlay(1.0f - me.remainingReactionTime / TIME_TO_REACT);
 		}
+	}
+	public void getHit() {
+		StartCoroutine(dieAndRespawn());
 	}
 
 	private IEnumerator dieAndRespawn() {
@@ -353,6 +357,11 @@ public class Control_PlayerCharacter : Control_Character {
 	}
 
 	// Superclass functions implemented 
+	protected override void doBeforeLeavingRoom(Data_Door doorTaken) {
+		if(GS.monsterSeesToni) {
+			GS.getMonster().control.seeToniGoThroughDoor(doorTaken);
+		}
+	}
 	protected override void activateCooldown(float duration) {
 		me.etherialCooldown = duration;
 	}

@@ -53,6 +53,7 @@ public abstract class Control_Character : MonoBehaviour {
 		float validDisplacement = validPosition - transform.position.x;
 		if (Mathf.Abs(validDisplacement) > 0.0f) {
 			getMe().updatePosition(validPosition);
+			getMe().currentVelocity = validDisplacement / deltaTime;
 			transform.Translate(validDisplacement, 0, 0);
 		}
 
@@ -74,7 +75,6 @@ public abstract class Control_Character : MonoBehaviour {
 		Data_Room destinationRoom = destinationDoor.isIn;
 		activateCooldown(DOOR_TRANSITION_DURATION);
 
-
 		// Open doors
 		door.gameObj.GetComponent<Control_Door>().open();
 		destinationDoor.gameObj.GetComponent<Control_Door>().open();
@@ -82,6 +82,8 @@ public abstract class Control_Character : MonoBehaviour {
 		// Fade out and wait
 		cameraFadeOut(DOOR_TRANSITION_DURATION / 2);
 		yield return new WaitForSeconds(DOOR_TRANSITION_DURATION);
+
+		doBeforeLeavingRoom(door);
 
 		// Move character within game state
 		float newValidPosition = destinationRoom.env.validatePosition(destinationDoor.atPos);
@@ -109,6 +111,7 @@ public abstract class Control_Character : MonoBehaviour {
 	protected abstract void cameraFadeOut(float duration);
 	protected abstract void cameraFadeIn(float duration);
 	protected abstract void resetAttackStatus();
+	protected abstract void doBeforeLeavingRoom(Data_Door doorTaken);
 	protected abstract void makeNoise(int type, Data_Position atPos);
 	protected abstract void updateDoorUsageStatistic(Data_Door door, Data_Room currentRoom, Data_Door destinationDoor, Data_Room destinationRoom);
 }

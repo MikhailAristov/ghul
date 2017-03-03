@@ -47,11 +47,11 @@ public class Data_GameState {
 	[SerializeField]
 	private Data_Cadaver CADAVER;
 	public bool monsterSeesToni {
-		get { return (TONI.isIn == MONSTER.isIn); }
+		get { return (TONI.isIn == MONSTER.isIn && !TONI.isInvulnerable()); }
 		private set { return; }
 	}
 	public float distanceToToni {
-		get { return ((TONI.isIn == MONSTER.isIn) ? Math.Abs(TONI.atPos - MONSTER.atPos) : float.NaN); }
+		get { return ((TONI.isIn == MONSTER.isIn) ? (TONI.atPos - MONSTER.atPos) : float.NaN); }
 		private set { return; }
 	}
 

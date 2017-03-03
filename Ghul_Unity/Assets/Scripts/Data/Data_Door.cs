@@ -46,6 +46,10 @@ public class Data_Door : IComparable<Data_Door> {
         get { return pos.X; }
         private set { return; }
     }
+	public float visiblePos {
+		get { return Math.Max(isIn.leftWalkBoundary, Math.Min(isIn.rightWalkBoundary, atPos)); }
+		private set { return; }
+	}
 
     // Connecting door ("other side")
     [SerializeField]
