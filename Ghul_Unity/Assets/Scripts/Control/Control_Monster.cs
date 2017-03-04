@@ -172,6 +172,8 @@ public class Control_Monster : Control_Character {
 		// If, while searching, a definitive position is established, start stalking
 		case STATE_SEARCHING:
 			if(worldModel.certainty >= certaintyThresholdToStartPursuing) {
+				// Keep the monster in the stalking mode for a bit to ensure it spots the player
+				stateUpdateCooldown = DOOR_TRANSITION_DURATION;
 				myState = STATE_STALKING;
 				nextDoorToSearch = null;
 			}
@@ -192,6 +194,7 @@ public class Control_Monster : Control_Character {
 				myState = STATE_ATTACKING;
 				stateUpdateCooldown = ATTACK_DURATION + ATTACK_COOLDOWN;
 			} else if(!GS.monsterSeesToni) {
+				stateUpdateCooldown = DOOR_TRANSITION_DURATION;
 				myState = STATE_STALKING;
 			}
 			break;
