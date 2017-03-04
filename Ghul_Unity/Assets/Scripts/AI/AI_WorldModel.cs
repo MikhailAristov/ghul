@@ -13,11 +13,12 @@ public class AI_WorldModel {
 	public double[] probabilityThatToniIsInRoom;
 	private double[] newVector; // Performance optimization
 
-	private int currentRoomIndex;
+	private int monsterRoomIndex;
+	public int mostLikelyTonisRoomIndex;
+	private int secondMostLikelyTonisRoomIndex;
 	public double certainty {
 		get { 
-			double[] sorted = probabilityThatToniIsInRoom.OrderByDescending(x => x).ToArray();
-			return (sorted[0] - sorted[1]);
+			return probabilityThatToniIsInRoom[mostLikelyTonisRoomIndex] - probabilityThatToniIsInRoom[secondMostLikelyTonisRoomIndex];
 		}
 		private set { return; }
 	}
@@ -45,11 +46,12 @@ public class AI_WorldModel {
 	public void toniKnownToBeInRoom(Data_Room room) {
 		Array.Clear(probabilityThatToniIsInRoom, 0, roomCount);
 		probabilityThatToniIsInRoom[room.INDEX] = 1f;
+		updateMostLikelyRoomIndices();
 	}
 
 	// Update the world model after entering a new room
 	public void updateMyRoom(Data_Room room, bool toniIsHere) {
-		currentRoomIndex = room.INDEX;
+		monsterRoomIndex = room.INDEX;
 		if(toniIsHere) {
 			toniKnownToBeInRoom(room);
 		}
@@ -67,10 +69,11 @@ public class AI_WorldModel {
 			}
 		}
 		// Toni is obviously not in the current room, otherwise toniKnownToBeInRoom() would have been called instead
-		double normalizationConstant = 1.0 - newVector[currentRoomIndex];
+		double normalizationConstant = 1.0 - newVector[monsterRoomIndex];
 		for(int j = 0; j < roomCount; j++) {
-			probabilityThatToniIsInRoom[j] = ((j == currentRoomIndex) ? 0 : newVector[j] / normalizationConstant);
+			probabilityThatToniIsInRoom[j] = ((j == monsterRoomIndex) ? 0 : newVector[j] / normalizationConstant);
 		}
+		updateMostLikelyRoomIndices();
 	}
 
 	// Update the world model with a given measurement
@@ -85,6 +88,24 @@ public class AI_WorldModel {
 		double normalizationConstant = newVector.Sum();
 		for(int j = 0; j < roomCount; j++) {
 			probabilityThatToniIsInRoom[j] = newVector[j] / normalizationConstant;
+		}
+		updateMostLikelyRoomIndices();
+	}
+
+	private void updateMostLikelyRoomIndices() {
+		mostLikelyTonisRoomIndex = -1; secondMostLikelyTonisRoomIndex = -1;
+		double highestProbability = -1.0; double secondHighestProbability = -2.0;
+		for(int i = 0; i < roomCount; i++) {
+			if(probabilityThatToniIsInRoom[i] > highestProbability) {
+				// Shift the ranking by one
+				secondMostLikelyTonisRoomIndex = mostLikelyTonisRoomIndex;
+				secondHighestProbability = highestProbability;
+				mostLikelyTonisRoomIndex = i;
+				highestProbability = probabilityThatToniIsInRoom[i];
+			} else if(probabilityThatToniIsInRoom[i] > secondHighestProbability) {
+				secondMostLikelyTonisRoomIndex = i;
+				secondHighestProbability = probabilityThatToniIsInRoom[i];
+			}
 		}
 	}
 }
