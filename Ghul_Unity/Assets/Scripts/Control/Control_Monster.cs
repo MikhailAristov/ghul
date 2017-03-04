@@ -25,7 +25,6 @@ public class Control_Monster : Control_Character {
 	private int RITUAL_ROOM_INDEX;
 
 	// Artificial intelligence controls
-	//public bool IS_DANGEROUS; // set to false to make (the monster "blind" or) the civilians walk around aimlessly.
 	private bool IS_CIVILIAN = false;
 
 	private bool newNoiseHeard;
@@ -41,13 +40,16 @@ public class Control_Monster : Control_Character {
 	public const int STATE_FLEEING = 5;
 
 	public int myState;
+	public float AGGRO; // = (number of items collected so far) / 10 + (minutes elapsed since last kill)
 	private float stateUpdateCooldown;
-	private double certaintyThresholdToStartPursuing;
+	private float distanceThresholdToStartPursuing; // = AGGRO * screen width / 2
+	private double certaintyThresholdToStartStalking;
 
-	private Data_Door nextDoorToSearch;
+	private Data_Door nextDoorToGoThrough;
 	private Data_Room previousRoomVisited; // This can be used to prevent endless door walk cycles
 
 	private bool attackAnimationPlaying;
+	private float timeSinceLastKill;
 
 	// prefab, to be placed for each death
 	public Transform tombstone;
@@ -100,10 +102,11 @@ public class Control_Monster : Control_Character {
 		worldModel = new AI_WorldModel(gameState);
 		StartCoroutine(displayWorldState(1/60));
 		worldModel.updateMyRoom(me.isIn, GS.monsterSeesToni);
+		timeSinceLastKill = 0;
 		// Initialize the state machine
 		myState = STATE_SEARCHING;
 		stateUpdateCooldown = -1.0f;
-		certaintyThresholdToStartPursuing = 0.5;
+		certaintyThresholdToStartStalking = 0.5;
 		previousRoomVisited = me.isIn;
     }
 
@@ -166,24 +169,28 @@ public class Control_Monster : Control_Character {
 			stateUpdateCooldown -= Time.fixedDeltaTime;
 			return;
 		}
+		// Update time since last kill and aggro level
+		timeSinceLastKill += Time.fixedDeltaTime;
+		AGGRO = 0.1f * GS.numItemsCollected + timeSinceLastKill / 60.0f;
 
 		// Update AI state 
 		switch(myState) {
 		// If, while searching, a definitive position is established, start stalking
 		case STATE_SEARCHING:
-			if(worldModel.certainty >= certaintyThresholdToStartPursuing) {
+			if(worldModel.certainty >= certaintyThresholdToStartStalking) {
 				// Keep the monster in the stalking mode for a bit to ensure it spots the player
 				stateUpdateCooldown = DOOR_TRANSITION_DURATION;
 				myState = STATE_STALKING;
-				nextDoorToSearch = null;
+				nextDoorToGoThrough = null;
 			}
 			break;
 		// If, while stalking, monster sees Toni, start pursuing
 		// But if Tonis position no longer certain, start searching again
 		case STATE_STALKING:
-			if(GS.monsterSeesToni) {
+			distanceThresholdToStartPursuing = AGGRO * SCREEN_SIZE_HORIZONTAL / 2; 
+			if(GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < distanceThresholdToStartPursuing) {
 				myState = STATE_PURSUING;
-			} else if(worldModel.certainty < certaintyThresholdToStartPursuing) {
+			} else if(worldModel.certainty < certaintyThresholdToStartStalking) {
 				myState = STATE_SEARCHING;
 			}
 			break;
@@ -267,11 +274,9 @@ public class Control_Monster : Control_Character {
 		case STATE_FLEEING:
 			enactFlightPolicy();
 			break;
-		/*
 		case STATE_STALKING:
-			// ???
+			enactStalkingPolicy();
 			break;
-		*/
 		}
 	}
 
@@ -279,7 +284,7 @@ public class Control_Monster : Control_Character {
 	// Or walk around randomply (in wandering mode)
 	private void enactSearchPolicy(bool aggressiveSearch) {
 		// Only conduct full search if no door has been selected as target yet
-		if(nextDoorToSearch == null) {
+		if(nextDoorToGoThrough == null) {
 			// Analyze available door options
 			double highestDoorUtility = double.MinValue; double curUtility;
 			foreach(Data_Door door in me.isIn.DOORS.Values) {
@@ -307,13 +312,13 @@ public class Control_Monster : Control_Character {
 
 				// Check if the new utility is higher than the one found previously
 				if(curUtility > highestDoorUtility) {
-					nextDoorToSearch = door;
+					nextDoorToGoThrough = door;
 					highestDoorUtility = curUtility;
 				}
 			}
 		}
 		// With the door set, move towards and through it
-		walkToAndThroughDoor(nextDoorToSearch, false, Time.deltaTime);
+		walkToAndThroughDoor(nextDoorToGoThrough, false, Time.deltaTime);
 	}
 
 	// Run towards within striking range of Toni
@@ -353,6 +358,7 @@ public class Control_Monster : Control_Character {
 		// PHASE 2: Resolve
 		if(!Toni.isInvulnerable() && GS.monsterSeesToni && Math.Abs(Toni.atPos - attackPoint) <= ATTACK_MARGIN) {
 			Toni.control.getHit();
+			timeSinceLastKill = 0;
 		}
 		// PHASE 3: Cooldown
 		attackArmRenderer.SetPosition(1, new Vector2(0, 0));
@@ -361,27 +367,82 @@ public class Control_Monster : Control_Character {
 	}
 
 	private void enactFlightPolicy() {
-		if(nextDoorToSearch == null) {
+		if(nextDoorToGoThrough == null) {
 			// Analyze available door options
 			double highestDoorUtility = double.MinValue; double curUtility;
 			foreach(Data_Door door in me.isIn.DOORS.Values) {
 				// Utility is basically equal to the distance to the door, plus a random factor to avoid deadlocks
-				curUtility = Math.Abs(door.visiblePos - me.atPos) + UnityEngine.Random.Range(0f,1f);
+				curUtility = Math.Abs(door.visiblePos - me.atPos) + UnityEngine.Random.Range(0f, 0.1f);
 				// However, having to run past Monster!Toni is penalized
 				bool toniIsBetweenMeAndDoor = (door.atPos <= Toni.atPos && Toni.atPos <= me.atPos) || (door.atPos >= Toni.atPos && Toni.atPos >= me.atPos);
 				curUtility -= toniIsBetweenMeAndDoor ? (double.MaxValue / 2) : 0;
 				// Check if the new utility is higher than the one found previously
 				if(curUtility > highestDoorUtility) {
-					nextDoorToSearch = door;
+					nextDoorToGoThrough = door;
 					highestDoorUtility = curUtility;
 				}
 			}
 		}
 		// With the door set, move towards and through it at runnig pace
-		walkToAndThroughDoor(nextDoorToSearch, true, Time.deltaTime);
+		walkToAndThroughDoor(nextDoorToGoThrough, true, Time.deltaTime);
 	}
 
-	// Walk towards the door
+	// Go towards the closest room to where Toni is most likely to be
+	private void enactStalkingPolicy() {
+		if(nextDoorToGoThrough == null) {
+			// If monster sees Toni, go through the closest door that doesn't lead you past Toni
+			// This is not unlike the fleeing policy
+			if(GS.monsterSeesToni) {
+				double highestDoorUtility = double.MinValue;
+				double curUtility;
+				foreach(Data_Door door in me.isIn.DOORS.Values) {
+					// Utility is basically equal to the distance to the door, plus a random factor to avoid deadlocks
+					curUtility = Math.Abs(door.visiblePos - me.atPos) + UnityEngine.Random.Range(0f, 0.1f);
+					// However, having to run past Toni is penalized
+					bool toniIsBetweenMeAndDoor = (door.atPos <= Toni.atPos && Toni.atPos <= me.atPos) || (door.atPos >= Toni.atPos && Toni.atPos >= me.atPos);
+					curUtility -= toniIsBetweenMeAndDoor ? (2.0 * (double)Math.Abs(door.visiblePos - Toni.atPos)) : 0;
+					// Check if the new utility is higher than the one found previously
+					if(curUtility > highestDoorUtility) {
+						nextDoorToGoThrough = door;
+						highestDoorUtility = curUtility;
+					}
+				}
+			} else {
+				// If you don't see Toni, find a room that is closest to you and to Toni's supposed location
+				// then go through the door that'll take you to it the fastest
+				float roomDistance; float bestRoomDistance = float.MaxValue; int bestRoomIndex = me.isIn.INDEX;
+				for(int i = 0; i < GS.ROOMS.Count; i++) {
+					roomDistance = GS.distanceBetweenTwoRooms[me.isIn.INDEX, i] + GS.distanceBetweenTwoRooms[i, worldModel.mostLikelyTonisRoomIndex];
+					if(roomDistance < bestRoomDistance && i != me.isIn.INDEX) {
+						bestRoomIndex = i;
+						bestRoomDistance = roomDistance;
+					}
+				}
+				// Now find the door that will lead you there fastest
+				double highestDoorUtility = double.MinValue;
+				double curUtility;
+				foreach(Data_Door door in me.isIn.DOORS.Values) {
+					// Utility is basically equal to the distance from monster to door,
+					// plus distance from door to the target room, plus a random factor to avoid deadlocks
+					curUtility = Math.Abs(door.visiblePos - me.atPos)
+								+ GS.getDistance(door, new Data_Position(bestRoomIndex, 0f))
+								+ UnityEngine.Random.Range(0f, 0.1f);
+					// However, having to go through the ritual room is penalized
+					curUtility -= (door.connectsTo.isIn.INDEX == RITUAL_ROOM_INDEX) ? 0.5 * double.MaxValue : 0;
+					// Avoid going into Toni's room, too, as long as pursuit threshold is higher than the screen size
+					curUtility -= (door.connectsTo.isIn.INDEX == bestRoomIndex && distanceThresholdToStartPursuing < SCREEN_SIZE_HORIZONTAL) ? 0.25 * double.MaxValue : 0;
+					// Check if the new utility is higher than the one found previously
+					if(curUtility > highestDoorUtility) {
+						nextDoorToGoThrough = door;
+						highestDoorUtility = curUtility;
+					}
+				}
+			}
+		}
+		walkToAndThroughDoor(nextDoorToGoThrough, false, Time.deltaTime);
+	}
+
+	// Walk towards the door and through it, if possible
 	private void walkToAndThroughDoor(Data_Door door, bool run, float deltaTime) {
 		float distToDoor = door.visiblePos - me.atPos;
 		if(Math.Abs(distToDoor) <= MARGIN_DOOR_ENTRANCE) {
@@ -433,7 +494,7 @@ public class Control_Monster : Control_Character {
 	// Instead of updating statistics, the monster updates its position in the world model and checks whether it sees Toni
 	protected override void updateDoorUsageStatistic(Data_Door door, Data_Room currentRoom, Data_Door destinationDoor, Data_Room destinationRoom) {
 		worldModel.updateMyRoom(me.isIn, GS.monsterSeesToni);
-		nextDoorToSearch = null;
+		nextDoorToGoThrough = null;
 		previousRoomVisited = currentRoom;
 	}
 	// The rest stays empty for now (only relevant for Toni)...
