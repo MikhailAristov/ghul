@@ -16,8 +16,8 @@ public class Control_Monster : Control_Character {
 
 	private float MARGIN_DOOR_ENTRANCE;
 	private float SCREEN_SIZE_HORIZONTAL;
-	private float KILL_RADIUS;
 	private float TIME_TO_REACT;
+	private float MARGIN_ITEM_STEAL;
 	private float ATTACK_RANGE;
 	private float ATTACK_MARGIN;
 	private float ATTACK_DURATION;
@@ -40,7 +40,7 @@ public class Control_Monster : Control_Character {
 	public const int STATE_FLEEING = 5;
 
 	public int myState;
-	public float AGGRO; // = (number of items collected so far) / 10 + (minutes elapsed since last kill)
+	public float AGGRO; // = (number of items collected so far) / 10 + (minutes elapsed since last kill) (double that if Toni carries an item)
 	private float stateUpdateCooldown;
 	private float distanceThresholdToStartPursuing; // = AGGRO * screen width / 2
 	private double certaintyThresholdToStartStalking;
@@ -81,7 +81,6 @@ public class Control_Monster : Control_Character {
 
 		RUNNING_SPEED = Global_Settings.read("MONSTER_WALKING_SPEED");
 		WALKING_SPEED = Global_Settings.read("MONSTER_SLOW_WALKING_SPEED");
-		KILL_RADIUS = Global_Settings.read("MONSTER_KILL_RADIUS");
 		MARGIN_DOOR_ENTRANCE = Global_Settings.read("MARGIN_DOOR_ENTRANCE");
 		SCREEN_SIZE_HORIZONTAL = Global_Settings.read("SCREEN_SIZE_HORIZONTAL");
 
@@ -93,6 +92,7 @@ public class Control_Monster : Control_Character {
 		VERTICAL_ROOM_SPACING = Global_Settings.read("VERTICAL_ROOM_SPACING");
 		DOOR_TRANSITION_DURATION = Global_Settings.read("DOOR_TRANSITION_DURATION");
 		RITUAL_ROOM_INDEX = (int)Global_Settings.read("RITUAL_ROOM_INDEX");
+		MARGIN_ITEM_STEAL = Global_Settings.read("MARGIN_ITEM_COLLECT") / 10f;
 
         // Move the character sprite directly to where the game state says it should be standing
         Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
@@ -123,15 +123,6 @@ public class Control_Monster : Control_Character {
 
 	void FixedUpdate() {
 		if (GS == null || GS.SUSPENDED) { return; } // Don't do anything if the game state is not loaded yet or suspended
-
-		// Sanity check: if there are NaNs in world state, reset the whole thing
-		for(int i = 0; i < worldModel.probabilityThatToniIsInRoom.Length; i++) {
-			if(double.IsNaN(worldModel.probabilityThatToniIsInRoom[i])) {
-				Debug.LogWarning("NaN detected, resetting world model");
-				worldModel.reset(GS);
-				break;
-			}
-		}
 
 		// If monster sees Toni, everything else is irrelevant
 		if(GS.monsterSeesToni) {
@@ -172,6 +163,7 @@ public class Control_Monster : Control_Character {
 		// Update time since last kill and aggro level
 		timeSinceLastKill += Time.fixedDeltaTime;
 		AGGRO = 0.1f * GS.numItemsCollected + timeSinceLastKill / 60.0f;
+		AGGRO += (Toni.carriedItem != null) ? AGGRO : 0;
 
 		// Update AI state 
 		switch(myState) {
@@ -216,7 +208,7 @@ public class Control_Monster : Control_Character {
 			break;
 		// Wandering is a special case: if the ritual has been performed, start fleeing from Toni
 		case STATE_WANDERING:
-			if(GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < (SCREEN_SIZE_HORIZONTAL / 2)) { // && GS.RITUAL_PERFORMED
+			if(IS_CIVILIAN && GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < (SCREEN_SIZE_HORIZONTAL / 2)) {
 				myState = STATE_FLEEING;
 			}
 			break;
@@ -252,6 +244,10 @@ public class Control_Monster : Control_Character {
 		if (GS.CIVILIAN_KILLED) {
 			GS.CIVILIAN_KILLED = false;
 			dieAndRespawn();
+		}
+
+		if (myState != STATE_WANDERING && !IS_CIVILIAN && GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < MARGIN_ITEM_STEAL) {
+			Toni.control.dropItem();
 		}
 
 		// Correct state handling
