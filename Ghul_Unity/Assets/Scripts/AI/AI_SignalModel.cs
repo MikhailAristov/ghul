@@ -94,6 +94,7 @@ public class AI_SignalModel  {
 
 	// Precomputes the likelihoods of a noise of a specific type from a specific room being heard at a particular door
 	// MUST be called after precomputeDoorToRoomDistanceBounds()
+	// p( Door = d | OriginRoom = r , NoiseType = nt )
 	private void precomputeDoorAudibilityLikelihoods(Data_GameState GS) {
 		likelihoodNoiseHeardAtDoor = new double[noiseCount, roomCount, doorCount];
 		Array.Clear(likelihoodNoiseHeardAtDoor, 0, noiseCount * roomCount * doorCount);
@@ -167,7 +168,7 @@ public class AI_SignalModel  {
 		// Check whether the room can be reached from the specified door within that distance
 		if(estimatedDistanceToOrigin >= door2roomMinSignalDistance[door.INDEX, origin]
 		   && estimatedDistanceToOrigin <= door2roomMaxSignalDistance[door.INDEX, origin]) {
-			return ( (estimatedDistanceToOrigin - door2roomMinSignalDistance[door.INDEX, origin]) / (door2roomMaxSignalDistance[door.INDEX, origin] - door2roomMinSignalDistance[door.INDEX, origin]));
+			return ( 1.0 / (door2roomMaxSignalDistance[door.INDEX, origin] - door2roomMinSignalDistance[door.INDEX, origin]));
 		} else {
 			return 0;
 		}
