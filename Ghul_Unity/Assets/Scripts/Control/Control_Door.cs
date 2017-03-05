@@ -4,20 +4,28 @@ using System.Collections;
 public class Control_Door : MonoBehaviour {
 
 	public GameObject ClosedSprite;
+	private AudioSource CloseSound;
 	public GameObject OpenSprite;
+	private AudioSource OpenSound;
 
 	private string currentState;
 	private float timeUntilClosing;
 
 	private float doorOpenDuration;
 	private float doorOpenCheckFrequency;
+	private float verticalHearingThreshold;
 
 	// Use this for initialization
 	void Start () {
 		currentState = "CLOSED";
 		OpenSprite.SetActive(false);
+
 		doorOpenDuration = Global_Settings.read("DOOR_OPEN_DURATION");
 		doorOpenCheckFrequency = doorOpenDuration / 10f;
+		verticalHearingThreshold = Global_Settings.read("SCREEN_SIZE_VERTICAL") / 10f;
+
+		CloseSound = ClosedSprite.GetComponent<AudioSource>();
+		OpenSound = OpenSprite.GetComponent<AudioSource>();
 	}
 
 	// Opens the door if it's closed, keeps it open longer otherwise
@@ -26,6 +34,7 @@ public class Control_Door : MonoBehaviour {
 		if(currentState != "OPEN") {
 			ClosedSprite.SetActive(false);
 			OpenSprite.SetActive(true);
+			playSound(OpenSound);
 			currentState = "OPEN";
 			StartCoroutine(waitForClosure());
 		}
@@ -40,6 +49,16 @@ public class Control_Door : MonoBehaviour {
 		}
 		OpenSprite.SetActive(false);
 		ClosedSprite.SetActive(true);
+		playSound(CloseSound);
 		currentState = "CLOSED";
+	}
+
+	// Play the specified sound if the main camera (i.e. Toni) is within the current room
+	private void playSound(AudioSource sound) {
+		float verticalDistanceToCamera = Mathf.Abs(transform.position.y - Camera.main.transform.position.y);
+		if(sound != null && verticalDistanceToCamera <= verticalHearingThreshold) {
+			sound.mute = false;
+			sound.Play();
+		}
 	}
 }

@@ -150,19 +150,19 @@ public class Factory_PrefabController : MonoBehaviour {
 	// Spawns a back door at the left position of the given room
 	public GameObject spawnBackDoor(Transform parentRoom, float horizontalPosition) {
 		if(prefabDoorBack == null) { loadDoorPrefabs(); }
-		return spawnDoor(prefabDoorBack, parentRoom, new Vector3(horizontalPosition, -0.33f, 0.1f));
+		return spawnDoor(prefabDoorBack, parentRoom, new Vector3(horizontalPosition, 0, 0));
 	}
 
 	// Spawns a side door on the left edge of the given room
 	public GameObject spawnLeftSideDoor(Transform parentRoom, float roomWidth) {
 		if(prefabDoorLeftSide == null) { loadDoorPrefabs(); }
-		return spawnDoor(prefabDoorLeftSide, parentRoom, new Vector3(0.45f - roomWidth/2, -0.6f, 0.1f));
+		return spawnDoor(prefabDoorLeftSide, parentRoom, new Vector3(-roomWidth/2, 0, 0));
 	}
 
 	// Spawns a side door on the right edge of the given room
 	public GameObject spawnRightSideDoor(Transform parentRoom, float roomWidth) {
 		if(prefabDoorRightSide == null) { loadDoorPrefabs(); }
-		return spawnDoor(prefabDoorRightSide, parentRoom, new Vector3(roomWidth/2 - 0.45f, -0.6f, 0.1f));
+		return spawnDoor(prefabDoorRightSide, parentRoom, new Vector3(roomWidth/2, 0, 0));
 	}
 
 	// Spawns a door game object from prefab and sets its properties
