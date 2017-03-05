@@ -22,7 +22,7 @@ public class Control_GameState : MonoBehaviour {
     // Use this for initialization
     void Start ()
     {
-		MAIN_CAMERA_CONTROL = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Control_Camera>();
+		MAIN_CAMERA_CONTROL = Camera.main.GetComponent<Control_Camera>();
 		// Initialize factories
 		prefabFactory = GetComponent<Factory_PrefabController>();
 		graphFactory = GetComponent<Factory_Graph>();
