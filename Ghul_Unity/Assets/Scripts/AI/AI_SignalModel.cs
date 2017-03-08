@@ -168,7 +168,7 @@ public class AI_SignalModel  {
 		// Check whether the room can be reached from the specified door within that distance
 		if(estimatedDistanceToOrigin >= door2roomMinSignalDistance[door.INDEX, origin]
 		   && estimatedDistanceToOrigin <= door2roomMaxSignalDistance[door.INDEX, origin]) {
-			return ( 1.0 / (door2roomMaxSignalDistance[door.INDEX, origin] - door2roomMinSignalDistance[door.INDEX, origin]));
+			return 1.0;
 		} else {
 			return 0;
 		}
