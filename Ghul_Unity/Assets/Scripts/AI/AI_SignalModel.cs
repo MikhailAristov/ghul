@@ -22,10 +22,13 @@ public class AI_SignalModel  {
 	private double Likelihood_NoiseWasMadeByHouse;
 	// f( door | noise origin room, noise type ) = double[noise type, room index, door index]
 	public double[,,] likelihoodNoiseHeardAtDoor;
+    
+    private double gaussFactor; // Performance optimization
 
 	public AI_SignalModel(Data_GameState GS, AI_PlayerModel PM) {
 		playerModel = PM;
-		recalculate(GS);	
+        gaussFactor = 1.0 / Math.Sqrt(2.0 * Math.Pi);
+		recalculate(GS);
 	}
 
 	public void recalculate(Data_GameState GS) {
@@ -168,7 +171,11 @@ public class AI_SignalModel  {
 		// Check whether the room can be reached from the specified door within that distance
 		if(estimatedDistanceToOrigin >= door2roomMinSignalDistance[door.INDEX, origin]
 		   && estimatedDistanceToOrigin <= door2roomMaxSignalDistance[door.INDEX, origin]) {
-			return 1.0;
+			// Assume standard Gauss distribution with mean = minSignalDistance 
+            // and sigma = half the difference between maxSignalDistance and minSignalDistance
+			double sigma = (door2roomMaxSignalDistance[door.INDEX, origin] - door2roomMinSignalDistance[door.INDEX, origin]) / 2;
+            double exponentFactor = (estimatedDistanceToOrigin - door2roomMinSignalDistance[door.INDEX, origin]) / sigma;
+            return (gaussFactor / sigma * Math.Exp(exponentFactor * exponentFactor / -2.0));
 		} else {
 			return 0;
 		}
