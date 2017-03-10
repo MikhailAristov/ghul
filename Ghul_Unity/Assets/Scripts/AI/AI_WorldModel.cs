@@ -4,17 +4,26 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
+[Serializable]
 public class AI_WorldModel {
 
+	[SerializeField]
 	private AI_PlayerModel playerModel;
+	[SerializeField]
 	private AI_SignalModel signalModel;
 
+	[SerializeField]
 	private int roomCount;
+	[SerializeField]
 	public double[] probabilityThatToniIsInRoom;
+	[SerializeField]
 	private double[] newVector; // Performance optimization
 
+	[SerializeField]
 	private int monsterRoomIndex;
+	[SerializeField]
 	public int mostLikelyTonisRoomIndex;
+	[SerializeField]
 	private int secondMostLikelyTonisRoomIndex;
 	public double certainty {
 		get { 

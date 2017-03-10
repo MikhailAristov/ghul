@@ -1,26 +1,40 @@
-﻿using System;
+﻿using UnityEngine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
 // This class models player movement as a Markov chain with a single state for each room
 // The probability of staying in the current room is determined by an expected mean staying time (in time steps) through exponential decay
 // The probability of transitioning to connected rooms is assumed to be uniform across all doors
+[Serializable]
 public class AI_PlayerModel {
 
+	[SerializeField]
 	public double[,] TRANSITION_MATRIX;
 
+	[SerializeField]
 	private int roomCount;
+	[SerializeField]
 	private double[] meanWalkingDistance; // Per room
+	[SerializeField]
 	private double[] meanStayingTime;
+	[SerializeField]
 	private int[] roomDoorCount;
+	[SerializeField]
 	private bool[] roomHasItemSpawns;
 
 	// Global settings
+	[SerializeField]
 	private float TIME_STEP;
+	[SerializeField]
 	private float SCREEN_SIZE_HORIZONTAL;
+	[SerializeField]
 	private float HORIZONTAL_ROOM_MARGIN;
+	[SerializeField]
 	private float DOOR_TRANSITION_DURATION;
+	[SerializeField]
 	private float TONI_SINGLE_STEP_LENGTH;
+	[SerializeField]
 	private double MEAN_TONI_VELOCITY;
 
 	// Player model weights

@@ -1,33 +1,44 @@
-﻿using System;
+﻿using UnityEngine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-// TODO: Precompute as much as possible
+[Serializable]
 public class AI_SignalModel  {
 
 	// Will need the current player model for the sound emission likelyhoods
-	private AI_PlayerModel playerModel;
+	[SerializeField]
+	public AI_PlayerModel playerModel;
 
-	public float[,] door2roomMinSignalDistance;
-	public float[,] door2roomMaxSignalDistance;
+	[SerializeField]
+	private float[,] door2roomMinSignalDistance;
+	[SerializeField]
+	private float[,] door2roomMaxSignalDistance;
 
+	[SerializeField]
 	private int roomCount;
+	[SerializeField]
 	private int doorCount;
+	[SerializeField]
 	private int noiseCount;
 
 	// f( noise source = Toni | noise occurred )
+	[SerializeField]
 	private double Likelihood_NoiseWasMadeByToni;
 	// f( noise source = house | noise occurred )
+	[SerializeField]
 	private double Likelihood_NoiseWasMadeByHouse;
 	// f( door | noise origin room, noise type ) = double[noise type, room index, door index]
+	[SerializeField]
 	public double[,,] likelihoodNoiseHeardAtDoor;
-    
+
+	[SerializeField]
     private double gaussFactor; // Performance optimization
 
 	public AI_SignalModel(Data_GameState GS, AI_PlayerModel PM) {
 		playerModel = PM;
-        gaussFactor = 1.0 / Math.Sqrt(2.0 * Math.Pi);
+		gaussFactor = 1.0 / Math.Sqrt(2.0 * Math.PI);
 		recalculate(GS);
 	}
 
@@ -90,9 +101,6 @@ public class AI_SignalModel  {
 				// Yeah, it's ugly, but whatcha gonna do about it
 			}
 		}
-		//AI_Util.displayMatrix("SIGNAL MODEL: door2roomMinSignalDistance", door2roomMinSignalDistance);
-		//AI_Util.displayMatrix("SIGNAL MODEL: door2roomMaxSignalDistance", door2roomMaxSignalDistance);
-		//AI_Util.displayMatrix("SIGNAL MODEL: door2room ranges", AI_Util.subtractMatrices(door2roomMaxSignalDistance, door2roomMinSignalDistance));
 	}
 
 	// Precomputes the likelihoods of a noise of a specific type from a specific room being heard at a particular door

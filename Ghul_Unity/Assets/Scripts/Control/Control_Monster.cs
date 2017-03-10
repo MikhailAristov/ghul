@@ -11,8 +11,6 @@ public class Control_Monster : Control_Character {
 	protected override Data_Character getMe() { return me as Data_Character; }
     [NonSerialized]
 	private Data_PlayerCharacter Toni;
-	[NonSerialized]
-	private AI_WorldModel worldModel;
 
 	private float MARGIN_DOOR_ENTRANCE;
 	private float SCREEN_SIZE_HORIZONTAL;
@@ -39,8 +37,6 @@ public class Control_Monster : Control_Character {
 	public const int STATE_ATTACKING = 4;
 	public const int STATE_FLEEING = 5;
 
-	public int myState;
-	public float AGGRO; // = (number of items collected so far) / 10 + (minutes elapsed since last kill) (double that if Toni carries an item)
 	private float stateUpdateCooldown;
 	private float distanceThresholdToStartPursuing; // = AGGRO * screen width / 2
 	private double certaintyThresholdToStartStalking;
@@ -49,7 +45,6 @@ public class Control_Monster : Control_Character {
 	private Data_Room previousRoomVisited; // This can be used to prevent endless door walk cycles
 
 	private bool attackAnimationPlaying;
-	private float timeSinceLastKill;
 
 	// prefab, to be placed for each death
 	public Transform tombstone;
@@ -99,12 +94,9 @@ public class Control_Monster : Control_Character {
 		transform.Translate(savedPosition - transform.position);
 
 		// Artificial intelligence
-		worldModel = new AI_WorldModel(gameState);
+		me.worldModel.updateMyRoom(me.isIn, GS.monsterSeesToni);
 		StartCoroutine(displayWorldState(1/60));
-		worldModel.updateMyRoom(me.isIn, GS.monsterSeesToni);
-		timeSinceLastKill = 0;
 		// Initialize the state machine
-		myState = STATE_SEARCHING;
 		stateUpdateCooldown = -1.0f;
 		certaintyThresholdToStartStalking = 0.5;
 		previousRoomVisited = me.isIn;
@@ -114,7 +106,7 @@ public class Control_Monster : Control_Character {
 		while(true) {
 			if(!GS.SUSPENDED) {
 				foreach(Data_Room room in GS.ROOMS.Values) {
-					room.env.updateDangerIndicator(worldModel.probabilityThatToniIsInRoom[room.INDEX]);
+					room.env.updateDangerIndicator(me.worldModel.probabilityThatToniIsInRoom[room.INDEX]);
 				}
 			}
 			yield return new WaitForSecondsRealtime(interval);
@@ -126,13 +118,13 @@ public class Control_Monster : Control_Character {
 
 		// If monster sees Toni, everything else is irrelevant
 		if(GS.monsterSeesToni) {
-			worldModel.toniKnownToBeInRoom(me.isIn);
+			me.worldModel.toniKnownToBeInRoom(me.isIn);
 		} else {
 			// Otherwise, predict Toni's movements according to blind transition model
-			worldModel.predictOneTimeStep();
+			me.worldModel.predictOneTimeStep();
 			// And if a noise has been heard, update the model accordingly
 			if(newNoiseHeard) {
-				worldModel.filter(lastNoiseVolume, lastNoiseHeardFrom);
+				me.worldModel.filter(lastNoiseVolume, lastNoiseHeardFrom);
 				newNoiseHeard = false;
 			}
 		}
@@ -150,7 +142,7 @@ public class Control_Monster : Control_Character {
 
 	// Inform the monster that Toni has just walked through this door to its other side
 	public void seeToniGoThroughDoor(Data_Door originDoor) {
-		worldModel.toniKnownToBeInRoom(originDoor.connectsTo.isIn);
+		me.worldModel.toniKnownToBeInRoom(originDoor.connectsTo.isIn);
 	}
 
 	// Updates the internal state if necessary
@@ -161,66 +153,66 @@ public class Control_Monster : Control_Character {
 			return;
 		}
 		// Update time since last kill and aggro level
-		timeSinceLastKill += Time.fixedDeltaTime;
-		AGGRO = 0.1f * GS.numItemsCollected + timeSinceLastKill / 60.0f;
-		AGGRO += (Toni.carriedItem != null) ? AGGRO : 0;
+		me.timeSinceLastKill += Time.fixedDeltaTime;
+		me.AGGRO = 0.1f * GS.numItemsCollected + me.timeSinceLastKill / 60.0f;
+		me.AGGRO += (Toni.carriedItem != null) ? me.AGGRO : 0;
 
 		// Update AI state 
-		switch(myState) {
+		switch(me.state) {
 		// If, while searching, a definitive position is established, start stalking
 		case STATE_SEARCHING:
-			if(worldModel.certainty >= certaintyThresholdToStartStalking) {
+			if(me.worldModel.certainty >= certaintyThresholdToStartStalking) {
 				// Keep the monster in the stalking mode for a bit to ensure it spots the player
 				stateUpdateCooldown = DOOR_TRANSITION_DURATION;
-				myState = STATE_STALKING;
+				me.state = STATE_STALKING;
 				nextDoorToGoThrough = null;
 			}
 			break;
 		// If, while stalking, monster sees Toni, start pursuing
 		// But if Tonis position no longer certain, start searching again
 		case STATE_STALKING:
-			distanceThresholdToStartPursuing = AGGRO * SCREEN_SIZE_HORIZONTAL / 2; 
+			distanceThresholdToStartPursuing = me.AGGRO * SCREEN_SIZE_HORIZONTAL / 2; 
 			if(GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < distanceThresholdToStartPursuing) {
-				myState = STATE_PURSUING;
-			} else if(worldModel.certainty < certaintyThresholdToStartStalking) {
-				myState = STATE_SEARCHING;
+				me.state = STATE_PURSUING;
+			} else if(me.worldModel.certainty < certaintyThresholdToStartStalking) {
+				me.state = STATE_SEARCHING;
 			}
 			break;
 		// If, while pursuing, monster sees Toni is within attack range, initiate an attack
 		// On the other hand, if Toni cannot be seen, start stalking again
 		case STATE_PURSUING:
 			if(!Toni.isInvulnerable() && GS.monsterSeesToni && Math.Abs(Math.Abs(GS.distanceToToni) - ATTACK_RANGE) <= ATTACK_MARGIN) {
-				myState = STATE_ATTACKING;
+				me.state = STATE_ATTACKING;
 				stateUpdateCooldown = ATTACK_DURATION + ATTACK_COOLDOWN;
 			} else if(!GS.monsterSeesToni) {
 				stateUpdateCooldown = DOOR_TRANSITION_DURATION;
-				myState = STATE_STALKING;
+				me.state = STATE_STALKING;
 			}
 			break;
 		// If, after attacking, the monster still sees Toni, but he is out of range, start pursuing again
 		// On the other hand, if Toni cannot be seen, start stalking again
 		case STATE_ATTACKING:
 			if(GS.monsterSeesToni && Math.Abs(Math.Abs(GS.distanceToToni) - ATTACK_RANGE) > ATTACK_MARGIN) {
-				myState = STATE_PURSUING;
+				me.state = STATE_PURSUING;
 			} else if(!GS.monsterSeesToni) {
-				myState = STATE_STALKING;
+				me.state = STATE_STALKING;
 			}
 			break;
 		// Wandering is a special case: if the ritual has been performed, start fleeing from Toni
 		case STATE_WANDERING:
 			if(IS_CIVILIAN && GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < (SCREEN_SIZE_HORIZONTAL / 2)) {
-				myState = STATE_FLEEING;
+				me.state = STATE_FLEEING;
 			}
 			break;
 		// Stop fleeing if Toni is no longer seen
 		case STATE_FLEEING:
 			if(!GS.monsterSeesToni) {
-				myState = STATE_WANDERING;
+				me.state = STATE_WANDERING;
 			}
 			break;
 		// Searching is the default state
 		default:
-			myState = STATE_SEARCHING;
+			me.state = STATE_SEARCHING;
 			break;
 		}
 	}
@@ -235,7 +227,7 @@ public class Control_Monster : Control_Character {
 
 		if (GS.RITUAL_PERFORMED) {
 			// TODO: Move monster to ritual room, standing before only usable door
-			myState = STATE_WANDERING;
+			me.state = STATE_WANDERING;
 			monsterImageObject.SetActive(false);
 		} else {
 			civilianObject.SetActive(false); // Monster-Toni not visible at first.
@@ -246,12 +238,12 @@ public class Control_Monster : Control_Character {
 			dieAndRespawn();
 		}
 
-		if (myState != STATE_WANDERING && !IS_CIVILIAN && GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < MARGIN_ITEM_STEAL) {
+		if (me.state != STATE_WANDERING && !IS_CIVILIAN && GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < MARGIN_ITEM_STEAL) {
 			Toni.control.dropItem();
 		}
 
 		// Correct state handling
-		switch(myState) {
+		switch(me.state) {
 		default:
 		case STATE_SEARCHING:
 			enactSearchPolicy(true);
@@ -298,7 +290,7 @@ public class Control_Monster : Control_Character {
 				if(aggressiveSearch) {
 					foreach(Data_Room room in GS.ROOMS.Values) {
 						if(room != me.isIn && room.INDEX != RITUAL_ROOM_INDEX) { // Ignore this room, as well as the ritual room
-							curUtility += worldModel.probabilityThatToniIsInRoom[room.INDEX] *
+							curUtility += me.worldModel.probabilityThatToniIsInRoom[room.INDEX] *
 							(GS.distanceBetweenTwoRooms[me.isIn.INDEX, room.INDEX] - GS.distanceBetweenTwoRooms[targetRoomIndex, room.INDEX]);
 						}
 					}
@@ -354,7 +346,7 @@ public class Control_Monster : Control_Character {
 		// PHASE 2: Resolve
 		if(!Toni.isInvulnerable() && GS.monsterSeesToni && Math.Abs(Toni.atPos - attackPoint) <= ATTACK_MARGIN) {
 			Toni.control.getHit();
-			timeSinceLastKill = 0;
+			me.timeSinceLastKill = 0;
 		}
 		// PHASE 3: Cooldown
 		attackArmRenderer.SetPosition(1, new Vector2(0, 0));
@@ -408,7 +400,7 @@ public class Control_Monster : Control_Character {
 				// then go through the door that'll take you to it the fastest
 				float roomDistance; float bestRoomDistance = float.MaxValue; int bestRoomIndex = me.isIn.INDEX;
 				for(int i = 0; i < GS.ROOMS.Count; i++) {
-					roomDistance = GS.distanceBetweenTwoRooms[me.isIn.INDEX, i] + GS.distanceBetweenTwoRooms[i, worldModel.mostLikelyTonisRoomIndex];
+					roomDistance = GS.distanceBetweenTwoRooms[me.isIn.INDEX, i] + GS.distanceBetweenTwoRooms[i, me.worldModel.mostLikelyTonisRoomIndex];
 					if(roomDistance < bestRoomDistance && i != me.isIn.INDEX) {
 						bestRoomIndex = i;
 						bestRoomDistance = roomDistance;
@@ -424,9 +416,9 @@ public class Control_Monster : Control_Character {
 								+ GS.getDistance(door, new Data_Position(bestRoomIndex, 0f))
 								+ UnityEngine.Random.Range(0f, 0.1f);
 					// However, having to go through the ritual room is penalized
-					curUtility -= (door.connectsTo.isIn.INDEX == RITUAL_ROOM_INDEX) ? 0.5 * double.MaxValue : 0;
+					curUtility -= (door.connectsTo.isIn.INDEX == RITUAL_ROOM_INDEX) ? (0.5 * double.MaxValue) : 0;
 					// Avoid going into Toni's room, too, as long as pursuit threshold is higher than the screen size
-					curUtility -= (door.connectsTo.isIn.INDEX == bestRoomIndex && distanceThresholdToStartPursuing < SCREEN_SIZE_HORIZONTAL) ? 0.25 * double.MaxValue : 0;
+					curUtility -= (door.connectsTo.isIn.INDEX == bestRoomIndex && distanceThresholdToStartPursuing < SCREEN_SIZE_HORIZONTAL) ? (0.2 * double.MaxValue) : 0;
 					// Check if the new utility is higher than the one found previously
 					if(curUtility > highestDoorUtility) {
 						nextDoorToGoThrough = door;
@@ -489,7 +481,7 @@ public class Control_Monster : Control_Character {
 	}
 	// Instead of updating statistics, the monster updates its position in the world model and checks whether it sees Toni
 	protected override void updateDoorUsageStatistic(Data_Door door, Data_Room currentRoom, Data_Door destinationDoor, Data_Room destinationRoom) {
-		worldModel.updateMyRoom(me.isIn, GS.monsterSeesToni);
+		me.worldModel.updateMyRoom(me.isIn, GS.monsterSeesToni);
 		nextDoorToGoThrough = null;
 		previousRoomVisited = currentRoom;
 	}

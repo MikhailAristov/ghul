@@ -6,7 +6,17 @@ public class Data_Monster : Data_Character {
 
     // Pointer to the character behavior aspect of the container object
     [NonSerialized]
-    public Control_Monster control;
+	public Control_Monster control;
+	[SerializeField]
+	public AI_WorldModel worldModel;
+
+	// AI parameters
+	[SerializeField]
+	public int state;
+	[SerializeField]
+	public float AGGRO; // = (number of items collected so far) / 10 + (minutes elapsed since last kill) (double that if Toni carries an item)
+	[SerializeField]
+	public float timeSinceLastKill;
 
     // Gameplay parameters:
     public bool playerInSight;
@@ -32,7 +42,13 @@ public class Data_Monster : Data_Character {
         randomTargetPos = 0.0f;
         isThinking = false;
         remainingThinkingTime = 0.0f;
+		// AI parameters
+		state = Control_Monster.STATE_SEARCHING;
     }
+
+	public void resetWorldModel(Data_GameState GS) {
+		worldModel = new AI_WorldModel(GS);
+	}
 
     // Resets game object references, e.g. after a saved state load
     public void fixObjectReferences(Data_GameState GS)
