@@ -22,12 +22,14 @@ public class Control_PlayerCharacter : Control_Character {
 	private int RITUAL_ROOM_INDEX;
 	private float RITUAL_PENTAGRAM_CENTER;
 	private float RITUAL_PENTAGRAM_RADIUS;
+	private float SUICIDLE_DURATION;
 
 	private float RESPAWN_TRANSITION_DURATION;
 	private float INVENTORY_DISPLAY_DURATION;
 
 	// Gameplay parameters
 	private bool isTransformed;
+	private float timeWithoutAction;
 
 	// Graphics parameters
 	private GameObject stickmanObject;
@@ -59,7 +61,7 @@ public class Control_PlayerCharacter : Control_Character {
 		attackArmRenderer = attackArm.GetComponent<LineRenderer>();
 
 		isTransformed = false;
-		mainCameraControl = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Control_Camera>();
+		mainCameraControl = Camera.main.GetComponent<Control_Camera>();
 		inventoryUI.transform.FindChild("CurrentItem").GetComponent<Image>().CrossFadeAlpha(0.0f, 0.0f, false);
 		soundSystem = GameObject.Find("GameState").GetComponent<Control_Sound>();
 		walkingDistanceSinceLastNoise = 0;
@@ -91,6 +93,7 @@ public class Control_PlayerCharacter : Control_Character {
 		RITUAL_ROOM_INDEX = (int)Global_Settings.read("RITUAL_ROOM_INDEX");
 		RITUAL_PENTAGRAM_CENTER = Global_Settings.read("RITUAL_PENTAGRAM_CENTER");
 		RITUAL_PENTAGRAM_RADIUS = Global_Settings.read("RITUAL_PENTAGRAM_RADIUS");
+		SUICIDLE_DURATION = Global_Settings.read("SUICIDLE_DURATION");
 
 		ATTACK_RANGE = Global_Settings.read("MONSTER_ATTACK_RANGE");
 		ATTACK_MARGIN = Global_Settings.read("MONSTER_ATTACK_MARGIN") * 5f;
@@ -109,9 +112,14 @@ public class Control_PlayerCharacter : Control_Character {
 			me.etherialCooldown -= Time.deltaTime;
 			return;
 		}
+		// This is for the suicidle later...
+		if(isTransformed) {
+			timeWithoutAction += Time.deltaTime;
+		}
 
 		// Item actions or attack after ritual
 		if (Input.GetButtonDown("Action")) {
+			timeWithoutAction = 0;
 			if (isTransformed) {
 				StartCoroutine(playAttackAnimation(me.atPos + (monsterToniRenderer.flipX ? 1f : -1f), GS.getMonster()));
 			} else {
@@ -145,7 +153,8 @@ public class Control_PlayerCharacter : Control_Character {
 
         // Vertical "movement"
         if (Input.GetAxis("Vertical") > 0.1f)
-        {
+		{
+			timeWithoutAction = 0;
             // Check if the character can walk through the door, and if so, move them to the "other side"
             Data_Door door = currentEnvironment.getDoorAtPos(transform.position.x);
             if (door != null) {
@@ -157,7 +166,8 @@ public class Control_PlayerCharacter : Control_Character {
         // Horizontal movement
 		me.currentVelocity = 0;
 		if (Mathf.Abs(Input.GetAxis("Horizontal")) > 0.01f)
-        {
+		{
+			timeWithoutAction = 0;
 			Data_Door walkIntoDoor = walk(Input.GetAxis("Horizontal"), Input.GetButton("Run"), Time.deltaTime);
 			if(walkIntoDoor != null) {
 				// Walk through the door if triggered
@@ -167,6 +177,15 @@ public class Control_PlayerCharacter : Control_Character {
 		} else {
 			regainStamina();
         }
+
+		// Suicidle...
+		if(isTransformed) {
+			if(timeWithoutAction >= SUICIDLE_DURATION) {
+				timeWithoutAction = 0;
+				StartCoroutine(dieAndRespawn());
+			}
+			mainCameraControl.setRedOverlay(timeWithoutAction / SUICIDLE_DURATION);
+		}
 	}
 	// Superclass functions implemented
 	protected override void setSpriteFlip(bool state) {
