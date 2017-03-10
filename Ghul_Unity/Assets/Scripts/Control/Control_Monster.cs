@@ -16,10 +16,6 @@ public class Control_Monster : Control_Character {
 	private float SCREEN_SIZE_HORIZONTAL;
 	private float TIME_TO_REACT;
 	private float MARGIN_ITEM_STEAL;
-	private float ATTACK_RANGE;
-	private float ATTACK_MARGIN;
-	private float ATTACK_DURATION;
-	private float ATTACK_COOLDOWN;
 	private int RITUAL_ROOM_INDEX;
 
 	// Artificial intelligence controls
@@ -44,12 +40,9 @@ public class Control_Monster : Control_Character {
 	private Data_Door nextDoorToGoThrough;
 	private Data_Room previousRoomVisited; // This can be used to prevent endless door walk cycles
 
-	private bool attackAnimationPlaying;
-
 	// prefab, to be placed for each death
 	public Transform tombstone;
 	public GameObject attackArm;
-	private LineRenderer attackArmRenderer;
 
 	// Graphics parameters
 	private GameObject monsterImageObject;
@@ -95,7 +88,7 @@ public class Control_Monster : Control_Character {
 
 		// Artificial intelligence
 		me.worldModel.updateMyRoom(me.isIn, GS.monsterSeesToni);
-		StartCoroutine(displayWorldState(1/60));
+		StartCoroutine(displayWorldState(1f/60f));
 		// Initialize the state machine
 		stateUpdateCooldown = -1.0f;
 		certaintyThresholdToStartStalking = 0.5;
@@ -181,7 +174,7 @@ public class Control_Monster : Control_Character {
 		// If, while pursuing, monster sees Toni is within attack range, initiate an attack
 		// On the other hand, if Toni cannot be seen, start stalking again
 		case STATE_PURSUING:
-			if(!Toni.isInvulnerable() && GS.monsterSeesToni && Math.Abs(Math.Abs(GS.distanceToToni) - ATTACK_RANGE) <= ATTACK_MARGIN) {
+			if(!Toni.isInvulnerable && GS.monsterSeesToni && Math.Abs(Math.Abs(GS.distanceToToni) - ATTACK_RANGE) <= ATTACK_MARGIN) {
 				me.state = STATE_ATTACKING;
 				stateUpdateCooldown = ATTACK_DURATION + ATTACK_COOLDOWN;
 			} else if(!GS.monsterSeesToni) {
@@ -253,7 +246,7 @@ public class Control_Monster : Control_Character {
 			break;
 		case STATE_ATTACKING:
 			if(!attackAnimationPlaying) {
-				StartCoroutine(playAttackAnimation());
+				StartCoroutine(playAttackAnimation(Toni.atPos, Toni));
 			}
 			break;
 		case STATE_WANDERING:
@@ -324,34 +317,6 @@ public class Control_Monster : Control_Character {
 			// In case both attack points are unreachable, just run towards Toni to scare him into fleeing
 			walk(GS.distanceToToni, true, Time.deltaTime);
 		}
-	}
-
-	// Play out the attack animation
-	private IEnumerator playAttackAnimation() {
-		attackAnimationPlaying = true;
-		// Flip the sprite if necessary
-		setSpriteFlip(Toni.atPos < me.atPos);
-		float attackPoint = me.atPos + Math.Sign(Toni.atPos - me.atPos) * ATTACK_RANGE;
-		Debug.LogWarning("monster attacks from " + me.pos + " to " + attackPoint);
-		// PHASE 1: Attack
-		float attackProgress = 0f; float attackProgressStep = 1f/60f;
-		while(attackProgress < 1f) {
-			if(!GS.SUSPENDED) {
-				// TODO play one frame forward
-				attackArmRenderer.SetPosition(1, new Vector3(attackProgress * (attackPoint - me.atPos), 0, 0));
-				attackProgress += attackProgressStep;
-			}
-			yield return new WaitForSeconds(ATTACK_DURATION * attackProgressStep);
-		}
-		// PHASE 2: Resolve
-		if(!Toni.isInvulnerable() && GS.monsterSeesToni && Math.Abs(Toni.atPos - attackPoint) <= ATTACK_MARGIN) {
-			Toni.control.getHit();
-			me.timeSinceLastKill = 0;
-		}
-		// PHASE 3: Cooldown
-		attackArmRenderer.SetPosition(1, new Vector2(0, 0));
-		yield return new WaitForSeconds(ATTACK_COOLDOWN);
-		attackAnimationPlaying = false;
 	}
 
 	private void enactFlightPolicy() {
@@ -484,6 +449,16 @@ public class Control_Monster : Control_Character {
 		me.worldModel.updateMyRoom(me.isIn, GS.monsterSeesToni);
 		nextDoorToGoThrough = null;
 		previousRoomVisited = currentRoom;
+	}
+	// If hit as a civiilian, die
+	public override void getHit() {
+		if(IS_CIVILIAN) {
+			Debug.Log("DED");
+		}
+	}
+	// Reset the kill time upon kill
+	protected override void postKillHook() {
+		me.timeSinceLastKill = 0;
 	}
 	// The rest stays empty for now (only relevant for Toni)...
 	protected override void updateStamina(bool isRunning) {}

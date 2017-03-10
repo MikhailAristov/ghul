@@ -15,6 +15,9 @@ public class Data_Item : Data_Character {
 	// Pointer to the character behavior aspect of the container object
 	[NonSerialized]
 	public Control_Item control;
+	public override Control_Character getControl() {
+		throw new NotImplementedException();
+	}
 
 	// Index of the room in the global registry
 	[SerializeField]

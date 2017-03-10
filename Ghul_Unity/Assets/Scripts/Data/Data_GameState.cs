@@ -47,7 +47,7 @@ public class Data_GameState {
 	[SerializeField]
 	private Data_Cadaver CADAVER;
 	public bool monsterSeesToni {
-		get { return (TONI.isIn == MONSTER.isIn && !TONI.isInvulnerable()); }
+		get { return (TONI.isIn == MONSTER.isIn && !TONI.isInvulnerable); }
 		private set { return; }
 	}
 	public float distanceToToni {

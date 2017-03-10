@@ -16,6 +16,14 @@ public abstract class Control_Character : MonoBehaviour {
 	protected float RUNNING_SPEED;
 	protected float DOOR_TRANSITION_DURATION;
 
+	protected float ATTACK_RANGE;
+	protected float ATTACK_MARGIN;
+	protected float ATTACK_DURATION;
+	protected float ATTACK_COOLDOWN;
+
+	protected LineRenderer attackArmRenderer;
+	protected bool attackAnimationPlaying;
+
 	// The functions moves the character left or right
 	// Direction is negative for left, positive for right
 	// Returns a door object if the character runs into it
@@ -114,4 +122,45 @@ public abstract class Control_Character : MonoBehaviour {
 	protected abstract void doBeforeLeavingRoom(Data_Door doorTaken);
 	protected abstract void makeNoise(int type, Data_Position atPos);
 	protected abstract void updateDoorUsageStatistic(Data_Door door, Data_Room currentRoom, Data_Door destinationDoor, Data_Room destinationRoom);
+
+	// Play out the attack animation
+	// Animation automatically cancels out if the attacker moves
+	// targetPos is separated from target because the player (as a monster) can attack even without seeing the monster
+	protected IEnumerator playAttackAnimation(float targetPos, Data_Character target) {
+		attackAnimationPlaying = true;
+		float attackOrigin = getMe().atPos;
+		bool attackIsCanceledByMoving = false;
+		// Flip the sprite if necessary
+		if(GS.monsterSeesToni) {
+			setSpriteFlip(targetPos < attackOrigin);
+		}
+		float attackPoint = attackOrigin + Math.Sign(targetPos - attackOrigin) * ATTACK_RANGE;
+		Debug.LogWarning(getMe() + " attacks from " + getMe().pos + " to " + attackPoint);
+		// PHASE 1: Attack
+		float attackProgress = 0f; float attackProgressStep = 1f/60f;
+		while(attackProgress < 1f) {
+			// If the attacker moves from the original spot, immediately cancel the attack
+			if(Math.Abs(getMe().atPos - attackOrigin) > ATTACK_MARGIN) {
+				Debug.LogWarning(getMe() + "moved, attack canceled!");
+				attackIsCanceledByMoving = true;
+				break;
+			} else if(!GS.SUSPENDED) {
+				// TODO play one frame forward
+				attackArmRenderer.SetPosition(1, new Vector3(attackProgress * (attackPoint - attackOrigin), 0, 0));
+				attackProgress += attackProgressStep;
+			}
+			yield return new WaitForSeconds(ATTACK_DURATION * attackProgressStep);
+		}
+		// PHASE 2: Resolve
+		if(!attackIsCanceledByMoving && !target.isInvulnerable && GS.monsterSeesToni && Math.Abs(target.atPos - attackPoint) <= ATTACK_MARGIN) {
+			target.getControl().getHit();
+			postKillHook();
+		}
+		// PHASE 3: Cooldown
+		attackArmRenderer.SetPosition(1, new Vector2(0, 0));
+		yield return new WaitForSeconds(ATTACK_COOLDOWN); // Can't attack immediately after attacking, even if it was canceled (prevents spam)
+		attackAnimationPlaying = false;
+	}
+	public abstract void getHit();
+	protected abstract void postKillHook();
 }

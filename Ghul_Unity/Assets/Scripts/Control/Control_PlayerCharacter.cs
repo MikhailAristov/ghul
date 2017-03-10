@@ -38,6 +38,7 @@ public class Control_PlayerCharacter : Control_Character {
 	private Control_Camera mainCameraControl;
 	private Control_Sound soundSystem;
 	public Canvas inventoryUI;
+	public GameObject attackArm;
 
 	// Zapping-effect parameters
 	private GameObject zappingSoundObject;
@@ -56,6 +57,7 @@ public class Control_PlayerCharacter : Control_Character {
 		zappingSound = zappingSoundObject.GetComponent<AudioSource>();
 		zappingParticleObject = GameObject.Find("ZapEffect");
 		zappingParticles = zappingParticleObject.GetComponent<ParticleSystem>();
+		attackArmRenderer = attackArm.GetComponent<LineRenderer>();
 
 		isTransformed = false;
 		mainCameraControl = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Control_Camera>();
@@ -93,6 +95,11 @@ public class Control_PlayerCharacter : Control_Character {
 		RITUAL_PENTAGRAM_CENTER = Global_Settings.read("RITUAL_PENTAGRAM_CENTER");
 		RITUAL_PENTAGRAM_RADIUS = Global_Settings.read("RITUAL_PENTAGRAM_RADIUS");
 
+		ATTACK_RANGE = Global_Settings.read("MONSTER_ATTACK_RANGE");
+		ATTACK_MARGIN = Global_Settings.read("MONSTER_ATTACK_MARGIN") * 5f;
+		ATTACK_DURATION = Global_Settings.read("MONSTER_ATTACK_DURATION");
+		ATTACK_COOLDOWN = Global_Settings.read("MONSTER_ATTACK_COOLDOWN");
+
 		me.remainingReactionTime = TIME_TO_REACT;
 		
         // Move the character sprite directly to where the game state says it should be standing
@@ -112,9 +119,7 @@ public class Control_PlayerCharacter : Control_Character {
 		if (!isTransformed && GS.RITUAL_PERFORMED) {
 			stickmanObject.SetActive(false);
 			monsterToniObject.SetActive(true);
-			if (!stickmanRenderer.flipX) {
-				monsterToniRenderer.flipX = true;
-			}
+			monsterToniRenderer.flipX = !stickmanRenderer.flipX;
 			isTransformed = true;
 		}
 
@@ -123,7 +128,7 @@ public class Control_PlayerCharacter : Control_Character {
 			if (!GS.RITUAL_PERFORMED) {
 				takeItem();
 			} else {
-				attack();
+				StartCoroutine(playAttackAnimation(me.atPos + (monsterToniRenderer.flipX ? 1f : -1f), GS.getMonster()));
 			}
 		}
 		if (Input.GetButtonDown("Inventory")) { // Show inventory
@@ -209,7 +214,7 @@ public class Control_PlayerCharacter : Control_Character {
 			mainCameraControl.setRedOverlay(1.0f - me.remainingReactionTime / TIME_TO_REACT);
 		}
 	}
-	public void getHit() {
+	public override void getHit() {
 		StartCoroutine(dieAndRespawn());
 	}
 
@@ -412,4 +417,6 @@ public class Control_PlayerCharacter : Control_Character {
 			Debug.Log("Cannot find door spawn ID for at least one of these doors: " + door.INDEX + "," + destinationDoor.INDEX + ". Just got spawn IDs " + spawn1Index + ", " + spawn2Index);
 		}
 	}
+	// The rest stays empty for now (only relevant for the monster)...
+	protected override void postKillHook() {}
 }

@@ -7,6 +7,9 @@ public class Data_Monster : Data_Character {
     // Pointer to the character behavior aspect of the container object
     [NonSerialized]
 	public Control_Monster control;
+	public override Control_Character getControl() {
+		return control as Control_Character; 
+	}
 	[SerializeField]
 	public AI_WorldModel worldModel;
 
@@ -26,10 +29,6 @@ public class Data_Monster : Data_Character {
     public float randomTargetPos;
     public bool isThinking;
     public float remainingThinkingTime;
-
-	// While this value is above zero, it marks the character as uncontrollable and invulnerable, e.g. upon entering a door or dying
-	[SerializeField]
-	public float etherialCooldown; // in seconds
     
     public Data_Monster(string gameObjectName) : base(gameObjectName)
     {

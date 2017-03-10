@@ -2,9 +2,8 @@
 using System;
 
 // This is a pseudo-abstract class for other character classes to inherit from
-// It should not be instantiated directly
 [Serializable]
-public class Data_Character {
+public abstract class Data_Character {
 
     // Character name
     [SerializeField]
@@ -19,7 +18,8 @@ public class Data_Character {
     protected string _gameObjName;
     // Pointer to the container game object
     [NonSerialized]
-    public GameObject gameObj;
+	public GameObject gameObj;
+	public abstract Control_Character getControl();
 
     // Position of the character within game space
     [SerializeField]
@@ -42,6 +42,16 @@ public class Data_Character {
 	// Position of the character within game space
 	[SerializeField]
 	protected Data_Position _spawnPos;
+
+	// While this value is above zero, it marks the character as uncontrollable and invulnerable, e.g. upon entering a door or dying
+	[SerializeField]
+	public float etherialCooldown; // in seconds
+
+	// Just some shortcut functions
+	public bool isInvulnerable {
+		get { return (etherialCooldown >= 0); }
+		private set { return; }
+	}
 
     // Constructor
     public Data_Character(string gameObjectName)
