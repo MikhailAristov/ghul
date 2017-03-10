@@ -14,6 +14,10 @@ public class Control_Sound : MonoBehaviour {
 	public Text MonsterDistanceText;
 	public AudioSource AmbientNoise;
 
+	// Random noise settings
+	public const float RANDOM_NOISE_MIN_DELAY = 0.5f;
+	public const float RANDOM_NOISE_MAX_DELAY = 5.0f;
+
 	// Noise types:
 	public const int NOISE_TYPE_WALK = 0;
 	public const int NOISE_TYPE_RUN = 1;
@@ -24,9 +28,9 @@ public class Control_Sound : MonoBehaviour {
 
 	// Noise loudness values:
 	public const float NOISE_INAUDIBLE = 0.2f; // This is the effective volume at which the noise is no longer transmitted to the monster
-	public const float NOISE_VOL_QUIET = 1.0f;
-	public const float NOISE_VOL_MEDIUM = 2.0f;
-	public const float NOISE_VOL_LOUD = 4.0f;
+	public const float NOISE_VOL_QUIET = 2.0f;
+	public const float NOISE_VOL_MEDIUM = 5.0f;
+	public const float NOISE_VOL_LOUD = 10.0f;
 	// TODO: Fine-tune the values above
 
 	void Start() {
@@ -53,7 +57,7 @@ public class Control_Sound : MonoBehaviour {
 		while(true) {
 			if(!GS.SUSPENDED) {
 				DIST = GS.getDistance(CHARA.pos, MONSTER.pos);
-				if(Debug.isDebugBuild) {
+				if(Debug.isDebugBuild || GS.RITUAL_PERFORMED) {
 					MonsterDistanceText.text = string.Format("{0:0.0} m", DIST);
 				}
 			}
@@ -75,25 +79,30 @@ public class Control_Sound : MonoBehaviour {
 	// Whenever chara makes noise, this is where it is "heard"
 	public void makeNoise(int noiseType, Data_Position origin) {
 		// Calculate the intrinsic loudness of the noise
-		float loudness;
+		float loudness = getInitialLoudness(noiseType);
+		// Transmit the noise to the monster
+		transmitNoiseToMonster(loudness, origin);
+	}
+
+	// Returns the initial noise loudness by type
+	public static float getInitialLoudness(int noiseType) {
+		float result;
 		switch(noiseType) {
 		case NOISE_TYPE_WALK:
 		default:
-			loudness = NOISE_VOL_QUIET;
+			result = NOISE_VOL_QUIET;
 			break;
 		case NOISE_TYPE_DOOR:
 		case NOISE_TYPE_ITEM:
-			loudness = NOISE_VOL_MEDIUM;
+			result = NOISE_VOL_MEDIUM;
 			break;
 		case NOISE_TYPE_RUN:
-			loudness = NOISE_VOL_LOUD;
-			break;
 		case NOISE_TYPE_ZAP:
-			loudness = NOISE_VOL_LOUD;
+			result = NOISE_VOL_LOUD;
+			result = NOISE_VOL_LOUD;
 			break;
 		}
-		// Transmit the noise to the monster
-		transmitNoiseToMonster(loudness, origin);
+		return result;
 	}
 
 	// Transmits the noise to the monster
@@ -102,7 +111,7 @@ public class Control_Sound : MonoBehaviour {
 		if(MONSTER.isIn.INDEX == origin.RoomId) { return; }
 		// Otherwise, find the door through which the monster would hear the noise
 		float distance = float.MaxValue; int doorId = -1;
-		foreach(Data_Door d in MONSTER.isIn.DOORS) {
+		foreach(Data_Door d in MONSTER.isIn.DOORS.Values) {
 			float tentativeDist = GS.getDistance(d, origin);
 			if(tentativeDist < distance) {
 				distance = tentativeDist;
@@ -122,13 +131,14 @@ public class Control_Sound : MonoBehaviour {
 	private IEnumerator generateRandomNoises() {
 		while(true) {
 			// First, wait a random interval
-			float nextDelay = UnityEngine.Random.Range(0.5f, 5.0f);
+			float nextDelay = UnityEngine.Random.Range(RANDOM_NOISE_MIN_DELAY, RANDOM_NOISE_MAX_DELAY);
 			yield return new WaitForSeconds(nextDelay);
 			// Only proceed if the game isn't suspended
 			if(!GS.SUSPENDED) {
 				// Generate a random fake signal from "somewhere" within the house
-				float loudness = UnityEngine.Random.Range(NOISE_VOL_QUIET, NOISE_VOL_LOUD);
-				Data_Position origin = new Data_Position(GS.getRandomRoom(false).INDEX, 0);
+				float loudness = getInitialLoudness(UnityEngine.Random.Range(NOISE_TYPE_WALK, NOISE_TYPE_ZAP));
+				Data_Room originRoom = GS.getRandomRoom(false);
+				Data_Position origin = new Data_Position(originRoom.INDEX, UnityEngine.Random.Range(originRoom.leftWalkBoundary, originRoom.rightWalkBoundary));
 				// Transmit the signal to the monster (as long as it's not in the same room)
 				transmitNoiseToMonster(loudness, origin);
 			}

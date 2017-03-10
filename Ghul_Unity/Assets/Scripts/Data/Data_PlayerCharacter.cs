@@ -7,7 +7,10 @@ public class Data_PlayerCharacter : Data_Character {
 
     // Pointer to the character behavior aspect of the container object
     [NonSerialized]
-    public Control_PlayerCharacter control;
+	public Control_PlayerCharacter control;
+	public override Control_Character getControl() {
+		return control as Control_Character; 
+	}
 
     // Gameplay parameters:
     [SerializeField]
@@ -24,11 +27,6 @@ public class Data_PlayerCharacter : Data_Character {
         get { return _exhausted; }
         private set { _exhausted = value; }
     }
-	// Remaining time to escape the monster's
-    public float remainingReactionTime { get; set; }
-	// While this value is above zero, it marks the character as uncontrollable and invulnerable, e.g. upon entering a door or dying
-	[SerializeField]
-	public float etherialCooldown; // in seconds
 
 	// The item the character currently carries
 	[NonSerialized]
@@ -82,9 +80,4 @@ public class Data_PlayerCharacter : Data_Character {
         control = gameObj.GetComponent<Control_PlayerCharacter>();
         isIn = GS.getRoomByIndex(_pos.RoomId);
     }
-
-	// Just some shortcut functions
-	public bool isInvulnerable() {
-		return (etherialCooldown >= 0.0f);
-	}
 }

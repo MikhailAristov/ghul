@@ -13,4 +13,8 @@ public class Data_Cadaver : Data_Character {
 		gameObj = GameObject.Find(_gameObjName);
 		isIn = GS.getRoomByIndex(_pos.RoomId);
 	}
+
+	public override Control_Character getControl() {
+		throw new NotImplementedException();
+	}
 }

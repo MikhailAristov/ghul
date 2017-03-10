@@ -16,17 +16,17 @@ public class Data_GameState {
 	[NonSerialized] // Setting this flag makes the game generate a new item
 	public bool NEXT_ITEM_PLEASE = true;
 
-	[NonSerialized] // Setting this flag activates the house graph mix up
-	public bool KILLED = false;
-
-	[SerializeField]
-	public Data_Graph HOUSE_GRAPH;
-
 	[SerializeField] // Setting this flag changes Toni's sprite to a monster
 	public bool RITUAL_PERFORMED = false;
 
+	[NonSerialized] // Setting this flag activates the house graph mix up
+	public bool TONI_KILLED = false;
+
 	[SerializeField] // Setting this flag kills (the monster or) the civilian
 	public bool CIVILIAN_KILLED = false;
+
+	[SerializeField]
+	public Data_Graph HOUSE_GRAPH;
 
     [SerializeField]
     public SortedList<int, Data_Room> ROOMS;
@@ -46,11 +46,19 @@ public class Data_GameState {
     private Data_Monster MONSTER;
 	[SerializeField]
 	private Data_Cadaver CADAVER;
+	public bool monsterSeesToni {
+		get { return (TONI.isIn == MONSTER.isIn && !TONI.isInvulnerable); }
+		private set { return; }
+	}
+	public float distanceToToni {
+		get { return ((TONI.isIn == MONSTER.isIn) ? (TONI.atPos - MONSTER.atPos) : float.NaN); }
+		private set { return; }
+	}
 
 	[SerializeField]
-	private float[,] distanceBetweenTwoDoors;
+	public float[,] distanceBetweenTwoDoors;
 	[SerializeField]
-	private float[,] distanceBetweenTwoRooms;
+	public float[,] distanceBetweenTwoRooms;
 	public bool allRoomsReachable {
 		get { return ( distanceBetweenTwoRooms.Cast<float>().Max() < (float.MaxValue / 2) ); }
 		private set { return; }
@@ -318,7 +326,7 @@ public class Data_GameState {
 		} else {
 			// Different rooms: check door distances
 			float result = float.MaxValue;
-			foreach(Data_Door startingDoor in getRoomByIndex(a.RoomId).DOORS) {
+			foreach(Data_Door startingDoor in getRoomByIndex(a.RoomId).DOORS.Values) {
 				float dist = Math.Abs(startingDoor.atPos - a.X) + getDistance(startingDoor, b); // Recycling of the other function
 				if(dist < result) {
 					result = dist;
@@ -336,7 +344,7 @@ public class Data_GameState {
 		} else {
 			// Different rooms: check door distances
 			float result = float.MaxValue;
-			foreach(Data_Door targetDoor in getRoomByIndex(pos.RoomId).DOORS) {
+			foreach(Data_Door targetDoor in getRoomByIndex(pos.RoomId).DOORS.Values) {
 				float dist = distanceBetweenTwoDoors[door.INDEX, targetDoor.INDEX] + Math.Abs(targetDoor.atPos - pos.X);
 				if(dist < result) {
 					result = dist;

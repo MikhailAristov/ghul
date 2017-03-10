@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using UnityEngine;
+using System.Collections.Generic;
 
 public class Global_Settings {
 
@@ -33,12 +34,15 @@ public class Global_Settings {
 			{ "CHARA_WALKING_SPEED",			5.0f },
 			{ "CHARA_RUNNING_SPEED",			8.0f },
 			{ "CHARA_SINGLE_STEP_LENGTH",		1.4f },		// this is how many (virtual) meters chara can walk before making a noise
-			{ "TIME_TO_REACT",					0.35f },	// if the player escapes the monster's radius within this timeframe, he isn't killed.
+			{ "SUICIDLE_DURATION",				10.0f },	// How long the suicidle animation takes
 
 			// Monster settings
 			{ "MONSTER_WALKING_SPEED",			5.2f },
 			{ "MONSTER_SLOW_WALKING_SPEED",		2.5f },		// when the monster randomly walks around
-			{ "MONSTER_KILL_RADIUS",			1.0f },		// when the player gets this close to the monster, he dies. Also used the other way around after the ritual.
+			{ "MONSTER_ATTACK_RANGE",			3.0f },		// the distance from the monster that it main attack hits
+			{ "MONSTER_ATTACK_MARGIN",			0.1f },		// the size of the "hitbox" for the monster's attack
+			{ "MONSTER_ATTACK_DURATION",		0.2f },		// how long, in seconds, does an attack take from start to hit
+			{ "MONSTER_ATTACK_COOLDOWN",		1.0f },		// how long, in seconds, does an attack take from hit to finish
 
 			// Stamina range: 0.0 .. 1.0; increments are applied per second
 			{ "RUNNING_STAMINA_LOSS",			-0.2f },	// Must be negative
@@ -51,6 +55,9 @@ public class Global_Settings {
 			{ "ITEM_FLOOR_LEVEL",				-1.8f },	// Distance from the horizontal center of the room at which items are lying on the floor
 			{ "INVENTORY_DISPLAY_DURATION",		2.0f },		// How long the inventory overlay is shown when invoked
 			{ "TOTAL_NUMBER_OF_ITEMS_PLACED",	8.0f },	// needs casting to int when used
+
+			// Artificial intelligence and modelling settings
+			{ "TIME_STEP",		Time.fixedDeltaTime },		// ...
 
 			// Miscellaneous setttings
 			{ "AUTOSAVE_FREQUENCY",				10.0f },	// In seconds
