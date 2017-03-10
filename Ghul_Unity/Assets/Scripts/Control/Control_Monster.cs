@@ -222,17 +222,15 @@ public class Control_Monster : Control_Character {
 			return;
 		}
 
-		if (GS.RITUAL_PERFORMED) {
-			// TODO: Move monster to ritual room, standing before only usable door
-			me.state = STATE_WANDERING;
-			monsterImageObject.SetActive(false);
-		} else {
-			civilianObject.SetActive(false); // Monster-Toni not visible at first.
-		}
-
-		if (GS.CIVILIAN_KILLED) {
-			GS.CIVILIAN_KILLED = false;
-			dieAndRespawn();
+		// If the endgame has been triggered, but the monster has not yet been killed,
+		// teleport into the ritual room and stand there passively
+		if (GS.RITUAL_PERFORMED && !IS_CIVILIAN) {
+			if(me.isIn.INDEX != RITUAL_ROOM_INDEX) {
+				teleportToRitualRoom();
+			} else {
+				setSpriteFlip(me.atPos > Toni.atPos);
+				return;
+			}
 		}
 
 		if (me.state != STATE_WANDERING && !IS_CIVILIAN && GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < MARGIN_ITEM_STEAL) {
@@ -423,6 +421,21 @@ public class Control_Monster : Control_Character {
 		WALKING_SPEED = Global_Settings.read("MONSTER_SLOW_WALKING_SPEED") / 2f;
 	}
 
+	private void teleportToRitualRoom() {
+		// Find the door furthest removed from the pentagram
+		Data_Position pentagramPos = new Data_Position(RITUAL_ROOM_INDEX, Global_Settings.read("RITUAL_PENTAGRAM_CENTER"));
+		Data_Door targetDoor = null; float distToPentagram = 0;
+		foreach(Data_Door d in GS.getRoomByIndex(RITUAL_ROOM_INDEX).DOORS.Values) {
+			float newDistance = GS.getDistance(d, pentagramPos);
+			if(newDistance > distToPentagram) {
+				targetDoor = d.connectsTo;
+				distToPentagram = newDistance;
+			}
+		}
+		// "Go" through the door
+		StartCoroutine(goThroughTheDoor(targetDoor));
+	}
+
 	// Killing the monster / civilian during endgame
 	public void dieAndRespawn() {
 		Vector3 pos = transform.position;
@@ -459,9 +472,10 @@ public class Control_Monster : Control_Character {
 		nextDoorToGoThrough = null;
 		previousRoomVisited = currentRoom;
 	}
-	// If hit as a civiilian, die
+	// If hit after the ritual was performed, die
 	public override void getHit() {
-		if(IS_CIVILIAN) {
+		Debug.Log(me + " is hit");
+		if(GS.RITUAL_PERFORMED) {
 			dieAndRespawn();
 		}
 	}
