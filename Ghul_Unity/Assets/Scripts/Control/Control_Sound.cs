@@ -57,7 +57,7 @@ public class Control_Sound : MonoBehaviour {
 		while(true) {
 			if(!GS.SUSPENDED) {
 				DIST = GS.getDistance(CHARA.pos, MONSTER.pos);
-				if(Debug.isDebugBuild) {
+				if(Debug.isDebugBuild || GS.RITUAL_PERFORMED) {
 					MonsterDistanceText.text = string.Format("{0:0.0} m", DIST);
 				}
 			}

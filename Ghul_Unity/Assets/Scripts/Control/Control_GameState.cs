@@ -143,8 +143,7 @@ public class Control_GameState : MonoBehaviour {
     }
 
     // This method initializes the game state back to default
-    private void resetGameState()
-    {
+    private void resetGameState() {
 		// Remove all doors, rooms and items
 		StopAllCoroutines();
 		List<GameObject> oldGameObjects = new List<GameObject>(GameObject.FindGameObjectsWithTag("Item"));

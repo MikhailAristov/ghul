@@ -49,7 +49,7 @@ public abstract class Data_Character {
 
 	// Just some shortcut functions
 	public bool isInvulnerable {
-		get { return (etherialCooldown >= 0); }
+		get { return (etherialCooldown > 0); }
 		private set { return; }
 	}
 

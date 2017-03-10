@@ -150,7 +150,8 @@ public abstract class Control_Character : MonoBehaviour {
 			yield return new WaitForSeconds(ATTACK_DURATION * attackProgressStep);
 		}
 		// PHASE 2: Resolve
-		if(!attackIsCanceledByMoving && !target.isInvulnerable && GS.monsterSeesToni && Math.Abs(target.atPos - attackPoint) <= ATTACK_MARGIN) {
+		if(!attackIsCanceledByMoving && !target.isInvulnerable &&
+			GS.monsterSeesToni && Math.Abs(target.atPos - attackPoint) <= ATTACK_MARGIN) {
 			target.getControl().getHit();
 			postKillHook();
 		}
