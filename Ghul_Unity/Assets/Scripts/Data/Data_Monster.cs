@@ -20,27 +20,10 @@ public class Data_Monster : Data_Character {
 	public float AGGRO; // = (number of items collected so far) / 10 + (minutes elapsed since last kill) (double that if Toni carries an item)
 	[SerializeField]
 	public float timeSinceLastKill;
-
-    // Gameplay parameters:
-    public bool playerInSight;
-	public bool playerDetected; // defines whether the monster knows where to go
-    public float playerPosLastSeen;
-    public bool isRandomTargetSet; // define whether the monster made up its mind where to go
-    public float randomTargetPos;
-    public bool isThinking;
-    public float remainingThinkingTime;
     
     public Data_Monster(string gameObjectName) : base(gameObjectName)
     {
         control = gameObj.GetComponent<Control_Monster>();
-        // Initialize gameplay parameters
-        playerInSight = false;
-        playerDetected = false;
-        playerPosLastSeen = 0.0f;
-        isRandomTargetSet = false;
-        randomTargetPos = 0.0f;
-        isThinking = false;
-        remainingThinkingTime = 0.0f;
 		// AI parameters
 		state = Control_Monster.STATE_SEARCHING;
     }

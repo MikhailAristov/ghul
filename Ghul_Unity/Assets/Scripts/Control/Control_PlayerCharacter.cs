@@ -27,7 +27,6 @@ public class Control_PlayerCharacter : Control_Character {
 	private float INVENTORY_DISPLAY_DURATION;
 
 	// Gameplay parameters
-	private float TIME_TO_REACT;
 	private bool isTransformed;
 
 	// Graphics parameters
@@ -87,8 +86,6 @@ public class Control_PlayerCharacter : Control_Character {
 		DOOR_TRANSITION_DURATION = Global_Settings.read("DOOR_TRANSITION_DURATION");
 
 		RESPAWN_TRANSITION_DURATION = Global_Settings.read("TOTAL_DEATH_DURATION");
-		TIME_TO_REACT = Global_Settings.read("TIME_TO_REACT");
-
 		INVENTORY_DISPLAY_DURATION = Global_Settings.read("INVENTORY_DISPLAY_DURATION");
 
 		RITUAL_ROOM_INDEX = (int)Global_Settings.read("RITUAL_ROOM_INDEX");
@@ -99,8 +96,6 @@ public class Control_PlayerCharacter : Control_Character {
 		ATTACK_MARGIN = Global_Settings.read("MONSTER_ATTACK_MARGIN") * 5f;
 		ATTACK_DURATION = Global_Settings.read("MONSTER_ATTACK_DURATION");
 		ATTACK_COOLDOWN = Global_Settings.read("MONSTER_ATTACK_COOLDOWN");
-
-		me.remainingReactionTime = TIME_TO_REACT;
 		
         // Move the character sprite directly to where the game state says it should be standing
         Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
@@ -115,20 +110,12 @@ public class Control_PlayerCharacter : Control_Character {
 			return;
 		}
 
-		// Transformation into monster
-		if (!isTransformed && GS.RITUAL_PERFORMED) {
-			stickmanObject.SetActive(false);
-			monsterToniObject.SetActive(true);
-			monsterToniRenderer.flipX = !stickmanRenderer.flipX;
-			isTransformed = true;
-		}
-
 		// Item actions or attack after ritual
 		if (Input.GetButtonDown("Action")) {
-			if (!GS.RITUAL_PERFORMED) {
-				takeItem();
-			} else {
+			if (isTransformed) {
 				StartCoroutine(playAttackAnimation(me.atPos + (monsterToniRenderer.flipX ? 1f : -1f), GS.getMonster()));
+			} else {
+				takeItem();
 			}
 		}
 		if (Input.GetButtonDown("Inventory")) { // Show inventory
@@ -175,6 +162,7 @@ public class Control_PlayerCharacter : Control_Character {
 			if(walkIntoDoor != null) {
 				// Walk through the door if triggered
 				StartCoroutine(goThroughTheDoor(walkIntoDoor));
+				return;
 			}
 		} else {
 			regainStamina();
@@ -205,15 +193,6 @@ public class Control_PlayerCharacter : Control_Character {
 		}
 	}
 
-	// Player withing the attack radius -> reduce time to react
-	public void takeDamage() {
-		me.remainingReactionTime -= Time.deltaTime;
-		if(me.remainingReactionTime <= 0.0f) {
-			StartCoroutine(dieAndRespawn());
-		} else {
-			mainCameraControl.setRedOverlay(1.0f - me.remainingReactionTime / TIME_TO_REACT);
-		}
-	}
 	public override void getHit() {
 		StartCoroutine(dieAndRespawn());
 	}
@@ -222,7 +201,6 @@ public class Control_PlayerCharacter : Control_Character {
 		// Start cooldown
 		me.etherialCooldown = RESPAWN_TRANSITION_DURATION;
 
-		mainCameraControl.setRedOverlay(0.0f);
 		Debug.Log(me + " died...");
 		me.deaths++;
 
@@ -246,13 +224,10 @@ public class Control_PlayerCharacter : Control_Character {
 		stickmanRenderer.enabled = true;
 
 		// Trigger the house mix up
-		GS.KILLED = true;
+		GS.TONI_KILLED = true;
 
 		// Fade back in
 		mainCameraControl.fadeIn(RESPAWN_TRANSITION_DURATION / 3);
-
-		// Reset the hitpoints
-		me.remainingReactionTime = TIME_TO_REACT;
 
 		// Trigger an autosave upon changing locations
 		Data_GameState.saveToDisk(GS);
@@ -303,8 +278,6 @@ public class Control_PlayerCharacter : Control_Character {
 			me.carriedItem.control.dropFromInventory();
 			Debug.Log("Item #" + me.carriedItem.INDEX + " dropped");
 			me.carriedItem = null;
-			// Reset the reaction time after dropping the item
-			me.remainingReactionTime = TIME_TO_REACT;
 			// Make noise at the current location
 			soundSystem.makeNoise(Control_Sound.NOISE_TYPE_ITEM, me.pos);
 			// Auto save when dropping an item.
@@ -335,6 +308,13 @@ public class Control_PlayerCharacter : Control_Character {
 		me.carriedItem = null;
 		// Auto save when placing an item.
 		Data_GameState.saveToDisk(GS);
+	}
+
+	public void setupEndgame() {
+		stickmanObject.SetActive(false);
+		monsterToniObject.SetActive(true);
+		monsterToniRenderer.flipX = !stickmanRenderer.flipX;
+		isTransformed = true;
 	}
 
 	// Shows the currentlly carried item on the UI
@@ -375,10 +355,6 @@ public class Control_PlayerCharacter : Control_Character {
 	}
 	protected override void cameraFadeIn(float duration) {
 		mainCameraControl.fadeIn(duration);
-	}
-	protected override void resetAttackStatus() {
-		me.remainingReactionTime = TIME_TO_REACT;
-		mainCameraControl.resetRedOverlay();
 	}
 	protected override void makeNoise(int type, Data_Position atPos) {
 		soundSystem.makeNoise(type, atPos);

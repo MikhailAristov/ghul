@@ -27,8 +27,6 @@ public class Data_PlayerCharacter : Data_Character {
         get { return _exhausted; }
         private set { _exhausted = value; }
     }
-	// Remaining time to escape the monster's
-    public float remainingReactionTime { get; set; }
 
 	// The item the character currently carries
 	[NonSerialized]

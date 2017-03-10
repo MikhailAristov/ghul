@@ -73,8 +73,8 @@ public class Control_GameState : MonoBehaviour {
 		}
 
 		// Check if player died to trigger house mix up
-		if (GS.KILLED == true) {
-			GS.KILLED = false;
+		if (GS.TONI_KILLED == true) {
+			GS.TONI_KILLED = false;
 			houseMixup(GS.TONI.deaths);
 		}
     }
@@ -135,6 +135,11 @@ public class Control_GameState : MonoBehaviour {
 			item.control.updateGameObjectPosition();
 		}
 		StartCoroutine(updateWallScribbles(0.0f));
+
+		// Re-trigger the endgame if necessary
+		if(GS.RITUAL_PERFORMED) {
+			triggerEndgame();
+		}
     }
 
     // This method initializes the game state back to default
@@ -366,14 +371,13 @@ public class Control_GameState : MonoBehaviour {
 		GameObject newGameButton = GameObject.Find("NewGameButton");
 		Color col = new Color(100f / 255f, 0f, 0f);
 		newGameButton.GetComponent<Image>().color = col;
+		// Transform Toni
+		GS.getToni().control.setupEndgame();
 	}
 
 	public void houseMixup(int deaths) {
 		int itemCount = GS.ITEMS.Count;
 		float evilness = Mathf.Max(1.0f, (float)itemCount * 0.5f + ((float)deaths * 0.2f));
-		//if (deaths < 3) {
-		//	evilness = 0.0f; // No mix up until the third death
-		//}
 		GS.HOUSE_GRAPH = Control_GraphMixup.MixUpGraph(GS.HOUSE_GRAPH, (int)evilness);
 		respawnAndConnectAllDoors();
 	}

@@ -34,12 +34,10 @@ public class Global_Settings {
 			{ "CHARA_WALKING_SPEED",			5.0f },
 			{ "CHARA_RUNNING_SPEED",			8.0f },
 			{ "CHARA_SINGLE_STEP_LENGTH",		1.4f },		// this is how many (virtual) meters chara can walk before making a noise
-			{ "TIME_TO_REACT",					0.35f },	// if the player escapes the monster's radius within this timeframe, he isn't killed.
 
 			// Monster settings
 			{ "MONSTER_WALKING_SPEED",			5.2f },
 			{ "MONSTER_SLOW_WALKING_SPEED",		2.5f },		// when the monster randomly walks around
-			{ "MONSTER_KILL_RADIUS",			1.0f },		// when the player gets this close to the monster, he dies. Also used the other way around after the ritual.
 			{ "MONSTER_ATTACK_RANGE",			3.0f },		// the distance from the monster that it main attack hits
 			{ "MONSTER_ATTACK_MARGIN",			0.1f },		// the size of the "hitbox" for the monster's attack
 			{ "MONSTER_ATTACK_DURATION",		0.2f },		// how long, in seconds, does an attack take from start to hit
@@ -59,7 +57,6 @@ public class Global_Settings {
 
 			// Artificial intelligence and modelling settings
 			{ "TIME_STEP",		Time.fixedDeltaTime },		// ...
-
 
 			// Miscellaneous setttings
 			{ "AUTOSAVE_FREQUENCY",				10.0f },	// In seconds

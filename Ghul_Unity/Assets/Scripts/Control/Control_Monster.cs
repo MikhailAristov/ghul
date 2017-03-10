@@ -14,7 +14,6 @@ public class Control_Monster : Control_Character {
 
 	private float MARGIN_DOOR_ENTRANCE;
 	private float SCREEN_SIZE_HORIZONTAL;
-	private float TIME_TO_REACT;
 	private float MARGIN_ITEM_STEAL;
 	private int RITUAL_ROOM_INDEX;
 
@@ -81,6 +80,11 @@ public class Control_Monster : Control_Character {
 		DOOR_TRANSITION_DURATION = Global_Settings.read("DOOR_TRANSITION_DURATION");
 		RITUAL_ROOM_INDEX = (int)Global_Settings.read("RITUAL_ROOM_INDEX");
 		MARGIN_ITEM_STEAL = Global_Settings.read("MARGIN_ITEM_COLLECT") / 10f;
+
+		// Setup endgame, if it has already been triggered
+		if(GS.RITUAL_PERFORMED) {
+			setupEndgame();
+		}
 
         // Move the character sprite directly to where the game state says it should be standing
         Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
@@ -408,15 +412,24 @@ public class Control_Monster : Control_Character {
 		}
 	}
 
+	// This function carries out the necessary adjustments to the monster's game objects
+	public void setupEndgame() {
+		IS_CIVILIAN = true;
+		monsterImageObject.SetActive(false);
+		civilianObject.SetActive(true);
+		me.state = STATE_WANDERING;
+		// Halve the movement speed
+		RUNNING_SPEED = Global_Settings.read("MONSTER_WALKING_SPEED") / 2f;
+		WALKING_SPEED = Global_Settings.read("MONSTER_SLOW_WALKING_SPEED") / 2f;
+	}
+
 	// Killing the monster / civilian during endgame
 	public void dieAndRespawn() {
 		Vector3 pos = transform.position;
 
 		if (!IS_CIVILIAN) {
 			Debug.Log("The monster died.");
-			monsterImageObject.SetActive(false);
-			civilianObject.SetActive(true);
-			IS_CIVILIAN = true;
+			setupEndgame();
 		} else {
 			Debug.Log("A civilian died.");
 		}
@@ -425,12 +438,11 @@ public class Control_Monster : Control_Character {
 
 		// Move the civilian to a distant room
 		me.updatePosition(GS.getRoomFurthestFrom(me.isIn.INDEX), 0, 0);
+		me.worldModel.updateMyRoom(me.isIn, false);
+		nextDoorToGoThrough = null;
 		// Move the character sprite directly to where the game state says it should be standing
 		Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
 		transform.Translate(savedPosition - transform.position);
-
-		// Trigger an autosave after killing
-		Data_GameState.saveToDisk(GS);
 	}
 
 	// Superclass functions implemented
@@ -441,9 +453,6 @@ public class Control_Monster : Control_Character {
 	protected override bool canRun() {
 		return true; // The monster can always run
 	}
-	protected override void resetAttackStatus() {
-		me.playerDetected = false;
-	}
 	// Instead of updating statistics, the monster updates its position in the world model and checks whether it sees Toni
 	protected override void updateDoorUsageStatistic(Data_Door door, Data_Room currentRoom, Data_Door destinationDoor, Data_Room destinationRoom) {
 		me.worldModel.updateMyRoom(me.isIn, GS.monsterSeesToni);
@@ -453,7 +462,7 @@ public class Control_Monster : Control_Character {
 	// If hit as a civiilian, die
 	public override void getHit() {
 		if(IS_CIVILIAN) {
-			Debug.Log("DED");
+			dieAndRespawn();
 		}
 	}
 	// Reset the kill time upon kill

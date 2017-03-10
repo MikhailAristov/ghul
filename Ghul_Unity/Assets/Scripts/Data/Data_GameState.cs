@@ -16,17 +16,17 @@ public class Data_GameState {
 	[NonSerialized] // Setting this flag makes the game generate a new item
 	public bool NEXT_ITEM_PLEASE = true;
 
-	[NonSerialized] // Setting this flag activates the house graph mix up
-	public bool KILLED = false;
-
-	[SerializeField]
-	public Data_Graph HOUSE_GRAPH;
-
 	[SerializeField] // Setting this flag changes Toni's sprite to a monster
 	public bool RITUAL_PERFORMED = false;
 
+	[NonSerialized] // Setting this flag activates the house graph mix up
+	public bool TONI_KILLED = false;
+
 	[SerializeField] // Setting this flag kills (the monster or) the civilian
 	public bool CIVILIAN_KILLED = false;
+
+	[SerializeField]
+	public Data_Graph HOUSE_GRAPH;
 
     [SerializeField]
     public SortedList<int, Data_Room> ROOMS;

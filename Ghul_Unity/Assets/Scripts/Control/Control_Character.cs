@@ -97,7 +97,6 @@ public abstract class Control_Character : MonoBehaviour {
 		float newValidPosition = destinationRoom.env.validatePosition(destinationDoor.atPos);
 		getMe().updatePosition(destinationRoom, newValidPosition);
 		currentEnvironment = getMe().isIn.env;
-		resetAttackStatus();
 
 		// Move character sprite
 		Vector3 targetPosition = new Vector3(newValidPosition, destinationRoom.INDEX * VERTICAL_ROOM_SPACING);
@@ -118,7 +117,6 @@ public abstract class Control_Character : MonoBehaviour {
 	protected abstract void activateCooldown(float duration);
 	protected abstract void cameraFadeOut(float duration);
 	protected abstract void cameraFadeIn(float duration);
-	protected abstract void resetAttackStatus();
 	protected abstract void doBeforeLeavingRoom(Data_Door doorTaken);
 	protected abstract void makeNoise(int type, Data_Position atPos);
 	protected abstract void updateDoorUsageStatistic(Data_Door door, Data_Room currentRoom, Data_Door destinationDoor, Data_Room destinationRoom);
