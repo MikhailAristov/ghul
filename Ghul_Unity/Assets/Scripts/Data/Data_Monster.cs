@@ -29,7 +29,11 @@ public class Data_Monster : Data_Character {
     }
 
 	public void resetWorldModel(Data_GameState GS) {
-		worldModel = new AI_WorldModel(GS);
+		if(worldModel == null) {
+			worldModel = new AI_WorldModel(GS);
+		} else {
+			worldModel.reset(GS);
+		}
 	}
 
     // Resets game object references, e.g. after a saved state load

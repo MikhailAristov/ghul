@@ -49,6 +49,8 @@ public class AI_WorldModel {
 		for(int i = 0; i < roomCount; i++) {
 			probabilityThatToniIsInRoom[i] = uniformDistribution;
 		}
+		playerModel.recalculate(GS);
+		signalModel.recalculate(GS);
 	}
 
 	// Update the world model with the knowledge that Toni is currently seen in a specific room

@@ -33,7 +33,8 @@ public class Control_Monster : Control_Character {
 	private float distanceThresholdToStartPursuing; // = AGGRO * screen width / 2
 	private double certaintyThresholdToStartStalking;
 
-	private Data_Door nextDoorToGoThrough;
+	[NonSerialized]
+	public Data_Door nextDoorToGoThrough;
 	private Data_Room previousRoomVisited; // This can be used to prevent endless door walk cycles
 
 	// prefab, to be placed for each death
@@ -158,7 +159,7 @@ public class Control_Monster : Control_Character {
 			}
 			break;
 		// If, while stalking, monster sees Toni, start pursuing
-		// But if Tonis position no longer certain, start searching again
+		// But if Toni's position no longer certain, start searching again
 		case STATE_STALKING:
 			distanceThresholdToStartPursuing = me.AGGRO * SCREEN_SIZE_HORIZONTAL / 2; 
 			if(GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < distanceThresholdToStartPursuing) {
@@ -393,6 +394,7 @@ public class Control_Monster : Control_Character {
 
 	// Walk towards the door and through it, if possible
 	private void walkToAndThroughDoor(Data_Door door, bool run, float deltaTime) {
+		Debug.Assert(door != null);
 		float distToDoor = door.visiblePos - me.atPos;
 		if(Math.Abs(distToDoor) <= MARGIN_DOOR_ENTRANCE) {
 			StartCoroutine(goThroughTheDoor(door));
@@ -470,6 +472,8 @@ public class Control_Monster : Control_Character {
 	// Reset the kill time upon kill
 	protected override void postKillHook() {
 		me.timeSinceLastKill = 0;
+		// Extend the time the monster stands still after killing Toni
+		me.etherialCooldown = Global_Settings.read("TOTAL_DEATH_DURATION") / 3f;
 	}
 	// The rest stays empty for now (only relevant for Toni)...
 	protected override void updateStamina(bool isRunning) {}

@@ -416,6 +416,9 @@ public class Control_GameState : MonoBehaviour {
 		float evilness = Mathf.Max(1.0f, (float)itemCount * 0.5f + ((float)deaths * 0.2f));
 		GS.HOUSE_GRAPH = Control_GraphMixup.MixUpGraph(GS.HOUSE_GRAPH, (int)evilness);
 		respawnAndConnectAllDoors();
+		// Update the monster's world model, too
+		GS.getMonster().resetWorldModel(GS);
+		GS.getMonster().control.nextDoorToGoThrough = null;
 	}
 
     // This method is called when the New Game button is activated from the main menu

@@ -75,6 +75,7 @@ public class Data_Door : IComparable<Data_Door> {
 		gameObj = go;
 		// Set the room object references
 		_pos = new Data_Position(parentRoom.INDEX, xPos);
+		Debug.Assert(parentRoom != null);
 		isIn = parentRoom;
 		parentRoom.addDoor(this);
 	}
