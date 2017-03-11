@@ -79,6 +79,15 @@ public abstract class Control_Character : MonoBehaviour {
 
 	// This function transitions the character through a door
 	protected IEnumerator goThroughTheDoor(Data_Door door) {
+		if (door == null) {
+			Debug.LogError("Trying to open a null-door. Current room ID = " + getMe().isIn.INDEX);
+			return false;
+		}
+		if (door.gameObj == null) {
+			Debug.LogError("Trying to open a door with a null gameObject. Current room ID = " + getMe().isIn.INDEX + ", doorID = " + door.INDEX);
+			return false;
+		}
+
 		Data_Room currentRoom = getMe().isIn;
 		Data_Door destinationDoor = door.connectsTo;
 		Data_Room destinationRoom = destinationDoor.isIn;

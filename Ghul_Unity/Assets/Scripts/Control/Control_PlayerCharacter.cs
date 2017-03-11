@@ -142,7 +142,7 @@ public class Control_PlayerCharacter : Control_Character {
 		}
 
         // Vertical "movement"
-        if (Input.GetAxis("Vertical") > 0.1f)
+		if (Input.GetButtonDown("Vertical"))
 		{
 			me.timeWithoutAction = 0;
             // Check if the character can walk through the door, and if so, move them to the "other side"
