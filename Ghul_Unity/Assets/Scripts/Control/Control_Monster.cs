@@ -348,6 +348,8 @@ public class Control_Monster : Control_Character {
 				foreach(Data_Door door in me.isIn.DOORS.Values) {
 					// Utility is basically equal to the distance to the door, plus a random factor to avoid deadlocks
 					curUtility = Math.Abs(door.visiblePos - me.atPos) + UnityEngine.Random.Range(0f, 0.1f);
+					// Also penalize going into ritual room
+					curUtility -= (door.connectsTo.isIn.INDEX == RITUAL_ROOM_INDEX) ? (0.5 * double.MaxValue) : 0;
 					// However, having to run past Toni is penalized
 					bool toniIsBetweenMeAndDoor = (door.atPos <= Toni.atPos && Toni.atPos <= me.atPos) || (door.atPos >= Toni.atPos && Toni.atPos >= me.atPos);
 					curUtility -= toniIsBetweenMeAndDoor ? (2.0 * (double)Math.Abs(door.visiblePos - Toni.atPos)) : 0;
@@ -472,8 +474,8 @@ public class Control_Monster : Control_Character {
 	// Reset the kill time upon kill
 	protected override void postKillHook() {
 		me.timeSinceLastKill = 0;
-		// Extend the time the monster stands still after killing Toni
-		me.etherialCooldown = Global_Settings.read("TOTAL_DEATH_DURATION") / 3f;
+		// Extend the time the monster stands still after killing Toni (while the house is being rebuilt)
+		me.etherialCooldown = Global_Settings.read("TOTAL_DEATH_DURATION");
 	}
 	// The rest stays empty for now (only relevant for Toni)...
 	protected override void updateStamina(bool isRunning) {}
