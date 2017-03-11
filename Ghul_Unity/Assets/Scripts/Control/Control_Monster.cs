@@ -262,7 +262,7 @@ public class Control_Monster : Control_Character {
 	// Or walk around randomply (in wandering mode)
 	private void enactSearchPolicy(bool aggressiveSearch) {
 		// Only conduct full search if no door has been selected as target yet
-		if(nextDoorToGoThrough == null) {
+		if(nextDoorToGoThrough == null || nextDoorToGoThrough.gameObj == null) {
 			// Analyze available door options
 			double highestDoorUtility = double.MinValue; double curUtility;
 			foreach(Data_Door door in me.isIn.DOORS.Values) {
@@ -296,7 +296,12 @@ public class Control_Monster : Control_Character {
 			}
 		}
 		// With the door set, move towards and through it
-		walkToAndThroughDoor(nextDoorToGoThrough, false, Time.deltaTime);
+		if (nextDoorToGoThrough.gameObj != null) {
+			walkToAndThroughDoor(nextDoorToGoThrough, false, Time.deltaTime);
+		} else {
+			// Unable to use that door
+			Debug.Log("Monster tried using door with null gameObject. Aborting.");
+		}
 	}
 
 	// Run towards within striking range of Toni
@@ -430,7 +435,18 @@ public class Control_Monster : Control_Character {
 			}
 		}
 		// "Go" through the door
-		StartCoroutine(goThroughTheDoor(targetDoor));
+		if (targetDoor != null && targetDoor.gameObj != null) {
+			StartCoroutine(goThroughTheDoor(targetDoor));
+		} else {
+			Debug.LogError("Error: Control_Monster.teleportToRitualRoom tries Control_Character.goThroughTheDoor but...");
+			if (targetDoor == null) {
+				Debug.LogError("...the door is a null object.");
+			} 
+			if (targetDoor.gameObj == null) {
+				Debug.LogError("...targetDoor.gameObj is a null object. Problematic door information: Index = " + targetDoor.INDEX + ", connectsTo = " + targetDoor.connectsTo
+					+ ", is in room with index " + targetDoor.isIn.INDEX);
+			}
+		}
 	}
 
 	// Killing the monster / civilian during endgame

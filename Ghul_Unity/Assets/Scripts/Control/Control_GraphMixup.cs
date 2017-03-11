@@ -169,11 +169,16 @@ public class Control_GraphMixup : MonoBehaviour {
 		}
 
 		int numOfRotations = (int)UnityEngine.Random.Range(1.0f, room.MAX_NUM_OF_DOORS);
+		bool rotationSuccessful = true;
 		for (int i = 0; i < numOfRotations; i++) {
-			room.rotate();
+			rotationSuccessful = room.rotate();
+			if (!rotationSuccessful) {
+				break;
+			}
 		}
-
-		Debug.Log("Rotated room " + room.INDEX + " exactly " + numOfRotations + " times.");
+		if (rotationSuccessful) {
+			Debug.Log("Rotated room " + room.INDEX + " exactly " + numOfRotations + " times.");
+		}
 
 		return graph;
 	}

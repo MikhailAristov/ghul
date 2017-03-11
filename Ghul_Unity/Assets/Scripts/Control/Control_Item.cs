@@ -48,12 +48,12 @@ public class Control_Item : MonoBehaviour {
 
 	// Drops a free-falling object on the floor
 	private IEnumerator fallOntoTheFloor() {
-		while(me.elevation > ITEM_FLOOR_LEVEL) {
+		while(me.elevation > ITEM_FLOOR_LEVEL && gameObject != null) {
 			float newElevation = me.elevation - Time.deltaTime * getDownwardVelocity(ITEM_CARRY_ELEVATION - me.elevation);
 			me.updatePosition(me.isIn, me.pos.X, Math.Max(ITEM_FLOOR_LEVEL, newElevation));
 			updateGameObjectPosition();
 			yield return null;
-		}		
+		}
 	}
 
 	// Calculates the downward velocity of the falling object from the distance it had already fallen
@@ -103,7 +103,7 @@ public class Control_Item : MonoBehaviour {
 
 	// When CHARA picks it up
 	public void moveToInventory() {
-		if(me.isTakeable()) { 
+		if(me.isTakeable()) {
 			StopCoroutine("fallOntoTheFloor");
 			me.state = Data_Item.STATE_CARRIED;
 			GetComponent<Renderer>().enabled = false;

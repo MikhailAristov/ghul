@@ -389,6 +389,14 @@ public class Control_GameState : MonoBehaviour {
 
 	// Updates the scribbles on the wall in the ritual room, indicating the next item to find
 	private IEnumerator updateWallScribbles(float overTime) {
+		if (GS.getCurrentItem() == null) {
+			Debug.LogError("Error: GS.getCurrentItem() returns null.");
+			return false;
+		} else if (GS.getCurrentItem().control == null) {
+			Debug.LogError("Error: GS.getCurrentItem() does not return null but the returned item has no control");
+			return false;
+		}
+
 		SpriteRenderer rend = RitualRoomScribbles.GetComponent<SpriteRenderer>();
 		Sprite newSprite = GS.getCurrentItem().control.GetComponent<SpriteRenderer>().sprite;
 
