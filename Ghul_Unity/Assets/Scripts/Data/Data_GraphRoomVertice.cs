@@ -5,7 +5,7 @@ using System.Collections.Generic;
 [Serializable]
 public class Data_GraphRoomVertice {
 
-	[NonSerialized]
+	[SerializeField]
 	private Data_Graph graph;
 
 	[SerializeField]

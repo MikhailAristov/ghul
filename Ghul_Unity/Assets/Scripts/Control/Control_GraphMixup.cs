@@ -8,10 +8,8 @@ public class Control_GraphMixup : MonoBehaviour {
 
 	// Changes the graph layout slightly to frustrate the player, mwhahaha.
 	// degreeOfEvilness = number of potential changes. (upper bound)
-	public static Data_Graph MixUpGraph(Data_Graph g, int degreeOfEvilness) {
-		Data_Graph graph = g;
-		if (degreeOfEvilness <= 0) { return graph; }
-		if (degreeOfEvilness > MAX_EVILNESS) { degreeOfEvilness = MAX_EVILNESS; }
+	public static void MixUpGraph(ref Data_Graph graph, int degreeOfEvilness) {
+		degreeOfEvilness = Mathf.Max(0, Mathf.Min(degreeOfEvilness, MAX_EVILNESS));
 
 		for (int i = 0; i < degreeOfEvilness; i++) {
 			// Find a connection that has been used the most, but don't take the ritual room's doors too often.
@@ -67,29 +65,27 @@ public class Control_GraphMixup : MonoBehaviour {
 			switch (techniqueNr) {
 			case 1:
 				// Remove the connection (if possible)
-				graph = Control_GraphMixup.removeConnection(chosenSpawn, graph);
+				Control_GraphMixup.removeConnection(chosenSpawn, ref graph);
 				break;
 			case 2:
 				// Rotate the room
-				graph = Control_GraphMixup.rotateRoom(chosenSpawn, graph);
+				Control_GraphMixup.rotateRoom(chosenSpawn, ref graph);
 				break;
 			case 3:
 				// Reconnect the spawn to another one (if possible)
-				graph = Control_GraphMixup.reconnection(chosenSpawn, graph);
+				Control_GraphMixup.reconnection(chosenSpawn, ref graph);
 				break;
 			default:
 				break;
 			}
 		}
-
-		return graph;
 	}
 
 	// Removes the spawn's connection if:
 	// 1. It isn't connected to the ritual room
 	// 2. The removal doesn't divide the graph into multiple components
 	// 3. The removal doesn't potentially leave the ritual room as a 1-separator
-	private static Data_Graph removeConnection(Data_GraphDoorSpawn spawn, Data_Graph graph) {
+	private static void removeConnection(Data_GraphDoorSpawn spawn, ref Data_Graph graph) {
 		// Reset the number of uses for this connection (also reset when mix up fails to avoid reselecting this connection too often)
 		spawn.resetNumUses();
 		Data_GraphDoorSpawn otherSpawn = graph.DOOR_SPAWNS[spawn.CONNECTS_TO_SPAWN_ID];
@@ -97,7 +93,7 @@ public class Control_GraphMixup : MonoBehaviour {
 
 		// Connection to ritual room detected.
 		if (graph.DOOR_SPAWN_IS_IN_ROOM[spawn.INDEX] == 0 || graph.DOOR_SPAWN_IS_IN_ROOM[spawn.CONNECTS_TO_SPAWN_ID] == 0) {
-			return graph;
+			return;
 		}
 
 		bool connectionIsSeparator = false;
@@ -152,12 +148,10 @@ public class Control_GraphMixup : MonoBehaviour {
 		} else {
 			Debug.Log("Removed connection between door spawns " + spawn.INDEX + " and " + otherSpawn.INDEX);
 		}
-
-		return graph;
 	}
 
 	// Rotates the room the spawn is located in.
-	private static Data_Graph rotateRoom(Data_GraphDoorSpawn spawn, Data_Graph graph) {
+	private static void rotateRoom(Data_GraphDoorSpawn spawn, ref Data_Graph graph) {
 		Data_GraphRoomVertice room = graph.ABSTRACT_ROOMS[graph.DOOR_SPAWN_IS_IN_ROOM[spawn.INDEX]];
 
 		// Reset the number of uses for all of the room's connections
@@ -179,12 +173,10 @@ public class Control_GraphMixup : MonoBehaviour {
 		if (rotationSuccessful) {
 			Debug.Log("Rotated room " + room.INDEX + " exactly " + numOfRotations + " times.");
 		}
-
-		return graph;
 	}
 
 	// Reconnect the two door spawns to different ones (if possible without complications)
-	private static Data_Graph reconnection(Data_GraphDoorSpawn spawn, Data_Graph graph) {
+	private static void reconnection(Data_GraphDoorSpawn spawn, ref Data_Graph graph) {
 		// Reset the number of uses for this connection (also reset when mix up fails to avoid reselecting this connection too often)
 		spawn.resetNumUses();
 		Data_GraphDoorSpawn otherSpawn = graph.DOOR_SPAWNS[spawn.CONNECTS_TO_SPAWN_ID];
@@ -192,7 +184,7 @@ public class Control_GraphMixup : MonoBehaviour {
 
 		// Connection to ritual room detected.
 		if (graph.DOOR_SPAWN_IS_IN_ROOM[spawn.INDEX] == 0 || graph.DOOR_SPAWN_IS_IN_ROOM[spawn.CONNECTS_TO_SPAWN_ID] == 0) {
-			return graph;
+			return;
 		}
 
 		bool connectionIsSeparator = false;
@@ -265,7 +257,5 @@ public class Control_GraphMixup : MonoBehaviour {
 			Debug.Log("Reconnection: (" + spawn.INDEX + "," + otherSpawn.INDEX + "), (" + firstSpawn.INDEX + "," + secondSpawn.INDEX + ") -> ("
 				+ spawn.INDEX + "," + firstSpawn.INDEX + "), (" + otherSpawn.INDEX + "," + secondSpawn.INDEX + "). These are door spawn IDs.");
 		}
-
-		return graph;
 	}
 }

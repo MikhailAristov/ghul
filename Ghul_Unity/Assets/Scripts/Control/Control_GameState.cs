@@ -389,13 +389,6 @@ public class Control_GameState : MonoBehaviour {
 
 	// Updates the scribbles on the wall in the ritual room, indicating the next item to find
 	private IEnumerator updateWallScribbles(float overTime) {
-		if (GS.getCurrentItem() == null) {
-			Debug.LogError("Error: GS.getCurrentItem() returns null.");
-			return false;
-		} else if (GS.getCurrentItem().control == null) {
-			Debug.LogError("Error: GS.getCurrentItem() does not return null but the returned item has no control");
-			return false;
-		}
 
 		SpriteRenderer rend = RitualRoomScribbles.GetComponent<SpriteRenderer>();
 		Sprite newSprite = GS.getCurrentItem().control.GetComponent<SpriteRenderer>().sprite;
@@ -420,7 +413,7 @@ public class Control_GameState : MonoBehaviour {
 	public void houseMixup(int deaths) {
 		int itemCount = GS.ITEMS.Count;
 		float evilness = Mathf.Max(1.0f, (float)itemCount * 0.5f + ((float)deaths * 0.2f));
-		GS.HOUSE_GRAPH = Control_GraphMixup.MixUpGraph(GS.HOUSE_GRAPH, (int)evilness);
+		Control_GraphMixup.MixUpGraph(ref GS.HOUSE_GRAPH, (int)evilness);
 		respawnAndConnectAllDoors();
 		// Recalculate all distances
 		precomputeAllDistances();
