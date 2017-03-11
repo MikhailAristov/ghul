@@ -80,10 +80,8 @@ public class Control_GameState : MonoBehaviour {
 		case STATE_MONSTER_PHASE:
 			// The only way Toni can die in the endgame is by suicidle
 			if(GS.TONI_KILLED) {
-				Debug.Log("monst toni dead, switching to final endgame");
 				GS.OVERALL_STATE = STATE_MONSTER_DEAD;
 				Data_GameState.saveToDisk(GS);
-				Debug.Log(GS.OVERALL_STATE);
 			}
 			break;
 		default:
