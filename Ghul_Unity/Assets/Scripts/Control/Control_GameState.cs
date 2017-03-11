@@ -348,9 +348,7 @@ public class Control_GameState : MonoBehaviour {
 		float doorTransitionCost = Global_Settings.read("CHARA_WALKING_SPEED") * Global_Settings.read("DOOR_TRANSITION_DURATION");
 		// Precompute all-pairs shortest distances
 		GS.precomputeAllPairsShortestDistances(doorTransitionCost);
-		if(!GS.allRoomsReachable) {
-			Debug.LogWarning("APSD: Some rooms are unreachable!");
-		}
+		Debug.Assert(GS.allRoomsReachable);
 	}
 
 	// Places the next item in a random spot
@@ -416,6 +414,8 @@ public class Control_GameState : MonoBehaviour {
 		float evilness = Mathf.Max(1.0f, (float)itemCount * 0.5f + ((float)deaths * 0.2f));
 		GS.HOUSE_GRAPH = Control_GraphMixup.MixUpGraph(GS.HOUSE_GRAPH, (int)evilness);
 		respawnAndConnectAllDoors();
+		// Recalculate all distances
+		precomputeAllDistances();
 		// Update the monster's world model, too
 		GS.getMonster().resetWorldModel(GS);
 		GS.getMonster().control.nextDoorToGoThrough = null;
