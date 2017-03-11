@@ -29,6 +29,9 @@ public class Control_Monster : Control_Character {
 	public const int STATE_ATTACKING = 4;
 	public const int STATE_FLEEING = 5;
 
+	private const double utilityPenaltyRitualRoom = double.MaxValue / 2;
+	private const double utilityPenaltyPreviousRoom = double.MaxValue / 4;
+
 	private float stateUpdateCooldown;
 	private float distanceThresholdToStartPursuing; // = AGGRO * screen width / 2
 	private double certaintyThresholdToStartStalking;
@@ -258,42 +261,48 @@ public class Control_Monster : Control_Character {
 		}
 	}
 
+	private Data_Door findNextDoorToVisit(int policy, double ritualRoomPenalty, double previousRoomPenalty) {
+		Data_Door result = null;
+		// Analyze available door options
+		double highestDoorUtility = double.MinValue; double curUtility;
+		foreach(Data_Door door in me.isIn.DOORS.Values) {
+			int targetRoomIndex = door.connectsTo.isIn.INDEX;
+
+			// Initialize door utility with a random value to avoid deadlocks
+			curUtility = UnityEngine.Random.Range(0, 10f);
+
+			// Apply common door utility adjustments
+			curUtility -= (targetRoomIndex == RITUAL_ROOM_INDEX && GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) ? ritualRoomPenalty : 0;
+			curUtility -= (targetRoomIndex == previousRoomVisited.INDEX) ? previousRoomPenalty : 0;
+
+			// Apply policy specific adjustments
+			switch(policy) {
+			default:
+				// While searching for Toni, prioritize doors that lead to maximum distance gain to him
+				foreach(Data_Room room in GS.ROOMS.Values) {
+					if(room != me.isIn && room.INDEX != RITUAL_ROOM_INDEX) { // Ignore this room, as well as the ritual room
+						curUtility += me.worldModel.probabilityThatToniIsInRoom[room.INDEX] *
+							(GS.distanceBetweenTwoRooms[me.isIn.INDEX, room.INDEX] - GS.distanceBetweenTwoRooms[targetRoomIndex, room.INDEX]);
+					}
+				}
+				break;
+			}
+
+			// Check if the new utility is higher than the one found previously
+			if(curUtility > highestDoorUtility) {
+			result = door;
+				highestDoorUtility = curUtility;
+			}
+		}
+		return result;
+	}
+
 	// Walk towards the neighbouring room that appears to be the closest to Toni's suspected position (in aggressive mode)
 	// Or walk around randomply (in wandering mode)
 	private void enactSearchPolicy(bool aggressiveSearch) {
 		// Only conduct full search if no door has been selected as target yet
 		if(nextDoorToGoThrough == null) {
-			// Analyze available door options
-			double highestDoorUtility = double.MinValue; double curUtility;
-			foreach(Data_Door door in me.isIn.DOORS.Values) {
-				curUtility = 0;
-
-				// Try to ignore any doors leading to the ritual room
-				int targetRoomIndex = door.connectsTo.isIn.INDEX;
-				if(targetRoomIndex == RITUAL_ROOM_INDEX && GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
-					curUtility = double.MinValue / 2;
-				} else if (targetRoomIndex == previousRoomVisited.INDEX) {
-					curUtility = double.MinValue / 4;
-				}
-
-				// Calculate the utility of going through that door
-				if(aggressiveSearch) {
-					foreach(Data_Room room in GS.ROOMS.Values) {
-						if(room != me.isIn && room.INDEX != RITUAL_ROOM_INDEX) { // Ignore this room, as well as the ritual room
-							curUtility += me.worldModel.probabilityThatToniIsInRoom[room.INDEX] *
-							(GS.distanceBetweenTwoRooms[me.isIn.INDEX, room.INDEX] - GS.distanceBetweenTwoRooms[targetRoomIndex, room.INDEX]);
-						}
-					}
-				} else { // Non-aggressive search just picks doors at random
-					curUtility += UnityEngine.Random.Range(0, 10f);
-				}
-
-				// Check if the new utility is higher than the one found previously
-				if(curUtility > highestDoorUtility) {
-					nextDoorToGoThrough = door;
-					highestDoorUtility = curUtility;
-				}
-			}
+			nextDoorToGoThrough = findNextDoorToVisit(0, utilityPenaltyRitualRoom, utilityPenaltyPreviousRoom);
 		}
 		// With the door set, move towards and through it
 		walkToAndThroughDoor(nextDoorToGoThrough, false, Time.deltaTime);
