@@ -270,13 +270,19 @@ public class Control_PlayerCharacter : Control_Character {
 			// Check whether other item is within picking-distance
 			bool itemNearby = false;
 			Vector3 destPos = new Vector3(); // to place the zap-particle where the item is located
+			bool error = false;
 			foreach (Data_Item item in GS.ITEMS.Values) {
 				if (me.isIn == item.isIn && Math.Abs(me.atPos - item.atPos) < Global_Settings.read("MARGIN_ITEM_COLLECT") && item.INDEX != currentItem.INDEX) {
 					itemNearby = true;
-					destPos = item.gameObj.transform.position;
+					if (item.gameObj != null) {
+						destPos = item.gameObj.transform.position;
+					} else {
+						// Somehow there's no gameObj attached to the item. Weird.
+						error = true;
+					}
 				}
 			}
-			if (itemNearby) {
+			if (itemNearby && !error) {
 				// emit zapping sound and visual effect
 				zappingParticleObject.transform.Translate(destPos - zappingParticleObject.transform.position);
 				zappingParticles.Play();

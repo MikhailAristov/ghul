@@ -143,9 +143,21 @@ public class Data_GraphRoomVertice {
 	}
 
 	// Moves all spawn door connections by one.
-	public void rotate() {
+	public bool rotate() {
 		if (MAX_NUM_OF_DOORS <= 1)
-			return;
+			return false;
+
+		if (graph == null) {
+			Debug.Log("Tried to rotate room but graph is null.");
+			return false;
+		}
+
+		if (TwoDoorsConnectedInThisRoom()) {
+			// Messy room - not gonna touch that
+			Debug.Log("Not going to rotate a messy room.");
+			return false;
+		}
+
 		int listPlace = 0;
 		Data_GraphDoorSpawn iteratingSpawn = DOOR_SPAWNS.Values[listPlace];
 		int spawnIndexThereOld = iteratingSpawn.CONNECTS_TO_SPAWN_ID;
@@ -176,6 +188,19 @@ public class Data_GraphRoomVertice {
 			spawnIndexThereOld = iteratingSpawn.CONNECTS_TO_SPAWN_ID; // for the next loop
 			iteratingSpawn.connectTo(spawnIndexThereOldTMP); // Connect next one here to the spawn from other room
 		}
+
+		return true;
+	}
+
+	private bool TwoDoorsConnectedInThisRoom() {
+		foreach (Data_GraphDoorSpawn spawn in DOOR_SPAWNS.Values) {
+			int connectsToID = spawn.CONNECTS_TO_SPAWN_ID;
+			if (connectsToID != -1 && graph.DOOR_SPAWN_IS_IN_ROOM[connectsToID] == INDEX) {
+				// The door is connected to another door in this room. Rotation would mess this up even more.
+				return true;
+			}
+		}
+		return false;
 	}
 
 	// Calculates how many door spawns are connected.
