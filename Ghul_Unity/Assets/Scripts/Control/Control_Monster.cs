@@ -6,10 +6,14 @@ using System.Linq;
 
 public class Control_Monster : Control_Character {
 	
-    [NonSerialized]
+	[NonSerialized]
 	private Data_Monster me;
-	protected override Data_Character getMe() { return me as Data_Character; }
-    [NonSerialized]
+
+	protected override Data_Character getMe() {
+		return me as Data_Character;
+	}
+
+	[NonSerialized]
 	private Data_PlayerCharacter Toni;
 
 	private float MARGIN_DOOR_ENTRANCE;
@@ -28,6 +32,11 @@ public class Control_Monster : Control_Character {
 	public const int STATE_PURSUING = 3;
 	public const int STATE_ATTACKING = 4;
 	public const int STATE_FLEEING = 5;
+
+	private const double utilityPenaltyRitualRoom = double.MaxValue / 2;
+	private const double utilityPenaltyPreviousRoom = double.MaxValue / 4;
+	private const double utilityPenaltyTonisRoom = double.MaxValue / 8;
+	private const double utilityPenaltyToniInTheWay = double.MaxValue / 4;
 
 	private float stateUpdateCooldown;
 	private float distanceThresholdToStartPursuing; // = AGGRO * screen width / 2
@@ -57,10 +66,9 @@ public class Control_Monster : Control_Character {
 	}
 
 	// To make sure the game state is fully initialized before loading it, this function is called by game state class itself
-	public void loadGameState(Data_GameState gameState)
-	{
+	public void loadGameState(Data_GameState gameState) {
 		this.GS = gameState;
-        this.me = gameState.getMonster();
+		this.me = gameState.getMonster();
 		this.Toni = gameState.getToni();
 		this.currentEnvironment = me.isIn.env;
 
@@ -79,18 +87,18 @@ public class Control_Monster : Control_Character {
 		RITUAL_ROOM_INDEX = (int)Global_Settings.read("RITUAL_ROOM_INDEX");
 		MARGIN_ITEM_STEAL = Global_Settings.read("MARGIN_ITEM_COLLECT") / 10f;
 
-        // Move the character sprite directly to where the game state says it should be standing
-        Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
+		// Move the character sprite directly to where the game state says it should be standing
+		Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
 		transform.Translate(savedPosition - transform.position);
 
 		// Artificial intelligence
 		me.worldModel.updateMyRoom(me.isIn, GS.monsterSeesToni);
-		StartCoroutine(displayWorldState(1f/60f));
+		StartCoroutine(displayWorldState(1f / 60f));
 		// Initialize the state machine
 		stateUpdateCooldown = -1.0f;
 		certaintyThresholdToStartStalking = 0.5;
 		previousRoomVisited = me.isIn;
-    }
+	}
 
 	private IEnumerator displayWorldState(float interval) {
 		while(true) {
@@ -104,7 +112,9 @@ public class Control_Monster : Control_Character {
 	}
 
 	void FixedUpdate() {
-		if (GS == null || GS.SUSPENDED) { return; } // Don't do anything if the game state is not loaded yet or suspended
+		if(GS == null || GS.SUSPENDED) {
+			return;
+		} // Don't do anything if the game state is not loaded yet or suspended
 
 		// If monster sees Toni, everything else is irrelevant
 		if(GS.monsterSeesToni) {
@@ -190,14 +200,14 @@ public class Control_Monster : Control_Character {
 			break;
 		// Wandering is a special case: if the ritual has been performed, start fleeing from Toni
 		case STATE_WANDERING:
-			if(GS.OVERALL_STATE > Control_GameState.STATE_TRANSFORMATION && 
-				GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < (SCREEN_SIZE_HORIZONTAL / 2)) {
+			if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE &&
+			   GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < (SCREEN_SIZE_HORIZONTAL / 2)) {
 				me.state = STATE_FLEEING;
 			}
 			break;
 		// Stop fleeing if Toni is no longer seen
 		case STATE_FLEEING:
-			if(!GS.monsterSeesToni) {
+			if(!GS.monsterSeesToni || GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_DEAD) {
 				me.state = STATE_WANDERING;
 			}
 			break;
@@ -209,16 +219,18 @@ public class Control_Monster : Control_Character {
 	}
 
 	// Update is called once per frame
-	void Update () {
-		if (GS == null || GS.SUSPENDED) { return; } // Don't do anything if the game state is not loaded yet or suspended
-		if (me.etherialCooldown > 0.0f) { // While the character is etherial, don't do anything
+	void Update() {
+		if(GS == null || GS.SUSPENDED) {
+			return;
+		} // Don't do anything if the game state is not loaded yet or suspended
+		if(me.etherialCooldown > 0.0f) { // While the character is etherial, don't do anything
 			me.etherialCooldown -= Time.deltaTime;
 			return;
 		}
 
 		// If the endgame has been triggered, but the monster has not yet been killed,
 		// teleport into the ritual room and stand there passively
-		if (GS.OVERALL_STATE == Control_GameState.STATE_TRANSFORMATION && !GS.MONSTER_KILLED) {
+		if(GS.OVERALL_STATE == Control_GameState.STATE_TRANSFORMATION && !GS.MONSTER_KILLED) {
 			if(me.isIn.INDEX != RITUAL_ROOM_INDEX) {
 				teleportToRitualRoom();
 			} else {
@@ -228,7 +240,7 @@ public class Control_Monster : Control_Character {
 		}
 
 		// During the collection phase of the game, make Toni drop his carried items if he gets too close
-		if (GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE && GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < MARGIN_ITEM_STEAL) {
+		if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE && GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < MARGIN_ITEM_STEAL) {
 			Toni.control.dropItem();
 		}
 
@@ -258,50 +270,101 @@ public class Control_Monster : Control_Character {
 		}
 	}
 
+	/* Assigns a utility score to each currently visible door and returns the door with the highest utility
+	 * 
+	 *  aggressive :			if specified, a door's utility increases, the closer it takes the monster to Toni
+	 * 	localDistanceFactor :	the higher the factor, the more the monster will prefer closer doors over further ones
+	 * 	ritualRoomPenalty :		flat utility penalty for going into the ritual room (should normally be very high)
+	 * 	previousRoomPenalty :	flat penalty for returning to the room where the monster came from
+	 *  meetingToniPenalty :	flat penalty on entering the room where Toni is most likely to be
+	 *  toniInTheWayPenalty :	flat penalty for running past Toni to reach that door
+	*/
+	private Data_Door findNextDoorToVisit(bool aggressive, double localDistanceFactor, double ritualRoomPenalty, double previousRoomPenalty, double meetingToniPenalty, double toniInTheWayPenalty) {
+		Data_Door result = null;
+		// Analyze available door options
+		double highestDoorUtility = double.MinValue;
+		double curUtility;
+		foreach(Data_Door door in me.isIn.DOORS.Values) {
+			int targetRoomIndex = door.connectsTo.isIn.INDEX;
+
+			// Initialize door utility with a random value to avoid deadlocks
+			curUtility = UnityEngine.Random.Range(0, 10f);
+
+			// Apply common door utility adjustments:
+			// -> door leads to the ritual room
+			curUtility -= (targetRoomIndex == RITUAL_ROOM_INDEX && GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) ? ritualRoomPenalty : 0;
+			// -> door leads back to where monster came from
+			curUtility -= (targetRoomIndex == previousRoomVisited.INDEX) ? previousRoomPenalty : 0;
+			// -> door leads to the room where Toni is most likely to be
+			curUtility -= (targetRoomIndex == me.worldModel.mostLikelyTonisRoomIndex) ? meetingToniPenalty : 0;
+			// -> Toni stands between monster and the door
+			bool toniIsInTheWay = GS.monsterSeesToni && ((door.atPos <= Toni.atPos && Toni.atPos <= me.atPos) || (door.atPos >= Toni.atPos && Toni.atPos >= me.atPos));
+			curUtility -= toniIsInTheWay ? toniInTheWayPenalty : 0;
+			// -> distance to door (relative to room width)
+			curUtility -= localDistanceFactor * (me.isIn.width - Math.Abs(me.atPos - door.atPos)) / me.isIn.width;
+
+			// If aggressive search wanted, take the door that brings you closest to Toni
+			if(aggressive) {
+				foreach(Data_Room room in GS.ROOMS.Values) {
+					curUtility += me.worldModel.probabilityThatToniIsInRoom[room.INDEX] *
+					(GS.distanceBetweenTwoRooms[me.isIn.INDEX, room.INDEX] - GS.distanceBetweenTwoRooms[targetRoomIndex, room.INDEX]);
+				}
+			}
+
+			// Check if the new utility is higher than the one found previously
+			if(curUtility > highestDoorUtility) {
+				result = door;
+				highestDoorUtility = curUtility;
+			}
+		}
+		Debug.Assert(result != null);
+		return result;
+	}
+
 	// Walk towards the neighbouring room that appears to be the closest to Toni's suspected position (in aggressive mode)
 	// Or walk around randomply (in wandering mode)
 	private void enactSearchPolicy(bool aggressiveSearch) {
-		// Only conduct full search if no door has been selected as target yet
-		if(nextDoorToGoThrough == null || nextDoorToGoThrough.gameObj == null) {
-			// Analyze available door options
-			double highestDoorUtility = double.MinValue; double curUtility;
-			foreach(Data_Door door in me.isIn.DOORS.Values) {
-				curUtility = 0;
-
-				// Try to ignore any doors leading to the ritual room
-				int targetRoomIndex = door.connectsTo.isIn.INDEX;
-				if(targetRoomIndex == RITUAL_ROOM_INDEX && GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
-					curUtility = double.MinValue / 2;
-				} else if (targetRoomIndex == previousRoomVisited.INDEX) {
-					curUtility = double.MinValue / 4;
-				}
-
-				// Calculate the utility of going through that door
-				if(aggressiveSearch) {
-					foreach(Data_Room room in GS.ROOMS.Values) {
-						if(room != me.isIn && room.INDEX != RITUAL_ROOM_INDEX) { // Ignore this room, as well as the ritual room
-							curUtility += me.worldModel.probabilityThatToniIsInRoom[room.INDEX] *
-							(GS.distanceBetweenTwoRooms[me.isIn.INDEX, room.INDEX] - GS.distanceBetweenTwoRooms[targetRoomIndex, room.INDEX]);
-						}
-					}
-				} else { // Non-aggressive search just picks doors at random
-					curUtility += UnityEngine.Random.Range(0, 10f);
-				}
-
-				// Check if the new utility is higher than the one found previously
-				if(curUtility > highestDoorUtility) {
-					nextDoorToGoThrough = door;
-					highestDoorUtility = curUtility;
-				}
+		if(nextDoorToGoThrough == null) {
+			if(aggressiveSearch) {
+				// Penalties: ritual room > previous room > going past Toni > distance to the door > Toni's room
+				nextDoorToGoThrough = findNextDoorToVisit(true, 0.1, utilityPenaltyRitualRoom, utilityPenaltyPreviousRoom, 0, utilityPenaltyToniInTheWay / 2);
+			} else {
+				double fearOfToni = (utilityPenaltyTonisRoom + utilityPenaltyToniInTheWay) / 2;
+				// Penalties: fear of Toni > previous room > > distance to the door > ritual room
+				nextDoorToGoThrough = findNextDoorToVisit(false, 0.1, 0, utilityPenaltyPreviousRoom, fearOfToni, fearOfToni);
 			}
 		}
 		// With the door set, move towards and through it
-		if (nextDoorToGoThrough.gameObj != null) {
-			walkToAndThroughDoor(nextDoorToGoThrough, false, Time.deltaTime);
-		} else {
-			// Unable to use that door
-			Debug.Log("Monster tried using door with null gameObject. Aborting.");
+		walkToAndThroughDoor(nextDoorToGoThrough, false, Time.deltaTime);
+	}
+
+	// Run towards the nearest door away from Toni
+	private void enactFlightPolicy() {
+		if(nextDoorToGoThrough == null) {
+			// Penalties: going past Toni > distance to door > Toni's room > ritual room = previous room
+			nextDoorToGoThrough = findNextDoorToVisit(false, 100.0, 0, 0, utilityPenaltyTonisRoom, utilityPenaltyToniInTheWay);
 		}
+		// With the door set, move towards and through it at runnig pace
+		walkToAndThroughDoor(nextDoorToGoThrough, true, Time.deltaTime);
+	}
+
+	// Go towards the closest room to where Toni is most likely to be
+	private void enactStalkingPolicy() {
+		if(nextDoorToGoThrough == null) {
+			// If monster sees Toni, go through the closest door that doesn't lead you past Toni
+			// This is not unlike the fleeing policy, but ritual room is still off-limits
+			if(GS.monsterSeesToni) {
+				// Penalties: ritual room > going past Toni > distance to door > Toni's room = previous room
+				nextDoorToGoThrough = findNextDoorToVisit(false, 10.0, utilityPenaltyRitualRoom, 0, 0, utilityPenaltyToniInTheWay);
+			} else {
+				// Penalize going into Toni's supposed room until the aggro is high enough to engage right away
+				Data_Room tonisRoom = GS.getRoomByIndex(me.worldModel.mostLikelyTonisRoomIndex);
+				double meetingToniPenalty = (distanceThresholdToStartPursuing < (tonisRoom.width / 3)) ? 0 : utilityPenaltyTonisRoom;
+				// Penalties: ritual room > Toni's room (opt.) > distance to door > previous room = going past Toni
+				nextDoorToGoThrough = findNextDoorToVisit(true, 10.0, utilityPenaltyRitualRoom, 0, meetingToniPenalty, 0);
+			}
+		}
+		walkToAndThroughDoor(nextDoorToGoThrough, false, Time.deltaTime);
 	}
 
 	// Run towards within striking range of Toni
@@ -319,84 +382,6 @@ public class Control_Monster : Control_Character {
 			// In case both attack points are unreachable, just run towards Toni to scare him into fleeing
 			walk(GS.distanceToToni, true, Time.deltaTime);
 		}
-	}
-
-	private void enactFlightPolicy() {
-		if(nextDoorToGoThrough == null) {
-			// Analyze available door options
-			double highestDoorUtility = double.MinValue; double curUtility;
-			foreach(Data_Door door in me.isIn.DOORS.Values) {
-				// Utility is basically equal to the distance to the door, plus a random factor to avoid deadlocks
-				curUtility = Math.Abs(door.visiblePos - me.atPos) + UnityEngine.Random.Range(0f, 0.1f);
-				// However, having to run past Monster!Toni is penalized
-				bool toniIsBetweenMeAndDoor = (door.atPos <= Toni.atPos && Toni.atPos <= me.atPos) || (door.atPos >= Toni.atPos && Toni.atPos >= me.atPos);
-				curUtility -= toniIsBetweenMeAndDoor ? (double.MaxValue / 2) : 0;
-				// Check if the new utility is higher than the one found previously
-				if(curUtility > highestDoorUtility) {
-					nextDoorToGoThrough = door;
-					highestDoorUtility = curUtility;
-				}
-			}
-		}
-		// With the door set, move towards and through it at runnig pace
-		walkToAndThroughDoor(nextDoorToGoThrough, true, Time.deltaTime);
-	}
-
-	// Go towards the closest room to where Toni is most likely to be
-	private void enactStalkingPolicy() {
-		if(nextDoorToGoThrough == null) {
-			// If monster sees Toni, go through the closest door that doesn't lead you past Toni
-			// This is not unlike the fleeing policy
-			if(GS.monsterSeesToni) {
-				double highestDoorUtility = double.MinValue;
-				double curUtility;
-				foreach(Data_Door door in me.isIn.DOORS.Values) {
-					// Utility is basically equal to the distance to the door, plus a random factor to avoid deadlocks
-					curUtility = Math.Abs(door.visiblePos - me.atPos) + UnityEngine.Random.Range(0f, 0.1f);
-					// Also penalize going into ritual room
-					curUtility -= (door.connectsTo.isIn.INDEX == RITUAL_ROOM_INDEX) ? (0.5 * double.MaxValue) : 0;
-					// However, having to run past Toni is penalized
-					bool toniIsBetweenMeAndDoor = (door.atPos <= Toni.atPos && Toni.atPos <= me.atPos) || (door.atPos >= Toni.atPos && Toni.atPos >= me.atPos);
-					curUtility -= toniIsBetweenMeAndDoor ? (2.0 * (double)Math.Abs(door.visiblePos - Toni.atPos)) : 0;
-					// Check if the new utility is higher than the one found previously
-					if(curUtility > highestDoorUtility) {
-						nextDoorToGoThrough = door;
-						highestDoorUtility = curUtility;
-					}
-				}
-			} else {
-				// If you don't see Toni, find a room that is closest to you and to Toni's supposed location
-				// then go through the door that'll take you to it the fastest
-				float roomDistance; float bestRoomDistance = float.MaxValue; int bestRoomIndex = me.isIn.INDEX;
-				for(int i = 0; i < GS.ROOMS.Count; i++) {
-					roomDistance = GS.distanceBetweenTwoRooms[me.isIn.INDEX, i] + GS.distanceBetweenTwoRooms[i, me.worldModel.mostLikelyTonisRoomIndex];
-					if(roomDistance < bestRoomDistance && i != me.isIn.INDEX) {
-						bestRoomIndex = i;
-						bestRoomDistance = roomDistance;
-					}
-				}
-				// Now find the door that will lead you there fastest
-				double highestDoorUtility = double.MinValue;
-				double curUtility;
-				foreach(Data_Door door in me.isIn.DOORS.Values) {
-					// Utility is basically equal to the distance from monster to door,
-					// plus distance from door to the target room, plus a random factor to avoid deadlocks
-					curUtility = Math.Abs(door.visiblePos - me.atPos)
-								+ GS.getDistance(door, new Data_Position(bestRoomIndex, 0f))
-								+ UnityEngine.Random.Range(0f, 0.1f);
-					// However, having to go through the ritual room is penalized
-					curUtility -= (door.connectsTo.isIn.INDEX == RITUAL_ROOM_INDEX) ? (0.5 * double.MaxValue) : 0;
-					// Avoid going into Toni's room, too, as long as pursuit threshold is higher than the screen size
-					curUtility -= (door.connectsTo.isIn.INDEX == bestRoomIndex && distanceThresholdToStartPursuing < SCREEN_SIZE_HORIZONTAL) ? (0.2 * double.MaxValue) : 0;
-					// Check if the new utility is higher than the one found previously
-					if(curUtility > highestDoorUtility) {
-						nextDoorToGoThrough = door;
-						highestDoorUtility = curUtility;
-					}
-				}
-			}
-		}
-		walkToAndThroughDoor(nextDoorToGoThrough, false, Time.deltaTime);
 	}
 
 	// Walk towards the door and through it, if possible
@@ -426,7 +411,8 @@ public class Control_Monster : Control_Character {
 	private void teleportToRitualRoom() {
 		// Find the door furthest removed from the pentagram
 		Data_Position pentagramPos = new Data_Position(RITUAL_ROOM_INDEX, Global_Settings.read("RITUAL_PENTAGRAM_CENTER"));
-		Data_Door targetDoor = null; float distToPentagram = 0;
+		Data_Door targetDoor = null;
+		float distToPentagram = 0;
 		foreach(Data_Door d in GS.getRoomByIndex(RITUAL_ROOM_INDEX).DOORS.Values) {
 			float newDistance = GS.getDistance(d, pentagramPos);
 			if(newDistance > distToPentagram) {
@@ -435,18 +421,7 @@ public class Control_Monster : Control_Character {
 			}
 		}
 		// "Go" through the door
-		if (targetDoor != null && targetDoor.gameObj != null) {
-			StartCoroutine(goThroughTheDoor(targetDoor));
-		} else {
-			Debug.LogError("Error: Control_Monster.teleportToRitualRoom tries Control_Character.goThroughTheDoor but...");
-			if (targetDoor == null) {
-				Debug.LogError("...the door is a null object.");
-			} 
-			if (targetDoor.gameObj == null) {
-				Debug.LogError("...targetDoor.gameObj is a null object. Problematic door information: Index = " + targetDoor.INDEX + ", connectsTo = " + targetDoor.connectsTo
-					+ ", is in room with index " + targetDoor.isIn.INDEX);
-			}
-		}
+		StartCoroutine(goThroughTheDoor(targetDoor));
 	}
 
 	// Killing the monster / civilian during endgame
@@ -471,6 +446,7 @@ public class Control_Monster : Control_Character {
 		monsterRenderer.flipX = !state;
 		civilianRenderer.flipX = state;
 	}
+
 	protected override bool canRun() {
 		return true; // The monster can always run
 	}
@@ -493,11 +469,13 @@ public class Control_Monster : Control_Character {
 		// Extend the time the monster stands still after killing Toni (while the house is being rebuilt)
 		me.etherialCooldown = Global_Settings.read("TOTAL_DEATH_DURATION");
 	}
+	protected override void activateCooldown(float duration) {
+		me.etherialCooldown = duration;
+	}
 	// The rest stays empty for now (only relevant for Toni)...
 	protected override void updateStamina(bool isRunning) {}
 	protected override void regainStamina() {}
 	protected override void makeWalkingNoise(float walkedDistance, int type, Data_Position atPos) {}
-	protected override void activateCooldown(float duration) { me.etherialCooldown = duration; }
 	protected override void doBeforeLeavingRoom(Data_Door doorTaken) {}
 	protected override void cameraFadeOut(float duration) {}
 	protected override void cameraFadeIn(float duration) {}

@@ -7,7 +7,11 @@ public class Control_PlayerCharacter : Control_Character {
 
 	[NonSerialized]
 	private Data_PlayerCharacter me;
-	protected override Data_Character getMe() { return me as Data_Character; }
+
+	protected override Data_Character getMe() {
+		return me as Data_Character;
+	}
+
 	[NonSerialized]
 	private Data_Cadaver cadaver;
 
@@ -15,9 +19,9 @@ public class Control_PlayerCharacter : Control_Character {
 	private float SINGLE_STEP_LENGTH;
 	private float walkingDistanceSinceLastNoise;
 
-    private float RUNNING_STAMINA_LOSS;
-    private float WALKING_STAMINA_GAIN;
-    private float STANDING_STAMINA_GAIN;
+	private float RUNNING_STAMINA_LOSS;
+	private float WALKING_STAMINA_GAIN;
+	private float STANDING_STAMINA_GAIN;
 
 	private float RITUAL_PENTAGRAM_CENTER;
 	private float RITUAL_PENTAGRAM_RADIUS;
@@ -42,8 +46,8 @@ public class Control_PlayerCharacter : Control_Character {
 	private GameObject zappingParticleObject;
 	private ParticleSystem zappingParticles;
 
-    // Use this for initialization; note that only local variables are initialized here, game state is loaded later
-    void Start () {
+	// Use this for initialization; note that only local variables are initialized here, game state is loaded later
+	void Start() {
 		stickmanObject = GameObject.Find("Stickman");
 		stickmanRenderer = stickmanObject.GetComponent<SpriteRenderer>(); // Find the child "Stickman", then its Sprite Renderer and then the renderer's sprite
 		monsterToniObject = GameObject.Find("MonsterToniImage");
@@ -59,26 +63,25 @@ public class Control_PlayerCharacter : Control_Character {
 		inventoryUI.transform.FindChild("CurrentItem").GetComponent<Image>().CrossFadeAlpha(0.0f, 0.0f, false);
 		soundSystem = GameObject.Find("GameState").GetComponent<Control_Sound>();
 		walkingDistanceSinceLastNoise = 0;
-    }
+	}
 
-    // To make sure the game state is fully initialized before loading it, this function is called by game state class itself
-    public void loadGameState(Data_GameState gameState)
-    {
-        this.GS = gameState;
-        this.me = gameState.getToni();
-        this.currentEnvironment = me.isIn.env;
+	// To make sure the game state is fully initialized before loading it, this function is called by game state class itself
+	public void loadGameState(Data_GameState gameState) {
+		this.GS = gameState;
+		this.me = gameState.getToni();
+		this.currentEnvironment = me.isIn.env;
 		this.cadaver = GS.getCadaver();
 
-        // Set general movement parameters
-        WALKING_SPEED = Global_Settings.read("CHARA_WALKING_SPEED");
-        RUNNING_SPEED = Global_Settings.read("CHARA_RUNNING_SPEED");
+		// Set general movement parameters
+		WALKING_SPEED = Global_Settings.read("CHARA_WALKING_SPEED");
+		RUNNING_SPEED = Global_Settings.read("CHARA_RUNNING_SPEED");
 		SINGLE_STEP_LENGTH = Global_Settings.read("CHARA_SINGLE_STEP_LENGTH");
 
-        RUNNING_STAMINA_LOSS = Global_Settings.read("RUNNING_STAMINA_LOSS");
-        WALKING_STAMINA_GAIN = Global_Settings.read("WALKING_STAMINA_GAIN");
-        STANDING_STAMINA_GAIN = Global_Settings.read("STANDING_STAMINA_GAIN");
+		RUNNING_STAMINA_LOSS = Global_Settings.read("RUNNING_STAMINA_LOSS");
+		WALKING_STAMINA_GAIN = Global_Settings.read("WALKING_STAMINA_GAIN");
+		STANDING_STAMINA_GAIN = Global_Settings.read("STANDING_STAMINA_GAIN");
 
-        VERTICAL_ROOM_SPACING = Global_Settings.read("VERTICAL_ROOM_SPACING");
+		VERTICAL_ROOM_SPACING = Global_Settings.read("VERTICAL_ROOM_SPACING");
 		DOOR_TRANSITION_DURATION = Global_Settings.read("DOOR_TRANSITION_DURATION");
 
 		RESPAWN_TRANSITION_DURATION = Global_Settings.read("TOTAL_DEATH_DURATION");
@@ -94,18 +97,18 @@ public class Control_PlayerCharacter : Control_Character {
 		ATTACK_DURATION = Global_Settings.read("TONI_ATTACK_DURATION");
 		ATTACK_COOLDOWN = Global_Settings.read("TONI_ATTACK_COOLDOWN");
 		
-        // Move the character sprite directly to where the game state says it should be standing
-        Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
-        transform.Translate(savedPosition - transform.position);
-    }
+		// Move the character sprite directly to where the game state says it should be standing
+		Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
+		transform.Translate(savedPosition - transform.position);
+	}
 
-    // Update is called once per frame
-    void Update () {
+	// Update is called once per frame
+	void Update() {
 		// Don't do anything if the game state is not loaded yet or suspended or in the final endgame state
-		if (GS == null || GS.SUSPENDED || GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_DEAD) { 
+		if(GS == null || GS.SUSPENDED || GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_DEAD) { 
 			return; 
 		} 
-		if (me.etherialCooldown > 0.0f) { // While the character is etherial, don't do anything
+		if(me.etherialCooldown > 0.0f) { // While the character is etherial, don't do anything
 			me.etherialCooldown -= Time.deltaTime;
 			return;
 		}
@@ -113,50 +116,48 @@ public class Control_PlayerCharacter : Control_Character {
 		me.timeWithoutAction += Time.deltaTime;
 
 		// Item actions or attack after ritual
-		if (Input.GetButtonDown("Action")) {
+		if(Input.GetButtonDown("Action")) {
 			me.timeWithoutAction = 0;
-			if (GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
+			if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
 				takeItem();
 			} else {
 				StartCoroutine(playAttackAnimation(me.atPos + (monsterToniRenderer.flipX ? 1f : -1f), GS.getMonster()));
 			}
 		}
-		if (Input.GetButtonDown("Inventory")) { // Show inventory
+		if(Input.GetButtonDown("Inventory")) { // Show inventory
 			StopCoroutine("displayInventory");
 			StartCoroutine("displayInventory");
 		}
-		if (Debug.isDebugBuild && Input.GetButtonDown("Jump")) { // Drop (debug only)
+		if(Debug.isDebugBuild && Input.GetButtonDown("Jump")) { // Drop (debug only)
 			dropItem();
 		}
 
 		// Dying on command (debug only)
-		if (Debug.isDebugBuild && Input.GetButtonDown("Die")) {
+		if(Debug.isDebugBuild && Input.GetButtonDown("Die")) {
 			StartCoroutine(dieAndRespawn());
 		}
 
 		// If conditions for placing the item at the pentagram are right, do just that
 		if(me.carriedItem != null && me.isIn.INDEX == RITUAL_ROOM_INDEX &&
-		    Math.Abs(RITUAL_PENTAGRAM_CENTER - me.atPos) <= RITUAL_PENTAGRAM_RADIUS) {
+		   Math.Abs(RITUAL_PENTAGRAM_CENTER - me.atPos) <= RITUAL_PENTAGRAM_RADIUS) {
 			GS.indexOfSearchedItem++; // now the next item is to be searched
 			putItemOntoPentagram();
 		}
 
-        // Vertical "movement"
-		if (Input.GetButtonDown("Vertical"))
-		{
+		// Vertical "movement"
+		if(Input.GetButtonDown("Vertical")) {
 			me.timeWithoutAction = 0;
-            // Check if the character can walk through the door, and if so, move them to the "other side"
-            Data_Door door = currentEnvironment.getDoorAtPos(transform.position.x);
-			if (door != null) {
+			// Check if the character can walk through the door, and if so, move them to the "other side"
+			Data_Door door = currentEnvironment.getDoorAtPos(transform.position.x);
+			if(door != null) {
 				StartCoroutine(goThroughTheDoor(door));
-                return;
-            }
-        }
+				return;
+			}
+		}
 			
-        // Horizontal movement
+		// Horizontal movement
 		me.currentVelocity = 0;
-		if (Mathf.Abs(Input.GetAxis("Horizontal")) > 0.01f)
-		{
+		if(Mathf.Abs(Input.GetAxis("Horizontal")) > 0.01f) {
 			me.timeWithoutAction = 0;
 			Data_Door walkIntoDoor = walk(Input.GetAxis("Horizontal"), Input.GetButton("Run"), Time.deltaTime);
 			if(walkIntoDoor != null) {
@@ -166,7 +167,7 @@ public class Control_PlayerCharacter : Control_Character {
 			}
 		} else {
 			regainStamina();
-        }
+		}
 
 		// Suicidle...
 		if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE) {
@@ -182,9 +183,11 @@ public class Control_PlayerCharacter : Control_Character {
 		stickmanRenderer.flipX = state;
 		monsterToniRenderer.flipX = !state;
 	}
+
 	protected override bool canRun() {
 		return !me.exhausted; 
 	}
+
 	protected override void updateStamina(bool isRunning) {
 		if(isRunning) {
 			me.modifyStamina(RUNNING_STAMINA_LOSS * Time.deltaTime);
@@ -192,9 +195,11 @@ public class Control_PlayerCharacter : Control_Character {
 			me.modifyStamina(WALKING_STAMINA_GAIN * Time.deltaTime);
 		}
 	}
+
 	protected override void regainStamina() {
 		me.modifyStamina(STANDING_STAMINA_GAIN * Time.deltaTime);
 	}
+
 	protected override void makeWalkingNoise(float walkedDistance, int type, Data_Position atPos) {
 		walkingDistanceSinceLastNoise += Mathf.Abs(walkedDistance);
 		if(walkingDistanceSinceLastNoise > SINGLE_STEP_LENGTH) {
@@ -271,10 +276,10 @@ public class Control_PlayerCharacter : Control_Character {
 			bool itemNearby = false;
 			Vector3 destPos = new Vector3(); // to place the zap-particle where the item is located
 			bool error = false;
-			foreach (Data_Item item in GS.ITEMS.Values) {
-				if (me.isIn == item.isIn && Math.Abs(me.atPos - item.atPos) < Global_Settings.read("MARGIN_ITEM_COLLECT") && item.INDEX != currentItem.INDEX) {
+			foreach(Data_Item item in GS.ITEMS.Values) {
+				if(me.isIn == item.isIn && Math.Abs(me.atPos - item.atPos) < Global_Settings.read("MARGIN_ITEM_COLLECT") && item.INDEX != currentItem.INDEX) {
 					itemNearby = true;
-					if (item.gameObj != null) {
+					if(item.gameObj != null) {
 						destPos = item.gameObj.transform.position;
 					} else {
 						// Somehow there's no gameObj attached to the item. Weird.
@@ -282,7 +287,7 @@ public class Control_PlayerCharacter : Control_Character {
 					}
 				}
 			}
-			if (itemNearby && !error) {
+			if(itemNearby && !error) {
 				// emit zapping sound and visual effect
 				zappingParticleObject.transform.Translate(destPos - zappingParticleObject.transform.position);
 				zappingParticles.Play();
@@ -354,25 +359,30 @@ public class Control_PlayerCharacter : Control_Character {
 		}
 	}
 
-	// Superclass functions implemented 
+	// Superclass functions implemented
 	protected override void doBeforeLeavingRoom(Data_Door doorTaken) {
 		if(GS.monsterSeesToni) {
 			GS.getMonster().control.seeToniGoThroughDoor(doorTaken);
 		}
 	}
+
 	protected override void activateCooldown(float duration) {
 		me.etherialCooldown = duration;
 	}
+
 	protected override void cameraFadeOut(float duration) {
 		mainCameraControl.fadeOut(duration);
 	}
+
 	protected override void cameraFadeIn(float duration) {
 		mainCameraControl.fadeIn(duration);
 	}
+
 	protected override void makeNoise(int type, Data_Position atPos) {
 		soundSystem.makeNoise(type, atPos);
 		walkingDistanceSinceLastNoise = 0;
 	}
+
 	protected override void updateDoorUsageStatistic(Data_Door door, Data_Room currentRoom, Data_Door destinationDoor, Data_Room destinationRoom) {
 		int spawn1Index = -1;
 		int spawn2Index = -1;
@@ -401,8 +411,7 @@ public class Control_PlayerCharacter : Control_Character {
 		if(spawn1Index != -1 && spawn2Index != -1) {
 			GS.HOUSE_GRAPH.DOOR_SPAWNS[spawn1Index].increaseNumUses();
 			GS.HOUSE_GRAPH.DOOR_SPAWNS[spawn2Index].increaseNumUses();
-		}
-		else {
+		} else {
 			Debug.Log("Cannot find door spawn ID for at least one of these doors: " + door.INDEX + "," + destinationDoor.INDEX + ". Just got spawn IDs " + spawn1Index + ", " + spawn2Index);
 		}
 	}
