@@ -323,7 +323,6 @@ public class Control_PlayerCharacter : Control_Character {
 		me.carriedItem.control.placeForRitual();
 		Debug.Log("Item #" + me.carriedItem.INDEX + " placed for the ritual");
 		me.carriedItem = null;
-		GS.numItemsPlaced++;
 		// Auto save when placing an item.
 		Data_GameState.saveToDisk(GS);
 	}

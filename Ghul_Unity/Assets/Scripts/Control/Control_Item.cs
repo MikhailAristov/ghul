@@ -71,6 +71,7 @@ public class Control_Item : MonoBehaviour {
 			updateGameObjectPosition();
 			yield return null;
 		}
+		GS.numItemsPlaced++;
 		GS.NEXT_ITEM_PLEASE = true;
 	}
 
