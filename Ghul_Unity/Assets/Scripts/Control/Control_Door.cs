@@ -8,7 +8,10 @@ public class Control_Door : MonoBehaviour {
 	public GameObject OpenSprite;
 	private AudioSource OpenSound;
 
-	private string currentState;
+	public const int STATE_CLOSED = 0;
+	public const int STATE_OPEN = 1;
+
+	private int currentState;
 	private float timeUntilClosing;
 
 	private float doorOpenDuration;
@@ -17,7 +20,7 @@ public class Control_Door : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		currentState = "CLOSED";
+		currentState = STATE_CLOSED;
 		OpenSprite.SetActive(false);
 
 		doorOpenDuration = Global_Settings.read("DOOR_OPEN_DURATION");
@@ -31,11 +34,11 @@ public class Control_Door : MonoBehaviour {
 	// Opens the door if it's closed, keeps it open longer otherwise
 	public void open() {
 		timeUntilClosing = doorOpenDuration;
-		if(currentState != "OPEN") {
+		if(currentState != STATE_OPEN) {
 			ClosedSprite.SetActive(false);
 			OpenSprite.SetActive(true);
 			playSound(OpenSound);
-			currentState = "OPEN";
+			currentState = STATE_OPEN;
 			StartCoroutine(waitForClosure());
 		}
 		// If the door is already open, it just stays so for longer
@@ -50,7 +53,7 @@ public class Control_Door : MonoBehaviour {
 		OpenSprite.SetActive(false);
 		ClosedSprite.SetActive(true);
 		playSound(CloseSound);
-		currentState = "CLOSED";
+		currentState = STATE_CLOSED;
 	}
 
 	// Play the specified sound if the main camera (i.e. Toni) is within the current room
