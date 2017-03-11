@@ -15,6 +15,7 @@ public abstract class Control_Character : MonoBehaviour {
 	protected float WALKING_SPEED;
 	protected float RUNNING_SPEED;
 	protected float DOOR_TRANSITION_DURATION;
+	protected int RITUAL_ROOM_INDEX;
 
 	protected float ATTACK_RANGE;
 	protected float ATTACK_MARGIN;
@@ -81,6 +82,13 @@ public abstract class Control_Character : MonoBehaviour {
 		Data_Room currentRoom = getMe().isIn;
 		Data_Door destinationDoor = door.connectsTo;
 		Data_Room destinationRoom = destinationDoor.isIn;
+
+		// Doors cannot be walked through until the transformation is over
+		// except for doors leading into the ritual room, so the monster can teleport there
+		if(GS.OVERALL_STATE == Control_GameState.STATE_TRANSFORMATION && destinationRoom.INDEX != RITUAL_ROOM_INDEX) {
+			yield break;
+		}
+
 		activateCooldown(DOOR_TRANSITION_DURATION);
 
 		// Open doors
@@ -139,7 +147,7 @@ public abstract class Control_Character : MonoBehaviour {
 		while(attackProgress < 1f) {
 			// If the attacker moves from the original spot, immediately cancel the attack
 			if(Math.Abs(getMe().atPos - attackOrigin) > ATTACK_MARGIN) {
-				Debug.LogWarning(getMe() + "moved, attack canceled!");
+				Debug.LogWarning(getMe() + " moved, attack canceled!");
 				attackIsCanceledByMoving = true;
 				break;
 			} else if(!GS.SUSPENDED) {

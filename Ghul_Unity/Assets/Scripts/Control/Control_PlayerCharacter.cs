@@ -19,17 +19,12 @@ public class Control_PlayerCharacter : Control_Character {
     private float WALKING_STAMINA_GAIN;
     private float STANDING_STAMINA_GAIN;
 
-	private int RITUAL_ROOM_INDEX;
 	private float RITUAL_PENTAGRAM_CENTER;
 	private float RITUAL_PENTAGRAM_RADIUS;
 	private float SUICIDLE_DURATION;
 
 	private float RESPAWN_TRANSITION_DURATION;
 	private float INVENTORY_DISPLAY_DURATION;
-
-	// Gameplay parameters
-	private bool isTransformed;
-	private float timeWithoutAction;
 
 	// Graphics parameters
 	private GameObject stickmanObject;
@@ -60,7 +55,6 @@ public class Control_PlayerCharacter : Control_Character {
 		zappingParticles = zappingParticleObject.GetComponent<ParticleSystem>();
 		attackArmRenderer = attackArm.GetComponent<LineRenderer>();
 
-		isTransformed = false;
 		mainCameraControl = Camera.main.GetComponent<Control_Camera>();
 		inventoryUI.transform.FindChild("CurrentItem").GetComponent<Image>().CrossFadeAlpha(0.0f, 0.0f, false);
 		soundSystem = GameObject.Find("GameState").GetComponent<Control_Sound>();
@@ -96,9 +90,9 @@ public class Control_PlayerCharacter : Control_Character {
 		SUICIDLE_DURATION = Global_Settings.read("SUICIDLE_DURATION");
 
 		ATTACK_RANGE = Global_Settings.read("MONSTER_ATTACK_RANGE");
-		ATTACK_MARGIN = Global_Settings.read("MONSTER_ATTACK_MARGIN") * 5f;
-		ATTACK_DURATION = Global_Settings.read("MONSTER_ATTACK_DURATION");
-		ATTACK_COOLDOWN = Global_Settings.read("MONSTER_ATTACK_COOLDOWN");
+		ATTACK_MARGIN = Global_Settings.read("TONI_ATTACK_MARGIN");
+		ATTACK_DURATION = Global_Settings.read("TONI_ATTACK_DURATION");
+		ATTACK_COOLDOWN = Global_Settings.read("TONI_ATTACK_COOLDOWN");
 		
         // Move the character sprite directly to where the game state says it should be standing
         Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
@@ -107,23 +101,24 @@ public class Control_PlayerCharacter : Control_Character {
 
     // Update is called once per frame
     void Update () {
-		if (GS == null || GS.SUSPENDED) { return; } // Don't do anything if the game state is not loaded yet or suspended
+		// Don't do anything if the game state is not loaded yet or suspended or in the final endgame state
+		if (GS == null || GS.SUSPENDED || GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_DEAD) { 
+			return; 
+		} 
 		if (me.etherialCooldown > 0.0f) { // While the character is etherial, don't do anything
 			me.etherialCooldown -= Time.deltaTime;
 			return;
 		}
 		// This is for the suicidle later...
-		if(isTransformed) {
-			timeWithoutAction += Time.deltaTime;
-		}
+		me.timeWithoutAction += Time.deltaTime;
 
 		// Item actions or attack after ritual
 		if (Input.GetButtonDown("Action")) {
-			timeWithoutAction = 0;
-			if (isTransformed) {
-				StartCoroutine(playAttackAnimation(me.atPos + (monsterToniRenderer.flipX ? 1f : -1f), GS.getMonster()));
-			} else {
+			me.timeWithoutAction = 0;
+			if (GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
 				takeItem();
+			} else {
+				StartCoroutine(playAttackAnimation(me.atPos + (monsterToniRenderer.flipX ? 1f : -1f), GS.getMonster()));
 			}
 		}
 		if (Input.GetButtonDown("Inventory")) { // Show inventory
@@ -139,11 +134,6 @@ public class Control_PlayerCharacter : Control_Character {
 			StartCoroutine(dieAndRespawn());
 		}
 
-		// Debug: Make New Game Button clickable again.
-		if (Debug.isDebugBuild && Input.GetButtonDown("MakeResettable")) {
-			GS.RITUAL_PERFORMED = false;
-		}
-
 		// If conditions for placing the item at the pentagram are right, do just that
 		if(me.carriedItem != null && me.isIn.INDEX == RITUAL_ROOM_INDEX &&
 		    Math.Abs(RITUAL_PENTAGRAM_CENTER - me.atPos) <= RITUAL_PENTAGRAM_RADIUS) {
@@ -154,10 +144,10 @@ public class Control_PlayerCharacter : Control_Character {
         // Vertical "movement"
         if (Input.GetAxis("Vertical") > 0.1f)
 		{
-			timeWithoutAction = 0;
+			me.timeWithoutAction = 0;
             // Check if the character can walk through the door, and if so, move them to the "other side"
             Data_Door door = currentEnvironment.getDoorAtPos(transform.position.x);
-            if (door != null) {
+			if (door != null) {
 				StartCoroutine(goThroughTheDoor(door));
                 return;
             }
@@ -167,7 +157,7 @@ public class Control_PlayerCharacter : Control_Character {
 		me.currentVelocity = 0;
 		if (Mathf.Abs(Input.GetAxis("Horizontal")) > 0.01f)
 		{
-			timeWithoutAction = 0;
+			me.timeWithoutAction = 0;
 			Data_Door walkIntoDoor = walk(Input.GetAxis("Horizontal"), Input.GetButton("Run"), Time.deltaTime);
 			if(walkIntoDoor != null) {
 				// Walk through the door if triggered
@@ -179,12 +169,12 @@ public class Control_PlayerCharacter : Control_Character {
         }
 
 		// Suicidle...
-		if(isTransformed) {
-			if(timeWithoutAction >= SUICIDLE_DURATION) {
-				timeWithoutAction = 0;
+		if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE) {
+			if(me.timeWithoutAction >= SUICIDLE_DURATION) {
+				me.timeWithoutAction = 0;
 				StartCoroutine(dieAndRespawn());
 			}
-			mainCameraControl.setRedOverlay(timeWithoutAction / SUICIDLE_DURATION);
+			mainCameraControl.setRedOverlay(me.timeWithoutAction / SUICIDLE_DURATION);
 		}
 	}
 	// Superclass functions implemented
@@ -217,36 +207,45 @@ public class Control_PlayerCharacter : Control_Character {
 	}
 
 	private IEnumerator dieAndRespawn() {
+		Debug.Log(me + " died...");
+
 		// Start cooldown
 		me.etherialCooldown = RESPAWN_TRANSITION_DURATION;
 
-		Debug.Log(me + " died...");
-		me.deaths++;
+		if(GS.OVERALL_STATE < Control_GameState.STATE_TRANSFORMATION) {
+			// Hide Toni's sprite and replace it with the cadaver
+			stickmanRenderer.enabled = false;
+			cadaver.gameObj.transform.position = transform.position + (new Vector3(0, -1.55f));
+			cadaver.updatePosition(me.isIn, me.atPos);
+			// Transfer the current item if any to the cadaver
+			leaveItemOnCadaver();
 
-		// Hide Toni's sprite and replace it with the cadaver
-		stickmanRenderer.enabled = false;
-		cadaver.gameObj.transform.position = transform.position + (new Vector3(0, -1.55f));
-		cadaver.updatePosition(me.isIn, me.atPos);
-		// Transfer the current item if any to the cadaver
-		leaveItemOnCadaver();
+			// Wait before fading out
+			yield return new WaitForSeconds(RESPAWN_TRANSITION_DURATION / 3);
+			mainCameraControl.fadeOut(RESPAWN_TRANSITION_DURATION / 3);
+			// Wait until fade out is complete before moving the sprite
+			yield return new WaitForSeconds(RESPAWN_TRANSITION_DURATION / 3);
 
-		// Wait before fading out
-		yield return new WaitForSeconds(RESPAWN_TRANSITION_DURATION / 3);
-		mainCameraControl.fadeOut(RESPAWN_TRANSITION_DURATION / 3);
-		// Wait until fade out is complete before moving the sprite
-		yield return new WaitForSeconds(RESPAWN_TRANSITION_DURATION / 3);
+			// Move the Toni sprite back to the starting room
+			me.resetPosition(GS);
+			currentEnvironment = me.isIn.env;
+			transform.position = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
+			stickmanRenderer.enabled = true;
 
-		// Move the Toni sprite back to the starting room
-		me.resetPosition(GS);
-		currentEnvironment = me.isIn.env;
-		transform.position = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
-		stickmanRenderer.enabled = true;
+			// Trigger the house mix up
+			GS.TONI_KILLED = true;
+			me.deaths++;
 
-		// Trigger the house mix up
-		GS.TONI_KILLED = true;
-
-		// Fade back in
-		mainCameraControl.fadeIn(RESPAWN_TRANSITION_DURATION / 3);
+			// Fade back in
+			mainCameraControl.fadeIn(RESPAWN_TRANSITION_DURATION / 3);
+		} else {
+			// During the endgame, simply replace the monster Toni sprite with the cadaver
+			GS.TONI_KILLED = true;
+			monsterToniRenderer.enabled = false;
+			cadaver.gameObj.transform.position = transform.position + (new Vector3(0, -1.55f));
+			cadaver.updatePosition(me.isIn, me.atPos);
+			me.etherialCooldown = 0;
+		}
 
 		// Trigger an autosave upon changing locations
 		Data_GameState.saveToDisk(GS);
@@ -260,7 +259,6 @@ public class Control_PlayerCharacter : Control_Character {
 			// the player got the item with index itemIndex.
 			currentItem.control.moveToInventory();
 			me.carriedItem = currentItem;
-			GS.numItemsCollected++;
 			Debug.Log("Item #" + currentItem.INDEX + " collected.");
 			// Make noise at the current location
 			soundSystem.makeNoise(Control_Sound.NOISE_TYPE_ITEM, me.pos);
@@ -325,15 +323,16 @@ public class Control_PlayerCharacter : Control_Character {
 		me.carriedItem.control.placeForRitual();
 		Debug.Log("Item #" + me.carriedItem.INDEX + " placed for the ritual");
 		me.carriedItem = null;
+		GS.numItemsPlaced++;
 		// Auto save when placing an item.
 		Data_GameState.saveToDisk(GS);
 	}
 
 	public void setupEndgame() {
 		stickmanObject.SetActive(false);
-		monsterToniObject.SetActive(true);
+		// Only display monster Toni sprite if monster is still alive
+		monsterToniObject.SetActive(GS.OVERALL_STATE < Control_GameState.STATE_MONSTER_DEAD);
 		monsterToniRenderer.flipX = !stickmanRenderer.flipX;
-		isTransformed = true;
 	}
 
 	// Shows the currentlly carried item on the UI
@@ -347,16 +346,6 @@ public class Control_PlayerCharacter : Control_Character {
 			yield return new WaitForSeconds(INVENTORY_DISPLAY_DURATION / 2);
 			// Fade it out again slowly
 			curItemImg.CrossFadeAlpha(0.0f, INVENTORY_DISPLAY_DURATION / 2, false);
-		}
-	}
-
-	// Attack and kill the other monster / civilians after the ritual has been performed
-	private void attack() {
-		if (me.isIn.INDEX == GS.getMonster().isIn.INDEX) {
-			if (Mathf.Abs(transform.position.x - GS.getMonster().gameObj.transform.position.x) <= Global_Settings.read("MONSTER_KILL_RADIUS")) {
-				// Kill the monster or civilian
-				GS.CIVILIAN_KILLED = true;
-			}
 		}
 	}
 

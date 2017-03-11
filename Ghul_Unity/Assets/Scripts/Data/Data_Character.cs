@@ -38,6 +38,8 @@ public abstract class Data_Character {
 	}
 	[NonSerialized]
 	public float currentVelocity; // in m/s
+	[NonSerialized]
+	public float timeWithoutAction;
 
 	// Position of the character within game space
 	[SerializeField]

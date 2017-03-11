@@ -10,20 +10,18 @@ using System.Linq;
 [Serializable]
 public class Data_GameState {
 
+	[SerializeField] // For possible values, see Control_GameState
+	public int OVERALL_STATE;
+
+	// INDIVIDUAL CONTROL FLAGS
     [NonSerialized] // Setting this flag suspends the game
 	public bool SUSPENDED = true;
-
 	[NonSerialized] // Setting this flag makes the game generate a new item
 	public bool NEXT_ITEM_PLEASE = true;
-
-	[SerializeField] // Setting this flag changes Toni's sprite to a monster
-	public bool RITUAL_PERFORMED = false;
-
 	[NonSerialized] // Setting this flag activates the house graph mix up
 	public bool TONI_KILLED = false;
-
-	[SerializeField] // Setting this flag kills (the monster or) the civilian
-	public bool CIVILIAN_KILLED = false;
+	[NonSerialized] // This lets the game state catch the precise moment the monster dies for the first time in the endgame
+	public bool MONSTER_KILLED = false;
 
 	[SerializeField]
 	public Data_Graph HOUSE_GRAPH;
@@ -36,7 +34,7 @@ public class Data_GameState {
 	public SortedList<int, Data_Item> ITEMS;
 
 	[SerializeField]
-	public int numItemsCollected;
+	public int numItemsPlaced;
 	[SerializeField]
 	public int indexOfSearchedItem;
 
@@ -78,7 +76,8 @@ public class Data_GameState {
         TONI = null;
         MONSTER = null;
 		CADAVER = null;
-		numItemsCollected = 0;
+		OVERALL_STATE = Control_GameState.STATE_COLLECTION_PHASE;
+		numItemsPlaced = 0;
     }
 
 	// Adds a room object to the game state
@@ -253,6 +252,7 @@ public class Data_GameState {
 			// Read the file to memory and close it
 			Data_GameState result = (Data_GameState)bf.Deserialize(file);
 			file.Close();
+
 			return result;
 		} catch(SerializationException) {
 			Debug.LogWarning("The saved game " + resettableFilePath + " is corrupted, starting a new game instead");

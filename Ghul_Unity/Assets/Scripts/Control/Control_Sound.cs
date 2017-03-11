@@ -13,6 +13,7 @@ public class Control_Sound : MonoBehaviour {
 
 	public Text MonsterDistanceText;
 	public AudioSource AmbientNoise;
+	private float SUICIDLE_DURATION;
 
 	// Random noise settings
 	public const float RANDOM_NOISE_MIN_DELAY = 0.5f;
@@ -42,6 +43,7 @@ public class Control_Sound : MonoBehaviour {
 		GS = gameState;
 		CHARA = gameState.getToni();
 		MONSTER = gameState.getMonster();
+		SUICIDLE_DURATION = Global_Settings.read("SUICIDLE_DURATION");
 		// (Re)Start sub-controllers
 		StopCoroutine("generateRandomNoises");
 		StopCoroutine("controlAmbientMusic");
@@ -57,8 +59,10 @@ public class Control_Sound : MonoBehaviour {
 		while(true) {
 			if(!GS.SUSPENDED) {
 				DIST = GS.getDistance(CHARA.pos, MONSTER.pos);
-				if(Debug.isDebugBuild || GS.RITUAL_PERFORMED) {
+				if(Debug.isDebugBuild || GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE) {
 					MonsterDistanceText.text = string.Format("{0:0.0} m", DIST);
+				} else if(MonsterDistanceText.text.Length > 0) {
+					MonsterDistanceText.text = "";
 				}
 			}
 			yield return new WaitForSeconds(0.2f);
@@ -67,10 +71,23 @@ public class Control_Sound : MonoBehaviour {
 
 	// Continuously regulates the volume of the ambient creepy music based on the proximity of monster to chara
 	private IEnumerator controlAmbientMusic() {
+		float targetVolume = 0;
 		while(true) {
-			if (!GS.RITUAL_PERFORMED) {
-				float targetVolume = GS.SUSPENDED ? 0.0f : Mathf.Min(1.0f, Mathf.Exp(-0.3f * DIST));
+			switch(GS.OVERALL_STATE) {
+			case(Control_GameState.STATE_COLLECTION_PHASE):
+				targetVolume = GS.SUSPENDED ? 0 : Mathf.Min(1.0f, Mathf.Exp(-0.3f * DIST));
 				AmbientNoise.volume = Mathf.Lerp(AmbientNoise.volume, targetVolume, 0.6f);
+				break;
+			case(Control_GameState.STATE_MONSTER_PHASE):
+				targetVolume = GS.SUSPENDED ? 0 : Mathf.Min(1.0f, CHARA.timeWithoutAction / SUICIDLE_DURATION);
+				AmbientNoise.volume = Mathf.Lerp(AmbientNoise.volume, targetVolume, 0.6f);
+				break;
+			case(Control_GameState.STATE_MONSTER_DEAD):
+				AmbientNoise.volume = 0;
+				yield break;
+			default:
+				AmbientNoise.volume = 0;
+				break;
 			}
 			yield return new WaitForSeconds(0.1f);
 		}

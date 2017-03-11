@@ -8,16 +8,22 @@ public class Control_GameState : MonoBehaviour {
     
     private Data_GameState GS;
 
-	public bool AUTOSTART_NEW_GAME;
-	public Canvas MAIN_MENU_CANVAS;
-	public GameObject RITUAL_ROOM_SCRIBBLES;
+	public const int STATE_COLLECTION_PHASE = 0;	// Before all items are placed for ritual
+	public const int STATE_TRANSFORMATION = 1;		// After all items are placed, but before old monster dies
+	public const int STATE_MONSTER_PHASE = 2;		// The endgame: After Toni has become the new monster
+	public const int STATE_MONSTER_DEAD = 3;		// After suicidle has played out completely
+
+	public Canvas MainMenuCanvas;
+	public GameObject NewGameButton;
+	public GameObject RitualRoomScribbles;
 
 	private Control_Camera MAIN_CAMERA_CONTROL;
 	private Factory_PrefabController prefabFactory;
 	private Factory_Graph graphFactory;
 
     private float? AUTOSAVE_FREQUENCY;
-    private float NEXT_AUTOSAVE_IN;
+	private float NEXT_AUTOSAVE_IN;
+	private bool newGameDisabled;
 
     // Use this for initialization
     void Start ()
@@ -27,25 +33,25 @@ public class Control_GameState : MonoBehaviour {
 		prefabFactory = GetComponent<Factory_PrefabController>();
 		graphFactory = GetComponent<Factory_Graph>();
 		// Start or continue the game
-		if(AUTOSTART_NEW_GAME && Debug.isDebugBuild) {
-			onNewGameSelect(); // For debug only
-		} else {
-			continueFromSavedGameState();
-			setAdditionalParameters();
-			GS.SUSPENDED = true; // Suspend the game while in the main menu initially
-		}
+		continueFromSavedGameState();
+		setAdditionalParameters();
+		GS.SUSPENDED = true; // Suspend the game while in the main menu initially
 
-		if (GS.RITUAL_PERFORMED) {
-			GameObject newGameButton = GameObject.Find("NewGameButton");
-			Color col = new Color(100f / 255f, 0f, 0f);
-			newGameButton.GetComponent<Image>().color = col;
+		// If the game has transitioned into the endgame, disable the New Game Button
+		if (GS.OVERALL_STATE > STATE_COLLECTION_PHASE) {
+			disableNewGameButton();
 		}
     }
+
+	private void disableNewGameButton() {
+		newGameDisabled = true;
+		NewGameButton.GetComponent<Image>().color = new Color(100f / 255f, 0f, 0f);;
+	}
 
     // Update is called once per frame
     void Update()
     {
-        if (GS.SUSPENDED) { return; }
+		if (GS.SUSPENDED) { return; }
 
 		// Timed autosave
         NEXT_AUTOSAVE_IN -= Time.deltaTime;
@@ -57,31 +63,59 @@ public class Control_GameState : MonoBehaviour {
         // Open main menu if the player presses Esc
         if (Input.GetButton("Cancel")) {
             GS.SUSPENDED = true;
-            MAIN_MENU_CANVAS.enabled = true;
+            MainMenuCanvas.enabled = true;
         }
 
-		// Check if an item has been placed
-		if(GS.NEXT_ITEM_PLEASE == true) {
-			// Reset the flag
-			GS.NEXT_ITEM_PLEASE = false;
-			// Check if it's all of them
-			if(GS.numItemsCollected < Global_Settings.read("RITUAL_ITEMS_REQUIRED")) {
-				StartCoroutine(updateWallScribbles(1.0f));
-			} else {
-				triggerEndgame();
+		switch(GS.OVERALL_STATE) {
+		case STATE_COLLECTION_PHASE:
+			updateNormalRoutine();
+			break;
+		case STATE_TRANSFORMATION:
+			// Switch to next state as soon as the monster dies
+			if(GS.MONSTER_KILLED) {
+				GS.OVERALL_STATE = STATE_MONSTER_PHASE;
+				GS.getMonster().control.setupEndgame();
 			}
+			break;
+		case STATE_MONSTER_PHASE:
+			// The only way Toni can die in the endgame is by suicidle
+			if(GS.TONI_KILLED) {
+				Debug.Log("monst toni dead, switching to final endgame");
+				GS.OVERALL_STATE = STATE_MONSTER_DEAD;
+				Data_GameState.saveToDisk(GS);
+				Debug.Log(GS.OVERALL_STATE);
+			}
+			break;
+		default:
+		case STATE_MONSTER_DEAD:
+			// Do nothing
+			break;
 		}
+	}
 
+	// Normal update routine before all items are placed
+	// Can trigger STATE_TRANSFORMATION
+	private void updateNormalRoutine() {
 		// Check if player died to trigger house mix up
 		if (GS.TONI_KILLED == true) {
 			GS.TONI_KILLED = false;
 			houseMixup(GS.TONI.deaths);
 		}
-    }
+
+		// Check if all items have been placed
+		if(GS.numItemsPlaced >= (int)Global_Settings.read("RITUAL_ITEMS_REQUIRED")) {
+			GS.OVERALL_STATE = STATE_TRANSFORMATION;
+			triggerEndgame(GS.OVERALL_STATE);
+		} else { // Otherwise, check if wall scribbles need to be updated
+			if(GS.NEXT_ITEM_PLEASE) {
+				GS.NEXT_ITEM_PLEASE = false;
+				StartCoroutine(updateWallScribbles(1.0f));
+			}
+		}
+	}
 
     // This method updates parameters after loading or resetting the game
-    private void setAdditionalParameters()
-    {
+    private void setAdditionalParameters() {
         // Train the camera on the main character
         MAIN_CAMERA_CONTROL.loadGameState(GS);
         MAIN_CAMERA_CONTROL.setFocusOn(GS.getToni().pos);
@@ -137,10 +171,23 @@ public class Control_GameState : MonoBehaviour {
 		StartCoroutine(updateWallScribbles(0.0f));
 
 		// Re-trigger the endgame if necessary
-		if(GS.RITUAL_PERFORMED) {
-			triggerEndgame();
+		if(GS.OVERALL_STATE > STATE_COLLECTION_PHASE) {
+			triggerEndgame(GS.OVERALL_STATE);
 		}
-    }
+	}
+
+	// TODO: Proper endgame
+	private void triggerEndgame(int overallState) {
+		if(overallState > STATE_COLLECTION_PHASE) {
+			// Disable new game button
+			disableNewGameButton();
+			// Transform Toni
+			GS.getToni().control.setupEndgame();
+		}
+		if(overallState > STATE_TRANSFORMATION) {
+			GS.getMonster().control.setupEndgame();
+		}
+	}
 
     // This method initializes the game state back to default
     private void resetGameState() {
@@ -344,7 +391,7 @@ public class Control_GameState : MonoBehaviour {
 
 	// Updates the scribbles on the wall in the ritual room, indicating the next item to find
 	private IEnumerator updateWallScribbles(float overTime) {
-		SpriteRenderer rend = RITUAL_ROOM_SCRIBBLES.GetComponent<SpriteRenderer>();
+		SpriteRenderer rend = RitualRoomScribbles.GetComponent<SpriteRenderer>();
 		Sprite newSprite = GS.getCurrentItem().control.GetComponent<SpriteRenderer>().sprite;
 
 		// If the time given is zero or less, just replace the sprite and exit
@@ -364,16 +411,6 @@ public class Control_GameState : MonoBehaviour {
 		}
 	}
 
-	private void triggerEndgame() {
-		// TODO: Proper endgame
-		GS.RITUAL_PERFORMED = true;
-		GameObject newGameButton = GameObject.Find("NewGameButton");
-		Color col = new Color(100f / 255f, 0f, 0f);
-		newGameButton.GetComponent<Image>().color = col;
-		// Transform Toni
-		GS.getToni().control.setupEndgame();
-	}
-
 	public void houseMixup(int deaths) {
 		int itemCount = GS.ITEMS.Count;
 		float evilness = Mathf.Max(1.0f, (float)itemCount * 0.5f + ((float)deaths * 0.2f));
@@ -385,10 +422,10 @@ public class Control_GameState : MonoBehaviour {
     void onNewGameSelect()
     {
 		// Can only be clicked if not transformed into a monster yet.
-		if (!GS.RITUAL_PERFORMED) {
+		if (!newGameDisabled && GS.OVERALL_STATE < STATE_TRANSFORMATION) {
         	resetGameState();                   // Reset the game state
         	setAdditionalParameters();          // Refocus camera and such
-        	MAIN_MENU_CANVAS.enabled = false;   // Dismiss the main menu
+        	MainMenuCanvas.enabled = false;   // Dismiss the main menu
 			GS.SUSPENDED = false;               // Continue playing
 		}
     }
@@ -397,7 +434,7 @@ public class Control_GameState : MonoBehaviour {
     void onContinueSelect()
     {
         // Simply dismiss the main menu to continue playing
-        MAIN_MENU_CANVAS.enabled = false;
+        MainMenuCanvas.enabled = false;
 		GS.SUSPENDED = false;
 	}
 

@@ -34,7 +34,7 @@ public class Global_Settings {
 			{ "CHARA_WALKING_SPEED",			5.0f },
 			{ "CHARA_RUNNING_SPEED",			8.0f },
 			{ "CHARA_SINGLE_STEP_LENGTH",		1.4f },		// this is how many (virtual) meters chara can walk before making a noise
-			{ "SUICIDLE_DURATION",				10.0f },	// How long the suicidle animation takes
+			{ "SUICIDLE_DURATION",				30.0f },	// How long the suicidle animation takes
 
 			// Monster settings
 			{ "MONSTER_WALKING_SPEED",			5.2f },
@@ -43,6 +43,10 @@ public class Global_Settings {
 			{ "MONSTER_ATTACK_MARGIN",			0.1f },		// the size of the "hitbox" for the monster's attack
 			{ "MONSTER_ATTACK_DURATION",		0.2f },		// how long, in seconds, does an attack take from start to hit
 			{ "MONSTER_ATTACK_COOLDOWN",		1.0f },		// how long, in seconds, does an attack take from hit to finish
+
+			{ "TONI_ATTACK_MARGIN",				1.0f },		// the size of the "hitbox" for the monster Toni's attack
+			{ "TONI_ATTACK_DURATION",			0.1f },		// how long, in seconds, does an attack take from start to hit
+			{ "TONI_ATTACK_COOLDOWN",			0.5f },		// how long, in seconds, does an attack take from hit to finish
 
 			// Stamina range: 0.0 .. 1.0; increments are applied per second
 			{ "RUNNING_STAMINA_LOSS",			-0.2f },	// Must be negative

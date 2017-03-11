@@ -15,11 +15,8 @@ public class Control_Monster : Control_Character {
 	private float MARGIN_DOOR_ENTRANCE;
 	private float SCREEN_SIZE_HORIZONTAL;
 	private float MARGIN_ITEM_STEAL;
-	private int RITUAL_ROOM_INDEX;
 
-	// Artificial intelligence controls
-	private bool IS_CIVILIAN = false;
-
+	// Noise data
 	private bool newNoiseHeard;
 	private Data_Door lastNoiseHeardFrom;
 	private float lastNoiseVolume;
@@ -80,11 +77,6 @@ public class Control_Monster : Control_Character {
 		DOOR_TRANSITION_DURATION = Global_Settings.read("DOOR_TRANSITION_DURATION");
 		RITUAL_ROOM_INDEX = (int)Global_Settings.read("RITUAL_ROOM_INDEX");
 		MARGIN_ITEM_STEAL = Global_Settings.read("MARGIN_ITEM_COLLECT") / 10f;
-
-		// Setup endgame, if it has already been triggered
-		if(GS.RITUAL_PERFORMED) {
-			setupEndgame();
-		}
 
         // Move the character sprite directly to where the game state says it should be standing
         Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
@@ -151,7 +143,7 @@ public class Control_Monster : Control_Character {
 		}
 		// Update time since last kill and aggro level
 		me.timeSinceLastKill += Time.fixedDeltaTime;
-		me.AGGRO = 0.1f * GS.numItemsCollected + me.timeSinceLastKill / 60.0f;
+		me.AGGRO = 0.1f * GS.numItemsPlaced + me.timeSinceLastKill / 60.0f;
 		me.AGGRO += (Toni.carriedItem != null) ? me.AGGRO : 0;
 
 		// Update AI state 
@@ -197,7 +189,8 @@ public class Control_Monster : Control_Character {
 			break;
 		// Wandering is a special case: if the ritual has been performed, start fleeing from Toni
 		case STATE_WANDERING:
-			if(IS_CIVILIAN && GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < (SCREEN_SIZE_HORIZONTAL / 2)) {
+			if(GS.OVERALL_STATE > Control_GameState.STATE_TRANSFORMATION && 
+				GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < (SCREEN_SIZE_HORIZONTAL / 2)) {
 				me.state = STATE_FLEEING;
 			}
 			break;
@@ -224,7 +217,7 @@ public class Control_Monster : Control_Character {
 
 		// If the endgame has been triggered, but the monster has not yet been killed,
 		// teleport into the ritual room and stand there passively
-		if (GS.RITUAL_PERFORMED && !IS_CIVILIAN) {
+		if (GS.OVERALL_STATE == Control_GameState.STATE_TRANSFORMATION && !GS.MONSTER_KILLED) {
 			if(me.isIn.INDEX != RITUAL_ROOM_INDEX) {
 				teleportToRitualRoom();
 			} else {
@@ -233,7 +226,8 @@ public class Control_Monster : Control_Character {
 			}
 		}
 
-		if (me.state != STATE_WANDERING && !IS_CIVILIAN && GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < MARGIN_ITEM_STEAL) {
+		// During the collection phase of the game, make Toni drop his carried items if he gets too close
+		if (GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE && GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < MARGIN_ITEM_STEAL) {
 			Toni.control.dropItem();
 		}
 
@@ -275,7 +269,7 @@ public class Control_Monster : Control_Character {
 
 				// Try to ignore any doors leading to the ritual room
 				int targetRoomIndex = door.connectsTo.isIn.INDEX;
-				if(targetRoomIndex == RITUAL_ROOM_INDEX && !IS_CIVILIAN) {
+				if(targetRoomIndex == RITUAL_ROOM_INDEX && GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
 					curUtility = double.MinValue / 2;
 				} else if (targetRoomIndex == previousRoomVisited.INDEX) {
 					curUtility = double.MinValue / 4;
@@ -412,7 +406,6 @@ public class Control_Monster : Control_Character {
 
 	// This function carries out the necessary adjustments to the monster's game objects
 	public void setupEndgame() {
-		IS_CIVILIAN = true;
 		monsterImageObject.SetActive(false);
 		civilianObject.SetActive(true);
 		me.state = STATE_WANDERING;
@@ -438,14 +431,9 @@ public class Control_Monster : Control_Character {
 
 	// Killing the monster / civilian during endgame
 	public void dieAndRespawn() {
-		Vector3 pos = transform.position;
+		GS.MONSTER_KILLED = true;
 
-		if (!IS_CIVILIAN) {
-			Debug.Log("The monster died.");
-			setupEndgame();
-		} else {
-			Debug.Log("A civilian died.");
-		}
+		Vector3 pos = transform.position;
 		// Place a tombstone where the death occured
 		Instantiate(tombstone, new Vector3(pos.x, pos.y - 1.7f, pos.z), Quaternion.identity);
 
@@ -475,7 +463,7 @@ public class Control_Monster : Control_Character {
 	// If hit after the ritual was performed, die
 	public override void getHit() {
 		Debug.Log(me + " is hit");
-		if(GS.RITUAL_PERFORMED) {
+		if(GS.OVERALL_STATE > Control_GameState.STATE_COLLECTION_PHASE) {
 			dieAndRespawn();
 		}
 	}
