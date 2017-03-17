@@ -1,8 +1,8 @@
 {
     "list": [
         {
-            "prefabName": "PrefabItem_Book",
-            "displayName": "Book",
+            "prefabName": "PrefabItem_Ankh",
+            "displayName": "Ankh",
             "size": {
                 "x": 0.64,
                 "y": 0.64
@@ -10,8 +10,8 @@
             "maxInstances": 1
         },
         {
-            "prefabName": "PrefabItem_Box",
-            "displayName": "Box",
+            "prefabName": "PrefabItem_Brain",
+            "displayName": "Brain-in-a-Jar",
             "size": {
                 "x": 0.64,
                 "y": 0.64
@@ -19,8 +19,8 @@
             "maxInstances": 1
         },
         {
-            "prefabName": "PrefabItem_Burger",
-            "displayName": "Hamburger",
+            "prefabName": "PrefabItem_Chalice",
+            "displayName": "Golden Chalice",
             "size": {
                 "x": 0.64,
                 "y": 0.64
@@ -28,8 +28,8 @@
             "maxInstances": 1
         },
         {
-            "prefabName": "PrefabItem_Cross",
-            "displayName": "Crucifix",
+            "prefabName": "PrefabItem_CrystalBall",
+            "displayName": "Crystal Ball",
             "size": {
                 "x": 0.64,
                 "y": 0.64
@@ -37,8 +37,8 @@
             "maxInstances": 1
         },
         {
-            "prefabName": "PrefabItem_Mushroom",
-            "displayName": "Mushroom",
+            "prefabName": "PrefabItem_Dagger",
+            "displayName": "Dagger",
             "size": {
                 "x": 0.64,
                 "y": 0.64
@@ -46,8 +46,8 @@
             "maxInstances": 1
         },
         {
-            "prefabName": "PrefabItem_Phone",
-            "displayName": "Cellphone",
+            "prefabName": "PrefabItem_Gem1",
+            "displayName": "Blue Gem",
             "size": {
                 "x": 0.64,
                 "y": 0.64
@@ -55,8 +55,8 @@
             "maxInstances": 1
         },
         {
-            "prefabName": "PrefabItem_Duck",
-            "displayName": "Rubber Ducky",
+            "prefabName": "PrefabItem_Gem2",
+            "displayName": "Red Gem",
             "size": {
                 "x": 0.64,
                 "y": 0.64
@@ -64,8 +64,71 @@
             "maxInstances": 1
         },
         {
-            "prefabName": "PrefabItem_ToiPa",
-            "displayName": "Toilet Paper",
+            "prefabName": "PrefabItem_Hand",
+            "displayName": "Skeletal Hand",
+            "size": {
+                "x": 0.64,
+                "y": 0.64
+            },
+            "maxInstances": 1
+        },
+        {
+            "prefabName": "PrefabItem_Mirror",
+            "displayName": "Broken Mirror",
+            "size": {
+                "x": 0.64,
+                "y": 0.64
+            },
+            "maxInstances": 1
+        },
+        {
+            "prefabName": "PrefabItem_Ouroboros",
+            "displayName": "Ouroboros",
+            "size": {
+                "x": 0.64,
+                "y": 0.64
+            },
+            "maxInstances": 1
+        },
+        {
+            "prefabName": "PrefabItem_Poison",
+            "displayName": "Poison Vial",
+            "size": {
+                "x": 0.64,
+                "y": 0.64
+            },
+            "maxInstances": 1
+        },
+        {
+            "prefabName": "PrefabItem_Sandclock",
+            "displayName": "Sand Clock",
+            "size": {
+                "x": 0.64,
+                "y": 0.64
+            },
+            "maxInstances": 1
+        },
+        {
+            "prefabName": "PrefabItem_Skull",
+            "displayName": "Human Skull",
+            "size": {
+                "x": 0.64,
+                "y": 0.64
+            },
+            "maxInstances": 1
+        },
+        {
+            "prefabName": "PrefabItem_Spider",
+            "displayName": "Desiccated Spider",
+            "size": {
+                "x": 0.64,
+                "y": 0.64
+            },
+            "maxInstances": 1
+        },
+        {
+            "prefabName": "PrefabItem_Toad",
+            "displayName": "Live Toad",
             "size": {
                 "x": 0.64,
                 "y": 0.64
