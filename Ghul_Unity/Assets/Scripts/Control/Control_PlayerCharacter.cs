@@ -24,7 +24,8 @@ public class Control_PlayerCharacter : Control_Character {
 	private float STANDING_STAMINA_GAIN;
 
 	private float RITUAL_PENTAGRAM_CENTER;
-	private float RITUAL_PENTAGRAM_RADIUS;
+	private float RITUAL_ITEM_PLACEMENT_RADIUS;
+	private float RITUAL_ITEM_PLACEMENT_DURATION;
 	private float SUICIDLE_DURATION;
 
 	private float RESPAWN_TRANSITION_DURATION;
@@ -38,6 +39,7 @@ public class Control_PlayerCharacter : Control_Character {
 	private Control_Camera mainCameraControl;
 	private Control_Sound soundSystem;
 	public Canvas inventoryUI;
+	public GameObject pentagram;
 	public GameObject attackArm;
 
 	// Zapping-effect parameters
@@ -89,7 +91,8 @@ public class Control_PlayerCharacter : Control_Character {
 
 		RITUAL_ROOM_INDEX = (int)Global_Settings.read("RITUAL_ROOM_INDEX");
 		RITUAL_PENTAGRAM_CENTER = Global_Settings.read("RITUAL_PENTAGRAM_CENTER");
-		RITUAL_PENTAGRAM_RADIUS = Global_Settings.read("RITUAL_PENTAGRAM_RADIUS");
+		RITUAL_ITEM_PLACEMENT_RADIUS = Global_Settings.read("RITUAL_PENTAGRAM_RADIUS") / 10f;
+		RITUAL_ITEM_PLACEMENT_DURATION = Global_Settings.read("RITUAL_ITEM_PLACEMENT");
 		SUICIDLE_DURATION = Global_Settings.read("SUICIDLE_DURATION");
 
 		ATTACK_RANGE = Global_Settings.read("MONSTER_ATTACK_RANGE");
@@ -139,9 +142,9 @@ public class Control_PlayerCharacter : Control_Character {
 
 		// If conditions for placing the item at the pentagram are right, do just that
 		if(me.carriedItem != null && me.isIn.INDEX == RITUAL_ROOM_INDEX &&
-		   Math.Abs(RITUAL_PENTAGRAM_CENTER - me.atPos) <= RITUAL_PENTAGRAM_RADIUS) {
+			Math.Abs(RITUAL_PENTAGRAM_CENTER - me.atPos) <= RITUAL_ITEM_PLACEMENT_RADIUS) {
 			GS.indexOfSearchedItem++; // now the next item is to be searched
-			putItemOntoPentagram();
+			StartCoroutine(putItemOntoPentagram());
 		}
 
 		// Vertical "movement"
@@ -330,11 +333,18 @@ public class Control_PlayerCharacter : Control_Character {
 	}
 
 	// The player reaches the pentagram with an item
-	private void putItemOntoPentagram() {
-		me.carriedItem.control.placeForRitual();
+	private IEnumerator putItemOntoPentagram() {
+		// Find the next free slot for the item
+		string verticeObjName = "Vertice_" + (GS.numItemsPlaced % 5 + 1);
+		Vector3 verticePos = pentagram.transform.FindChild(verticeObjName).transform.position;
+		// Place the item in it
+		me.carriedItem.control.placeForRitual(verticePos, RITUAL_ITEM_PLACEMENT_DURATION);
 		Debug.Log("Item #" + me.carriedItem.INDEX + " placed for the ritual");
 		me.carriedItem = null;
-		// Auto save when placing an item.
+		// Wait for the item to fully materialize
+		activateCooldown(RITUAL_ITEM_PLACEMENT_DURATION);
+		yield return new WaitForSeconds(RITUAL_ITEM_PLACEMENT_DURATION);
+		// Auto save when placing is complete
 		Data_GameState.saveToDisk(GS);
 	}
 

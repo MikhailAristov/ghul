@@ -24,6 +24,7 @@ public class Global_Settings {
 			{ "RITUAL_PENTAGRAM_CENTER",		0.05f },	// The center pentagram space (relative to room center)
 			{ "RITUAL_PENTAGRAM_RADIUS",		1.4f },		// The distance between pentagram center and edge in either direction
 			{ "RITUAL_ITEMS_REQUIRED",			5.0f },		// How many items are needed for the ritual (has to be cast to int)
+			{ "RITUAL_ITEM_PLACEMENT",			1.0f },		// How long, in seconds, it takes to place an item on the pentagram
 
 			// Door settings
 			{ "MARGIN_DOOR_ENTRANCE",			0.6f },		// How close a character's center of mass must be to the door's center to use it

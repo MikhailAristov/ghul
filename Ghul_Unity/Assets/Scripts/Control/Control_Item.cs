@@ -63,21 +63,32 @@ public class Control_Item : MonoBehaviour {
 		return (v > 0 ? v : g); // Differential equations are a bitch...
 	}
 
-	// When placed, lerps the item to its designated position on the pentagram
-	private IEnumerator floatToRitualPosition() {
-		while(Vector2.Distance(transform.position, ITEM_POSITION_FOR_RITUAL) > 0.1f) {
-			Vector2 delta = Time.deltaTime * ((Vector2)transform.position -  Vector2.Lerp(transform.position, ITEM_POSITION_FOR_RITUAL, 1.0f));
-			me.updatePosition(me.isIn, me.atPos - delta.x, me.elevation - delta.y);
-			updateGameObjectPosition();
+	// When placed, fades in the item at its designated position on the pentagram
+	private IEnumerator materializeAtRitualPosition(Vector3 targetPosition, float duration) {
+		SpriteRenderer rend = GetComponent<SpriteRenderer>();
+		// Move the sprite to target position
+		me.updatePosition(me.isIn, targetPosition.x, targetPosition.y);
+		updateGameObjectPosition();
+		transform.position = targetPosition;
+		// Set alpha channel to zero
+		rend.color -= new Color(0, 0, 0, rend.color.a);
+		// Enable the sprite
+		rend.enabled = true;
+		// Slowly restore the alpha channel over time
+		for(float timeLeft = duration; timeLeft > 0; timeLeft -= Time.deltaTime) {
+			rend.color += new Color (0, 0, 0, Time.deltaTime/duration);
 			yield return null;
 		}
+		// Update the game state
 		GS.numItemsPlaced++;
 		GS.NEXT_ITEM_PLEASE = true;
 	}
 
 	// Update the game object/sprite's position within the game space from the current game state
 	public void updateGameObjectPosition() {
-		Vector3 targetPos = new Vector3(me.atPos, me.elevation, transform.position.z);
+		// The first three items are placed on the pentagram "in front" of the player character
+		float zPos = (me.state == Data_Item.STATE_PLACED && me.INDEX <= 3) ? -2f : transform.position.z;
+		Vector3 targetPos = new Vector3(me.atPos, me.elevation, zPos);
 		if(transform.parent != me.isIn.env.transform) {
 			transform.parent = me.isIn.env.transform; // Move the game object to the room game object
 			transform.localPosition = targetPos;
@@ -136,11 +147,10 @@ public class Control_Item : MonoBehaviour {
 	}
 
 	// When CHARA gets to the ritual room
-	public void placeForRitual() {
+	public void placeForRitual(Vector3 targetPosition, float duration) {
 		if(me.state == Data_Item.STATE_CARRIED) { 
 			me.state = Data_Item.STATE_PLACED;
-			GetComponent<Renderer>().enabled = true;
-			StartCoroutine(floatToRitualPosition());
+			StartCoroutine(materializeAtRitualPosition(targetPosition, duration));
 		} else {
 			Debug.LogError("Cannot put down " + me);
 		}
