@@ -9,9 +9,10 @@ public class Control_Item : MonoBehaviour {
 	[NonSerialized]
 	private Data_Item me;
 
+	public Sprite BloodyScribble;
+
 	private float ITEM_CARRY_ELEVATION;
 	private float ITEM_FLOOR_LEVEL;
-	private Vector2 ITEM_POSITION_FOR_RITUAL;
 
 	// To make sure the game state is fully initialized before loading it, this function is called by game state class itself
 	public void loadGameState(Data_GameState gameState, int ownIndex)
@@ -28,7 +29,6 @@ public class Control_Item : MonoBehaviour {
 		float maxItems = Global_Settings.read("RITUAL_ITEMS_REQUIRED");
 		// Calculate the intented position of the item at the ritual 
 		float ritualPos = (pentagramCenter - pentagramRadius) + (2 * ownIndex + 1) * pentagramRadius / maxItems;
-		ITEM_POSITION_FOR_RITUAL = new Vector2(ritualPos, ITEM_FLOOR_LEVEL);
 
 		// Check the item visibility
 		GetComponent<Renderer>().enabled = me.isVisible();
@@ -86,8 +86,8 @@ public class Control_Item : MonoBehaviour {
 
 	// Update the game object/sprite's position within the game space from the current game state
 	public void updateGameObjectPosition() {
-		// The first three items are placed on the pentagram "in front" of the player character
-		float zPos = (me.state == Data_Item.STATE_PLACED && me.INDEX <= 3) ? -2f : transform.position.z;
+		// The first two items are placed on the pentagram "in front" of the player character
+		float zPos = (me.state == Data_Item.STATE_PLACED && me.INDEX <= 2) ? -2f : transform.position.z;
 		Vector3 targetPos = new Vector3(me.atPos, me.elevation, zPos);
 		if(transform.parent != me.isIn.env.transform) {
 			transform.parent = me.isIn.env.transform; // Move the game object to the room game object

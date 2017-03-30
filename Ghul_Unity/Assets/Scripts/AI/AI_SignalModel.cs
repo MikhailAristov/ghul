@@ -37,13 +37,8 @@ public class AI_SignalModel {
 	[SerializeField]
 	public double[,,] likelihoodNoiseHeardAtDoor;
 
-	[SerializeField]
-	private double gaussFactor;
-	// Performance optimization
-
 	public AI_SignalModel(Data_GameState GS, AI_PlayerModel PM) {
 		playerModel = PM;
-		gaussFactor = 1.0 / Math.Sqrt(2.0 * Math.PI);
 		recalculate(GS);
 	}
 

@@ -389,7 +389,7 @@ public class Control_GameState : MonoBehaviour {
 	private IEnumerator updateWallScribbles(float overTime) {
 
 		SpriteRenderer rend = RitualRoomScribbles.GetComponent<SpriteRenderer>();
-		Sprite newSprite = GS.getCurrentItem().control.GetComponent<SpriteRenderer>().sprite;
+		Sprite newSprite = GS.getCurrentItem().control.BloodyScribble;
 
 		// If the time given is zero or less, just replace the sprite and exit
 		if(overTime <= 0) { rend.sprite = newSprite; yield break; }

@@ -52,6 +52,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 811dde4a67b699f44901bbf5d7bb3bfe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  BloodyScribble: {fileID: 21300000, guid: e8c85a540e195424c94c40ce1981c625, type: 3}
 --- !u!212 &212000013649137384
 SpriteRenderer:
   m_ObjectHideFlags: 1
