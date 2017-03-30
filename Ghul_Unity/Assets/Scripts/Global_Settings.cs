@@ -16,18 +16,18 @@ public class Global_Settings {
 			{ "TOTAL_NUMBER_OF_ROOMS",			10.0f },	// How many rooms are to there to be in the game, including the Ritual Room; must be more than 5!
 
 			// Level layout setttings
-			{ "HORIZONTAL_ROOM_MARGIN",			0.9f },		// Prevents movement to screen edge past the margin
-			{ "HORIZONTAL_DOOR_WIDTH",			1.35f },
+			{ "HORIZONTAL_ROOM_MARGIN",			0.5625f },	// Prevents movement to screen edge past the margin
+			{ "HORIZONTAL_DOOR_WIDTH",			1.6875f },
 
 			// Ritual room settings
 			{ "RITUAL_ROOM_INDEX",				0.0f },		// The index of the room with the ritual pentagram (has to be cast to int)
-			{ "RITUAL_PENTAGRAM_CENTER",		0.05f },	// The center pentagram space (relative to room center)
-			{ "RITUAL_PENTAGRAM_RADIUS",		1.4f },		// The distance between pentagram center and edge in either direction
+			{ "RITUAL_PENTAGRAM_CENTER",		2.71875f },	// The center pentagram space (relative to room center)
+			{ "RITUAL_PENTAGRAM_RADIUS",		0.88125f },	// The distance between pentagram center and edge in either direction
 			{ "RITUAL_ITEMS_REQUIRED",			5.0f },		// How many items are needed for the ritual (has to be cast to int)
 			{ "RITUAL_ITEM_PLACEMENT",			1.0f },		// How long, in seconds, it takes to place an item on the pentagram
 
 			// Door settings
-			{ "MARGIN_DOOR_ENTRANCE",			0.6f },		// How close a character's center of mass must be to the door's center to use it
+			{ "MARGIN_DOOR_ENTRANCE",			0.84375f },	// How close a character's center of mass must be to the door's center to use it
 			{ "DOOR_TRANSITION_DURATION",		0.4f },		// How long it takes to go through a door
 			{ "DOOR_OPEN_DURATION",				1.0f },		// How long a door stays open after someone goes through it
 
