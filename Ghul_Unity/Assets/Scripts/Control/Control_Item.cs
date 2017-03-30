@@ -23,13 +23,6 @@ public class Control_Item : MonoBehaviour {
 		ITEM_CARRY_ELEVATION = Global_Settings.read("ITEM_CARRY_ELEVATION");
 		ITEM_FLOOR_LEVEL = Global_Settings.read("ITEM_FLOOR_LEVEL");
 
-		// Get the ritual details
-		float pentagramCenter = Global_Settings.read("RITUAL_PENTAGRAM_CENTER");
-		float pentagramRadius = Global_Settings.read("RITUAL_PENTAGRAM_RADIUS");
-		float maxItems = Global_Settings.read("RITUAL_ITEMS_REQUIRED");
-		// Calculate the intented position of the item at the ritual 
-		float ritualPos = (pentagramCenter - pentagramRadius) + (2 * ownIndex + 1) * pentagramRadius / maxItems;
-
 		// Check the item visibility
 		GetComponent<Renderer>().enabled = me.isVisible();
 	}

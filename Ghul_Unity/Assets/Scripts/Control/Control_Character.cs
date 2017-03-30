@@ -157,6 +157,7 @@ public abstract class Control_Character : MonoBehaviour {
 			}
 			yield return new WaitForSeconds(ATTACK_DURATION * attackProgressStep);
 		}
+		Debug.Log("attack complete, Toni at " + GS.getToni().atPos);
 		// PHASE 2: Resolve
 		if(!attackIsCanceledByMoving && !target.isInvulnerable &&
 			GS.monsterSeesToni && Math.Abs(target.atPos - attackPoint) <= ATTACK_MARGIN) {

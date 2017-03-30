@@ -181,10 +181,19 @@ public class Control_Monster : Control_Character {
 		// If, while pursuing, monster sees Toni is within attack range, initiate an attack
 		// On the other hand, if Toni cannot be seen, start stalking again
 		case STATE_PURSUING:
-			if(!Toni.isInvulnerable && GS.monsterSeesToni && Math.Abs(Math.Abs(GS.distanceToToni) - ATTACK_RANGE) <= ATTACK_MARGIN) {
-				me.state = STATE_ATTACKING;
-				stateUpdateCooldown = ATTACK_DURATION + ATTACK_COOLDOWN;
-			} else if(!GS.monsterSeesToni) {
+			if(GS.monsterSeesToni) {
+				// If you see Toni, predict whether the attack animation would hit him and attack, if so
+				float tonisPredictedPosition = Toni.atPos + ATTACK_DURATION * Toni.currentVelocity;
+				float attackLandingPoint = me.atPos + (Toni.atPos < me.atPos ? -1.0f : 1.0f) * ATTACK_RANGE;
+				if(!Toni.isInvulnerable && Math.Abs(tonisPredictedPosition - attackLandingPoint) <= ATTACK_MARGIN) {
+					Debug.Log("Toni position: " + Toni.atPos + " and velocity: " + Toni.currentVelocity);
+					Debug.Log("predicting Toni at " + tonisPredictedPosition + " and starting attack");
+					me.state = STATE_ATTACKING;
+					stateUpdateCooldown = ATTACK_DURATION + ATTACK_COOLDOWN;
+				}
+				// Otherwise, keep pursuing
+			} else {
+				// If you don't see Toni anymore, go back to stalking
 				stateUpdateCooldown = DOOR_TRANSITION_DURATION;
 				me.state = STATE_STALKING;
 			}
@@ -369,6 +378,16 @@ public class Control_Monster : Control_Character {
 
 	// Run towards within striking range of Toni
 	private void enactPursuitPolicy() {
+		// If Toni is still inside the striking range, just turn towards him and wait for his move
+		// TODO: A more intelligent/aggressive behavior in this situation?
+		float distToToni = GS.distanceToToni;
+		if(Math.Abs(distToToni) < ATTACK_RANGE - ATTACK_MARGIN) {
+			setSpriteFlip(distToToni < 0);
+		} else {
+			// Otherwise, run towards him
+			walk(GS.distanceToToni, true, Time.deltaTime);
+		}
+		/*
 		// Predict the possible attack positions
 		float tonisPredictedPosition = Toni.atPos + ATTACK_DURATION * Toni.currentVelocity;
 		float attackPointLeft = tonisPredictedPosition - ATTACK_RANGE * 0.99f;
@@ -380,8 +399,8 @@ public class Control_Monster : Control_Character {
 			walk(attackPointRight - me.atPos, true, Time.deltaTime);
 		} else { 
 			// In case both attack points are unreachable, just run towards Toni to scare him into fleeing
-			walk(GS.distanceToToni, true, Time.deltaTime);
 		}
+		*/
 	}
 
 	// Walk towards the door and through it, if possible

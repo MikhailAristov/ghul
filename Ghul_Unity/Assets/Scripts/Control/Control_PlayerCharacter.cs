@@ -157,20 +157,6 @@ public class Control_PlayerCharacter : Control_Character {
 				return;
 			}
 		}
-			
-		// Horizontal movement
-		me.currentVelocity = 0;
-		if(Mathf.Abs(Input.GetAxis("Horizontal")) > 0.01f) {
-			me.timeWithoutAction = 0;
-			Data_Door walkIntoDoor = walk(Input.GetAxis("Horizontal"), Input.GetButton("Run"), Time.deltaTime);
-			if(walkIntoDoor != null) {
-				// Walk through the door if triggered
-				StartCoroutine(goThroughTheDoor(walkIntoDoor));
-				return;
-			}
-		} else {
-			regainStamina();
-		}
 
 		// Suicidle...
 		if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE) {
@@ -181,6 +167,23 @@ public class Control_PlayerCharacter : Control_Character {
 			mainCameraControl.setRedOverlay(me.timeWithoutAction / SUICIDLE_DURATION);
 		}
 	}
+
+	void FixedUpdate() {
+		// Horizontal movement
+		me.currentVelocity = 0;
+		if(Mathf.Abs(Input.GetAxis("Horizontal")) > 0.01f) {
+			me.timeWithoutAction = 0;
+			Data_Door walkIntoDoor = walk(Input.GetAxis("Horizontal"), Input.GetButton("Run"), Time.fixedDeltaTime);
+			if(walkIntoDoor != null) {
+				// Walk through the door if triggered
+				StartCoroutine(goThroughTheDoor(walkIntoDoor));
+				return;
+			}
+		} else {
+			regainStamina();
+		}
+	}
+
 	// Superclass functions implemented
 	protected override void setSpriteFlip(bool state) {
 		stickmanRenderer.flipX = state;
