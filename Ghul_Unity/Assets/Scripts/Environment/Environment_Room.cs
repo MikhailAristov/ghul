@@ -27,12 +27,6 @@ public class Environment_Room : MonoBehaviour {
         rightWallPos = me.width / 2;
         leftWallPos = -rightWallPos;
 
-		// In debug builds, set room background to a random hue to make navigation easier
-		if(Debug.isDebugBuild && ownIndex > 0) {
-			SpriteRenderer backgroundRenderer = transform.Find ("Background").GetComponent<SpriteRenderer>();
-			backgroundRenderer.color = UnityEngine.Random.ColorHSV (0f, 1f, 1f, 1f, 1f, 1f, 1f, 1f);
-		}
-
         // Set general movement parameters
         MARGIN_SIZE_PHYSICAL = Global_Settings.read("HORIZONTAL_ROOM_MARGIN");
         MARGIN_SIZE_CAMERA = Global_Settings.read("SCREEN_SIZE_HORIZONTAL") / 2;

@@ -20,7 +20,7 @@
                 "x": 9.6,
                 "y": 4.8
             },
-            "maxInstances": 99,
+            "maxInstances": 0,
             "doorSpawnLeft": true,
             "doorSpawnRight": true,
             "doorSpawns": [
@@ -68,7 +68,7 @@
                 "x": 7.78,
                 "y": 4.8
             },
-            "maxInstances": 1,
+            "maxInstances": 0,
             "doorSpawnLeft": true,
             "doorSpawnRight": false,
             "doorSpawns": [
@@ -86,6 +86,130 @@
                 {
                     "x": 2.8,
                     "y": -0.8
+                }
+            ]
+        },
+        {
+            "prefabName": "PrefabRoom_Bathroom",
+            "displayName": "Bathroom",
+            "size": {
+                "x": 6.225,
+                "y": 4.8
+            },
+            "maxInstances": 1,
+            "doorSpawnLeft": true,
+            "doorSpawnRight": true,
+            "doorSpawns": [ ],
+            "itemSpawns": [
+                {
+                    "x": -0.8625,
+                    "y": -1.0875
+                },
+                {
+                    "x": 2.4375,
+                    "y": -0.1875
+                }
+            ]
+        },
+        {
+            "prefabName": "PrefabRoom_Bedroom",
+            "displayName": "Bedroom",
+            "size": {
+                "x": 8.4375,
+                "y": 4.8
+            },
+            "maxInstances": 1,
+            "doorSpawnLeft": true,
+            "doorSpawnRight": false,
+            "doorSpawns": [
+                -2.0625
+			],
+            "itemSpawns": [
+                {
+                    "x": 0.525,
+                    "y": -1.0875
+                },
+                {
+                    "x": -2.25,
+                    "y": -1.65
+                }
+            ]
+        },
+        {
+            "prefabName": "PrefabRoom_Kitchen",
+            "displayName": "Kitchen",
+            "size": {
+                "x": 6.225,
+                "y": 4.8
+            },
+            "maxInstances": 1,
+            "doorSpawnLeft": true,
+            "doorSpawnRight": true,
+            "doorSpawns": [ ],
+            "itemSpawns": [
+                {
+                    "x": -2.25,
+                    "y": -0.975
+                },
+                {
+                    "x": 2.025,
+                    "y": -0.6375
+                },
+                {
+                    "x": -0.675,
+                    "y": -0.3
+                }
+            ]
+        },
+        {
+            "prefabName": "PrefabRoom_Library",
+            "displayName": "Library",
+            "size": {
+                "x": 7.2375,
+                "y": 4.8
+            },
+            "maxInstances": 1,
+            "doorSpawnLeft": true,
+            "doorSpawnRight": true,
+            "doorSpawns": [
+				-2.175
+			],
+            "itemSpawns": [
+                {
+                    "x": 1.6125,
+                    "y": 0.9
+                },
+                {
+                    "x": -0.9,
+                    "y": -0.375
+                },
+                {
+                    "x": 2.4,
+                    "y": -1.1625
+                }
+            ]
+        },
+        {
+            "prefabName": "PrefabRoom_LivingRoom",
+            "displayName": "Living Room",
+            "size": {
+                "x": 6.4875,
+                "y": 4.8
+            },
+            "maxInstances": 1,
+            "doorSpawnLeft": true,
+            "doorSpawnRight": true,
+            "doorSpawns": [
+				-0.15
+			],
+            "itemSpawns": [
+                {
+                    "x": -1.9875,
+                    "y": -0.8625
+                },
+                {
+                    "x": 2.175,
+                    "y": -1.2
                 }
             ]
         }
