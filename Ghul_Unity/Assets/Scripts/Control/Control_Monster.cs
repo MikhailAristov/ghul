@@ -185,10 +185,13 @@ public class Control_Monster : Control_Character {
 				// If you see Toni, predict whether the attack animation would hit him and attack, if so
 				float tonisPredictedPosition = Toni.atPos + ATTACK_DURATION * Toni.currentVelocity;
 				float attackLandingPoint = me.atPos + (Toni.atPos < me.atPos ? -1.0f : 1.0f) * ATTACK_RANGE;
-				if(!Toni.isInvulnerable && Math.Abs(tonisPredictedPosition - attackLandingPoint) <= ATTACK_MARGIN) {
+				if(!Toni.isInvulnerable && 2 * Math.Abs(tonisPredictedPosition - attackLandingPoint) < ATTACK_MARGIN) {
 					Debug.Log("Toni position: " + Toni.atPos + " and velocity: " + Toni.currentVelocity);
-					Debug.Log("predicting Toni at " + tonisPredictedPosition + " and starting attack");
-					me.state = STATE_ATTACKING;
+					Debug.Log("predicting Toni at " + tonisPredictedPosition + " and starting attack on T+" + Time.timeSinceLevelLoad);
+					if(!attackAnimationPlaying) {
+						StartCoroutine(playAttackAnimation(Toni.atPos, Toni));
+					}
+					//me.state = STATE_ATTACKING;
 					stateUpdateCooldown = ATTACK_DURATION + ATTACK_COOLDOWN;
 				}
 				// Otherwise, keep pursuing
@@ -260,11 +263,9 @@ public class Control_Monster : Control_Character {
 			enactSearchPolicy(true);
 			break;
 		case STATE_PURSUING:
-			enactPursuitPolicy();
-			break;
 		case STATE_ATTACKING:
 			if(!attackAnimationPlaying) {
-				StartCoroutine(playAttackAnimation(Toni.atPos, Toni));
+				enactPursuitPolicy();
 			}
 			break;
 		case STATE_WANDERING:

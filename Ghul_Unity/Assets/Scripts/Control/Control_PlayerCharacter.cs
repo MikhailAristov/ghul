@@ -103,6 +103,8 @@ public class Control_PlayerCharacter : Control_Character {
 		// Move the character sprite directly to where the game state says it should be standing
 		Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
 		transform.Translate(savedPosition - transform.position);
+
+		positionAtTheLastTimeStep = me.pos.clone();
 	}
 
 	// Update is called once per frame
@@ -158,6 +160,19 @@ public class Control_PlayerCharacter : Control_Character {
 			}
 		}
 
+		// Horizontal movement
+		if(Mathf.Abs(Input.GetAxis("Horizontal")) > 0.01f) {
+			me.timeWithoutAction = 0;
+			Data_Door walkIntoDoor = walk(Input.GetAxis("Horizontal"), Input.GetButton("Run"), Time.deltaTime);
+			if(walkIntoDoor != null) {
+				// Walk through the door if triggered
+				StartCoroutine(goThroughTheDoor(walkIntoDoor));
+				return;
+			}
+		} else {
+			regainStamina();
+		}
+
 		// Suicidle...
 		if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE) {
 			if(me.timeWithoutAction >= SUICIDLE_DURATION) {
@@ -169,19 +184,13 @@ public class Control_PlayerCharacter : Control_Character {
 	}
 
 	void FixedUpdate() {
-		// Horizontal movement
-		me.currentVelocity = 0;
-		if(Mathf.Abs(Input.GetAxis("Horizontal")) > 0.01f) {
-			me.timeWithoutAction = 0;
-			Data_Door walkIntoDoor = walk(Input.GetAxis("Horizontal"), Input.GetButton("Run"), Time.fixedDeltaTime);
-			if(walkIntoDoor != null) {
-				// Walk through the door if triggered
-				StartCoroutine(goThroughTheDoor(walkIntoDoor));
-				return;
-			}
-		} else {
-			regainStamina();
+		// Don't do anything if the game state is not loaded yet or suspended or in the final endgame state
+		if(GS == null || GS.SUSPENDED || GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_DEAD) { 
+			return; 
 		}
+
+		// Update Toni's velocity
+		updateVelocity(Time.fixedDeltaTime);
 	}
 
 	// Superclass functions implemented

@@ -24,6 +24,17 @@ public abstract class Control_Character : MonoBehaviour {
 
 	protected LineRenderer attackArmRenderer;
 	protected bool attackAnimationPlaying;
+	protected Data_Position positionAtTheLastTimeStep;
+
+	// Must be called from FixedUpdate()
+	protected void updateVelocity(float deltaTime) {
+		if(positionAtTheLastTimeStep.RoomId == getMe().pos.RoomId) {
+			getMe().currentVelocity = (getMe().pos.X - positionAtTheLastTimeStep.X) / deltaTime;
+		} else {
+			getMe().currentVelocity = 0;
+		}
+		positionAtTheLastTimeStep = getMe().pos.clone();
+	}
 
 	// The functions moves the character left or right
 	// Direction is negative for left, positive for right
@@ -62,7 +73,6 @@ public abstract class Control_Character : MonoBehaviour {
 		float validDisplacement = validPosition - transform.position.x;
 		if (Mathf.Abs(validDisplacement) > 0.0f) {
 			getMe().updatePosition(validPosition);
-			getMe().currentVelocity = validDisplacement / deltaTime;
 			transform.Translate(validDisplacement, 0, 0);
 		}
 
@@ -141,8 +151,9 @@ public abstract class Control_Character : MonoBehaviour {
 			setSpriteFlip(targetPos < attackOrigin);
 		}
 		float attackPoint = attackOrigin + Math.Sign(targetPos - attackOrigin) * ATTACK_RANGE;
-		Debug.LogWarning(getMe() + " attacks from " + getMe().pos + " to " + attackPoint);
+		Debug.LogWarning(getMe() + " attacks from " + getMe().pos + " to " + attackPoint + " on T+" + Time.timeSinceLevelLoad);
 		// PHASE 1: Attack
+		float attackBegun = Time.timeSinceLevelLoad;
 		float attackProgress = 0f; float attackProgressStep = 1f/60f;
 		while(attackProgress < 1f) {
 			// If the attacker moves from the original spot, immediately cancel the attack
@@ -156,8 +167,9 @@ public abstract class Control_Character : MonoBehaviour {
 				attackProgress += attackProgressStep;
 			}
 			yield return new WaitForSeconds(ATTACK_DURATION * attackProgressStep);
+			Debug.Log("progress: " + attackProgress + " after wait " + (ATTACK_DURATION * attackProgressStep ) + " : " + Time.timeSinceLevelLoad);
 		}
-		Debug.Log("attack complete, Toni at " + GS.getToni().atPos);
+		Debug.Log("attack of " + ATTACK_DURATION + " s complete in " + (Time.timeSinceLevelLoad - attackBegun) + " s, Toni at " + GS.getToni().atPos);
 		// PHASE 2: Resolve
 		if(!attackIsCanceledByMoving && !target.isInvulnerable &&
 			GS.monsterSeesToni && Math.Abs(target.atPos - attackPoint) <= ATTACK_MARGIN) {
