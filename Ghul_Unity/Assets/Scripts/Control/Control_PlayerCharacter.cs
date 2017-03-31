@@ -256,7 +256,7 @@ public class Control_PlayerCharacter : Control_Character {
 		}
 
 		// Trigger an autosave upon changing locations
-		Data_GameState.saveToDisk(GS);
+		Control_Persistence.saveToDisk(GS);
 	}
 
 	// The player takes a nearby item if there is any
@@ -271,7 +271,7 @@ public class Control_PlayerCharacter : Control_Character {
 			// Make noise at the current location
 			soundSystem.makeNoise(Control_Sound.NOISE_TYPE_ITEM, me.pos);
 			// Auto save when collecting an item.
-			Data_GameState.saveToDisk(GS);
+			Control_Persistence.saveToDisk(GS);
 			// Show inventory
 			StartCoroutine("displayInventory");
 		} else {
@@ -312,7 +312,7 @@ public class Control_PlayerCharacter : Control_Character {
 			// Make noise at the current location
 			soundSystem.makeNoise(Control_Sound.NOISE_TYPE_ITEM, me.pos);
 			// Auto save when dropping an item.
-			Data_GameState.saveToDisk(GS);
+			Control_Persistence.saveToDisk(GS);
 		}
 	}
 
@@ -345,7 +345,7 @@ public class Control_PlayerCharacter : Control_Character {
 		activateCooldown(RITUAL_ITEM_PLACEMENT_DURATION);
 		yield return new WaitForSeconds(RITUAL_ITEM_PLACEMENT_DURATION);
 		// Auto save when placing is complete
-		Data_GameState.saveToDisk(GS);
+		Control_Persistence.saveToDisk(GS);
 	}
 
 	public void setupEndgame() {

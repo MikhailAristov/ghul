@@ -9,6 +9,9 @@ using System.Collections.Generic;
 [Serializable]
 public class AI_PlayerModel {
 
+	[NonSerialized]
+	public AI_PlayerParameters PLAYER_PARAMETERS;
+
 	[SerializeField]
 	public double[,] TRANSITION_MATRIX;
 
@@ -37,22 +40,19 @@ public class AI_PlayerModel {
 	[SerializeField]
 	private double MEAN_TONI_VELOCITY;
 
-	// Player model weights
-	public const double Param_ExplorationWalk	= 0.3;
-	public const double Param_ItemFetchWalk		= 1.0;
-	public const double Param_DoorToDoorWalk	= 0.8;
-	// The two parameters below must sum up to < 1.0
-	public const double Param_RunningProb		= 0.1;
-	public const double Param_StandingStillProb	= 0.3;
-
 	public AI_PlayerModel(Data_GameState GS) {
+		// TODO: Zap it
+		if(PLAYER_PARAMETERS == null) {
+			PLAYER_PARAMETERS = new AI_PlayerParameters();
+		}
+
 		// First, some global settings
 		TIME_STEP 					= Global_Settings.read("TIME_STEP");
 		SCREEN_SIZE_HORIZONTAL		= Global_Settings.read("SCREEN_SIZE_HORIZONTAL");
 		HORIZONTAL_ROOM_MARGIN		= Global_Settings.read("HORIZONTAL_ROOM_MARGIN");
 		// Walking settings
-		MEAN_TONI_VELOCITY			= Global_Settings.read("CHARA_WALKING_SPEED") * (1.0 - Param_RunningProb - Param_StandingStillProb) +
-									  Global_Settings.read("CHARA_RUNNING_SPEED") * Param_RunningProb;
+		MEAN_TONI_VELOCITY			= Global_Settings.read("CHARA_WALKING_SPEED") * PLAYER_PARAMETERS.PROB_WALKING +
+									  Global_Settings.read("CHARA_RUNNING_SPEED") * PLAYER_PARAMETERS.PROB_RUNNING;
 		DOOR_TRANSITION_DURATION	= Global_Settings.read("DOOR_TRANSITION_DURATION");
 		TONI_SINGLE_STEP_LENGTH		= Global_Settings.read("CHARA_SINGLE_STEP_LENGTH");
 		// Then, initialize the transition matrix
@@ -94,6 +94,10 @@ public class AI_PlayerModel {
 	}
 
 	private double calculateMeanStayingTime(Data_GameState GS, int roomIndex) {
+		// TODO: Zap it
+		if(PLAYER_PARAMETERS == null) {
+			PLAYER_PARAMETERS = new AI_PlayerParameters();
+		}
 		// Calculate effective (traversable) size (width) of the room in question
 		double effectiveWidth = GS.getRoomByIndex(roomIndex).width - HORIZONTAL_ROOM_MARGIN * 2;
 		// Calculate the mean time for raw room exploration
@@ -104,9 +108,9 @@ public class AI_PlayerModel {
 		double meanDoorToDoorDistance = DOOR_TRANSITION_DURATION * MEAN_TONI_VELOCITY
 			+ ((roomDoorCount[roomIndex] > 1) ? (effectiveWidth / (roomDoorCount[roomIndex] - 1)) : 0);
 		// Combine the results according to their parametrized weight
-		meanWalkingDistance[roomIndex] = Param_ExplorationWalk * meanExplorationDistance +
-										 Param_ItemFetchWalk * meanItemFetchDistance +
-										 Param_DoorToDoorWalk * meanDoorToDoorDistance;
+		meanWalkingDistance[roomIndex] = PLAYER_PARAMETERS.WEIGHT_EXPLORATION_WALK * meanExplorationDistance +
+										 PLAYER_PARAMETERS.WEIGHT_ITEM_FETCH_WALK * meanItemFetchDistance +
+										 PLAYER_PARAMETERS.WEIGHT_DOOR2DOOR_WALK * meanDoorToDoorDistance;
 		// Convert the walking distance into mean staying time and return it
 		double meanStayingTimeInSeconds = meanWalkingDistance[roomIndex] / MEAN_TONI_VELOCITY;
 		double meanStayingTimeInTimeSteps = meanStayingTimeInSeconds / TIME_STEP;
@@ -115,16 +119,20 @@ public class AI_PlayerModel {
 
 	// f( noise type | the room Toni was in when he made the sound )
 	public double noiseLikelihood(int noiseType, int roomIndex) {
+		// TODO: Zap it
+		if(PLAYER_PARAMETERS == null) {
+			PLAYER_PARAMETERS = new AI_PlayerParameters();
+		}
 		// At any given point in time, this is the probability of Toni making a walking or running noise
 		double probWalkingNoise = (meanWalkingDistance[roomIndex] / TONI_SINGLE_STEP_LENGTH) / meanStayingTime[roomIndex];
 		// Likelihood depends on the noise type
 		switch(noiseType) {
 		case Control_Sound.NOISE_TYPE_WALK:
 			// Return probability of a walking noise while NOT running
-			return (probWalkingNoise * (1 - Param_RunningProb));
+			return (probWalkingNoise * PLAYER_PARAMETERS.PROB_WALKING);
 		case Control_Sound.NOISE_TYPE_RUN:
 			// Return probability of a walking noise while running
-			return (probWalkingNoise * Param_RunningProb);
+			return (probWalkingNoise * PLAYER_PARAMETERS.PROB_RUNNING);
 		case Control_Sound.NOISE_TYPE_DOOR:
 			// The more doors the room has, the higher the chance of walking through one
 			return (roomDoorCount[roomIndex] / meanStayingTime[roomIndex]);

@@ -137,7 +137,7 @@ public abstract class Control_Character : MonoBehaviour {
 		makeNoise(Control_Sound.NOISE_TYPE_DOOR, door.pos);
 
 		// Trigger an autosave upon changing locations
-		Data_GameState.saveToDisk(GS);
+		Control_Persistence.saveToDisk(GS);
 	}
 	// Dummy functions to be implemented 
 	protected abstract void activateCooldown(float duration);

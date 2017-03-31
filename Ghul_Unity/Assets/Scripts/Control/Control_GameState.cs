@@ -57,7 +57,7 @@ public class Control_GameState : MonoBehaviour {
         NEXT_AUTOSAVE_IN -= Time.deltaTime;
 		if (NEXT_AUTOSAVE_IN <= 0.0f && AUTOSAVE_FREQUENCY != null) {
 			NEXT_AUTOSAVE_IN = (float)AUTOSAVE_FREQUENCY;
-            Data_GameState.saveToDisk(GS);
+			Control_Persistence.saveToDisk(GS);
         }
 
         // Open main menu if the player presses Esc
@@ -81,7 +81,7 @@ public class Control_GameState : MonoBehaviour {
 			// The only way Toni can die in the endgame is by suicidle
 			if(GS.TONI_KILLED) {
 				GS.OVERALL_STATE = STATE_MONSTER_DEAD;
-				Data_GameState.saveToDisk(GS);
+				Control_Persistence.saveToDisk(GS);
 			}
 			break;
 		default:
@@ -130,7 +130,7 @@ public class Control_GameState : MonoBehaviour {
     private void continueFromSavedGameState()
     {
         // Load the game state from the disk
-        GS = Data_GameState.loadFromDisk();
+		GS = Control_Persistence.loadFromDisk();
         // If no game state has been found, initialize it instead
         if(GS == null) { resetGameState(); return; }
 
@@ -380,7 +380,7 @@ public class Control_GameState : MonoBehaviour {
 		newItem.control.loadGameState(GS, newItemIndex);
 
 		// Save the new game state to disk
-		Data_GameState.saveToDisk(GS);
+		Control_Persistence.saveToDisk(GS);
 
 		return newItem;
 	}
@@ -444,7 +444,7 @@ public class Control_GameState : MonoBehaviour {
     void onExitSelect()
     {
         // Save and exit
-        Data_GameState.saveToDisk(GS);
+		Control_Persistence.saveToDisk(GS);
         Application.Quit();
     }
 }

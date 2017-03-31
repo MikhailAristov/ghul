@@ -62,10 +62,6 @@ public class Data_GameState {
 		private set { return; }
 	}
 
-    private static bool SAVING_DISABLED = false; // For debugging purposes
-    private static string FILENAME_SAVE_RESETTABLE = "save1.dat";
-    //private static string FILENAME_SAVE_PERMANENT  = "save2.dat";
-
     // Construct an empty game state
     public Data_GameState()
     {
@@ -208,56 +204,6 @@ public class Data_GameState {
 			result = room.getRandomItemSpawnPoint();
 		} while(result == null);
 		return result;
-	}
-
-    // Saves the current game state to disk
-    [MethodImpl(MethodImplOptions.Synchronized)] // Synchronized to avoid simultaneous calls from parallel threads
-    public static void saveToDisk(Data_GameState GS)
-    {
-		if(!SAVING_DISABLED && GS.getToni().etherialCooldown < 0.1f) // The second clause is just to avoid saving weird in-between states
-        {
-            // Set the save file paths
-            string resettableFilePath = Application.persistentDataPath + "/" + FILENAME_SAVE_RESETTABLE;
-            //string permanentFilePath = Application.persistentDataPath + "/" + FILENAME_SAVE_PERMANENT;
-
-            // Prepare writing file
-            BinaryFormatter bf = new BinaryFormatter();
-            FileStream file = File.Create(resettableFilePath);
-
-            // Write the game state to file and close it
-            bf.Serialize(file, GS);
-            file.Close();
-        }
-    }
-
-    // Returns a game state from disk; returns null if no saved state is found
-    public static Data_GameState loadFromDisk()
-    {
-        // Set the save file paths
-        string resettableFilePath = Application.persistentDataPath + "/" + FILENAME_SAVE_RESETTABLE;
-        //string permanentFilePath = Application.persistentDataPath + "/" + FILENAME_SAVE_PERMANENT;
-        if(!File.Exists(resettableFilePath))
-        {
-            Debug.Log("No game state found in: " + resettableFilePath);
-            return null;
-        }
-
-		try {
-			Debug.Log("Loading game from " + resettableFilePath);
-
-			// Prepare opening the file
-			BinaryFormatter bf = new BinaryFormatter();
-			FileStream file = File.Open(resettableFilePath, FileMode.Open);
-
-			// Read the file to memory and close it
-			Data_GameState result = (Data_GameState)bf.Deserialize(file);
-			file.Close();
-
-			return result;
-		} catch(SerializationException) {
-			Debug.LogWarning("The saved game " + resettableFilePath + " is corrupted, starting a new game instead");
-			return null;
-		}  
 	}
 
 	// Calculates all-pairs shortest distances between all doors and all rooms,
