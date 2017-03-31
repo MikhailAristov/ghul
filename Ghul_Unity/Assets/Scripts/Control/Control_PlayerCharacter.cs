@@ -123,7 +123,7 @@ public class Control_PlayerCharacter : Control_Character {
 			me.timeWithoutAction = 0;
 			if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
 				takeItem();
-			} else {
+			} else if(!attackAnimationPlaying) {
 				StartCoroutine(playAttackAnimation(me.atPos + (monsterToniRenderer.flipX ? 1f : -1f), GS.getMonster()));
 			}
 		}

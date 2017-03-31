@@ -97,7 +97,6 @@ public abstract class Control_Character : MonoBehaviour {
 
 	// This function transitions the character through a door
 	protected IEnumerator goThroughTheDoor(Data_Door door) {
-		Data_Room currentRoom = getMe().isIn;
 		Data_Door destinationDoor = door.connectsTo;
 		Data_Room destinationRoom = destinationDoor.isIn;
 
