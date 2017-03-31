@@ -240,7 +240,7 @@ public class Control_GameState : MonoBehaviour {
 	// Spawn all other rooms randomly from prefabs up to a certain count
 	private void spawnAllOtherRooms(int totalRoomCount) {
 		float verticalRoomSpacing = Global_Settings.read("VERTICAL_ROOM_SPACING");
-		int minRoomsWith4DoorSpawns = 4; // Graph API prerequisite
+		int minRoomsWith4DoorSpawns = 1; // Graph API prerequisite
 		while(GS.ROOMS.Count < totalRoomCount) {
 			// Check how many door spawns are required
 			int minDoorSpawns = (minRoomsWith4DoorSpawns-- > 0) ? 4 : 0;

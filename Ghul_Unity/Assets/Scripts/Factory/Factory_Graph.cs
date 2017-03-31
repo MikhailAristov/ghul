@@ -40,8 +40,8 @@ public class Factory_Graph : MonoBehaviour {
 			graph = g;
 		}
 
-		// Step 1: Select a basic planar graph as a starting point.
-		int rand = UnityEngine.Random.Range(1,6);
+		// Step 1: Select a basic planar graph as a starting point. (Currently selecting one of the first 4 graphs)
+		int rand = UnityEngine.Random.Range(1,5);
 		formBasicGraph(rand);
 
 		// Step 2: Connect vertices to the connected graph such that the resulting graph is planar again.
@@ -75,11 +75,11 @@ public class Factory_Graph : MonoBehaviour {
 
 	Graphs:
 
-	1	1------		2	1------2	3	1------		4	---1---		5	---1---
-		|      |		|      |		|      |		|  |   |		|  |   |
-		S------2		S------3		S--3---2		S--3---2		S--3---2
-		|      |		|      |		|      |		|      |		|  |   |
-		3------			4------			4------			4------			---4---
+	1	1------		2	1------2	3	1------		4 (new) 1---		5 (unused)		---1---		6 (unused)	---1---
+		|      |		|      |		|      |			|  |						|  |   |				|  |   |
+		S------2		S------3		S--3---2			S--2--3						S--3---2				S--3---2
+		|      |		|      |		|      |			|  |						|      |				|  |   |
+		3------			4------			4------				4--							4------					---4---
 
 	The numbers in the images may not be the actual room index if the room with the shown index has too few door spawns.
 	*/
@@ -192,6 +192,42 @@ public class Factory_Graph : MonoBehaviour {
 			break;
 
 		case 4:
+			roomNr = findRandomRoomWithDegreeAtLeast(3); // one extra slot
+			if (roomNr == -1)
+				return;
+			room1 = roomNr;
+
+			while (roomNr == room1) {
+				roomNr = findRandomRoomWithDegreeAtLeast(4);
+			}
+			if (roomNr == -1)
+				return;
+			room2 = roomNr;
+
+			while (roomNr == room1 || roomNr == room2) {
+				roomNr = findRandomRoomWithDegreeAtLeast(2); // one extra slot
+			}
+			if (roomNr == -1)
+				return;
+			room3 = roomNr;
+
+			while (roomNr == room1 || roomNr == room2 || roomNr == room3) {
+				roomNr = findRandomRoomWithDegreeAtLeast(3); // one extra slot
+			}
+			if (roomNr == -1)
+				return;
+			room4 = roomNr;
+
+			// don't try this at home. Carefully handcrafted clockwise connections.
+			graph.connectRooms(0, room1);
+			graph.connectRooms(0, room2);
+			graph.connectRooms(0, room4);
+			graph.connectRooms(room1, room2);
+			graph.connectRooms(room2, room3);
+			graph.connectRooms(room2, room4);
+			break;
+
+		case 50:
 			roomNr = findRandomRoomWithDegreeAtLeast(4); // one extra slot
 			if (roomNr == -1)
 				return;
@@ -229,7 +265,7 @@ public class Factory_Graph : MonoBehaviour {
 
 			break;
 
-		case 5:
+		case 60:
 			roomNr = findRandomRoomWithDegreeAtLeast(4); // one extra slot
 			if (roomNr == -1)
 				return;
@@ -271,8 +307,8 @@ public class Factory_Graph : MonoBehaviour {
 			break;
 
 		default:
-			Debug.Log("Entered an invalid number to select the base graph for graph generation.");
-			break;
+			//Debug.Log("Entered an invalid number to select the base graph for graph generation.");
+			goto case 1;
 		}
 	}
 
@@ -391,12 +427,14 @@ public class Factory_Graph : MonoBehaviour {
 	}
 
 	// Finds random (unused) room's id which has at least the specified degree (max door spawns).
+	// Note: If minDegree is <= 3, hallways with 5+ doors spawns will not be used
 	private int findRandomRoomWithDegreeAtLeast(int minDegree) {
 		int maxPatience = 1000;
 		int roomNr = UnityEngine.Random.Range(1, graph.getTotalNumberOfRooms());
 		int count = 0;
 
-		while (graph.getRoomsMaxDoors(roomNr) < minDegree || graph.ABSTRACT_ROOMS[roomNr].hasConnectedDoorSpawns()) { 
+		while (graph.getRoomsMaxDoors(roomNr) < minDegree || graph.ABSTRACT_ROOMS[roomNr].hasConnectedDoorSpawns()
+				|| (minDegree <= 3 && graph.getRoomsMaxDoors(roomNr) >= 5)) { 
 			count++;
 			if (count > maxPatience) {
 				Debug.Log("Cannot find an unused room with degree at least " + minDegree);
