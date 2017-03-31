@@ -491,12 +491,13 @@ public class Control_Monster : Control_Character {
 	protected override bool canRun() {
 		return true; // The monster can always run
 	}
-	// Instead of updating statistics, the monster updates its position in the world model and checks whether it sees Toni
-	protected override void updateDoorUsageStatistic(Data_Door door, Data_Room currentRoom, Data_Door destinationDoor, Data_Room destinationRoom) {
+
+	protected override void postDoorTransitionHook(Data_Door doorTaken) {
 		me.worldModel.updateMyRoom(me.isIn, GS.monsterSeesToni);
 		nextDoorToGoThrough = null;
-		previousRoomVisited = currentRoom;
+		previousRoomVisited = doorTaken.isIn;
 	}
+
 	// If hit after the ritual was performed, die
 	public override void getHit() {
 		Debug.Log(me + " is hit");
@@ -517,8 +518,6 @@ public class Control_Monster : Control_Character {
 	protected override void updateStamina(bool isRunning) {}
 	protected override void regainStamina() {}
 	protected override void makeWalkingNoise(float walkedDistance, int type, Data_Position atPos) {}
-	protected override void doBeforeLeavingRoom(Data_Door doorTaken) {}
-	protected override void cameraFadeOut(float duration) {}
-	protected override void cameraFadeIn(float duration) {}
-	protected override void makeNoise(int type, Data_Position atPos) {}
+	protected override void preDoorTransitionHook(Data_Door doorTaken) {}
+	protected override void preRoomLeavingHook(Data_Door doorTaken) {}
 }

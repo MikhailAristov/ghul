@@ -370,30 +370,32 @@ public class Control_PlayerCharacter : Control_Character {
 	}
 
 	// Superclass functions implemented
-	protected override void doBeforeLeavingRoom(Data_Door doorTaken) {
-		if(GS.monsterSeesToni) {
-			GS.getMonster().control.seeToniGoThroughDoor(doorTaken);
-		}
-	}
-
 	protected override void activateCooldown(float duration) {
 		me.etherialCooldown = duration;
 	}
 
-	protected override void cameraFadeOut(float duration) {
-		mainCameraControl.fadeOut(duration);
+	protected override void preDoorTransitionHook(Data_Door doorTaken) {
+		mainCameraControl.fadeOut(DOOR_TRANSITION_DURATION / 2);
+		
 	}
-
-	protected override void cameraFadeIn(float duration) {
-		mainCameraControl.fadeIn(duration);
+	protected override void preRoomLeavingHook(Data_Door doorTaken) {
+		if(GS.monsterSeesToni) {
+			GS.getMonster().control.seeToniGoThroughDoor(doorTaken);
+		}
 	}
-
-	protected override void makeNoise(int type, Data_Position atPos) {
-		soundSystem.makeNoise(type, atPos);
+	protected override void postDoorTransitionHook(Data_Door doorTaken) {
+		// Update door usage statistics
+		updateDoorUsageStatistic(doorTaken, doorTaken.isIn, doorTaken.connectsTo, doorTaken.connectsTo.isIn);
+		// Fade camera back in
+		mainCameraControl.fadeIn(DOOR_TRANSITION_DURATION / 2);
+		// Make noise
+		soundSystem.makeNoise(Control_Sound.NOISE_TYPE_DOOR, doorTaken.pos);
 		walkingDistanceSinceLastNoise = 0;
+		// Save the game
+		Control_Persistence.saveToDisk(GS);
 	}
 
-	protected override void updateDoorUsageStatistic(Data_Door door, Data_Room currentRoom, Data_Door destinationDoor, Data_Room destinationRoom) {
+	private void updateDoorUsageStatistic(Data_Door door, Data_Room currentRoom, Data_Door destinationDoor, Data_Room destinationRoom) {
 		int spawn1Index = -1;
 		int spawn2Index = -1;
 		Data_Door iteratorDoor;
