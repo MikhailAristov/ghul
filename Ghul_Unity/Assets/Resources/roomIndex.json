@@ -212,6 +212,34 @@
                     "y": -1.2
                 }
             ]
+        },
+        {
+            "prefabName": "PrefabRoom_Study",
+            "displayName": "Study",
+            "size": {
+                "x": 6.4125,
+                "y": 4.8
+            },
+            "maxInstances": 1,
+            "doorSpawnLeft": true,
+            "doorSpawnRight": true,
+            "doorSpawns": [
+				1.3125
+			],
+            "itemSpawns": [
+                {
+                    "x": -0.5625,
+                    "y": -0.225
+                },
+                {
+                    "x": 2.325,
+                    "y": -1.275
+                },
+                {
+                    "x": 0.675,
+                    "y": -1.0125
+                }
+            ]
         }
     ]
 }
