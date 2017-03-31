@@ -19,6 +19,10 @@ public class Control_Monster : Control_Character {
 	private float MARGIN_DOOR_ENTRANCE;
 	private float SCREEN_SIZE_HORIZONTAL;
 	private float MARGIN_ITEM_STEAL;
+	private float WAIT_FOR_TONI_TO_MOVE;
+
+	private float EFFECTIVE_MINIMUM_ATTACK_RANGE; // For prediction and planning of attacks
+	private float EFFECTIVE_ATTACK_MARGIN; // Ditto
 
 	// Noise data
 	private bool newNoiseHeard;
@@ -30,7 +34,7 @@ public class Control_Monster : Control_Character {
 	public const int STATE_SEARCHING = 1;
 	public const int STATE_STALKING = 2;
 	public const int STATE_PURSUING = 3;
-	public const int STATE_ATTACKING = 4;
+	// public const int STATE_ATTACKING = 4; // The attacking state is merged into STATE_PURSUING
 	public const int STATE_FLEEING = 5;
 
 	private const double utilityPenaltyRitualRoom = double.MaxValue / 2;
@@ -41,6 +45,7 @@ public class Control_Monster : Control_Character {
 	private float stateUpdateCooldown;
 	private float distanceThresholdToStartPursuing; // = AGGRO * screen width / 2
 	private double certaintyThresholdToStartStalking;
+	private float cumultativeImpasseDuration;
 
 	[NonSerialized]
 	public Data_Door nextDoorToGoThrough;
@@ -82,10 +87,14 @@ public class Control_Monster : Control_Character {
 		ATTACK_DURATION = Global_Settings.read("MONSTER_ATTACK_DURATION");
 		ATTACK_COOLDOWN = Global_Settings.read("MONSTER_ATTACK_COOLDOWN");
 
+		EFFECTIVE_ATTACK_MARGIN = ATTACK_MARGIN / 2;
+		EFFECTIVE_MINIMUM_ATTACK_RANGE = ATTACK_RANGE - EFFECTIVE_ATTACK_MARGIN;
+
 		VERTICAL_ROOM_SPACING = Global_Settings.read("VERTICAL_ROOM_SPACING");
 		DOOR_TRANSITION_DURATION = Global_Settings.read("DOOR_TRANSITION_DURATION");
 		RITUAL_ROOM_INDEX = (int)Global_Settings.read("RITUAL_ROOM_INDEX");
 		MARGIN_ITEM_STEAL = Global_Settings.read("MARGIN_ITEM_COLLECT") / 10f;
+		WAIT_FOR_TONI_TO_MOVE = Global_Settings.read("MONSTER_WAIT_FOR_TONI_MOVE");
 
 		// Move the character sprite directly to where the game state says it should be standing
 		Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
@@ -111,14 +120,22 @@ public class Control_Monster : Control_Character {
 		}
 	}
 
-	void FixedUpdate() {
+	protected new void FixedUpdate() {
+		base.FixedUpdate();
+
 		if(GS == null || GS.SUSPENDED) {
 			return;
 		} // Don't do anything if the game state is not loaded yet or suspended
 
-		// If monster sees Toni, everything else is irrelevant
+		// If monster sees Toni, do not update the world model
 		if(GS.monsterSeesToni) {
 			me.worldModel.toniKnownToBeInRoom(me.isIn);
+			// Do update the time both Toni and monster have been standing still, though
+			if(Math.Abs(Toni.currentVelocity) < 0.1f && Math.Abs(Toni.atPos - me.atPos) < EFFECTIVE_MINIMUM_ATTACK_RANGE) {
+				cumultativeImpasseDuration += Time.fixedDeltaTime;
+			} else {
+				cumultativeImpasseDuration = 0;
+			}
 		} else {
 			// Otherwise, predict Toni's movements according to blind transition model
 			me.worldModel.predictOneTimeStep();
@@ -126,6 +143,10 @@ public class Control_Monster : Control_Character {
 			if(newNoiseHeard) {
 				me.worldModel.filter(lastNoiseVolume, lastNoiseHeardFrom);
 				newNoiseHeard = false;
+			}
+			// Just to clean things up...
+			if(cumultativeImpasseDuration > 0) {
+				cumultativeImpasseDuration = 0;
 			}
 		}
 
@@ -182,31 +203,21 @@ public class Control_Monster : Control_Character {
 		// On the other hand, if Toni cannot be seen, start stalking again
 		case STATE_PURSUING:
 			if(GS.monsterSeesToni) {
-				// If you see Toni, predict whether the attack animation would hit him and attack, if so
-				float tonisPredictedPosition = Toni.atPos + ATTACK_DURATION * Toni.currentVelocity;
-				float attackLandingPoint = me.atPos + (Toni.atPos < me.atPos ? -1.0f : 1.0f) * ATTACK_RANGE;
-				if(!Toni.isInvulnerable && 2 * Math.Abs(tonisPredictedPosition - attackLandingPoint) < ATTACK_MARGIN) {
-					Debug.Log("Toni position: " + Toni.atPos + " and velocity: " + Toni.currentVelocity);
-					Debug.Log("predicting Toni at " + tonisPredictedPosition + " and starting attack on T+" + Time.timeSinceLevelLoad);
-					if(!attackAnimationPlaying) {
+				if(!attackAnimationPlaying) {
+					// If you see Toni, predict where he will when the attack animation completes...
+					float tonisPredictedPosition = Toni.atPos + ATTACK_DURATION * Toni.currentVelocity;
+					// ...as well as where the attack his his direction would land
+					float attackLandingPoint = me.atPos + Math.Sign(Toni.atPos - me.atPos) * ATTACK_RANGE;
+					// If Toni's predicted position and the attack landing point are within the attack margin (hit box), initiate attack
+					if(!Toni.isInvulnerable && Math.Abs(tonisPredictedPosition - attackLandingPoint) < EFFECTIVE_ATTACK_MARGIN) {
 						StartCoroutine(playAttackAnimation(Toni.atPos, Toni));
+						stateUpdateCooldown = ATTACK_DURATION + ATTACK_COOLDOWN;
 					}
-					//me.state = STATE_ATTACKING;
-					stateUpdateCooldown = ATTACK_DURATION + ATTACK_COOLDOWN;
 				}
 				// Otherwise, keep pursuing
 			} else {
 				// If you don't see Toni anymore, go back to stalking
 				stateUpdateCooldown = DOOR_TRANSITION_DURATION;
-				me.state = STATE_STALKING;
-			}
-			break;
-		// If, after attacking, the monster still sees Toni, but he is out of range, start pursuing again
-		// On the other hand, if Toni cannot be seen, start stalking again
-		case STATE_ATTACKING:
-			if(GS.monsterSeesToni && Math.Abs(Math.Abs(GS.distanceToToni) - ATTACK_RANGE) > ATTACK_MARGIN) {
-				me.state = STATE_PURSUING;
-			} else if(!GS.monsterSeesToni) {
 				me.state = STATE_STALKING;
 			}
 			break;
@@ -263,7 +274,6 @@ public class Control_Monster : Control_Character {
 			enactSearchPolicy(true);
 			break;
 		case STATE_PURSUING:
-		case STATE_ATTACKING:
 			if(!attackAnimationPlaying) {
 				enactPursuitPolicy();
 			}
@@ -380,28 +390,39 @@ public class Control_Monster : Control_Character {
 	// Run towards within striking range of Toni
 	private void enactPursuitPolicy() {
 		// If Toni is still inside the striking range, just turn towards him and wait for his move
-		// TODO: A more intelligent/aggressive behavior in this situation?
 		float distToToni = GS.distanceToToni;
-		if(Math.Abs(distToToni) < ATTACK_RANGE - ATTACK_MARGIN) {
-			setSpriteFlip(distToToni < 0);
+		if(Math.Abs(distToToni) < EFFECTIVE_MINIMUM_ATTACK_RANGE) {
+			// However, if Toni has been standing still for some time, find the nearest attack position and move towards it
+			if(cumultativeImpasseDuration > WAIT_FOR_TONI_TO_MOVE) {
+				walk(getNearestAttackVector(), true, Time.deltaTime);
+			} else {
+				setSpriteFlip(distToToni < 0);
+			}
 		} else {
 			// Otherwise, run towards him
-			walk(GS.distanceToToni, true, Time.deltaTime);
+			walk(distToToni, true, Time.deltaTime);
 		}
-		/*
-		// Predict the possible attack positions
-		float tonisPredictedPosition = Toni.atPos + ATTACK_DURATION * Toni.currentVelocity;
-		float attackPointLeft = tonisPredictedPosition - ATTACK_RANGE * 0.99f;
-		float attackPointRight = tonisPredictedPosition + ATTACK_RANGE * 0.99f;
-		// Choose the best attack position
-		if(Math.Abs(attackPointLeft - me.atPos) < Math.Abs(attackPointRight - me.atPos) && attackPointLeft > me.isIn.leftWalkBoundary) {
-			walk(attackPointLeft - me.atPos, true, Time.deltaTime);
-		} else if(attackPointRight < me.isIn.rightWalkBoundary) {
-			walk(attackPointRight - me.atPos, true, Time.deltaTime);
-		} else { 
-			// In case both attack points are unreachable, just run towards Toni to scare him into fleeing
+	}
+
+	// Returns the horizontal distance (positive or negative) to the nearest valid attack position against Toni
+	private float getNearestAttackVector() {
+		if(GS.monsterSeesToni) {
+			// Calculate the both possible attack points
+			float leftAttackVector = Toni.atPos - ATTACK_RANGE - me.atPos;
+			float rightAttackVector = Toni.atPos + ATTACK_RANGE - me.atPos;
+			// If the left attack point is valid and closer to my current position than the right one, return it
+			if(Math.Abs(leftAttackVector) < Math.Abs(rightAttackVector) &&  (me.atPos + leftAttackVector) > me.isIn.leftWalkBoundary) {
+				return leftAttackVector;
+			}
+			// Ditto for the right one
+			if(Math.Abs(leftAttackVector) >= Math.Abs(rightAttackVector) && (me.atPos + rightAttackVector) < me.isIn.rightWalkBoundary) {
+				return rightAttackVector;
+			}
+			// Default case: run towards Toni
+			return (Toni.atPos - me.atPos);
+		} else {
+			return 0;
 		}
-		*/
 	}
 
 	// Walk towards the door and through it, if possible

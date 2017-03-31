@@ -42,11 +42,12 @@ public class Global_Settings {
 			{ "MONSTER_SLOW_WALKING_SPEED",		2.5f },		// when the monster randomly walks around
 			{ "MONSTER_ATTACK_RANGE",			3.0f },		// the distance from the monster that it main attack hits
 			{ "MONSTER_ATTACK_MARGIN",			0.5f },		// the size of the "hitbox" for the monster's attack
-			{ "MONSTER_ATTACK_DURATION",		0.2f },		// how long, in seconds, does an attack take from start to hit
+			{ "MONSTER_ATTACK_DURATION",		0.3f },		// how long, in seconds, does an attack take from start to hit
 			{ "MONSTER_ATTACK_COOLDOWN",		1.0f },		// how long, in seconds, does an attack take from hit to finish
+			{ "MONSTER_WAIT_FOR_TONI_MOVE",		2.0f },		// how long, in seconds, does the monster wait for Toni to move in a face-off
 
 			{ "TONI_ATTACK_MARGIN",				1.0f },		// the size of the "hitbox" for the monster Toni's attack
-			{ "TONI_ATTACK_DURATION",			0.1f },		// how long, in seconds, does an attack take from start to hit
+			{ "TONI_ATTACK_DURATION",			0.2f },		// how long, in seconds, does an attack take from start to hit
 			{ "TONI_ATTACK_COOLDOWN",			0.5f },		// how long, in seconds, does an attack take from hit to finish
 
 			// Stamina range: 0.0 .. 1.0; increments are applied per second

@@ -24,16 +24,24 @@ public abstract class Control_Character : MonoBehaviour {
 
 	protected LineRenderer attackArmRenderer;
 	protected bool attackAnimationPlaying;
-	protected Data_Position positionAtTheLastTimeStep;
+	private float cumulativeAttackDuration;
+	private Data_Position positionAtTheLastTimeStep;
 
-	// Must be called from FixedUpdate()
-	protected void updateVelocity(float deltaTime) {
-		if(positionAtTheLastTimeStep.RoomId == getMe().pos.RoomId) {
-			getMe().currentVelocity = (getMe().pos.X - positionAtTheLastTimeStep.X) / deltaTime;
-		} else {
-			getMe().currentVelocity = 0;
+	protected void FixedUpdate() {
+		if(GS != null && !GS.SUSPENDED) {
+			// Update character's velocity
+			if(positionAtTheLastTimeStep != null && positionAtTheLastTimeStep.RoomId == getMe().pos.RoomId) {
+				getMe().currentVelocity = (getMe().pos.X - positionAtTheLastTimeStep.X) / Time.fixedDeltaTime;
+			} else {
+				getMe().currentVelocity = 0;
+			}
+			positionAtTheLastTimeStep = getMe().pos.clone();
+
+			// If the character is attacking, count up the attack duration
+			if(attackAnimationPlaying) {
+				cumulativeAttackDuration += Time.fixedDeltaTime;
+			}
 		}
-		positionAtTheLastTimeStep = getMe().pos.clone();
 	}
 
 	// The functions moves the character left or right
@@ -144,6 +152,7 @@ public abstract class Control_Character : MonoBehaviour {
 	// targetPos is separated from target because the player (as a monster) can attack even without seeing the monster
 	protected IEnumerator playAttackAnimation(float targetPos, Data_Character target) {
 		attackAnimationPlaying = true;
+		cumulativeAttackDuration = 0;
 		float attackOrigin = getMe().atPos;
 		bool attackIsCanceledByMoving = false;
 		// Flip the sprite if necessary
@@ -151,11 +160,10 @@ public abstract class Control_Character : MonoBehaviour {
 			setSpriteFlip(targetPos < attackOrigin);
 		}
 		float attackPoint = attackOrigin + Math.Sign(targetPos - attackOrigin) * ATTACK_RANGE;
-		Debug.LogWarning(getMe() + " attacks from " + getMe().pos + " to " + attackPoint + " on T+" + Time.timeSinceLevelLoad);
+		Debug.Log(getMe() + " attacks from " + getMe().pos + " to " + attackPoint + " at T+" + Time.timeSinceLevelLoad);
 		// PHASE 1: Attack
 		float attackBegun = Time.timeSinceLevelLoad;
-		float attackProgress = 0f; float attackProgressStep = 1f/60f;
-		while(attackProgress < 1f) {
+		while(cumulativeAttackDuration < ATTACK_DURATION) {
 			// If the attacker moves from the original spot, immediately cancel the attack
 			if(Math.Abs(getMe().atPos - attackOrigin) > ATTACK_MARGIN) {
 				Debug.LogWarning(getMe() + " moved, attack canceled!");
@@ -163,13 +171,11 @@ public abstract class Control_Character : MonoBehaviour {
 				break;
 			} else if(!GS.SUSPENDED) {
 				// TODO play one frame forward
-				attackArmRenderer.SetPosition(1, new Vector3(attackProgress * (attackPoint - attackOrigin), 0, 0));
-				attackProgress += attackProgressStep;
+				attackArmRenderer.SetPosition(1, new Vector3((cumulativeAttackDuration / ATTACK_DURATION) * (attackPoint - attackOrigin), 0, 0));
 			}
-			yield return new WaitForSeconds(ATTACK_DURATION * attackProgressStep);
-			Debug.Log("progress: " + attackProgress + " after wait " + (ATTACK_DURATION * attackProgressStep ) + " : " + Time.timeSinceLevelLoad);
+			yield return new WaitForSeconds(1f/60f);
 		}
-		Debug.Log("attack of " + ATTACK_DURATION + " s complete in " + (Time.timeSinceLevelLoad - attackBegun) + " s, Toni at " + GS.getToni().atPos);
+		Debug.Log(getMe() + " completes attack in " + cumulativeAttackDuration + " s, Toni was at " + GS.getToni().atPos);
 		// PHASE 2: Resolve
 		if(!attackIsCanceledByMoving && !target.isInvulnerable &&
 			GS.monsterSeesToni && Math.Abs(target.atPos - attackPoint) <= ATTACK_MARGIN) {
