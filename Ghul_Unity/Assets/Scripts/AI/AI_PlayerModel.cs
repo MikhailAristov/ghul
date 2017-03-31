@@ -10,7 +10,21 @@ using System.Collections.Generic;
 public class AI_PlayerModel {
 
 	[NonSerialized]
-	public AI_PlayerParameters PLAYER_PARAMETERS;
+	private AI_PlayerParameters _playerParams;
+	public AI_PlayerParameters PLAYER_PARAMETERS {
+		get {
+			// If it is null, try loading it from disc
+			if(_playerParams == null) {
+				_playerParams = Control_Persistence.loadFromDisk<AI_PlayerParameters>();
+			}
+			// If it's STILL null (i.e. could not be loaded, create a new set
+			if(_playerParams == null) {
+				_playerParams = new AI_PlayerParameters();
+			}
+			return _playerParams;
+		}
+		private set { return; }
+	}
 
 	[SerializeField]
 	public double[,] TRANSITION_MATRIX;
@@ -41,11 +55,6 @@ public class AI_PlayerModel {
 	private double MEAN_TONI_VELOCITY;
 
 	public AI_PlayerModel(Data_GameState GS) {
-		// TODO: Zap it
-		if(PLAYER_PARAMETERS == null) {
-			PLAYER_PARAMETERS = new AI_PlayerParameters();
-		}
-
 		// First, some global settings
 		TIME_STEP 					= Global_Settings.read("TIME_STEP");
 		SCREEN_SIZE_HORIZONTAL		= Global_Settings.read("SCREEN_SIZE_HORIZONTAL");
@@ -94,10 +103,6 @@ public class AI_PlayerModel {
 	}
 
 	private double calculateMeanStayingTime(Data_GameState GS, int roomIndex) {
-		// TODO: Zap it
-		if(PLAYER_PARAMETERS == null) {
-			PLAYER_PARAMETERS = new AI_PlayerParameters();
-		}
 		// Calculate effective (traversable) size (width) of the room in question
 		double effectiveWidth = GS.getRoomByIndex(roomIndex).width - HORIZONTAL_ROOM_MARGIN * 2;
 		// Calculate the mean time for raw room exploration
@@ -119,10 +124,6 @@ public class AI_PlayerModel {
 
 	// f( noise type | the room Toni was in when he made the sound )
 	public double noiseLikelihood(int noiseType, int roomIndex) {
-		// TODO: Zap it
-		if(PLAYER_PARAMETERS == null) {
-			PLAYER_PARAMETERS = new AI_PlayerParameters();
-		}
 		// At any given point in time, this is the probability of Toni making a walking or running noise
 		double probWalkingNoise = (meanWalkingDistance[roomIndex] / TONI_SINGLE_STEP_LENGTH) / meanStayingTime[roomIndex];
 		// Likelihood depends on the noise type

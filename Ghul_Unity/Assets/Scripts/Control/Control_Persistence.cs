@@ -10,9 +10,21 @@ using System.Linq;
 // This class manages the saving and loading of persistent data for the game
 public abstract class Control_Persistence {
 
-	private static bool SAVING_DISABLED = false; // For debugging purposes
-	private static string FILENAME_SAVE_RESETTABLE = "save1.dat";
-	private static string FILENAME_SAVE_PERMANENT  = "save2.dat";
+	private const bool SAVING_DISABLED = false; // For debugging purposes
+	private const string FILENAME_SAVE_RESETTABLE = "save1.dat";
+	private const string FILENAME_SAVE_PERMANENT  = "save2.dat";
+
+	// Utility class for convenience
+	private static BinaryFormatter _binFormatter;
+	private static BinaryFormatter binFormatter {
+		get { 
+			if(_binFormatter == null) {
+				_binFormatter = new BinaryFormatter();
+			}
+			return _binFormatter;
+		}
+		set { return; }
+	}
 
 	// Saves the current game state to disk
 	public static void saveToDisk(Data_GameState GS) {
@@ -33,41 +45,40 @@ public abstract class Control_Persistence {
 	// Synchronized to avoid simultaneous calls from parallel threads
 	[MethodImpl(MethodImplOptions.Synchronized)] 
 	private static void writeToFile(string filePath, object dataObject) {
-		// Prepare writing file
-		BinaryFormatter bf = new BinaryFormatter();
 		FileStream file = File.Create(filePath);
-
-		// Write the game state to file and close it
-		bf.Serialize(file, dataObject);
+		binFormatter.Serialize(file, dataObject);
 		file.Close();
 	}
 
 	// Returns a game state from disk; returns null if no saved state is found
-	public static Data_GameState loadFromDisk()
+	public static T loadFromDisk<T>()
 	{
 		// Set the save file paths
-		string resettableFilePath = Application.persistentDataPath + "/" + FILENAME_SAVE_RESETTABLE;
-		if(!File.Exists(resettableFilePath))
-		{
-			Debug.Log("No game state found in: " + resettableFilePath);
-			return null;
+		string filePath = Application.persistentDataPath + "/";
+		if(typeof(T) == typeof(Data_GameState)) {
+			filePath += FILENAME_SAVE_RESETTABLE;
+		} else if(typeof(T) == typeof(AI_PlayerParameters)) {
+			filePath += FILENAME_SAVE_PERMANENT;
+		} else {
+			throw new ArgumentException(typeof(T).ToString() + " is not a valid persistence class!");
+		}
+
+		if(!File.Exists(filePath)) {
+			Debug.Log("No data found in: " + filePath);
+			return default(T);
 		}
 
 		try {
-			Debug.Log("Loading game from " + resettableFilePath);
+			Debug.Log("Loading data from " + filePath);
 
-			// Prepare opening the file
-			BinaryFormatter bf = new BinaryFormatter();
-			FileStream file = File.Open(resettableFilePath, FileMode.Open);
-
-			// Read the file to memory and close it
-			Data_GameState result = (Data_GameState)bf.Deserialize(file);
+			FileStream file = File.Open(filePath, FileMode.Open);
+			T result = (T)binFormatter.Deserialize(file);
 			file.Close();
 
 			return result;
 		} catch(SerializationException) {
-			Debug.LogWarning("The saved game " + resettableFilePath + " is corrupted, starting a new game instead");
-			return null;
+			Debug.LogWarning("The file " + filePath + " is corrupted, create a new data object instead!");
+			return default(T);
 		}  
 	}
 }

@@ -130,7 +130,7 @@ public class Control_GameState : MonoBehaviour {
     private void continueFromSavedGameState()
     {
         // Load the game state from the disk
-		GS = Control_Persistence.loadFromDisk();
+		GS = Control_Persistence.loadFromDisk<Data_GameState>();
         // If no game state has been found, initialize it instead
         if(GS == null) { resetGameState(); return; }
 
