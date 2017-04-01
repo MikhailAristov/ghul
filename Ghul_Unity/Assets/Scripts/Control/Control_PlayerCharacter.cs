@@ -16,6 +16,7 @@ public class Control_PlayerCharacter : Control_Character {
 	private Data_Cadaver cadaver;
 
 	// General settings
+	private float WALKING_RUNNING_THRESHOLD;
 	private float SINGLE_STEP_LENGTH;
 	private float walkingDistanceSinceLastNoise;
 
@@ -77,6 +78,7 @@ public class Control_PlayerCharacter : Control_Character {
 		// Set general movement parameters
 		WALKING_SPEED = Global_Settings.read("CHARA_WALKING_SPEED");
 		RUNNING_SPEED = Global_Settings.read("CHARA_RUNNING_SPEED");
+		WALKING_RUNNING_THRESHOLD = (WALKING_SPEED + RUNNING_SPEED) / 2;
 		SINGLE_STEP_LENGTH = Global_Settings.read("CHARA_SINGLE_STEP_LENGTH");
 
 		RUNNING_STAMINA_LOSS = Global_Settings.read("RUNNING_STAMINA_LOSS");
@@ -178,6 +180,26 @@ public class Control_PlayerCharacter : Control_Character {
 				StartCoroutine(dieAndRespawn());
 			}
 			mainCameraControl.setRedOverlay(me.timeWithoutAction / SUICIDLE_DURATION);
+		}
+	}
+
+	protected new void FixedUpdate() {
+		base.FixedUpdate();
+
+		// Don't do anything if the game state is not loaded yet or suspended
+		if(GS == null || GS.SUSPENDED) {
+			return;
+		}
+
+		// Update the movement statistics during the collection stage
+		if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
+			if(me.currentVelocity < 0.1f) {
+				me.cntStandingSinceLastDeath++;
+			} else if(me.currentVelocity < WALKING_RUNNING_THRESHOLD) {
+				me.cntWalkingSinceLastDeath++;
+			} else {
+				me.cntRunningSinceLastDeath++;
+			}
 		}
 	}
 

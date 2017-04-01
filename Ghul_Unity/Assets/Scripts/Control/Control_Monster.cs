@@ -378,7 +378,6 @@ public class Control_Monster : Control_Character {
 				nextDoorToGoThrough = findNextDoorToVisit(false, 10.0, utilityPenaltyRitualRoom, 0, 0, utilityPenaltyToniInTheWay);
 			} else {
 				// Penalize going into Toni's supposed room until the aggro is high enough to engage right away
-				Data_Room tonisRoom = GS.getRoomByIndex(me.worldModel.mostLikelyTonisRoomIndex);
 				double meetingToniPenalty = (distanceThresholdToStartPursuing >= HALF_SCREEN_SIZE_HORIZONTAL) ? 0 : utilityPenaltyTonisRoom;
 				// Penalties: ritual room > Toni's room (opt.) > distance to door > previous room = going past Toni
 				nextDoorToGoThrough = findNextDoorToVisit(true, 10.0, utilityPenaltyRitualRoom, 0, meetingToniPenalty, 0);

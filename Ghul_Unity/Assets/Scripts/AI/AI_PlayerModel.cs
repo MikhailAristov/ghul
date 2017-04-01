@@ -60,8 +60,6 @@ public class AI_PlayerModel {
 		SCREEN_SIZE_HORIZONTAL		= Global_Settings.read("SCREEN_SIZE_HORIZONTAL");
 		HORIZONTAL_ROOM_MARGIN		= Global_Settings.read("HORIZONTAL_ROOM_MARGIN");
 		// Walking settings
-		MEAN_TONI_VELOCITY			= Global_Settings.read("CHARA_WALKING_SPEED") * PLAYER_PARAMETERS.PROB_WALKING +
-									  Global_Settings.read("CHARA_RUNNING_SPEED") * PLAYER_PARAMETERS.PROB_RUNNING;
 		DOOR_TRANSITION_DURATION	= Global_Settings.read("DOOR_TRANSITION_DURATION");
 		TONI_SINGLE_STEP_LENGTH		= Global_Settings.read("CHARA_SINGLE_STEP_LENGTH");
 		// Then, initialize the transition matrix
@@ -69,6 +67,16 @@ public class AI_PlayerModel {
 	}
 
 	public void recalculate(Data_GameState GS) {
+		// Update player parameters first
+		Data_PlayerCharacter Toni = GS.getToni();
+		PLAYER_PARAMETERS.updateMovementSpeedProbabilities(Toni.cntStandingSinceLastDeath, Toni.cntWalkingSinceLastDeath, Toni.cntRunningSinceLastDeath);
+		Toni.resetMovementCounters();
+		// Recalculate the mean velocity
+		MEAN_TONI_VELOCITY = Global_Settings.read("CHARA_WALKING_SPEED") * PLAYER_PARAMETERS.PROB_WALKING + Global_Settings.read("CHARA_RUNNING_SPEED") * PLAYER_PARAMETERS.PROB_RUNNING;
+		// TODO: Room staying time
+		// Lastly, save the player parameters to disk
+		Control_Persistence.saveToDisk(PLAYER_PARAMETERS);
+
 		// Initialize the transition matrix
 		roomCount = GS.ROOMS.Count;
 		TRANSITION_MATRIX = new double[roomCount, roomCount];
