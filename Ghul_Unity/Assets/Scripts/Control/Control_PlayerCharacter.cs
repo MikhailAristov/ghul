@@ -193,13 +193,16 @@ public class Control_PlayerCharacter : Control_Character {
 
 		// Update the movement statistics during the collection stage
 		if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
-			if(me.currentVelocity < 0.1f) {
+			// Update the ticks for running and standing statistics
+			if(Math.Abs(me.currentVelocity) < 0.1f) {
 				me.cntStandingSinceLastDeath++;
-			} else if(me.currentVelocity < WALKING_RUNNING_THRESHOLD) {
+			} else if(Math.Abs(me.currentVelocity) < WALKING_RUNNING_THRESHOLD) {
 				me.cntWalkingSinceLastDeath++;
 			} else {
 				me.cntRunningSinceLastDeath++;
 			}
+			// Update the distance walked in the current room
+			me.roomHistoryWalkedDistances[me.roomHistoryWalkedDistances.Count - 1] += me.currentVelocity * Time.fixedDeltaTime;
 		}
 	}
 
@@ -408,6 +411,9 @@ public class Control_PlayerCharacter : Control_Character {
 	protected override void postDoorTransitionHook(Data_Door doorTaken) {
 		// Update door usage statistics
 		updateDoorUsageStatistic(doorTaken, doorTaken.isIn, doorTaken.connectsTo, doorTaken.connectsTo.isIn);
+		// Update room visitation history
+		me.roomHistoryIndices.Add(doorTaken.connectsTo.isIn.INDEX);
+		me.roomHistoryWalkedDistances.Add(0);
 		// Fade camera back in
 		mainCameraControl.fadeIn(DOOR_TRANSITION_DURATION / 2);
 		// Make noise

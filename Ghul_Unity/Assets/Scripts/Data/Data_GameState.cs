@@ -14,7 +14,7 @@ public class Data_GameState {
 	public int OVERALL_STATE;
 
 	// INDIVIDUAL CONTROL FLAGS
-    [NonSerialized] // Setting this flag suspends the game
+	[NonSerialized] // Setting this flag suspends the game
 	public bool SUSPENDED = true;
 	[NonSerialized] // Setting this flag makes the game generate a new item
 	public bool NEXT_ITEM_PLEASE = true;
@@ -26,10 +26,10 @@ public class Data_GameState {
 	[SerializeField]
 	public Data_Graph HOUSE_GRAPH;
 
-    [SerializeField]
-    public SortedList<int, Data_Room> ROOMS;
-    [SerializeField]
-    public SortedList<int, Data_Door> DOORS;
+	[SerializeField]
+	public SortedList<int, Data_Room> ROOMS;
+	[SerializeField]
+	public SortedList<int, Data_Door> DOORS;
 	[SerializeField]
 	public SortedList<int, Data_Item> ITEMS;
 
@@ -38,16 +38,18 @@ public class Data_GameState {
 	[SerializeField]
 	public int indexOfSearchedItem;
 
-    [SerializeField]
+	[SerializeField]
 	public Data_PlayerCharacter TONI;
-    [SerializeField]
-    private Data_Monster MONSTER;
+	[SerializeField]
+	private Data_Monster MONSTER;
 	[SerializeField]
 	private Data_Cadaver CADAVER;
+
 	public bool monsterSeesToni {
 		get { return (TONI.isIn == MONSTER.isIn && !TONI.isInvulnerable); }
 		private set { return; }
 	}
+
 	public float distanceToToni {
 		get { return ((TONI.isIn == MONSTER.isIn) ? (TONI.atPos - MONSTER.atPos) : float.NaN); }
 		private set { return; }
@@ -57,28 +59,27 @@ public class Data_GameState {
 	public float[,] distanceBetweenTwoDoors;
 	[SerializeField]
 	public float[,] distanceBetweenTwoRooms;
+
 	public bool allRoomsReachable {
-		get { return ( distanceBetweenTwoRooms.Cast<float>().Max() < (float.MaxValue / 2) ); }
+		get { return (distanceBetweenTwoRooms.Cast<float>().Max() < (float.MaxValue / 2)); }
 		private set { return; }
 	}
 
-    // Construct an empty game state
-    public Data_GameState()
-    {
+	// Construct an empty game state
+	public Data_GameState() {
 		HOUSE_GRAPH = new Data_Graph();
-        ROOMS = new SortedList<int, Data_Room>();
-        DOORS = new SortedList<int, Data_Door>();
+		ROOMS = new SortedList<int, Data_Room>();
+		DOORS = new SortedList<int, Data_Door>();
 		ITEMS = new SortedList<int, Data_Item>();
-        TONI = null;
-        MONSTER = null;
+		TONI = null;
+		MONSTER = null;
 		CADAVER = null;
 		OVERALL_STATE = Control_GameState.STATE_COLLECTION_PHASE;
 		numItemsPlaced = 0;
-    }
+	}
 
 	// Adds a room object to the game state
-	public void addRoom(Data_Room newRoom)
-	{
+	public void addRoom(Data_Room newRoom) {
 		ROOMS.Add(newRoom.INDEX, newRoom);
 		// Also update the house graph
 		HOUSE_GRAPH.addRoom(newRoom.countAllDoorSpawns);
@@ -94,8 +95,7 @@ public class Data_GameState {
 	}
 
 	// Adds a door object to the game state
-	public void addDoor(Data_Door newDoor)
-	{
+	public void addDoor(Data_Door newDoor) {
 		DOORS.Add(newDoor.INDEX, newDoor);
 	}
 
@@ -109,33 +109,32 @@ public class Data_GameState {
 	}
 
 	// Adds an item to the game state
-	public Data_Item addItem(string gameObjectName) 
-	{
+	public Data_Item addItem(string gameObjectName) {
 		int INDEX = ITEMS.Count;
 		Data_Item newItem = new Data_Item(gameObjectName);
 		ITEMS.Add(INDEX, newItem);
 		return newItem;
 	}
 
-    // Sets the player character object
-    public void setPlayerCharacter(string gameObjectName) {
-        TONI = new Data_PlayerCharacter(gameObjectName);
-    }
+	// Sets the player character object
+	public void setPlayerCharacter(string gameObjectName) {
+		TONI = new Data_PlayerCharacter(gameObjectName);
+	}
 
-    // Returns the player character object
-    public Data_PlayerCharacter getToni() {
-        return TONI;
-    }
+	// Returns the player character object
+	public Data_PlayerCharacter getToni() {
+		return TONI;
+	}
 
-    // Sets the monster character object
-    public void setMonsterCharacter(string gameObjectName) {
-        MONSTER = new Data_Monster(gameObjectName);
-    }
+	// Sets the monster character object
+	public void setMonsterCharacter(string gameObjectName) {
+		MONSTER = new Data_Monster(gameObjectName);
+	}
 
-    // Returns the monster character object
-    public Data_Monster getMonster() {
-        return MONSTER;
-    }
+	// Returns the monster character object
+	public Data_Monster getMonster() {
+		return MONSTER;
+	}
 
 	// Sets the cadaver character object
 	public void setCadaverCharacter(string gameObjectName) {
@@ -147,13 +146,13 @@ public class Data_GameState {
 		return CADAVER;
 	}
 
-    // Returns a Room object to a given index, if it exists
-    public Data_Room getRoomByIndex(int I) {
-        if(ROOMS.ContainsKey(I)) {
-            return ROOMS[I];
-        } else {
-            throw new System.ArgumentException("There is no room #" + I);
-        }
+	// Returns a Room object to a given index, if it exists
+	public Data_Room getRoomByIndex(int I) {
+		if(ROOMS.ContainsKey(I)) {
+			return ROOMS[I];
+		} else {
+			throw new System.ArgumentException("There is no room #" + I);
+		}
 	}
 
 	// Returns the room that is the furthest from the one with the given index
@@ -172,19 +171,18 @@ public class Data_GameState {
 		return getRoomByIndex(UnityEngine.Random.Range((includeRitualRoom ? 0 : 1), ROOMS.Count));
 	}
 
-    // Returns a Door object to a given index, if it exists
-    public Data_Door getDoorByIndex(int I) {
-        if (DOORS.ContainsKey(I)) {
-            return DOORS[I];
-        } else {
-            throw new System.ArgumentException("There is no door #" + I);
-        }
-    }
+	// Returns a Door object to a given index, if it exists
+	public Data_Door getDoorByIndex(int I) {
+		if(DOORS.ContainsKey(I)) {
+			return DOORS[I];
+		} else {
+			throw new System.ArgumentException("There is no door #" + I);
+		}
+	}
 
 	// Returns an Item object to a given index, if it exists
-	public Data_Item getItemByIndex(int I)
-	{
-		if (ITEMS.ContainsKey(I)) {
+	public Data_Item getItemByIndex(int I) {
+		if(ITEMS.ContainsKey(I)) {
 			return ITEMS[I];
 		} else {
 			throw new System.ArgumentException("There is no item #" + I);

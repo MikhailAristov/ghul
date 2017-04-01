@@ -12,6 +12,11 @@ public class AI_WorldModel {
 	[SerializeField]
 	private AI_SignalModel signalModel;
 
+	public AI_PlayerParameters playerParameters {
+		get { return playerModel.PLAYER_PARAMETERS; }
+		private set { return; }
+	}
+
 	[SerializeField]
 	private int roomCount;
 	[SerializeField]

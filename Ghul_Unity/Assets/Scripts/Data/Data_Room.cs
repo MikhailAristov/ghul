@@ -89,6 +89,12 @@ public class Data_Room : IComparable<Data_Room> {
 		private set { return; }
 	}
 
+	// Room properties for AI purposes
+	public double effectiveWidth;
+	public double meanExplorationDistance;
+	public double meanItemFetchDistance;
+	public double meanDoorToDoorDistance;
+
 	public Data_Room(int I, GameObject go, Factory_PrefabRooms.RoomPrefab prefabDetails) {
 		INDEX = I;
 		// Set the game object references
@@ -102,6 +108,9 @@ public class Data_Room : IComparable<Data_Room> {
 			_itemSpawnPoints.Add(new Data_Position(I, p));
 		}
 		walkMargin = Global_Settings.read("HORIZONTAL_ROOM_MARGIN");
+		effectiveWidth = _width - 2 * walkMargin;
+		meanExplorationDistance = 1.5 * (_width - Global_Settings.read("SCREEN_SIZE_HORIZONTAL"));
+		meanItemFetchDistance = (_itemSpawnPoints.Count > 0) ? (effectiveWidth / 3) : 0;
 		// Load door spawnpoints
 		_doorSpawnPoints = new List<float>();
 		if(prefabDetails.doorSpawnLeft) { _doorSpawnPoints.Add(float.MinValue); }
@@ -163,6 +172,11 @@ public class Data_Room : IComparable<Data_Room> {
 			break;
 		}
 		DOORS.Add(D.atPos, D);
+		// Update statistic after every door added
+		meanDoorToDoorDistance = Global_Settings.read("DOOR_TRANSITION_DURATION") * Global_Settings.read("CHARA_WALKING_SPEED");
+		if(DOORS.Count > 1) {
+			meanDoorToDoorDistance += effectiveWidth / (DOORS.Count - 1);
+		}
 	}
 
 	// Returns a random item spot, if the room has any (otherwise null)

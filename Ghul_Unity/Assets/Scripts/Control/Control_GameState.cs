@@ -68,7 +68,7 @@ public class Control_GameState : MonoBehaviour {
 
 		switch(GS.OVERALL_STATE) {
 		case STATE_COLLECTION_PHASE:
-			updateNormalRoutine();
+			updateDuringCollectionPhase();
 			break;
 		case STATE_TRANSFORMATION:
 			// Switch to next state as soon as the monster dies
@@ -93,9 +93,14 @@ public class Control_GameState : MonoBehaviour {
 
 	// Normal update routine before all items are placed
 	// Can trigger STATE_TRANSFORMATION
-	private void updateNormalRoutine() {
+	private void updateDuringCollectionPhase() {
 		// Check if player died to trigger house mix up
 		if (GS.TONI_KILLED == true) {
+			// Before the house is mixed, however, analyze Toni's room history and then reset it
+			Data_PlayerCharacter Toni = GS.getToni();
+			GS.getMonster().worldModel.playerParameters.updateWalkingDistanceWeights(GS, Toni.roomHistoryIndices, Toni.roomHistoryWalkedDistances);
+			Toni.resetRoomHistory();
+			// Now do the normal thing
 			GS.TONI_KILLED = false;
 			houseMixup(GS.TONI.deaths);
 		}

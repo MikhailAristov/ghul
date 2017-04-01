@@ -44,24 +44,14 @@ public class AI_PlayerModel {
 	[SerializeField]
 	private float TIME_STEP;
 	[SerializeField]
-	private float SCREEN_SIZE_HORIZONTAL;
-	[SerializeField]
-	private float HORIZONTAL_ROOM_MARGIN;
-	[SerializeField]
-	private float DOOR_TRANSITION_DURATION;
-	[SerializeField]
 	private float TONI_SINGLE_STEP_LENGTH;
 	[SerializeField]
 	private double MEAN_TONI_VELOCITY;
 
 	public AI_PlayerModel(Data_GameState GS) {
 		// First, some global settings
-		TIME_STEP 					= Global_Settings.read("TIME_STEP");
-		SCREEN_SIZE_HORIZONTAL		= Global_Settings.read("SCREEN_SIZE_HORIZONTAL");
-		HORIZONTAL_ROOM_MARGIN		= Global_Settings.read("HORIZONTAL_ROOM_MARGIN");
-		// Walking settings
-		DOOR_TRANSITION_DURATION	= Global_Settings.read("DOOR_TRANSITION_DURATION");
-		TONI_SINGLE_STEP_LENGTH		= Global_Settings.read("CHARA_SINGLE_STEP_LENGTH");
+		TIME_STEP 				= Global_Settings.read("TIME_STEP");
+		TONI_SINGLE_STEP_LENGTH	= Global_Settings.read("CHARA_SINGLE_STEP_LENGTH");
 		// Then, initialize the transition matrix
 		recalculate(GS);
 	}
@@ -111,19 +101,11 @@ public class AI_PlayerModel {
 	}
 
 	private double calculateMeanStayingTime(Data_GameState GS, int roomIndex) {
-		// Calculate effective (traversable) size (width) of the room in question
-		double effectiveWidth = GS.getRoomByIndex(roomIndex).width - HORIZONTAL_ROOM_MARGIN * 2;
-		// Calculate the mean time for raw room exploration
-		double meanExplorationDistance = 1.5 * effectiveWidth - SCREEN_SIZE_HORIZONTAL;
-		// If there are items currently in here, calculate the mean distance needed to fetch one of them
-		double meanItemFetchDistance  =roomHasItemSpawns[roomIndex] ? (effectiveWidth / 3) : 0;
-		// If there is more than one door in the room, calculate the average path between two neighbouring doors
-		double meanDoorToDoorDistance = DOOR_TRANSITION_DURATION * MEAN_TONI_VELOCITY
-			+ ((roomDoorCount[roomIndex] > 1) ? (effectiveWidth / (roomDoorCount[roomIndex] - 1)) : 0);
-		// Combine the results according to their parametrized weight
-		meanWalkingDistance[roomIndex] = PLAYER_PARAMETERS.WEIGHT_EXPLORATION_WALK * meanExplorationDistance +
-										 PLAYER_PARAMETERS.WEIGHT_ITEM_FETCH_WALK * meanItemFetchDistance +
-										 PLAYER_PARAMETERS.WEIGHT_DOOR2DOOR_WALK * meanDoorToDoorDistance;
+		Data_Room room = GS.getRoomByIndex(roomIndex);
+		// Calculate mean walking distance across the room
+		meanWalkingDistance[roomIndex] = PLAYER_PARAMETERS.WEIGHT_EXPLORATION_WALK * room.meanExplorationDistance +
+										 PLAYER_PARAMETERS.WEIGHT_ITEM_FETCH_WALK * room.meanItemFetchDistance +
+										 PLAYER_PARAMETERS.WEIGHT_DOOR2DOOR_WALK * room.meanDoorToDoorDistance;
 		// Convert the walking distance into mean staying time and return it
 		double meanStayingTimeInSeconds = meanWalkingDistance[roomIndex] / MEAN_TONI_VELOCITY;
 		double meanStayingTimeInTimeSteps = meanStayingTimeInSeconds / TIME_STEP;
