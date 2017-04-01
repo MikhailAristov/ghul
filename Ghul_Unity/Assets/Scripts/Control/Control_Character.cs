@@ -162,7 +162,6 @@ public abstract class Control_Character : MonoBehaviour {
 		float attackPoint = attackOrigin + Math.Sign(targetPos - attackOrigin) * ATTACK_RANGE;
 		Debug.Log(getMe() + " attacks from " + getMe().pos + " to " + attackPoint + " at T+" + Time.timeSinceLevelLoad);
 		// PHASE 1: Attack
-		float attackBegun = Time.timeSinceLevelLoad;
 		while(cumulativeAttackDuration < ATTACK_DURATION) {
 			// If the attacker moves from the original spot, immediately cancel the attack
 			if(Math.Abs(getMe().atPos - attackOrigin) > ATTACK_MARGIN) {

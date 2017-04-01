@@ -13,7 +13,7 @@ public class Global_Settings {
 
 			// Level generation setttings
 			{ "VERTICAL_ROOM_SPACING",			-5.0f },	// Must be bigger than SCREEN_SIZE_VERTICAL
-			{ "TOTAL_NUMBER_OF_ROOMS",			8.0f },		// How many rooms are to there to be in the game, including the Ritual Room; must be more than 5!
+			{ "TOTAL_NUMBER_OF_ROOMS",			10.0f },	// How many rooms are to there to be in the game, including the Ritual Room; must be more than 5!
 
 			// Level layout setttings
 			{ "HORIZONTAL_ROOM_MARGIN",			0.5625f },	// Prevents movement to screen edge past the margin
