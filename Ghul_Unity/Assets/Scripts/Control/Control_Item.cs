@@ -61,10 +61,14 @@ public class Control_Item : MonoBehaviour {
 		SpriteRenderer rend = GetComponent<SpriteRenderer>();
 		// Move the sprite to target position
 		me.updatePosition(me.isIn, targetPosition.x, targetPosition.y);
+		if(me.INDEX < 2) {
+			GetComponent<SpriteRenderer>().sortingLayerName = "Foreground";
+		}
 		updateGameObjectPosition();
 		transform.position = targetPosition;
 		// Set alpha channel to zero
 		rend.color -= new Color(0, 0, 0, rend.color.a);
+		// Set sorting layer to foreground, if one of the first two items
 		// Enable the sprite
 		rend.enabled = true;
 		// Slowly restore the alpha channel over time
@@ -80,7 +84,11 @@ public class Control_Item : MonoBehaviour {
 	// Update the game object/sprite's position within the game space from the current game state
 	public void updateGameObjectPosition() {
 		// The first two items are placed on the pentagram "in front" of the player character
-		float zPos = (me.state == Data_Item.STATE_PLACED && me.INDEX <= 2) ? -2f : transform.position.z;
+		float zPos = transform.position.z;
+		if(me.state == Data_Item.STATE_PLACED && me.INDEX < 2) {
+			zPos = -2f;
+			GetComponent<SpriteRenderer>().sortingLayerName = "Foreground";
+		}
 		Vector3 targetPos = new Vector3(me.atPos, me.elevation, zPos);
 		if(transform.parent != me.isIn.env.transform) {
 			transform.parent = me.isIn.env.transform; // Move the game object to the room game object

@@ -14,82 +14,6 @@
             "itemSpawns": [ ]
         },
         {
-            "prefabName": "PrefabRoom_Generic",
-            "displayName": "Generic",
-            "size": {
-                "x": 9.6,
-                "y": 4.8
-            },
-            "maxInstances": 0,
-            "doorSpawnLeft": true,
-            "doorSpawnRight": true,
-            "doorSpawns": [
-                -2.0,
-				2.0
-            ],
-            "itemSpawns": [
-                {
-                    "x": -3.6,
-                    "y": -1.4
-                },
-                {
-                    "x": 0.0,
-                    "y": -0.2
-                },
-                {
-                    "x": 3.6,
-                    "y": -1.4
-                }
-            ]
-        },
-        {
-            "prefabName": "PrefabRoom_Hallway",
-            "displayName": "Generic Hallway",
-            "size": {
-                "x": 28.8,
-                "y": 4.8
-            },
-            "maxInstances": 99,
-            "doorSpawnLeft": true,
-            "doorSpawnRight": true,
-            "doorSpawns": [
-                -9.6,
-				-4.8,
-				0.0,
-				4.8,
-				9.6
-            ],
-            "itemSpawns": [ ]
-        },
-        {
-            "prefabName": "PrefabRoom_Foyer",
-            "displayName": "Foyer",
-            "size": {
-                "x": 7.78,
-                "y": 4.8
-            },
-            "maxInstances": 0,
-            "doorSpawnLeft": true,
-            "doorSpawnRight": false,
-            "doorSpawns": [
-                -0.4
-            ],
-            "itemSpawns": [
-                {
-                    "x": -2.2,
-                    "y": -1.2
-                },
-                {
-                    "x": 1.2,
-                    "y": -1.2
-                },
-                {
-                    "x": 2.8,
-                    "y": -0.8
-                }
-            ]
-        },
-        {
             "prefabName": "PrefabRoom_Bathroom",
             "displayName": "Bathroom",
             "size": {
@@ -240,6 +164,58 @@
                     "y": -1.0125
                 }
             ]
+        },
+        {
+            "prefabName": "PrefabRoom_Hallway1",
+            "displayName": "Hallway with the Piano",
+            "size": {
+                "x": 9.6,
+                "y": 4.8
+            },
+            "maxInstances": 1,
+            "doorSpawnLeft": true,
+            "doorSpawnRight": true,
+            "doorSpawns": [
+				-2.775,
+				-0.9375,
+				0.9375,
+				2.775
+			],
+            "itemSpawns": [ ]
+        },
+        {
+            "prefabName": "PrefabRoom_Hallway2",
+            "displayName": "Hallway with the Statues",
+            "size": {
+                "x": 8.1,
+                "y": 4.8
+            },
+            "maxInstances": 1,
+            "doorSpawnLeft": true,
+            "doorSpawnRight": true,
+            "doorSpawns": [
+				-2.325,
+				0,
+				2.325
+			],
+            "itemSpawns": [ ]
+        },
+        {
+            "prefabName": "PrefabRoom_Hallway3",
+            "displayName": "Hallway with the Tiger",
+            "size": {
+                "x": 8.1,
+                "y": 4.8
+            },
+            "maxInstances": 1,
+            "doorSpawnLeft": true,
+            "doorSpawnRight": true,
+            "doorSpawns": [
+				-2.325,
+				0,
+				2.325
+			],
+            "itemSpawns": [ ]
         }
     ]
 }
