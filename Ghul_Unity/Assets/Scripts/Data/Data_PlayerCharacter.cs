@@ -16,7 +16,6 @@ public class Data_PlayerCharacter : Data_Character {
 	// Gameplay parameters:
 	[SerializeField]
 	private float _stamina;
-	// goes from 0.0 to 1.0
 	public float stamina {
 		get { return _stamina; }
 		private set { _stamina = value; }

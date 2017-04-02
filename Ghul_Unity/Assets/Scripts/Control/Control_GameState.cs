@@ -98,11 +98,6 @@ public class Control_GameState : MonoBehaviour {
 	private void updateDuringCollectionPhase() {
 		// Check if player died to trigger house mix up
 		if (GS.TONI_KILLED == true) {
-			// Before the house is mixed, however, analyze Toni's room history and then reset it
-			//Data_PlayerCharacter Toni = GS.getToni();
-			//GS.getMonster().worldModel.playerParameters.updateWalkingDistanceWeights(Toni.roomHistory);
-			//Toni.resetRoomHistory(GS.getRoomByIndex(STARTING_ROOM_INDEX));
-			// Now do the normal thing
 			GS.TONI_KILLED = false;
 			houseMixup(GS.TONI.deaths);
 		}
