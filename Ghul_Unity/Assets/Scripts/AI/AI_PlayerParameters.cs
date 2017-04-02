@@ -17,7 +17,9 @@ public class AI_PlayerParameters {
 	// ...how likely Toni is to walk to the nearest door
 	public double WEIGHT_DOOR2DOOR_WALK;
 
-	private const double LEARNING_RATE_WEIGHTS = 1e-4;
+	private const double LEARNING_RATE_EXPLORATION	= 1e-4;
+	private const double LEARNING_RATE_ITEM_FETCH	= 1e-3;
+	private const double LEARNING_RATE_DOOR2DOOR	= 1e-4;
 
 	// Overall stats: How likely Toni is to run or to stand still (the sum of both should be below 1.0!)
 	public double PROB_RUNNING;
@@ -70,9 +72,9 @@ public class AI_PlayerParameters {
 			              + WEIGHT_DOOR2DOOR_WALK * entry.meanDoorToDoorDistance
 			              - entry.cumulativeWalkedDistance;
 			// Then, calculate and update the gradients
-			WEIGHT_EXPLORATION_WALK -= LEARNING_RATE_WEIGHTS * 2 * entry.meanExplorationDistance * loss;
-			WEIGHT_ITEM_FETCH_WALK -= 10 * LEARNING_RATE_WEIGHTS * 2 * entry.meanItemFetchDistance * loss;
-			WEIGHT_DOOR2DOOR_WALK -= LEARNING_RATE_WEIGHTS * 2 * entry.meanDoorToDoorDistance * loss;
+			WEIGHT_EXPLORATION_WALK -= LEARNING_RATE_EXPLORATION * 2 * entry.meanExplorationDistance * loss;
+			WEIGHT_ITEM_FETCH_WALK -= LEARNING_RATE_ITEM_FETCH * 2 * entry.meanItemFetchDistance * loss;
+			WEIGHT_DOOR2DOOR_WALK -= LEARNING_RATE_DOOR2DOOR * 2 * entry.meanDoorToDoorDistance * loss;
 		}
 		Debug.LogFormat("Player room transition model: exploration weight: {0:F3}; item fetch weight: {1:F3}; door2door weight: {2:F3}", WEIGHT_EXPLORATION_WALK, WEIGHT_ITEM_FETCH_WALK, WEIGHT_DOOR2DOOR_WALK);
 		// Perform a sanity check
