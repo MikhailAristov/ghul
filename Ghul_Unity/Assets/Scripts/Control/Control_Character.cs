@@ -141,24 +141,24 @@ public abstract class Control_Character : MonoBehaviour {
 	protected IEnumerator playAttackAnimation(float targetPos, Data_Character target) {
 		attackAnimationPlaying = true;
 		cumulativeAttackDuration = 0;
-		float attackOrigin = getMe().atPos;
+		Data_Position attackOrigin = getMe().pos.clone();
 		bool attackIsCanceledByMoving = false;
 		// Flip the sprite if necessary
 		if(GS.monsterSeesToni) {
-			setSpriteFlip(targetPos < attackOrigin);
+			setSpriteFlip(targetPos < attackOrigin.X);
 		}
-		float attackPoint = attackOrigin + Math.Sign(targetPos - attackOrigin) * ATTACK_RANGE;
+		float attackPoint = attackOrigin.X + Math.Sign(targetPos - attackOrigin.X) * ATTACK_RANGE;
 		Debug.Log(getMe() + " attacks from " + getMe().pos + " to " + attackPoint + " at T+" + Time.timeSinceLevelLoad);
 		// PHASE 1: Attack
 		while(cumulativeAttackDuration < ATTACK_DURATION) {
 			// If the attacker moves from the original spot, immediately cancel the attack
-			if(Math.Abs(getMe().atPos - attackOrigin) > ATTACK_MARGIN) {
+			if(getMe().isIn.INDEX != attackOrigin.RoomId || Math.Abs(getMe().atPos - attackOrigin.X) > ATTACK_MARGIN) {
 				Debug.LogWarning(getMe() + " moved, attack canceled!");
 				attackIsCanceledByMoving = true;
 				break;
 			} else if(!GS.SUSPENDED) {
 				// TODO play one frame forward
-				attackArmRenderer.SetPosition(1, new Vector3((cumulativeAttackDuration / ATTACK_DURATION) * (attackPoint - attackOrigin), 0, 0));
+				attackArmRenderer.SetPosition(1, new Vector3((cumulativeAttackDuration / ATTACK_DURATION) * (attackPoint - attackOrigin.X), 0, 0));
 			}
 			yield return new WaitForSeconds(1f/60f);
 		}
