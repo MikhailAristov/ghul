@@ -173,10 +173,7 @@ public class Data_Room : IComparable<Data_Room> {
 		}
 		DOORS.Add(D.atPos, D);
 		// Update statistic after every door added
-		meanDoorToDoorDistance = Global_Settings.read("DOOR_TRANSITION_DURATION") * Global_Settings.read("CHARA_WALKING_SPEED");
-		if(DOORS.Count > 1) {
-			meanDoorToDoorDistance += effectiveWidth / (DOORS.Count - 1);
-		}
+		meanDoorToDoorDistance = (DOORS.Count > 1) ? effectiveWidth / (DOORS.Count - 1) + Global_Settings.read("DOOR_TRANSITION_DURATION") * Global_Settings.read("CHARA_WALKING_SPEED") : 0;
 	}
 
 	// Returns a random item spot, if the room has any (otherwise null)
