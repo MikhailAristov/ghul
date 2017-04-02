@@ -460,6 +460,8 @@ public class Control_Monster : Control_Character {
 				distToPentagram = newDistance;
 			}
 		}
+		// Set AI state to fleeing, just in case
+		me.state = STATE_FLEEING;
 		// "Go" through the door
 		StartCoroutine(goThroughTheDoor(targetDoor));
 	}
