@@ -50,9 +50,7 @@ public class Data_PlayerCharacter : Data_Character {
 	[SerializeField]
 	public long cntRunningSinceLastDeath;
 	[SerializeField]
-	public List<int> roomHistoryIndices;
-	[SerializeField]
-	public List<float> roomHistoryWalkedDistances;
+	public List<AI_RoomHistory> roomHistory;
 
 	// Constructor
 	public Data_PlayerCharacter(string gameObjectName) : base(gameObjectName) {
@@ -64,7 +62,6 @@ public class Data_PlayerCharacter : Data_Character {
 		carriedItem = null;
 		deaths = 0;
 		resetMovementCounters();
-		resetRoomHistory();
 	}
 
 	// Updates the stamina meter with the specified amount (positive or negative), within boundaries
@@ -90,10 +87,12 @@ public class Data_PlayerCharacter : Data_Character {
 		cntRunningSinceLastDeath = 0;
 	}
 
-	public void resetRoomHistory() {
-		// Because a reset only comes on a new game selection or a die-and-respawn, the history always starts in the ritual room
-		roomHistoryIndices = new List<int>(new int[] { (int)Global_Settings.read("RITUAL_ROOM_INDEX") });
-		roomHistoryWalkedDistances = new List<float>(new float[] { 0 });
+	public void resetRoomHistory(Data_Room currentRoom) {
+		if(roomHistory == null) {
+			roomHistory = new List<AI_RoomHistory>();
+		}
+		roomHistory.Clear();
+		roomHistory.Add(new AI_RoomHistory(currentRoom));
 	}
 
 	// Resets game object references, e.g. after a saved state load

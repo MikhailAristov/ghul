@@ -61,6 +61,7 @@ public class AI_PlayerModel {
 		Data_PlayerCharacter Toni = GS.getToni();
 		PLAYER_PARAMETERS.updateMovementSpeedProbabilities(Toni.cntStandingSinceLastDeath, Toni.cntWalkingSinceLastDeath, Toni.cntRunningSinceLastDeath);
 		Toni.resetMovementCounters();
+		PLAYER_PARAMETERS.updateWalkingDistanceWeights(Toni.roomHistory);
 		// Recalculate the mean velocity
 		MEAN_TONI_VELOCITY = Global_Settings.read("CHARA_WALKING_SPEED") * PLAYER_PARAMETERS.PROB_WALKING + Global_Settings.read("CHARA_RUNNING_SPEED") * PLAYER_PARAMETERS.PROB_RUNNING;
 		// TODO: Room staying time

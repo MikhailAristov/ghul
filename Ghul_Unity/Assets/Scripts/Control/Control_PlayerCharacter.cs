@@ -202,7 +202,7 @@ public class Control_PlayerCharacter : Control_Character {
 				me.cntRunningSinceLastDeath++;
 			}
 			// Update the distance walked in the current room
-			me.roomHistoryWalkedDistances[me.roomHistoryWalkedDistances.Count - 1] += me.currentVelocity * Time.fixedDeltaTime;
+			me.roomHistory[me.roomHistory.Count - 1].increaseWalkedDistance(me.currentVelocity * Time.fixedDeltaTime);
 		}
 	}
 
@@ -412,8 +412,7 @@ public class Control_PlayerCharacter : Control_Character {
 		// Update door usage statistics
 		updateDoorUsageStatistic(doorTaken, doorTaken.isIn, doorTaken.connectsTo, doorTaken.connectsTo.isIn);
 		// Update room visitation history
-		me.roomHistoryIndices.Add(doorTaken.connectsTo.isIn.INDEX);
-		me.roomHistoryWalkedDistances.Add(0);
+		me.roomHistory.Add(new AI_RoomHistory(doorTaken.connectsTo.isIn));
 		// Fade camera back in
 		mainCameraControl.fadeIn(DOOR_TRANSITION_DURATION / 2);
 		// Make noise

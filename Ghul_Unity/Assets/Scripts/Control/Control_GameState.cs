@@ -21,6 +21,7 @@ public class Control_GameState : MonoBehaviour {
 	private Factory_PrefabController prefabFactory;
 	private Factory_Graph graphFactory;
 
+	private int STARTING_ROOM_INDEX;
     private float? AUTOSAVE_FREQUENCY;
 	private float NEXT_AUTOSAVE_IN;
 	private bool newGameDisabled;
@@ -29,6 +30,7 @@ public class Control_GameState : MonoBehaviour {
     void Start ()
     {
 		MAIN_CAMERA_CONTROL = Camera.main.GetComponent<Control_Camera>();
+		STARTING_ROOM_INDEX = (int)Global_Settings.read("RITUAL_ROOM_INDEX");
 		// Initialize factories
 		prefabFactory = GetComponent<Factory_PrefabController>();
 		graphFactory = GetComponent<Factory_Graph>();
@@ -97,9 +99,9 @@ public class Control_GameState : MonoBehaviour {
 		// Check if player died to trigger house mix up
 		if (GS.TONI_KILLED == true) {
 			// Before the house is mixed, however, analyze Toni's room history and then reset it
-			Data_PlayerCharacter Toni = GS.getToni();
-			GS.getMonster().worldModel.playerParameters.updateWalkingDistanceWeights(GS, Toni.roomHistoryIndices, Toni.roomHistoryWalkedDistances);
-			Toni.resetRoomHistory();
+			//Data_PlayerCharacter Toni = GS.getToni();
+			//GS.getMonster().worldModel.playerParameters.updateWalkingDistanceWeights(Toni.roomHistory);
+			//Toni.resetRoomHistory(GS.getRoomByIndex(STARTING_ROOM_INDEX));
 			// Now do the normal thing
 			GS.TONI_KILLED = false;
 			houseMixup(GS.TONI.deaths);
@@ -268,21 +270,22 @@ public class Control_GameState : MonoBehaviour {
 
 	// Initializes all characters on a new game
 	private void initializeCharacters() {
-		int ritualRoomIndex = 0;
+		Data_Room ritualRoom = GS.getRoomByIndex(STARTING_ROOM_INDEX);
 
 		// INITIALIZE CADAVER
 		GS.setCadaverCharacter("Cadaver");
-		GS.getCadaver().updatePosition(GS.getRoomByIndex(ritualRoomIndex), -7, 0); // move the cadaver out of sight at first
+		GS.getCadaver().updatePosition(ritualRoom, -7, 0); // move the cadaver out of sight at first
 		GS.getCadaver().gameObj.transform.position = new Vector3(-7, 0, 0);
 
 		// INITIALIZE PLAYER CHARACTER
 		GS.setPlayerCharacter("PlayerCharacter");
-		GS.getToni().updatePosition(GS.getRoomByIndex(ritualRoomIndex), 0, 0); // default: starting position is center of pentagram
+		GS.getToni().updatePosition(ritualRoom, 0, 0); // default: starting position is center of pentagram
 		GS.getToni().control.loadGameState(GS);
+		GS.getToni().resetRoomHistory(ritualRoom);
 
 		// INITIALIZE MONSTER
 		GS.setMonsterCharacter("Monster");
-		GS.getMonster().updatePosition(GS.getRoomFurthestFrom(ritualRoomIndex), 0, 0);
+		GS.getMonster().updatePosition(GS.getRoomFurthestFrom(STARTING_ROOM_INDEX), 0, 0);
 		GS.getMonster().resetWorldModel(GS);
 		GS.getMonster().control.loadGameState(GS);
 	}
