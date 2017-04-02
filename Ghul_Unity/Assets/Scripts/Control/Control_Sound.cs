@@ -7,7 +7,7 @@ public class Control_Sound : MonoBehaviour {
 
 	private Data_GameState GS;
 
-	private Data_PlayerCharacter CHARA;
+	private Data_PlayerCharacter TONI;
 	private Data_Monster MONSTER;
 	private float DIST;
 
@@ -32,33 +32,61 @@ public class Control_Sound : MonoBehaviour {
 	public const float NOISE_VOL_QUIET = 15.0f;
 	public const float NOISE_VOL_MEDIUM = 80.0f;
 	public const float NOISE_VOL_LOUD = 180.0f;
-	// TODO: Fine-tune the values above
 
-	void Start() {
-		AmbientNoise.volume = 0.0f;
+	void Update() {
+		if(GS == null || GS.SUSPENDED) {
+			AmbientNoise.mute = true;
+			return;
+		} else {
+			AmbientNoise.mute = false;
+		}
+
+		switch(GS.OVERALL_STATE) {
+		case(Control_GameState.STATE_COLLECTION_PHASE):
+			// During the collection phase, we use Unity's own sound propagation system by placing
+			// the audio source behind the camera at a distance equal to the distance to the monster
+			AmbientNoise.volume = 1f;
+			Vector3 targetAudioSourcePosition = new Vector3(0, 0, -DIST);
+			AmbientNoise.transform.localPosition = Vector3.Lerp(AmbientNoise.transform.localPosition, targetAudioSourcePosition, 0.01f);
+			break;
+		case(Control_GameState.STATE_MONSTER_PHASE):
+			// By contrast, for the monster phase we place the audio source at the camera and regulate the volume
+			if(AmbientNoise.transform.localPosition.z < 0) {
+				AmbientNoise.transform.localPosition = new Vector3(0, 0, 0);
+			}
+			float targetVolume = Mathf.Min(1.0f, TONI.timeWithoutAction / SUICIDLE_DURATION);
+			AmbientNoise.volume = Mathf.Lerp(AmbientNoise.volume, targetVolume, 0.01f);
+			break;
+		default:
+			// Ambient music should not play during other phases
+			AmbientNoise.volume = 0;
+			break;
+		}
+	}
+
+	void FixedUpdate() {
+		if(GS != null && !GS.SUSPENDED) {
+			DIST = GS.getDistance(TONI.pos, MONSTER.pos);
+		}
 	}
 
 	// Loads the game state
 	public void loadGameState(Data_GameState gameState) {
 		GS = gameState;
-		CHARA = gameState.getToni();
+		TONI = gameState.getToni();
 		MONSTER = gameState.getMonster();
 		SUICIDLE_DURATION = Global_Settings.read("SUICIDLE_DURATION");
 		// (Re)Start sub-controllers
 		StopCoroutine("generateRandomNoises");
-		StopCoroutine("controlAmbientMusic");
-		StopCoroutine("calculateCharaMonsterDistance");
-		StartCoroutine("calculateCharaMonsterDistance");
-		StartCoroutine("controlAmbientMusic");
+		StopCoroutine("updateToniMonsterDistanceDisplay");
+		StartCoroutine("updateToniMonsterDistanceDisplay");
 		StartCoroutine("generateRandomNoises");
 	}
 
 	// Continuously recalculates the proximity of monster to chara
-	// Because this is computationally intensive, this function is called less often than Update()
-	private IEnumerator calculateCharaMonsterDistance() {
+	private IEnumerator updateToniMonsterDistanceDisplay() {
 		while(true) {
 			if(!GS.SUSPENDED) {
-				DIST = GS.getDistance(CHARA.pos, MONSTER.pos);
 				if(Debug.isDebugBuild || GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE) {
 					MonsterDistanceText.text = string.Format("{0:0.0} m", DIST);
 				} else if(MonsterDistanceText.text.Length > 0) {
@@ -66,30 +94,6 @@ public class Control_Sound : MonoBehaviour {
 				}
 			}
 			yield return new WaitForSeconds(0.2f);
-		}
-	}
-
-	// Continuously regulates the volume of the ambient creepy music based on the proximity of monster to chara
-	private IEnumerator controlAmbientMusic() {
-		float targetVolume = 0;
-		while(true) {
-			switch(GS.OVERALL_STATE) {
-			case(Control_GameState.STATE_COLLECTION_PHASE):
-				targetVolume = GS.SUSPENDED ? 0 : Mathf.Min(1.0f, Mathf.Exp(-0.3f * DIST));
-				AmbientNoise.volume = Mathf.Lerp(AmbientNoise.volume, targetVolume, 0.6f);
-				break;
-			case(Control_GameState.STATE_MONSTER_PHASE):
-				targetVolume = GS.SUSPENDED ? 0 : Mathf.Min(1.0f, CHARA.timeWithoutAction / SUICIDLE_DURATION);
-				AmbientNoise.volume = Mathf.Lerp(AmbientNoise.volume, targetVolume, 0.6f);
-				break;
-			case(Control_GameState.STATE_MONSTER_DEAD):
-				AmbientNoise.volume = 0;
-				yield break;
-			default:
-				AmbientNoise.volume = 0;
-				break;
-			}
-			yield return new WaitForSeconds(0.1f);
 		}
 	}
 
