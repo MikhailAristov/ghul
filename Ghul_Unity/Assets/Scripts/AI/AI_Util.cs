@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using System.Collections;
+using System.Collections.Generic;
 
 public class AI_Util {
 
@@ -63,5 +64,16 @@ public class AI_Util {
 		}
 
 		return result;
+	}
+
+	public static void shuffleList<T>(List<T> input) {
+		int count = input.Count;
+		int last = count - 1;
+		for(int i = 0; i < last; i++) {
+			int r = UnityEngine.Random.Range(i, count);
+			T tmp = input[i];
+			input[i] = input[r];
+			input[r] = tmp;
+		}
 	}
 }
