@@ -97,7 +97,6 @@ public abstract class Control_Character : MonoBehaviour {
 
 	// This function transitions the character through a door
 	protected IEnumerator goThroughTheDoor(Data_Door door) {
-		Data_Room currentRoom = getMe().isIn;
 		Data_Door destinationDoor = door.connectsTo;
 		Data_Room destinationRoom = destinationDoor.isIn;
 
@@ -114,10 +113,9 @@ public abstract class Control_Character : MonoBehaviour {
 		destinationDoor.gameObj.GetComponent<Control_Door>().open();
 
 		// Fade out and wait
-		cameraFadeOut(DOOR_TRANSITION_DURATION / 2);
+		preDoorTransitionHook(door);
 		yield return new WaitForSeconds(DOOR_TRANSITION_DURATION);
-
-		doBeforeLeavingRoom(door);
+		preRoomLeavingHook(door);
 
 		// Move character within game state
 		float newValidPosition = destinationRoom.env.validatePosition(destinationDoor.atPos);
@@ -128,24 +126,14 @@ public abstract class Control_Character : MonoBehaviour {
 		Vector3 targetPosition = new Vector3(newValidPosition, destinationRoom.INDEX * VERTICAL_ROOM_SPACING);
 		transform.Translate(targetPosition - transform.position);
 
-		updateDoorUsageStatistic(door, currentRoom, destinationDoor, destinationRoom);
-
-		// Fade back in
-		cameraFadeIn(DOOR_TRANSITION_DURATION / 2);
-
-		// Make noise at the original door's location
-		makeNoise(Control_Sound.NOISE_TYPE_DOOR, door.pos);
-
-		// Trigger an autosave upon changing locations
-		Data_GameState.saveToDisk(GS);
+		// Execute all necessary actions after passing through the door
+		postDoorTransitionHook(door);
 	}
 	// Dummy functions to be implemented 
 	protected abstract void activateCooldown(float duration);
-	protected abstract void cameraFadeOut(float duration);
-	protected abstract void cameraFadeIn(float duration);
-	protected abstract void doBeforeLeavingRoom(Data_Door doorTaken);
-	protected abstract void makeNoise(int type, Data_Position atPos);
-	protected abstract void updateDoorUsageStatistic(Data_Door door, Data_Room currentRoom, Data_Door destinationDoor, Data_Room destinationRoom);
+	protected abstract void preDoorTransitionHook(Data_Door doorTaken);
+	protected abstract void preRoomLeavingHook(Data_Door doorTaken);
+	protected abstract void postDoorTransitionHook(Data_Door doorTaken);
 
 	// Play out the attack animation
 	// Animation automatically cancels out if the attacker moves
@@ -153,24 +141,24 @@ public abstract class Control_Character : MonoBehaviour {
 	protected IEnumerator playAttackAnimation(float targetPos, Data_Character target) {
 		attackAnimationPlaying = true;
 		cumulativeAttackDuration = 0;
-		float attackOrigin = getMe().atPos;
+		Data_Position attackOrigin = getMe().pos.clone();
 		bool attackIsCanceledByMoving = false;
 		// Flip the sprite if necessary
 		if(GS.monsterSeesToni) {
-			setSpriteFlip(targetPos < attackOrigin);
+			setSpriteFlip(targetPos < attackOrigin.X);
 		}
-		float attackPoint = attackOrigin + Math.Sign(targetPos - attackOrigin) * ATTACK_RANGE;
+		float attackPoint = attackOrigin.X + Math.Sign(targetPos - attackOrigin.X) * ATTACK_RANGE;
 		Debug.Log(getMe() + " attacks from " + getMe().pos + " to " + attackPoint + " at T+" + Time.timeSinceLevelLoad);
 		// PHASE 1: Attack
 		while(cumulativeAttackDuration < ATTACK_DURATION) {
 			// If the attacker moves from the original spot, immediately cancel the attack
-			if(Math.Abs(getMe().atPos - attackOrigin) > ATTACK_MARGIN) {
+			if(getMe().isIn.INDEX != attackOrigin.RoomId || Math.Abs(getMe().atPos - attackOrigin.X) > ATTACK_MARGIN) {
 				Debug.LogWarning(getMe() + " moved, attack canceled!");
 				attackIsCanceledByMoving = true;
 				break;
 			} else if(!GS.SUSPENDED) {
 				// TODO play one frame forward
-				attackArmRenderer.SetPosition(1, new Vector3((cumulativeAttackDuration / ATTACK_DURATION) * (attackPoint - attackOrigin), 0, 0));
+				attackArmRenderer.SetPosition(1, new Vector3((cumulativeAttackDuration / ATTACK_DURATION) * (attackPoint - attackOrigin.X), 0, 0));
 			}
 			yield return new WaitForSeconds(1f/60f);
 		}

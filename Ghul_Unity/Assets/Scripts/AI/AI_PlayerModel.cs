@@ -9,6 +9,23 @@ using System.Collections.Generic;
 [Serializable]
 public class AI_PlayerModel {
 
+	[NonSerialized]
+	private AI_PlayerParameters _playerParams;
+	public AI_PlayerParameters PLAYER_PARAMETERS {
+		get {
+			// If it is null, try loading it from disc
+			if(_playerParams == null) {
+				_playerParams = Control_Persistence.loadFromDisk<AI_PlayerParameters>();
+			}
+			// If it's STILL null (i.e. could not be loaded, create a new set
+			if(_playerParams == null) {
+				_playerParams = new AI_PlayerParameters();
+			}
+			return _playerParams;
+		}
+		private set { return; }
+	}
+
 	[SerializeField]
 	public double[,] TRANSITION_MATRIX;
 
@@ -27,39 +44,30 @@ public class AI_PlayerModel {
 	[SerializeField]
 	private float TIME_STEP;
 	[SerializeField]
-	private float SCREEN_SIZE_HORIZONTAL;
-	[SerializeField]
-	private float HORIZONTAL_ROOM_MARGIN;
-	[SerializeField]
-	private float DOOR_TRANSITION_DURATION;
-	[SerializeField]
 	private float TONI_SINGLE_STEP_LENGTH;
 	[SerializeField]
 	private double MEAN_TONI_VELOCITY;
 
-	// Player model weights
-	public const double Param_ExplorationWalk	= 0.3;
-	public const double Param_ItemFetchWalk		= 1.0;
-	public const double Param_DoorToDoorWalk	= 0.8;
-	// The two parameters below must sum up to < 1.0
-	public const double Param_RunningProb		= 0.1;
-	public const double Param_StandingStillProb	= 0.3;
-
 	public AI_PlayerModel(Data_GameState GS) {
 		// First, some global settings
-		TIME_STEP 					= Global_Settings.read("TIME_STEP");
-		SCREEN_SIZE_HORIZONTAL		= Global_Settings.read("SCREEN_SIZE_HORIZONTAL");
-		HORIZONTAL_ROOM_MARGIN		= Global_Settings.read("HORIZONTAL_ROOM_MARGIN");
-		// Walking settings
-		MEAN_TONI_VELOCITY			= Global_Settings.read("CHARA_WALKING_SPEED") * (1.0 - Param_RunningProb - Param_StandingStillProb) +
-									  Global_Settings.read("CHARA_RUNNING_SPEED") * Param_RunningProb;
-		DOOR_TRANSITION_DURATION	= Global_Settings.read("DOOR_TRANSITION_DURATION");
-		TONI_SINGLE_STEP_LENGTH		= Global_Settings.read("CHARA_SINGLE_STEP_LENGTH");
+		TIME_STEP 				= Global_Settings.read("TIME_STEP");
+		TONI_SINGLE_STEP_LENGTH	= Global_Settings.read("CHARA_SINGLE_STEP_LENGTH");
 		// Then, initialize the transition matrix
 		recalculate(GS);
 	}
 
 	public void recalculate(Data_GameState GS) {
+		// Update player parameters first
+		Data_PlayerCharacter Toni = GS.getToni();
+		PLAYER_PARAMETERS.updateMovementSpeedProbabilities(Toni.cntStandingSinceLastDeath, Toni.cntWalkingSinceLastDeath, Toni.cntRunningSinceLastDeath);
+		Toni.resetMovementCounters();
+		PLAYER_PARAMETERS.updateWalkingDistanceWeights(Toni.roomHistory);
+		// Recalculate the mean velocity
+		MEAN_TONI_VELOCITY = Global_Settings.read("CHARA_WALKING_SPEED") * PLAYER_PARAMETERS.PROB_WALKING + Global_Settings.read("CHARA_RUNNING_SPEED") * PLAYER_PARAMETERS.PROB_RUNNING;
+		// TODO: Room staying time
+		// Lastly, save the player parameters to disk
+		Control_Persistence.saveToDisk(PLAYER_PARAMETERS);
+
 		// Initialize the transition matrix
 		roomCount = GS.ROOMS.Count;
 		TRANSITION_MATRIX = new double[roomCount, roomCount];
@@ -94,19 +102,11 @@ public class AI_PlayerModel {
 	}
 
 	private double calculateMeanStayingTime(Data_GameState GS, int roomIndex) {
-		// Calculate effective (traversable) size (width) of the room in question
-		double effectiveWidth = GS.getRoomByIndex(roomIndex).width - HORIZONTAL_ROOM_MARGIN * 2;
-		// Calculate the mean time for raw room exploration
-		double meanExplorationDistance = 1.5 * effectiveWidth - SCREEN_SIZE_HORIZONTAL;
-		// If there are items currently in here, calculate the mean distance needed to fetch one of them
-		double meanItemFetchDistance  =roomHasItemSpawns[roomIndex] ? (effectiveWidth / 3) : 0;
-		// If there is more than one door in the room, calculate the average path between two neighbouring doors
-		double meanDoorToDoorDistance = DOOR_TRANSITION_DURATION * MEAN_TONI_VELOCITY
-			+ ((roomDoorCount[roomIndex] > 1) ? (effectiveWidth / (roomDoorCount[roomIndex] - 1)) : 0);
-		// Combine the results according to their parametrized weight
-		meanWalkingDistance[roomIndex] = Param_ExplorationWalk * meanExplorationDistance +
-										 Param_ItemFetchWalk * meanItemFetchDistance +
-										 Param_DoorToDoorWalk * meanDoorToDoorDistance;
+		Data_Room room = GS.getRoomByIndex(roomIndex);
+		// Calculate mean walking distance across the room
+		meanWalkingDistance[roomIndex] = PLAYER_PARAMETERS.WEIGHT_EXPLORATION_WALK * room.meanExplorationDistance +
+										 PLAYER_PARAMETERS.WEIGHT_ITEM_FETCH_WALK * room.meanItemFetchDistance +
+										 PLAYER_PARAMETERS.WEIGHT_DOOR2DOOR_WALK * room.meanDoorToDoorDistance;
 		// Convert the walking distance into mean staying time and return it
 		double meanStayingTimeInSeconds = meanWalkingDistance[roomIndex] / MEAN_TONI_VELOCITY;
 		double meanStayingTimeInTimeSteps = meanStayingTimeInSeconds / TIME_STEP;
@@ -121,10 +121,10 @@ public class AI_PlayerModel {
 		switch(noiseType) {
 		case Control_Sound.NOISE_TYPE_WALK:
 			// Return probability of a walking noise while NOT running
-			return (probWalkingNoise * (1 - Param_RunningProb));
+			return (probWalkingNoise * PLAYER_PARAMETERS.PROB_WALKING);
 		case Control_Sound.NOISE_TYPE_RUN:
 			// Return probability of a walking noise while running
-			return (probWalkingNoise * Param_RunningProb);
+			return (probWalkingNoise * PLAYER_PARAMETERS.PROB_RUNNING);
 		case Control_Sound.NOISE_TYPE_DOOR:
 			// The more doors the room has, the higher the chance of walking through one
 			return (roomDoorCount[roomIndex] / meanStayingTime[roomIndex]);

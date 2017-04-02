@@ -116,7 +116,6 @@ public class Control_Sound : MonoBehaviour {
 		case NOISE_TYPE_RUN:
 		case NOISE_TYPE_ZAP:
 			result = NOISE_VOL_LOUD;
-			result = NOISE_VOL_LOUD;
 			break;
 		}
 		return result;

@@ -16,6 +16,7 @@ public class Control_PlayerCharacter : Control_Character {
 	private Data_Cadaver cadaver;
 
 	// General settings
+	private float WALKING_RUNNING_THRESHOLD;
 	private float SINGLE_STEP_LENGTH;
 	private float walkingDistanceSinceLastNoise;
 
@@ -77,6 +78,7 @@ public class Control_PlayerCharacter : Control_Character {
 		// Set general movement parameters
 		WALKING_SPEED = Global_Settings.read("CHARA_WALKING_SPEED");
 		RUNNING_SPEED = Global_Settings.read("CHARA_RUNNING_SPEED");
+		WALKING_RUNNING_THRESHOLD = (WALKING_SPEED + RUNNING_SPEED) / 2;
 		SINGLE_STEP_LENGTH = Global_Settings.read("CHARA_SINGLE_STEP_LENGTH");
 
 		RUNNING_STAMINA_LOSS = Global_Settings.read("RUNNING_STAMINA_LOSS");
@@ -123,7 +125,7 @@ public class Control_PlayerCharacter : Control_Character {
 			me.timeWithoutAction = 0;
 			if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
 				takeItem();
-			} else {
+			} else if(!attackAnimationPlaying) {
 				StartCoroutine(playAttackAnimation(me.atPos + (monsterToniRenderer.flipX ? 1f : -1f), GS.getMonster()));
 			}
 		}
@@ -178,6 +180,29 @@ public class Control_PlayerCharacter : Control_Character {
 				StartCoroutine(dieAndRespawn());
 			}
 			mainCameraControl.setRedOverlay(me.timeWithoutAction / SUICIDLE_DURATION);
+		}
+	}
+
+	protected new void FixedUpdate() {
+		base.FixedUpdate();
+
+		// Don't do anything if the game state is not loaded yet or suspended
+		if(GS == null || GS.SUSPENDED) {
+			return;
+		}
+
+		// Update the movement statistics during the collection stage
+		if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
+			// Update the ticks for running and standing statistics
+			if(Math.Abs(me.currentVelocity) < 0.1f) {
+				me.cntStandingSinceLastDeath++;
+			} else if(Math.Abs(me.currentVelocity) < WALKING_RUNNING_THRESHOLD) {
+				me.cntWalkingSinceLastDeath++;
+			} else {
+				me.cntRunningSinceLastDeath++;
+			}
+			// Update the distance walked in the current room
+			me.roomHistory[me.roomHistory.Count - 1].increaseWalkedDistance(me.currentVelocity * Time.fixedDeltaTime);
 		}
 	}
 
@@ -256,7 +281,7 @@ public class Control_PlayerCharacter : Control_Character {
 		}
 
 		// Trigger an autosave upon changing locations
-		Data_GameState.saveToDisk(GS);
+		Control_Persistence.saveToDisk(GS);
 	}
 
 	// The player takes a nearby item if there is any
@@ -271,7 +296,7 @@ public class Control_PlayerCharacter : Control_Character {
 			// Make noise at the current location
 			soundSystem.makeNoise(Control_Sound.NOISE_TYPE_ITEM, me.pos);
 			// Auto save when collecting an item.
-			Data_GameState.saveToDisk(GS);
+			Control_Persistence.saveToDisk(GS);
 			// Show inventory
 			StartCoroutine("displayInventory");
 		} else {
@@ -312,7 +337,7 @@ public class Control_PlayerCharacter : Control_Character {
 			// Make noise at the current location
 			soundSystem.makeNoise(Control_Sound.NOISE_TYPE_ITEM, me.pos);
 			// Auto save when dropping an item.
-			Data_GameState.saveToDisk(GS);
+			Control_Persistence.saveToDisk(GS);
 		}
 	}
 
@@ -345,7 +370,7 @@ public class Control_PlayerCharacter : Control_Character {
 		activateCooldown(RITUAL_ITEM_PLACEMENT_DURATION);
 		yield return new WaitForSeconds(RITUAL_ITEM_PLACEMENT_DURATION);
 		// Auto save when placing is complete
-		Data_GameState.saveToDisk(GS);
+		Control_Persistence.saveToDisk(GS);
 	}
 
 	public void setupEndgame() {
@@ -370,30 +395,34 @@ public class Control_PlayerCharacter : Control_Character {
 	}
 
 	// Superclass functions implemented
-	protected override void doBeforeLeavingRoom(Data_Door doorTaken) {
-		if(GS.monsterSeesToni) {
-			GS.getMonster().control.seeToniGoThroughDoor(doorTaken);
-		}
-	}
-
 	protected override void activateCooldown(float duration) {
 		me.etherialCooldown = duration;
 	}
 
-	protected override void cameraFadeOut(float duration) {
-		mainCameraControl.fadeOut(duration);
+	protected override void preDoorTransitionHook(Data_Door doorTaken) {
+		mainCameraControl.fadeOut(DOOR_TRANSITION_DURATION / 2);
+		
 	}
-
-	protected override void cameraFadeIn(float duration) {
-		mainCameraControl.fadeIn(duration);
+	protected override void preRoomLeavingHook(Data_Door doorTaken) {
+		if(GS.monsterSeesToni) {
+			GS.getMonster().control.seeToniGoThroughDoor(doorTaken);
+		}
 	}
-
-	protected override void makeNoise(int type, Data_Position atPos) {
-		soundSystem.makeNoise(type, atPos);
+	protected override void postDoorTransitionHook(Data_Door doorTaken) {
+		// Update door usage statistics
+		updateDoorUsageStatistic(doorTaken, doorTaken.isIn, doorTaken.connectsTo, doorTaken.connectsTo.isIn);
+		// Update room visitation history
+		me.roomHistory.Add(new AI_RoomHistory(doorTaken.connectsTo.isIn));
+		// Fade camera back in
+		mainCameraControl.fadeIn(DOOR_TRANSITION_DURATION / 2);
+		// Make noise
+		soundSystem.makeNoise(Control_Sound.NOISE_TYPE_DOOR, doorTaken.pos);
 		walkingDistanceSinceLastNoise = 0;
+		// Save the game
+		Control_Persistence.saveToDisk(GS);
 	}
 
-	protected override void updateDoorUsageStatistic(Data_Door door, Data_Room currentRoom, Data_Door destinationDoor, Data_Room destinationRoom) {
+	private void updateDoorUsageStatistic(Data_Door door, Data_Room currentRoom, Data_Door destinationDoor, Data_Room destinationRoom) {
 		int spawn1Index = -1;
 		int spawn2Index = -1;
 		Data_Door iteratorDoor;

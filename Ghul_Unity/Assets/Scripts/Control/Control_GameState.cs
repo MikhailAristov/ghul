@@ -21,6 +21,7 @@ public class Control_GameState : MonoBehaviour {
 	private Factory_PrefabController prefabFactory;
 	private Factory_Graph graphFactory;
 
+	private int STARTING_ROOM_INDEX;
     private float? AUTOSAVE_FREQUENCY;
 	private float NEXT_AUTOSAVE_IN;
 	private bool newGameDisabled;
@@ -29,6 +30,7 @@ public class Control_GameState : MonoBehaviour {
     void Start ()
     {
 		MAIN_CAMERA_CONTROL = Camera.main.GetComponent<Control_Camera>();
+		STARTING_ROOM_INDEX = (int)Global_Settings.read("RITUAL_ROOM_INDEX");
 		// Initialize factories
 		prefabFactory = GetComponent<Factory_PrefabController>();
 		graphFactory = GetComponent<Factory_Graph>();
@@ -57,7 +59,7 @@ public class Control_GameState : MonoBehaviour {
         NEXT_AUTOSAVE_IN -= Time.deltaTime;
 		if (NEXT_AUTOSAVE_IN <= 0.0f && AUTOSAVE_FREQUENCY != null) {
 			NEXT_AUTOSAVE_IN = (float)AUTOSAVE_FREQUENCY;
-            Data_GameState.saveToDisk(GS);
+			Control_Persistence.saveToDisk(GS);
         }
 
         // Open main menu if the player presses Esc
@@ -68,7 +70,7 @@ public class Control_GameState : MonoBehaviour {
 
 		switch(GS.OVERALL_STATE) {
 		case STATE_COLLECTION_PHASE:
-			updateNormalRoutine();
+			updateDuringCollectionPhase();
 			break;
 		case STATE_TRANSFORMATION:
 			// Switch to next state as soon as the monster dies
@@ -81,7 +83,7 @@ public class Control_GameState : MonoBehaviour {
 			// The only way Toni can die in the endgame is by suicidle
 			if(GS.TONI_KILLED) {
 				GS.OVERALL_STATE = STATE_MONSTER_DEAD;
-				Data_GameState.saveToDisk(GS);
+				Control_Persistence.saveToDisk(GS);
 			}
 			break;
 		default:
@@ -93,9 +95,14 @@ public class Control_GameState : MonoBehaviour {
 
 	// Normal update routine before all items are placed
 	// Can trigger STATE_TRANSFORMATION
-	private void updateNormalRoutine() {
+	private void updateDuringCollectionPhase() {
 		// Check if player died to trigger house mix up
 		if (GS.TONI_KILLED == true) {
+			// Before the house is mixed, however, analyze Toni's room history and then reset it
+			//Data_PlayerCharacter Toni = GS.getToni();
+			//GS.getMonster().worldModel.playerParameters.updateWalkingDistanceWeights(Toni.roomHistory);
+			//Toni.resetRoomHistory(GS.getRoomByIndex(STARTING_ROOM_INDEX));
+			// Now do the normal thing
 			GS.TONI_KILLED = false;
 			houseMixup(GS.TONI.deaths);
 		}
@@ -130,7 +137,7 @@ public class Control_GameState : MonoBehaviour {
     private void continueFromSavedGameState()
     {
         // Load the game state from the disk
-        GS = Data_GameState.loadFromDisk();
+		GS = Control_Persistence.loadFromDisk<Data_GameState>();
         // If no game state has been found, initialize it instead
         if(GS == null) { resetGameState(); return; }
 
@@ -263,21 +270,22 @@ public class Control_GameState : MonoBehaviour {
 
 	// Initializes all characters on a new game
 	private void initializeCharacters() {
-		int ritualRoomIndex = 0;
+		Data_Room ritualRoom = GS.getRoomByIndex(STARTING_ROOM_INDEX);
 
 		// INITIALIZE CADAVER
 		GS.setCadaverCharacter("Cadaver");
-		GS.getCadaver().updatePosition(GS.getRoomByIndex(ritualRoomIndex), -7, 0); // move the cadaver out of sight at first
+		GS.getCadaver().updatePosition(ritualRoom, -7, 0); // move the cadaver out of sight at first
 		GS.getCadaver().gameObj.transform.position = new Vector3(-7, 0, 0);
 
 		// INITIALIZE PLAYER CHARACTER
 		GS.setPlayerCharacter("PlayerCharacter");
-		GS.getToni().updatePosition(GS.getRoomByIndex(ritualRoomIndex), 0, 0); // default: starting position is center of pentagram
+		GS.getToni().updatePosition(ritualRoom, 0, 0); // default: starting position is center of pentagram
 		GS.getToni().control.loadGameState(GS);
+		GS.getToni().resetRoomHistory(ritualRoom);
 
 		// INITIALIZE MONSTER
 		GS.setMonsterCharacter("Monster");
-		GS.getMonster().updatePosition(GS.getRoomFurthestFrom(ritualRoomIndex), 0, 0);
+		GS.getMonster().updatePosition(GS.getRoomFurthestFrom(STARTING_ROOM_INDEX), 0, 0);
 		GS.getMonster().resetWorldModel(GS);
 		GS.getMonster().control.loadGameState(GS);
 	}
@@ -380,7 +388,7 @@ public class Control_GameState : MonoBehaviour {
 		newItem.control.loadGameState(GS, newItemIndex);
 
 		// Save the new game state to disk
-		Data_GameState.saveToDisk(GS);
+		Control_Persistence.saveToDisk(GS);
 
 		return newItem;
 	}
@@ -444,7 +452,7 @@ public class Control_GameState : MonoBehaviour {
     void onExitSelect()
     {
         // Save and exit
-        Data_GameState.saveToDisk(GS);
+		Control_Persistence.saveToDisk(GS);
         Application.Quit();
     }
 }

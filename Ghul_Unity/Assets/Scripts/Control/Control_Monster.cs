@@ -17,7 +17,7 @@ public class Control_Monster : Control_Character {
 	private Data_PlayerCharacter Toni;
 
 	private float MARGIN_DOOR_ENTRANCE;
-	private float SCREEN_SIZE_HORIZONTAL;
+	private float HALF_SCREEN_SIZE_HORIZONTAL;
 	private float MARGIN_ITEM_STEAL;
 	private float WAIT_FOR_TONI_TO_MOVE;
 
@@ -80,7 +80,7 @@ public class Control_Monster : Control_Character {
 		RUNNING_SPEED = Global_Settings.read("MONSTER_WALKING_SPEED");
 		WALKING_SPEED = Global_Settings.read("MONSTER_SLOW_WALKING_SPEED");
 		MARGIN_DOOR_ENTRANCE = Global_Settings.read("MARGIN_DOOR_ENTRANCE");
-		SCREEN_SIZE_HORIZONTAL = Global_Settings.read("SCREEN_SIZE_HORIZONTAL");
+		HALF_SCREEN_SIZE_HORIZONTAL = Global_Settings.read("SCREEN_SIZE_HORIZONTAL") / 2;
 
 		ATTACK_RANGE = Global_Settings.read("MONSTER_ATTACK_RANGE");
 		ATTACK_MARGIN = Global_Settings.read("MONSTER_ATTACK_MARGIN");
@@ -192,7 +192,7 @@ public class Control_Monster : Control_Character {
 		// If, while stalking, monster sees Toni, start pursuing
 		// But if Toni's position no longer certain, start searching again
 		case STATE_STALKING:
-			distanceThresholdToStartPursuing = me.AGGRO * SCREEN_SIZE_HORIZONTAL / 2; 
+			distanceThresholdToStartPursuing = me.AGGRO * HALF_SCREEN_SIZE_HORIZONTAL; 
 			if(GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < distanceThresholdToStartPursuing) {
 				me.state = STATE_PURSUING;
 			} else if(me.worldModel.certainty < certaintyThresholdToStartStalking) {
@@ -224,7 +224,7 @@ public class Control_Monster : Control_Character {
 		// Wandering is a special case: if the ritual has been performed, start fleeing from Toni
 		case STATE_WANDERING:
 			if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE &&
-			   GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < (SCREEN_SIZE_HORIZONTAL / 2)) {
+			   GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < HALF_SCREEN_SIZE_HORIZONTAL) {
 				me.state = STATE_FLEEING;
 			}
 			break;
@@ -378,8 +378,7 @@ public class Control_Monster : Control_Character {
 				nextDoorToGoThrough = findNextDoorToVisit(false, 10.0, utilityPenaltyRitualRoom, 0, 0, utilityPenaltyToniInTheWay);
 			} else {
 				// Penalize going into Toni's supposed room until the aggro is high enough to engage right away
-				Data_Room tonisRoom = GS.getRoomByIndex(me.worldModel.mostLikelyTonisRoomIndex);
-				double meetingToniPenalty = (distanceThresholdToStartPursuing < (tonisRoom.width / 3)) ? 0 : utilityPenaltyTonisRoom;
+				double meetingToniPenalty = (distanceThresholdToStartPursuing >= HALF_SCREEN_SIZE_HORIZONTAL) ? 0 : utilityPenaltyTonisRoom;
 				// Penalties: ritual room > Toni's room (opt.) > distance to door > previous room = going past Toni
 				nextDoorToGoThrough = findNextDoorToVisit(true, 10.0, utilityPenaltyRitualRoom, 0, meetingToniPenalty, 0);
 			}
@@ -461,6 +460,8 @@ public class Control_Monster : Control_Character {
 				distToPentagram = newDistance;
 			}
 		}
+		// Set AI state to fleeing, just in case
+		me.state = STATE_FLEEING;
 		// "Go" through the door
 		StartCoroutine(goThroughTheDoor(targetDoor));
 	}
@@ -491,12 +492,13 @@ public class Control_Monster : Control_Character {
 	protected override bool canRun() {
 		return true; // The monster can always run
 	}
-	// Instead of updating statistics, the monster updates its position in the world model and checks whether it sees Toni
-	protected override void updateDoorUsageStatistic(Data_Door door, Data_Room currentRoom, Data_Door destinationDoor, Data_Room destinationRoom) {
+
+	protected override void postDoorTransitionHook(Data_Door doorTaken) {
 		me.worldModel.updateMyRoom(me.isIn, GS.monsterSeesToni);
 		nextDoorToGoThrough = null;
-		previousRoomVisited = currentRoom;
+		previousRoomVisited = doorTaken.isIn;
 	}
+
 	// If hit after the ritual was performed, die
 	public override void getHit() {
 		Debug.Log(me + " is hit");
@@ -517,8 +519,6 @@ public class Control_Monster : Control_Character {
 	protected override void updateStamina(bool isRunning) {}
 	protected override void regainStamina() {}
 	protected override void makeWalkingNoise(float walkedDistance, int type, Data_Position atPos) {}
-	protected override void doBeforeLeavingRoom(Data_Door doorTaken) {}
-	protected override void cameraFadeOut(float duration) {}
-	protected override void cameraFadeIn(float duration) {}
-	protected override void makeNoise(int type, Data_Position atPos) {}
+	protected override void preDoorTransitionHook(Data_Door doorTaken) {}
+	protected override void preRoomLeavingHook(Data_Door doorTaken) {}
 }
