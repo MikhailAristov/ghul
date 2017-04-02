@@ -84,7 +84,7 @@ public class Environment_Room : MonoBehaviour {
 
 	// Updates the size of the DangerIndicator sprite
 	public void updateDangerIndicator(double dangerLevel) {
-		if(DangerIndicator != null) {
+		if(DangerIndicator != null && !double.IsNaN(dangerLevel)) {
 			float scaleFactor = 0.1f + 0.9f * (float)Math.Max(0.0, Math.Min(1.0, dangerLevel));
 			DangerIndicator.transform.localScale = new Vector3(scaleFactor, scaleFactor, scaleFactor);
 		}
