@@ -276,7 +276,7 @@ public class Control_GameState : MonoBehaviour {
 		GS.setPlayerCharacter("PlayerCharacter");
 		GS.getToni().updatePosition(ritualRoom, 0, 0); // default: starting position is center of pentagram
 		GS.getToni().control.loadGameState(GS);
-		GS.getToni().resetRoomHistory(ritualRoom);
+		GS.getToni().resetRoomHistory();
 
 		// INITIALIZE MONSTER
 		GS.setMonsterCharacter("Monster");

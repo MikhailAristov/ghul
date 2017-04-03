@@ -86,12 +86,21 @@ public class Data_PlayerCharacter : Data_Character {
 		cntRunningSinceLastDeath = 0;
 	}
 
-	public void resetRoomHistory(Data_Room currentRoom) {
+	public void resetRoomHistory() {
 		if(roomHistory == null) {
 			roomHistory = new List<AI_RoomHistory>();
+		} else {
+			roomHistory.Clear();
 		}
-		roomHistory.Clear();
-		roomHistory.Add(new AI_RoomHistory(currentRoom));
+	}
+
+	public void increaseWalkedDistance(float dist) {
+		// If the history is still empty after a reset, initialize it with the current room
+		// If the last room in the history is not the same room as the current one, add the current one to history
+		if(roomHistory.Count < 1 || roomHistory[roomHistory.Count - 1].roomId != isIn.INDEX) {
+			roomHistory.Add(new AI_RoomHistory(isIn));
+		}
+		roomHistory[roomHistory.Count - 1].increaseWalkedDistance(dist);
 	}
 
 	// Resets game object references, e.g. after a saved state load

@@ -21,6 +21,13 @@ public class AI_PlayerParameters {
 	private const double LEARNING_RATE_ITEM_FETCH	= 1e-3;
 	private const double LEARNING_RATE_DOOR2DOOR	= 1e-4;
 
+	private const float MAX_LEARNING_TIME_IN_SEC = 0.1f;
+	private const double MIN_ERROR_IMPROVEMENT = 1e-6;
+	private const int MAX_LEARNING_ITERATIONS_WO_IMPROVEMENT = 3;
+	private const int MAX_TRAINING_SET_SIZE = 100;
+	private List<AI_RoomHistory> roomHistory;
+	private double currentWeightsCumulativeError;
+
 	// Overall stats: How likely Toni is to run or to stand still (the sum of both should be below 1.0!)
 	public double PROB_RUNNING;
 	public double PROB_STANDING;
@@ -36,7 +43,6 @@ public class AI_PlayerParameters {
 
 	public AI_PlayerParameters() {
 		resetWalkingWeights();
-
 		PROB_RUNNING = 0.05;
 		PROB_STANDING = 0.4;
 		COUNT_SPEED_MEASUREMENTS = (long)(COUNT_SPEED_MEASUREMENTS_CUTOFF / 10);
@@ -56,29 +62,88 @@ public class AI_PlayerParameters {
 	}
 
 	// Use stochastic gradient descent using the weights to update the walking weights
-	public void updateWalkingDistanceWeights(List<AI_RoomHistory> roomHistory) {
-		// Randomize the roomHistory order
-		AI_Util.shuffleList<AI_RoomHistory>(roomHistory);
-		// Go through Toni's room history
-		foreach(AI_RoomHistory entry in roomHistory) {
-			// Ignore entries where the walked distance is close to zero as abnormalities
-			if(entry.cumulativeWalkedDistance < 0.1) {
-				continue;
+	public void updateWalkingDistanceWeights(List<AI_RoomHistory> validationSet) {
+		double tmpWeightExplore = WEIGHT_EXPLORATION_WALK;
+		double tmpWeightItemFetch = WEIGHT_ITEM_FETCH_WALK;
+		double tmpWeightDoor2Door = WEIGHT_DOOR2DOOR_WALK;
+
+		// Remove outliers from the validation set
+		for(int i = 0; i < validationSet.Count; i++) {
+			if(validationSet[i].cumulativeWalkedDistance < 0.1) {
+				validationSet.RemoveAt(i--);
 			}
-			//Debug.LogFormat("Room history: room {0:D} -> {1:F3} m", entry.roomId, entry.cumulativeWalkedDistance);
-			// Assuming the MSE loss function, first calculate the absolute loss
-			double loss = WEIGHT_EXPLORATION_WALK * entry.meanExplorationDistance
-			              + WEIGHT_ITEM_FETCH_WALK * entry.meanItemFetchDistance
-			              + WEIGHT_DOOR2DOOR_WALK * entry.meanDoorToDoorDistance
-			              - entry.cumulativeWalkedDistance;
-			// Then, calculate and update the gradients
-			WEIGHT_EXPLORATION_WALK -= LEARNING_RATE_EXPLORATION * 2 * entry.meanExplorationDistance * loss;
-			WEIGHT_ITEM_FETCH_WALK -= LEARNING_RATE_ITEM_FETCH * 2 * entry.meanItemFetchDistance * loss;
-			WEIGHT_DOOR2DOOR_WALK -= LEARNING_RATE_DOOR2DOOR * 2 * entry.meanDoorToDoorDistance * loss;
 		}
-		Debug.LogFormat("Player room transition model: exploration weight: {0:F3}; item fetch weight: {1:F3}; door2door weight: {2:F3}", WEIGHT_EXPLORATION_WALK, WEIGHT_ITEM_FETCH_WALK, WEIGHT_DOOR2DOOR_WALK);
+		if(validationSet.Count == 0) {
+			return;
+		}
+
+		// Double the current cumulative error to give some leeway to relearning
+		currentWeightsCumulativeError *= 2;
+
+		// Trim the training set to max size if necessary
+		if(roomHistory.Count > MAX_TRAINING_SET_SIZE) {
+			roomHistory.RemoveRange(0, roomHistory.Count - MAX_TRAINING_SET_SIZE);			
+		}
+		// Copy the room history to a separate training set, so it won't get shuffled out of chronological order
+		List<AI_RoomHistory> trainingSet = new List<AI_RoomHistory>(roomHistory);
+		// Only execute training if training set is bigger than the validation set, otherwise jump straight to adding validation set to training set
+		if(roomHistory.Count >= Math.Min(validationSet.Count, MAX_TRAINING_SET_SIZE)) {
+			// Repeat training until validation set stops improving error or until time runs out
+			float trainingStop = Time.timeSinceLevelLoad + MAX_LEARNING_TIME_IN_SEC;
+			int iterationsWithoutImprovement = 0;
+			// Learning rate factor for simulated annealing
+			double learningRateFactor = 1.0;
+			do {
+				// Shuffle the training set for stochastic gradient descent
+				AI_Util.shuffleList<AI_RoomHistory>(roomHistory);
+				// Update the weights using training set
+				foreach(AI_RoomHistory entry in trainingSet) {
+					// Ignore entries where the walked distance is close to zero as abnormalities
+					if(entry.cumulativeWalkedDistance < 0.1) {
+						continue;
+					}
+					// Assuming the MSE loss function, first calculate the absolute loss
+					double loss = calculateLoss(tmpWeightExplore, tmpWeightItemFetch, tmpWeightDoor2Door, entry);
+					// Then, calculate and update the gradients
+					tmpWeightExplore -= learningRateFactor * LEARNING_RATE_EXPLORATION * 2 * entry.meanExplorationDistance * loss;
+					tmpWeightItemFetch -= learningRateFactor * LEARNING_RATE_ITEM_FETCH * 2 * entry.meanItemFetchDistance * loss;
+					tmpWeightDoor2Door -= learningRateFactor * LEARNING_RATE_DOOR2DOOR * 2 * entry.meanDoorToDoorDistance * loss;
+				}
+				learningRateFactor /= 2;
+				// Now validate the new weights
+				double newCumulativeError = calculateMeanSquaredError(tmpWeightExplore, tmpWeightItemFetch, tmpWeightDoor2Door, validationSet);
+				// Check if new error is better than the last one
+				if((currentWeightsCumulativeError - newCumulativeError) > MIN_ERROR_IMPROVEMENT) {
+					WEIGHT_EXPLORATION_WALK = tmpWeightExplore;
+					WEIGHT_ITEM_FETCH_WALK = tmpWeightItemFetch;
+					WEIGHT_DOOR2DOOR_WALK = tmpWeightDoor2Door;
+					currentWeightsCumulativeError = newCumulativeError;
+					iterationsWithoutImprovement = 0;
+				} else {
+					iterationsWithoutImprovement += 1;
+				}
+			} while(Time.timeSinceLevelLoad < trainingStop && iterationsWithoutImprovement <= MAX_LEARNING_ITERATIONS_WO_IMPROVEMENT);
+		}
+		// Add the current validation set to the training set to be used next time
+		roomHistory.AddRange(validationSet);
+		Debug.LogFormat("Player room transition model: error: {0:F6}; exploration weight: {1:F3}; item fetch weight: {2:F3}; door2door weight: {3:F3}", currentWeightsCumulativeError, WEIGHT_EXPLORATION_WALK, WEIGHT_ITEM_FETCH_WALK, WEIGHT_DOOR2DOOR_WALK);
 		// Perform a sanity check
 		sanityCheck();
+	}
+
+	// Convenience functions
+	private double calculateLoss(double weightExplore, double weightItemFetch, double weightDoor2Door, AI_RoomHistory dataEntry) {
+		return weightExplore * dataEntry.meanExplorationDistance + weightItemFetch * dataEntry.meanItemFetchDistance + weightDoor2Door * dataEntry.meanDoorToDoorDistance - dataEntry.cumulativeWalkedDistance;
+	}
+	// MSE
+	private double calculateMeanSquaredError(double weightExplore, double weightItemFetch, double weightDoor2Door, List<AI_RoomHistory> dataSet) {
+		double result = 0;
+		foreach(AI_RoomHistory entry in dataSet) {
+			double loss = calculateLoss(weightExplore, weightItemFetch, weightDoor2Door, entry);
+			result += loss * loss;
+		}
+		result /= dataSet.Count;
+		return result;
 	}
 
 	// Performs sanity checks after each learning iteration and resets the system if necessary
@@ -94,5 +159,7 @@ public class AI_PlayerParameters {
 		WEIGHT_EXPLORATION_WALK = 0.1;
 		WEIGHT_ITEM_FETCH_WALK = 0.7;
 		WEIGHT_DOOR2DOOR_WALK = 0.4;
+		roomHistory = new List<AI_RoomHistory>();
+		currentWeightsCumulativeError = double.MaxValue;
 	}
 }

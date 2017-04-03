@@ -31,8 +31,13 @@ public class AI_WorldModel {
 	[SerializeField]
 	private int secondMostLikelyTonisRoomIndex;
 	public double certainty {
-		get { 
-			return probabilityThatToniIsInRoom[mostLikelyTonisRoomIndex] - probabilityThatToniIsInRoom[secondMostLikelyTonisRoomIndex];
+		get {
+			try {
+				return probabilityThatToniIsInRoom[mostLikelyTonisRoomIndex] - probabilityThatToniIsInRoom[secondMostLikelyTonisRoomIndex];
+			} catch(IndexOutOfRangeException) {
+				Debug.LogWarning("index out of range!");
+				return 0;
+			}
 		}
 		private set { return; }
 	}
