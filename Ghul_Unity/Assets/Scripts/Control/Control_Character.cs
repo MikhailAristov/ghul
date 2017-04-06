@@ -27,8 +27,21 @@ public abstract class Control_Character : MonoBehaviour {
 	private float cumulativeAttackDuration;
 	private Data_Position positionAtTheLastTimeStep;
 
+	private Animator anim;
+
 	protected void FixedUpdate() {
 		if(GS != null && !GS.SUSPENDED) {
+			// Asign the animator if it has not been done yet
+			if (anim == null) {
+				Transform stickmanImageTransform = transform.Find("Stickman");
+				if (stickmanImageTransform != null) {
+					GameObject stickmanImageObject = stickmanImageTransform.gameObject;
+					if (stickmanImageObject != null) {
+						anim = stickmanImageObject.GetComponent<Animator>();
+					}
+				}
+			}
+
 			// Update character's velocity
 			if(positionAtTheLastTimeStep != null && positionAtTheLastTimeStep.RoomId == getMe().pos.RoomId) {
 				getMe().currentVelocity = (getMe().pos.X - positionAtTheLastTimeStep.X) / Time.fixedDeltaTime;
@@ -36,6 +49,11 @@ public abstract class Control_Character : MonoBehaviour {
 				getMe().currentVelocity = 0;
 			}
 			positionAtTheLastTimeStep = getMe().pos.clone();
+
+			// Update animation
+			if (anim != null) {
+				anim.SetFloat("Speed", Math.Abs(getMe().currentVelocity));
+			}
 
 			// If the character is attacking, count up the attack duration
 			if(attackAnimationPlaying) {
