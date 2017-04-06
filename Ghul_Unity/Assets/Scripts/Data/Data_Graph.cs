@@ -214,4 +214,54 @@ public class Data_Graph {
 		}
 		return result;
 	}
+
+	// Prints for each room which door spawns are in use and where they connect to.
+	public void printCompleteGraphInformation() {
+		string infoText = "Complete Graph Information:\n";
+		infoText += "The graph has " + getTotalNumberOfRooms() + " rooms and " 
+			+ getTotalNumberOfDoorSpawns() + " door spawns.\n";
+
+		// Calculate the vertex degrees.
+		int[] degreeDistribution = new int[] {0,0,0,0,0,0,0,0,0,0};
+		int maxDegree = 0;
+		for (int k = 0; k < getTotalNumberOfRooms(); k++) {
+			int deg = ABSTRACT_ROOMS[k].NUM_OF_DOORS;
+			maxDegree = Mathf.Max(maxDegree, deg);
+			if (deg <= 0 || deg >= 10) {
+				Debug.Log("Room " + k + "has a degree it should not have.");
+				return;
+			}
+			degreeDistribution[deg]++;
+		}
+		infoText += "Degree Distribution:\n";
+		for (int l = 1; l <= maxDegree; l++) {
+			infoText += "\tDegree " + l + ": " + degreeDistribution[l] + " rooms.\n";
+		}
+		infoText += "\n";
+
+		int numRooms = (int) (Global_Settings.read("TOTAL_NUMBER_OF_ROOMS") + 0.01f);
+
+		for (int i = 0; i < numRooms; i++) {
+			Data_GraphRoomVertice room = ABSTRACT_ROOMS[i];
+			infoText += "Room " + i + ": " + room.MAX_NUM_OF_DOORS + " door spawns total. " 
+				+ room.NUM_OF_DOORS + " connections total.\n";
+			foreach (Data_GraphDoorSpawn spawn in room.DOOR_SPAWNS.Values) {
+				infoText += "\tSpawn " + spawn.INDEX;
+				if (spawn.LEFT_SIDE)
+					infoText += " LEFT";
+				if (spawn.RIGHT_SIDE)
+					infoText += " RIGHT";
+				infoText += ", ";
+				if (!spawn.isConnected())
+					infoText += "unconnected";
+				else
+					infoText += "connected to " + spawn.CONNECTS_TO_SPAWN_ID + " (Room " 
+						+ DOOR_SPAWN_IS_IN_ROOM[spawn.CONNECTS_TO_SPAWN_ID] + ")";
+				infoText += "\n";
+			}
+			infoText += "\n";
+		}
+
+		Debug.Log(infoText);
+	}
 }

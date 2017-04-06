@@ -409,7 +409,7 @@ public class Control_GameState : MonoBehaviour {
 	}
 
 	public void houseMixup(int deaths) {
-		int itemCount = GS.ITEMS.Count;
+		int itemCount = GS.numItemsPlaced;
 		float evilness = Mathf.Max(1.0f, (float)itemCount * 0.5f + ((float)deaths * 0.2f));
 		Control_GraphMixup.MixUpGraph(ref GS.HOUSE_GRAPH, (int)evilness);
 		respawnAndConnectAllDoors();

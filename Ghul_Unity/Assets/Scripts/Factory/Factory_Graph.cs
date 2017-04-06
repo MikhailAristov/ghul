@@ -54,6 +54,10 @@ public class Factory_Graph : MonoBehaviour {
 
 		if (!checkWhetherUnconnectedRoomExists()) {
 			graphCalculated = true;
+
+			// DEBUG
+			graph.printCompleteGraphInformation();
+			// END OF DEBUG
 		} else {
 			Debug.Log("Failed at connecting all rooms.");
 		}
