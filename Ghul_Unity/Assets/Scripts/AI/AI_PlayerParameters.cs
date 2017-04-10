@@ -25,6 +25,8 @@ public class AI_PlayerParameters {
 	private const double MIN_ERROR_IMPROVEMENT = 1e-6;
 	private const int MAX_LEARNING_ITERATIONS_WO_IMPROVEMENT = 3;
 	private const int MAX_TRAINING_SET_SIZE = 100;
+	public const int MIN_VALIDATION_SET_SIZE = 10;
+
 	private List<AI_RoomHistory> roomHistory;
 	private double currentWeightsCumulativeError;
 
@@ -63,6 +65,10 @@ public class AI_PlayerParameters {
 
 	// Use stochastic gradient descent using the weights to update the walking weights
 	public void updateWalkingDistanceWeights(List<AI_RoomHistory> validationSet) {
+		if(validationSet.Count < MIN_VALIDATION_SET_SIZE) {
+			return;
+		}
+
 		double tmpWeightExplore = WEIGHT_EXPLORATION_WALK;
 		double tmpWeightItemFetch = WEIGHT_ITEM_FETCH_WALK;
 		double tmpWeightDoor2Door = WEIGHT_DOOR2DOOR_WALK;
@@ -87,7 +93,7 @@ public class AI_PlayerParameters {
 		// Copy the room history to a separate training set, so it won't get shuffled out of chronological order
 		List<AI_RoomHistory> trainingSet = new List<AI_RoomHistory>(roomHistory);
 		// Only execute training if training set is bigger than the validation set, otherwise jump straight to adding validation set to training set
-		if(roomHistory.Count >= Math.Min(validationSet.Count, MAX_TRAINING_SET_SIZE)) {
+		if(trainingSet.Count >= Math.Min(validationSet.Count, MAX_TRAINING_SET_SIZE)) {
 			// Repeat training until validation set stops improving error or until time runs out
 			float trainingStop = Time.timeSinceLevelLoad + MAX_LEARNING_TIME_IN_SEC;
 			int iterationsWithoutImprovement = 0;
@@ -95,7 +101,7 @@ public class AI_PlayerParameters {
 			double learningRateFactor = 1.0;
 			do {
 				// Shuffle the training set for stochastic gradient descent
-				AI_Util.shuffleList<AI_RoomHistory>(roomHistory);
+				AI_Util.shuffleList<AI_RoomHistory>(trainingSet);
 				// Update the weights using training set
 				foreach(AI_RoomHistory entry in trainingSet) {
 					// Ignore entries where the walked distance is close to zero as abnormalities
