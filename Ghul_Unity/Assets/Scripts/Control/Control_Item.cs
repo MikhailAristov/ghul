@@ -61,9 +61,6 @@ public class Control_Item : MonoBehaviour {
 		SpriteRenderer rend = GetComponent<SpriteRenderer>();
 		// Move the sprite to target position
 		me.updatePosition(me.isIn, targetPosition.x, targetPosition.y);
-		if(me.INDEX < 2) {
-			GetComponent<SpriteRenderer>().sortingLayerName = "Foreground";
-		}
 		updateGameObjectPosition();
 		transform.position = targetPosition;
 		// Set alpha channel to zero
@@ -85,7 +82,7 @@ public class Control_Item : MonoBehaviour {
 	public void updateGameObjectPosition() {
 		// The first two items are placed on the pentagram "in front" of the player character
 		float zPos = transform.position.z;
-		if(me.state == Data_Item.STATE_PLACED && me.INDEX < 2) {
+		if(me.elevation <= ITEM_FLOOR_LEVEL) {
 			zPos = -2f;
 			GetComponent<SpriteRenderer>().sortingLayerName = "Foreground";
 		}
