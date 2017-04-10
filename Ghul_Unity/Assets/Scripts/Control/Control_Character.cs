@@ -51,7 +51,7 @@ public abstract class Control_Character : MonoBehaviour {
 			positionAtTheLastTimeStep = getMe().pos.clone();
 
 			// Update animation
-			if (anim != null) {
+			if (anim != null && anim.isInitialized) {
 				anim.SetFloat("Speed", Math.Abs(getMe().currentVelocity));
 			}
 
