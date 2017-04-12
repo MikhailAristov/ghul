@@ -46,7 +46,7 @@ public class AI_SignalModel {
 		// Set the overall parameters
 		roomCount = GS.ROOMS.Count;
 		doorCount = GS.DOORS.Count;
-		noiseCount = 5;
+		noiseCount = 6;
 		// Recalculate distance boundaries between each door and room
 		precomputeDoorToRoomDistanceFunctions(GS);
 		// Recalculate the likelihoods of specific noises from specific room being heard at certain doors
@@ -256,6 +256,28 @@ public class AI_SignalModel {
 			// Uniform distribution over all rooms
 			return (1.0 / roomCount);
 		}
+	}
+
+	// f( null signal | Toni is in tonisRoom )
+	public double nullSignalLikelihood(int tonisRoom) {
+		double result = 0, tempSumOverToniNoise, tempSumOverHouseNoise;
+		for(int toniNoise = 0; toniNoise < noiseCount; toniNoise++) {
+			tempSumOverToniNoise = 0;
+			for(int houseNoise = 0; houseNoise < noiseCount; houseNoise++) {
+				tempSumOverHouseNoise = 0;
+				for(int houseNoiseOriginRoom = 0; houseNoiseOriginRoom < roomCount; houseNoiseOriginRoom++) {
+					tempSumOverToniNoise += nullSignalLikelihood(toniNoise, tonisRoom, houseNoise, houseNoiseOriginRoom);
+				}
+				tempSumOverToniNoise += tempSumOverHouseNoise * noiseLikelihoodByHouse(houseNoise);
+			}
+			result += tempSumOverToniNoise * noiseLikelihood(toniNoise, tonisRoom, tonisRoom, true);
+		}
+		return (result / roomCount);
+	}
+
+	// f( null signal | Toni makes toniNoise in tonisRoom, house makes houseNoise in houseNoiseOriginRoom)
+	public double nullSignalLikelihood(int toniNoise, int tonisRoom, int houseNoise, int houseNoiseOriginRoom) {
+		return 1;
 	}
 
 }

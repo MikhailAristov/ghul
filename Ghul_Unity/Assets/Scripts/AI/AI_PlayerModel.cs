@@ -121,28 +121,32 @@ public class AI_PlayerModel {
 	public double noiseLikelihood(int noiseType, int roomIndex) {
 		// At any given point in time, this is the probability of Toni making a walking or running noise
 		double probWalkingNoise = (meanWalkingDistance[roomIndex] / TONI_SINGLE_STEP_LENGTH) / meanStayingTime[roomIndex];
+		double probPointNoise = 1.0 / meanStayingTime[roomIndex];
 		// Likelihood depends on the noise type
 		switch(noiseType) {
+		default:
+		case Control_Sound.NOISE_TYPE_NONE:
+			// Return probability of making NO noise in any given time step
+			// The probability of making ANY noise equals the mean number of steps Toni takes within the room,
+			// plus 1 for leaving through one of the doors, plus 1 for picking up items if there are item spawns in it,
+			// everything divided by the mean number of time steps Toni spends inside the room
+			return 1.0 - ( meanWalkingDistance[roomIndex] / TONI_SINGLE_STEP_LENGTH + (roomHasItemSpawns[roomIndex] ? 2.0 : 1.0) ) / meanStayingTime[roomIndex];
 		case Control_Sound.NOISE_TYPE_WALK:
 			// Return probability of a walking noise while NOT running
-			return (probWalkingNoise * PLAYER_PARAMETERS.PROB_WALKING);
+			// TODO: Correct??
+			return (probWalkingNoise * PLAYER_PARAMETERS.PROB_WALKING / (PLAYER_PARAMETERS.PROB_WALKING + PLAYER_PARAMETERS.PROB_RUNNING));
 		case Control_Sound.NOISE_TYPE_RUN:
 			// Return probability of a walking noise while running
-			return (probWalkingNoise * PLAYER_PARAMETERS.PROB_RUNNING);
+			return (probWalkingNoise * PLAYER_PARAMETERS.PROB_RUNNING / (PLAYER_PARAMETERS.PROB_WALKING + PLAYER_PARAMETERS.PROB_RUNNING));
 		case Control_Sound.NOISE_TYPE_DOOR:
-			// The more doors the room has, the higher the chance of walking through one
-			return (roomDoorCount[roomIndex] / meanStayingTime[roomIndex]);
+			// Toni makes the door noise in EVERY room, specifically upon leaving it after the mean staying time
+			return probPointNoise;
 		case Control_Sound.NOISE_TYPE_ITEM:
 		case Control_Sound.NOISE_TYPE_ZAP:
 			// If the room has item spawns, there is a small chance Toni will try picking an item up
 			// Note that the model doesn't actually track items in the house, as that would give the
 			// monster an unfair advantage of knowing at a distance where all items are
-			return (roomHasItemSpawns[roomIndex] ? (1.0 / meanStayingTime[roomIndex]) : 0);
-		default:
-			// Most the time, actually, Toni makes no sound at all,
-			// but this doesn't matter when considering the likelihood of a specific sound
-			// that has already been made
-			return 0;
+			return (roomHasItemSpawns[roomIndex] ? probPointNoise : 0);
 		}
 	}
 }

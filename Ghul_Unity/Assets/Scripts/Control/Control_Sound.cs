@@ -20,11 +20,12 @@ public class Control_Sound : MonoBehaviour {
 	public const float RANDOM_NOISE_MAX_DELAY = 5.0f;
 
 	// Noise types:
-	public const int NOISE_TYPE_WALK = 0;
-	public const int NOISE_TYPE_RUN = 1;
-	public const int NOISE_TYPE_DOOR = 2;
-	public const int NOISE_TYPE_ITEM = 3;
-	public const int NOISE_TYPE_ZAP = 4;
+	public const int NOISE_TYPE_NONE = 0;
+	public const int NOISE_TYPE_WALK = 1;
+	public const int NOISE_TYPE_RUN = 2;
+	public const int NOISE_TYPE_DOOR = 3;
+	public const int NOISE_TYPE_ITEM = 4;
+	public const int NOISE_TYPE_ZAP = 5;
 	// TODO public const int NOISE_TYPE_HIDE = 5;
 
 	// Noise loudness values:
@@ -107,22 +108,19 @@ public class Control_Sound : MonoBehaviour {
 
 	// Returns the initial noise loudness by type
 	public static float getInitialLoudness(int noiseType) {
-		float result;
 		switch(noiseType) {
-		case NOISE_TYPE_WALK:
 		default:
-			result = NOISE_VOL_QUIET;
-			break;
+		case NOISE_TYPE_NONE:
+			return 0;
+		case NOISE_TYPE_WALK:
+			return NOISE_VOL_QUIET;
 		case NOISE_TYPE_DOOR:
 		case NOISE_TYPE_ITEM:
-			result = NOISE_VOL_MEDIUM;
-			break;
+			return NOISE_VOL_MEDIUM;
 		case NOISE_TYPE_RUN:
 		case NOISE_TYPE_ZAP:
-			result = NOISE_VOL_LOUD;
-			break;
+			return NOISE_VOL_LOUD;
 		}
-		return result;
 	}
 
 	// Transmits the noise to the monster
