@@ -101,14 +101,15 @@ public class AI_WorldModel {
 	// MUST be called in a FixedUpdate after predictOneTimeStep()!
 	public void filter(float loudness, Data_Door door) {
 		// A simple Bayesian Wonham filter
+		double normalization = 0;
 		for(int i = 0; i < roomCount; i++) {
 			// Posteriore := likelihood * priore (normalization constant to be applied later)
 			newVector[i] = signalModel.signalLikelihood(loudness, door, i) * probabilityThatToniIsInRoom[i];
+			normalization += newVector[i];
 		}
-		// Now calculate the normalization constant and update the probabilities with it
-		double normalizationConstant = newVector.Sum();
+		// Lastly, normalize the probabilities to sum up to 1
 		for(int j = 0; j < roomCount; j++) {
-			probabilityThatToniIsInRoom[j] = newVector[j] / normalizationConstant;
+			probabilityThatToniIsInRoom[j] = newVector[j] / normalization;
 		}
 		updateMostLikelyRoomIndices();
 	}
