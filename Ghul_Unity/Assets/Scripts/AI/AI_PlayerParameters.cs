@@ -84,7 +84,7 @@ public class AI_PlayerParameters {
 		}
 
 		// Double the current cumulative error to give some leeway to relearning
-		currentWeightsCumulativeError *= 2;
+		currentWeightsCumulativeError = calculateMeanSquaredError(tmpWeightExplore, tmpWeightItemFetch, tmpWeightDoor2Door, validationSet);
 
 		// Trim the training set to max size if necessary
 		if(roomHistory.Count > MAX_TRAINING_SET_SIZE) {
@@ -104,10 +104,6 @@ public class AI_PlayerParameters {
 				AI_Util.shuffleList<AI_RoomHistory>(trainingSet);
 				// Update the weights using training set
 				foreach(AI_RoomHistory entry in trainingSet) {
-					// Ignore entries where the walked distance is close to zero as abnormalities
-					if(entry.cumulativeWalkedDistance < 0.1) {
-						continue;
-					}
 					// Assuming the MSE loss function, first calculate the absolute loss
 					double loss = calculateLoss(tmpWeightExplore, tmpWeightItemFetch, tmpWeightDoor2Door, entry);
 					// Then, calculate and update the gradients
@@ -115,9 +111,10 @@ public class AI_PlayerParameters {
 					tmpWeightItemFetch -= learningRateFactor * LEARNING_RATE_ITEM_FETCH * 2 * entry.meanItemFetchDistance * loss;
 					tmpWeightDoor2Door -= learningRateFactor * LEARNING_RATE_DOOR2DOOR * 2 * entry.meanDoorToDoorDistance * loss;
 				}
-				learningRateFactor /= 2;
 				// Now validate the new weights
 				double newCumulativeError = calculateMeanSquaredError(tmpWeightExplore, tmpWeightItemFetch, tmpWeightDoor2Door, validationSet);
+				// The adaptive learning rate grows when the error grows and drops when the error grows smaller, gravitating down due to constant factor
+				learningRateFactor *= 0.7 * newCumulativeError / currentWeightsCumulativeError;
 				// Check if new error is better than the last one
 				if((currentWeightsCumulativeError - newCumulativeError) > MIN_ERROR_IMPROVEMENT) {
 					WEIGHT_EXPLORATION_WALK = tmpWeightExplore;
