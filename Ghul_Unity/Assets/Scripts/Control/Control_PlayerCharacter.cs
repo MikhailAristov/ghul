@@ -263,6 +263,7 @@ public class Control_PlayerCharacter : Control_Character {
 			me.resetPosition(GS);
 			currentEnvironment = me.isIn.env;
 			transform.position = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
+			setSpriteFlip(true); // Flip the sprite towards the wall scribbles
 			stickmanRenderer.enabled = true;
 
 			// Trigger the house mix up

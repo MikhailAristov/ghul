@@ -53,11 +53,11 @@ public class Data_Room : IComparable<Data_Room> {
     [NonSerialized]
 	public SortedList<float, Data_Door> DOORS;
 	public Data_Door leftmostDoor {
-		get { return DOORS[0]; }
+		get { return DOORS.Values[0]; }
 		private set { return; }
 	}
 	public Data_Door rightmostDoor {
-		get { return DOORS[DOORS.Count - 1]; }
+		get { return DOORS.Values[DOORS.Count - 1]; }
 		private set { return; }
 	}
     

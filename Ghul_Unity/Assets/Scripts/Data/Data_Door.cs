@@ -5,6 +5,9 @@ using System;
 [Serializable]
 public class Data_Door : IComparable<Data_Door> {
 
+	[NonSerialized]
+	public Control_Door control;
+
 	// Possible item states:
 	public const int TYPE_LEFT_SIDE = -1;
 	public const int TYPE_BACK_DOOR = 0;
@@ -61,10 +64,10 @@ public class Data_Door : IComparable<Data_Door> {
     {
         INDEX = I;
         _gameObjName = gameObjectName;
-        gameObj = GameObject.Find(gameObjectName);
-        if (gameObj == null) {
-            throw new ArgumentException("Cannot find door: " + gameObjectName);
-        }
+		gameObj = GameObject.Find(gameObjectName);
+		Debug.AssertFormat(gameObj != null, "Cannot find door game object {0}!", gameObj.name);
+		control = gameObj.GetComponent<Control_Door>();
+		Debug.AssertFormat(control != null, "Cannot find door control object for {0}!", gameObj.name);
     }
 
 	public Data_Door(int I, GameObject go, int doorType, Data_Room parentRoom, float xPos) {
@@ -73,6 +76,8 @@ public class Data_Door : IComparable<Data_Door> {
 		// Set the game object references
 		_gameObjName = go.name;
 		gameObj = go;
+		control = go.GetComponent<Control_Door>();
+		Debug.AssertFormat(control != null, "Cannot find door control object for {0}!", gameObj.name);
 		// Set the room object references
 		_pos = new Data_Position(parentRoom.INDEX, xPos);
 		Debug.Assert(parentRoom != null);
@@ -119,6 +124,8 @@ public class Data_Door : IComparable<Data_Door> {
 			}
 			_gameObjName = gameObj.name;
 		}
+		control = gameObj.GetComponent<Control_Door>();
+		Debug.AssertFormat(control != null, "Cannot find door control object for {0}!", gameObj.name);
         // Connect to the other door
         connectsTo = GS.getDoorByIndex(_connectsToDoorIndex);
         // Room relations are set in the Data_Room.fixObjectReferences()
