@@ -34,9 +34,9 @@ public class Control_Sound : MonoBehaviour {
 	// Quiet noises are audible over the estimated average minimum distance between rooms (empirically: 7.5 m)
 	public const float NOISE_VOL_QUIET = NOISE_INAUDIBLE * 7.5f * 7.5f;
 	// Medium noises are audible over the estimated average distance between rooms (empirically: 11.5 m)
-	public const float NOISE_VOL_MEDIUM = 26.5f;
+	public const float NOISE_VOL_MEDIUM = NOISE_INAUDIBLE * 11.5f * 11.5f;
 	// Loud noises are audible over the estimated maximum possible distance between rooms (empirically: 30 m)
-	public const float NOISE_VOL_LOUD = 180.0f;
+	public const float NOISE_VOL_LOUD = NOISE_INAUDIBLE * 30f * 30f;
 
 	void Update() {
 		if(GS == null || GS.SUSPENDED) {
