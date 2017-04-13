@@ -29,9 +29,13 @@ public class Control_Sound : MonoBehaviour {
 	// TODO public const int NOISE_TYPE_HIDE = 5;
 
 	// Noise loudness values:
-	public const float NOISE_INAUDIBLE = 0.2f; // This is the effective volume at which the noise is no longer transmitted to the monster
-	public const float NOISE_VOL_QUIET = 15.0f;
-	public const float NOISE_VOL_MEDIUM = 80.0f;
+	// This is the effective volume at which the noise is no longer transmitted to the monster
+	public const float NOISE_INAUDIBLE = 0.2f;
+	// Quiet noises are audible over the estimated average minimum distance between rooms (empirically: 7.5 m)
+	public const float NOISE_VOL_QUIET = NOISE_INAUDIBLE * 7.5f * 7.5f;
+	// Medium noises are audible over the estimated average distance between rooms (empirically: 11.5 m)
+	public const float NOISE_VOL_MEDIUM = 26.5f;
+	// Loud noises are audible over the estimated maximum possible distance between rooms (empirically: 30 m)
 	public const float NOISE_VOL_LOUD = 180.0f;
 
 	void Update() {
