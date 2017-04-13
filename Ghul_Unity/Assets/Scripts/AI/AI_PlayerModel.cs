@@ -39,6 +39,10 @@ public class AI_PlayerModel {
 	private int[] roomDoorCount;
 	[SerializeField]
 	private bool[] roomHasItemSpawns;
+	[SerializeField]
+	private double toniWalkingNoiseProbabilityPerTimeStep;
+	[SerializeField]
+	private double toniRunningNoiseProbabilityPerTimeStep;
 
 	// Global settings
 	[SerializeField]
@@ -68,7 +72,8 @@ public class AI_PlayerModel {
 		}
 		// Recalculate the mean velocity
 		MEAN_TONI_VELOCITY = Global_Settings.read("CHARA_WALKING_SPEED") * PLAYER_PARAMETERS.PROB_WALKING + Global_Settings.read("CHARA_RUNNING_SPEED") * PLAYER_PARAMETERS.PROB_RUNNING;
-		// TODO: Room staying time
+		toniWalkingNoiseProbabilityPerTimeStep = (MEAN_TONI_VELOCITY * TIME_STEP / TONI_SINGLE_STEP_LENGTH) * (PLAYER_PARAMETERS.PROB_WALKING / (PLAYER_PARAMETERS.PROB_WALKING + PLAYER_PARAMETERS.PROB_RUNNING));
+		toniRunningNoiseProbabilityPerTimeStep = (MEAN_TONI_VELOCITY * TIME_STEP / TONI_SINGLE_STEP_LENGTH) * (PLAYER_PARAMETERS.PROB_RUNNING / (PLAYER_PARAMETERS.PROB_WALKING + PLAYER_PARAMETERS.PROB_RUNNING));
 		// Lastly, save the player parameters to disk
 		Control_Persistence.saveToDisk(PLAYER_PARAMETERS);
 
@@ -119,9 +124,6 @@ public class AI_PlayerModel {
 
 	// f( noise type | the room Toni was in when he made the sound )
 	public double noiseLikelihood(int noiseType, int roomIndex) {
-		// At any given point in time, this is the probability of Toni making a walking or running noise
-		double probWalkingNoise = (meanWalkingDistance[roomIndex] / TONI_SINGLE_STEP_LENGTH) / meanStayingTime[roomIndex];
-		double probPointNoise = 1.0 / meanStayingTime[roomIndex];
 		// Likelihood depends on the noise type
 		switch(noiseType) {
 		default:
@@ -133,20 +135,19 @@ public class AI_PlayerModel {
 			return 1.0 - ( meanWalkingDistance[roomIndex] / TONI_SINGLE_STEP_LENGTH + (roomHasItemSpawns[roomIndex] ? 2.0 : 1.0) ) / meanStayingTime[roomIndex];
 		case Control_Sound.NOISE_TYPE_WALK:
 			// Return probability of a walking noise while NOT running
-			// TODO: Correct??
-			return (probWalkingNoise * PLAYER_PARAMETERS.PROB_WALKING / (PLAYER_PARAMETERS.PROB_WALKING + PLAYER_PARAMETERS.PROB_RUNNING));
+			return toniWalkingNoiseProbabilityPerTimeStep;
 		case Control_Sound.NOISE_TYPE_RUN:
 			// Return probability of a walking noise while running
-			return (probWalkingNoise * PLAYER_PARAMETERS.PROB_RUNNING / (PLAYER_PARAMETERS.PROB_WALKING + PLAYER_PARAMETERS.PROB_RUNNING));
+			return toniRunningNoiseProbabilityPerTimeStep;
 		case Control_Sound.NOISE_TYPE_DOOR:
 			// Toni makes the door noise in EVERY room, specifically upon leaving it after the mean staying time
-			return probPointNoise;
+			return (1.0 / meanStayingTime[roomIndex]);
 		case Control_Sound.NOISE_TYPE_ITEM:
 		case Control_Sound.NOISE_TYPE_ZAP:
 			// If the room has item spawns, there is a small chance Toni will try picking an item up
 			// Note that the model doesn't actually track items in the house, as that would give the
 			// monster an unfair advantage of knowing at a distance where all items are
-			return (roomHasItemSpawns[roomIndex] ? probPointNoise : 0);
+			return (roomHasItemSpawns[roomIndex] ? (1.0 / meanStayingTime[roomIndex]) : 0);
 		}
 	}
 }
