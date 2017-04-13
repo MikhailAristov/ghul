@@ -31,6 +31,7 @@ public class Control_PlayerCharacter : Control_Character {
 
 	private float RESPAWN_TRANSITION_DURATION;
 	private float INVENTORY_DISPLAY_DURATION;
+	private float MARGIN_ITEM_COLLECT;
 
 	// Graphics parameters
 	private GameObject stickmanObject;
@@ -48,6 +49,36 @@ public class Control_PlayerCharacter : Control_Character {
 	private AudioSource zappingSound;
 	private GameObject zappingParticleObject;
 	private ParticleSystem zappingParticles;
+
+	// Most basic initialization
+	void Awake() {
+		WALKING_SPEED = Global_Settings.read("CHARA_WALKING_SPEED");
+		RUNNING_SPEED = Global_Settings.read("CHARA_RUNNING_SPEED");
+		WALKING_RUNNING_THRESHOLD = (WALKING_SPEED + RUNNING_SPEED) / 2;
+		SINGLE_STEP_LENGTH = Global_Settings.read("CHARA_SINGLE_STEP_LENGTH");
+
+		RUNNING_STAMINA_LOSS = Global_Settings.read("RUNNING_STAMINA_LOSS");
+		WALKING_STAMINA_GAIN = Global_Settings.read("WALKING_STAMINA_GAIN");
+		STANDING_STAMINA_GAIN = Global_Settings.read("STANDING_STAMINA_GAIN");
+
+		VERTICAL_ROOM_SPACING = Global_Settings.read("VERTICAL_ROOM_SPACING");
+		DOOR_TRANSITION_DURATION = Global_Settings.read("DOOR_TRANSITION_DURATION");
+
+		RESPAWN_TRANSITION_DURATION = Global_Settings.read("TOTAL_DEATH_DURATION");
+		INVENTORY_DISPLAY_DURATION = Global_Settings.read("INVENTORY_DISPLAY_DURATION");
+		MARGIN_ITEM_COLLECT = Global_Settings.read("MARGIN_ITEM_COLLECT");
+
+		RITUAL_ROOM_INDEX = (int)Global_Settings.read("RITUAL_ROOM_INDEX");
+		RITUAL_PENTAGRAM_CENTER = Global_Settings.read("RITUAL_PENTAGRAM_CENTER");
+		RITUAL_ITEM_PLACEMENT_RADIUS = Global_Settings.read("RITUAL_PENTAGRAM_RADIUS") / 10;
+		RITUAL_ITEM_PLACEMENT_DURATION = Global_Settings.read("RITUAL_ITEM_PLACEMENT");
+		SUICIDLE_DURATION = Global_Settings.read("SUICIDLE_DURATION");
+
+		ATTACK_RANGE = Global_Settings.read("MONSTER_ATTACK_RANGE");
+		ATTACK_MARGIN = Global_Settings.read("TONI_ATTACK_MARGIN");
+		ATTACK_DURATION = Global_Settings.read("TONI_ATTACK_DURATION");
+		ATTACK_COOLDOWN = Global_Settings.read("TONI_ATTACK_COOLDOWN");
+	}
 
 	// Use this for initialization; note that only local variables are initialized here, game state is loaded later
 	void Start() {
@@ -74,33 +105,6 @@ public class Control_PlayerCharacter : Control_Character {
 		this.me = gameState.getToni();
 		this.currentEnvironment = me.isIn.env;
 		this.cadaver = GS.getCadaver();
-
-		// Set general movement parameters
-		WALKING_SPEED = Global_Settings.read("CHARA_WALKING_SPEED");
-		RUNNING_SPEED = Global_Settings.read("CHARA_RUNNING_SPEED");
-		WALKING_RUNNING_THRESHOLD = (WALKING_SPEED + RUNNING_SPEED) / 2;
-		SINGLE_STEP_LENGTH = Global_Settings.read("CHARA_SINGLE_STEP_LENGTH");
-
-		RUNNING_STAMINA_LOSS = Global_Settings.read("RUNNING_STAMINA_LOSS");
-		WALKING_STAMINA_GAIN = Global_Settings.read("WALKING_STAMINA_GAIN");
-		STANDING_STAMINA_GAIN = Global_Settings.read("STANDING_STAMINA_GAIN");
-
-		VERTICAL_ROOM_SPACING = Global_Settings.read("VERTICAL_ROOM_SPACING");
-		DOOR_TRANSITION_DURATION = Global_Settings.read("DOOR_TRANSITION_DURATION");
-
-		RESPAWN_TRANSITION_DURATION = Global_Settings.read("TOTAL_DEATH_DURATION");
-		INVENTORY_DISPLAY_DURATION = Global_Settings.read("INVENTORY_DISPLAY_DURATION");
-
-		RITUAL_ROOM_INDEX = (int)Global_Settings.read("RITUAL_ROOM_INDEX");
-		RITUAL_PENTAGRAM_CENTER = Global_Settings.read("RITUAL_PENTAGRAM_CENTER");
-		RITUAL_ITEM_PLACEMENT_RADIUS = Global_Settings.read("RITUAL_PENTAGRAM_RADIUS") / 10f;
-		RITUAL_ITEM_PLACEMENT_DURATION = Global_Settings.read("RITUAL_ITEM_PLACEMENT");
-		SUICIDLE_DURATION = Global_Settings.read("SUICIDLE_DURATION");
-
-		ATTACK_RANGE = Global_Settings.read("MONSTER_ATTACK_RANGE");
-		ATTACK_MARGIN = Global_Settings.read("TONI_ATTACK_MARGIN");
-		ATTACK_DURATION = Global_Settings.read("TONI_ATTACK_DURATION");
-		ATTACK_COOLDOWN = Global_Settings.read("TONI_ATTACK_COOLDOWN");
 		
 		// Move the character sprite directly to where the game state says it should be standing
 		Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
@@ -144,7 +148,7 @@ public class Control_PlayerCharacter : Control_Character {
 
 		// If conditions for placing the item at the pentagram are right, do just that
 		if(me.carriedItem != null && me.isIn.INDEX == RITUAL_ROOM_INDEX &&
-			Math.Abs(RITUAL_PENTAGRAM_CENTER - me.atPos) <= RITUAL_ITEM_PLACEMENT_RADIUS) {
+		   Math.Abs(RITUAL_PENTAGRAM_CENTER - me.atPos) <= RITUAL_ITEM_PLACEMENT_RADIUS) {
 			StartCoroutine(putItemOntoPentagram());
 		}
 
@@ -287,45 +291,42 @@ public class Control_PlayerCharacter : Control_Character {
 
 	// The player takes a nearby item if there is any
 	private void takeItem() {
-		Data_Item currentItem = GS.getCurrentItem();
-		if(me.carriedItem == null && currentItem.isTakeable() && me.isIn == currentItem.isIn &&
-		   Math.Abs(me.atPos - currentItem.atPos) < Global_Settings.read("MARGIN_ITEM_COLLECT")) {
-			// the player got the item with index itemIndex.
-			currentItem.control.moveToInventory();
-			me.carriedItem = currentItem;
-			Debug.Log("Item #" + currentItem.INDEX + " collected.");
-			// Make noise at the current location
-			soundSystem.makeNoise(Control_Sound.NOISE_TYPE_ITEM, me.pos);
-			// Auto save when collecting an item.
-			Control_Persistence.saveToDisk(GS);
-			// Show inventory
-			StartCoroutine("displayInventory");
-		} else {
-			// Check whether other item is within picking-distance
-			bool itemNearby = false;
-			Vector3 destPos = new Vector3(); // to place the zap-particle where the item is located
-			bool error = false;
-			foreach(Data_Item item in GS.ITEMS.Values) {
-				if(me.isIn == item.isIn && Math.Abs(me.atPos - item.atPos) < Global_Settings.read("MARGIN_ITEM_COLLECT") && item.INDEX != currentItem.INDEX) {
-					itemNearby = true;
-					if(item.gameObj != null) {
-						destPos = item.gameObj.transform.position;
-					} else {
-						// Somehow there's no gameObj attached to the item. Weird.
-						error = true;
-					}
-				}
-			}
-			if(itemNearby && !error) {
-				// emit zapping sound and visual effect
-				zappingParticleObject.transform.Translate(destPos - zappingParticleObject.transform.position);
+		// Can't pick up more than one item, anyway
+		if(me.carriedItem != null) {
+			return;
+		}
+
+		// Check if there are any items nearby
+		Data_Item thisItem = GS.getItemAtPos(me.pos, MARGIN_ITEM_COLLECT);
+		if(thisItem == null) {
+			Debug.Log("There is no item to pick up here...");
+			return;
+		}
+
+		// Check if the item that would be picked up is the one currently sought for the ritual
+		if(thisItem != GS.getCurrentItem()) {
+			Debug.Log(thisItem + " is not the item you are looking for (" + GS.getCurrentItem() + ")");
+			// Activate the zap animation at the current items position
+			if(thisItem.control != null) {
+				zappingParticleObject.transform.position = thisItem.control.transform.position;
 				zappingParticles.Play();
 				zappingSound.Play();
-				soundSystem.makeNoise(Control_Sound.NOISE_TYPE_ZAP, me.pos);
 			}
-
-			Debug.LogWarning("Can't pick up " + currentItem);
+			// Make a zapping noise at the location
+			soundSystem.makeNoise(Control_Sound.NOISE_TYPE_ZAP, me.pos);
+			return;
 		}
+
+		// Now that we know that this is the right item, move it to inventory
+		thisItem.control.moveToInventory();
+		me.carriedItem = thisItem;
+		Debug.Log(thisItem + " has been collected");
+		// Make noise at the current location
+		soundSystem.makeNoise(Control_Sound.NOISE_TYPE_ITEM, me.pos);
+		// Auto save when collecting an item.
+		Control_Persistence.saveToDisk(GS);
+		// Show inventory
+		StartCoroutine("displayInventory");
 	}
 
 	// The player drops the carried item
@@ -404,11 +405,13 @@ public class Control_PlayerCharacter : Control_Character {
 		mainCameraControl.fadeOut(DOOR_TRANSITION_DURATION / 2);
 		
 	}
+
 	protected override void preRoomLeavingHook(Data_Door doorTaken) {
 		if(GS.monsterSeesToni) {
 			GS.getMonster().control.seeToniGoThroughDoor(doorTaken);
 		}
 	}
+
 	protected override void postDoorTransitionHook(Data_Door doorTaken) {
 		// Update door usage statistics
 		updateDoorUsageStatistic(doorTaken, doorTaken.isIn, doorTaken.connectsTo, doorTaken.connectsTo.isIn);
@@ -454,5 +457,6 @@ public class Control_PlayerCharacter : Control_Character {
 		}
 	}
 	// The rest stays empty for now (only relevant for the monster)...
-	protected override void postKillHook() {}
+	protected override void postKillHook() {
+	}
 }

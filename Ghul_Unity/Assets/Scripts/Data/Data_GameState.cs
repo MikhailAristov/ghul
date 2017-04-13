@@ -194,6 +194,27 @@ public class Data_GameState {
 		return ITEMS[indexOfSearchedItem];
 	}
 
+	// Returns the nearest item to a given position within the specified margin
+	public Data_Item getItemAtPos(Data_Position pos, float margin) {
+		Data_Item closestItem = null;
+		float bestProximity = float.MaxValue;
+		foreach(Data_Item item in ITEMS.Values) {
+			if(item.isIn.INDEX == pos.RoomId) {
+				float proximity = Math.Abs(item.atPos - pos.X);
+				if(proximity <= Math.Abs(margin)) {
+					if(item.INDEX == indexOfSearchedItem) {
+						// If the currently searched item is within the margin, it is prioritized over every other
+						return item;
+					} else if(proximity < bestProximity) {
+						closestItem = item;
+						bestProximity = proximity;
+					}
+				}
+			}
+		}
+		return closestItem;
+	}
+
 	// Returns a random item spawn point
 	public Data_Position getRandomItemSpawn() {
 		Data_Position result;
