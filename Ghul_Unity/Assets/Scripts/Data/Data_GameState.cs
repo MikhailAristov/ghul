@@ -17,7 +17,7 @@ public class Data_GameState {
 	[NonSerialized] // Setting this flag suspends the game
 	public bool SUSPENDED = true;
 	[NonSerialized] // Setting this flag makes the game generate a new item
-	public bool NEXT_ITEM_PLEASE = true;
+	public bool ANOTHER_ITEM_PLEASE = true;
 	[NonSerialized] // Setting this flag activates the house graph mix up
 	public bool TONI_KILLED = false;
 	[NonSerialized] // This lets the game state catch the precise moment the monster dies for the first time in the endgame

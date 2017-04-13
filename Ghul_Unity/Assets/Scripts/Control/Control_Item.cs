@@ -14,14 +14,15 @@ public class Control_Item : MonoBehaviour {
 	private float ITEM_CARRY_ELEVATION;
 	private float ITEM_FLOOR_LEVEL;
 
-	// To make sure the game state is fully initialized before loading it, this function is called by game state class itself
-	public void loadGameState(Data_GameState gameState, int ownIndex)
-	{
-		this.GS = gameState;
-		this.me = gameState.getItemByIndex(ownIndex);
-
+	void Awake() {
 		ITEM_CARRY_ELEVATION = Global_Settings.read("ITEM_CARRY_ELEVATION");
 		ITEM_FLOOR_LEVEL = Global_Settings.read("ITEM_FLOOR_LEVEL");
+	}
+
+	// To make sure the game state is fully initialized before loading it, this function is called by game state class itself
+	public void loadGameState(Data_GameState gameState, int ownIndex) {
+		this.GS = gameState;
+		this.me = gameState.getItemByIndex(ownIndex);
 
 		// Check the item visibility
 		GetComponent<Renderer>().enabled = me.isVisible();
@@ -29,7 +30,9 @@ public class Control_Item : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update() {
-		if (GS == null || GS.SUSPENDED) { return; } // Don't do anything if the game state is not loaded yet or suspended
+		if(GS == null || GS.SUSPENDED) {
+			return;
+		} // Don't do anything if the game state is not loaded yet or suspended
 
 		// Set the position of the item to chara's position as long as it is carried
 		if(me.state == Data_Item.STATE_CARRIED) {
@@ -65,17 +68,16 @@ public class Control_Item : MonoBehaviour {
 		transform.position = targetPosition;
 		// Set alpha channel to zero
 		rend.color -= new Color(0, 0, 0, rend.color.a);
-		// Set sorting layer to foreground, if one of the first two items
 		// Enable the sprite
 		rend.enabled = true;
 		// Slowly restore the alpha channel over time
 		for(float timeLeft = duration; timeLeft > 0; timeLeft -= Time.deltaTime) {
-			rend.color += new Color (0, 0, 0, Time.deltaTime/duration);
+			rend.color += new Color(0, 0, 0, Time.deltaTime / duration);
 			yield return null;
 		}
 		// Update the game state
 		GS.numItemsPlaced++;
-		GS.NEXT_ITEM_PLEASE = true;
+		GS.ANOTHER_ITEM_PLEASE = true;
 	}
 
 	// Update the game object/sprite's position within the game space from the current game state

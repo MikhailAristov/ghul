@@ -145,7 +145,6 @@ public class Control_PlayerCharacter : Control_Character {
 		// If conditions for placing the item at the pentagram are right, do just that
 		if(me.carriedItem != null && me.isIn.INDEX == RITUAL_ROOM_INDEX &&
 			Math.Abs(RITUAL_PENTAGRAM_CENTER - me.atPos) <= RITUAL_ITEM_PLACEMENT_RADIUS) {
-			GS.indexOfSearchedItem++; // now the next item is to be searched
 			StartCoroutine(putItemOntoPentagram());
 		}
 
@@ -266,8 +265,9 @@ public class Control_PlayerCharacter : Control_Character {
 			setSpriteFlip(true); // Flip the sprite towards the wall scribbles
 			stickmanRenderer.enabled = true;
 
-			// Trigger the house mix up
+			// Trigger the house mix up and a new item
 			GS.TONI_KILLED = true;
+			GS.ANOTHER_ITEM_PLEASE = true;
 			me.deaths++;
 
 			// Fade back in

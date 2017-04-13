@@ -25,7 +25,17 @@ public class Control_GameState : MonoBehaviour {
 	private Factory_PrefabController prefabFactory;
 	private Factory_Graph graphFactory;
 
+	// Global parameters
 	private int STARTING_ROOM_INDEX;
+	private int TOTAL_NUMBER_OF_ROOMS;
+	private float VERTICAL_ROOM_SPACING;
+	private float HORIZONTAL_ROOM_MARGIN;
+	private float DOOR_TRANSITION_COST;
+
+	private int TOTAL_ITEMS_PLACED;
+	private int RITUAL_ITEMS_REQUIRED;
+	private float RITUAL_PENTAGRAM_CENTER;
+
 	private float AUTOSAVE_FREQUENCY;
 	private float NEXT_AUTOSAVE_IN;
 	private bool newGameDisabled;
@@ -33,6 +43,17 @@ public class Control_GameState : MonoBehaviour {
 	// Use this for initialization
 	void Awake() {
 		STARTING_ROOM_INDEX = (int)Global_Settings.read("RITUAL_ROOM_INDEX");
+		TOTAL_NUMBER_OF_ROOMS = (int)Global_Settings.read("TOTAL_NUMBER_OF_ROOMS");
+		VERTICAL_ROOM_SPACING = Global_Settings.read("VERTICAL_ROOM_SPACING");
+		HORIZONTAL_ROOM_MARGIN = Global_Settings.read("HORIZONTAL_ROOM_MARGIN");
+
+		// A rough estimation of what "distance" lies between two sides of a door for the all-pairs shortest distance calculation
+		DOOR_TRANSITION_COST = Global_Settings.read("CHARA_WALKING_SPEED") * Global_Settings.read("DOOR_TRANSITION_DURATION");
+
+		TOTAL_ITEMS_PLACED = (int)Global_Settings.read("TOTAL_NUMBER_OF_ITEMS_PLACED");
+		RITUAL_ITEMS_REQUIRED = (int)Global_Settings.read("RITUAL_ITEMS_REQUIRED");
+		RITUAL_PENTAGRAM_CENTER = Global_Settings.read("RITUAL_PENTAGRAM_CENTER");
+			
 		AUTOSAVE_FREQUENCY = Global_Settings.read("AUTOSAVE_FREQUENCY");
 		NEXT_AUTOSAVE_IN = AUTOSAVE_FREQUENCY;
 	}
@@ -114,12 +135,13 @@ public class Control_GameState : MonoBehaviour {
 		}
 
 		// Check if all items have been placed
-		if(GS.numItemsPlaced >= (int)Global_Settings.read("RITUAL_ITEMS_REQUIRED")) {
+		if(GS.numItemsPlaced >= RITUAL_ITEMS_REQUIRED) {
 			GS.OVERALL_STATE = STATE_TRANSFORMATION;
 			triggerEndgame(GS.OVERALL_STATE);
 		} else { // Otherwise, check if wall scribbles need to be updated
-			if(GS.NEXT_ITEM_PLEASE) {
-				GS.NEXT_ITEM_PLEASE = false;
+			if(GS.ANOTHER_ITEM_PLEASE) {
+				GS.indexOfSearchedItem = pickAnotherItemToSearchFor();
+				GS.ANOTHER_ITEM_PLEASE = false;
 				StartCoroutine(updateWallScribbles(1.0f));
 			}
 		}
@@ -169,14 +191,13 @@ public class Control_GameState : MonoBehaviour {
 		cadaver.updatePosition(cadaver.isIn, cadaver.atPos);
 
 		// Fix the items
-		int numOfItems = GS.ITEMS.Count; 
-		for(int i = 0; i < numOfItems; i++) {
+		for(int i = 0; i < GS.ITEMS.Count; i++) {
 			Data_Item item = GS.getItemByIndex(i);
 			item.fixObjectReferences(GS, prefabFactory);
 			item.control.loadGameState(GS, i);
 			item.control.updateGameObjectPosition();
 		}
-		StartCoroutine(updateWallScribbles(0.0f));
+		StartCoroutine(updateWallScribbles(0));
 
 		// Re-trigger the endgame if necessary
 		if(GS.OVERALL_STATE > STATE_COLLECTION_PHASE) {
@@ -221,7 +242,7 @@ public class Control_GameState : MonoBehaviour {
 
 		// Initialize all rooms, starting with the ritual room
 		initializeTheRitualRoom();
-		spawnAllOtherRooms((int)Global_Settings.read("TOTAL_NUMBER_OF_ROOMS"));
+		spawnAllOtherRooms(TOTAL_NUMBER_OF_ROOMS);
 
 		// Create the house graph
 		graphFactory.deleteGraph();
@@ -237,11 +258,9 @@ public class Control_GameState : MonoBehaviour {
 		initializeCharacters();
 
 		// Spawn all items
-		GS.indexOfSearchedItem = 0;
-		for(int i = 0; i < (int)Global_Settings.read("TOTAL_NUMBER_OF_ITEMS_PLACED"); i++) {
+		for(int i = 0; i < TOTAL_ITEMS_PLACED; i++) {
 			spawnNextItem();
 		}
-		StartCoroutine(updateWallScribbles(1.0f));
 	}
 
 	// Loads a fake prefab for the ritual room that already exists in the game space from the start
@@ -257,20 +276,19 @@ public class Control_GameState : MonoBehaviour {
 
 	// Spawn all other rooms randomly from prefabs up to a certain count
 	private void spawnAllOtherRooms(int totalRoomCount) {
-		float verticalRoomSpacing = Global_Settings.read("VERTICAL_ROOM_SPACING");
 		int minRoomsWith4DoorSpawns = 1; // Graph API prerequisite
 		while(GS.ROOMS.Count < totalRoomCount) {
 			// Check how many door spawns are required
 			int minDoorSpawns = (minRoomsWith4DoorSpawns-- > 0) ? 4 : 0;
 			// Spawn the new room
-			spawnRandomRoom(minDoorSpawns, verticalRoomSpacing);
+			spawnRandomRoom(minDoorSpawns);
 		}
 	}
 
 	// Spawns a random new room in the game space (very similar to initializeTheRitualRoom)
-	private void spawnRandomRoom(int minDoorSpawns, float verticalRoomSpacing) {
+	private void spawnRandomRoom(int minDoorSpawns) {
 		// Generate the room game object from prefabs
-		GameObject roomObj = prefabFactory.spawnRandomRoom(minDoorSpawns, verticalRoomSpacing);
+		GameObject roomObj = prefabFactory.spawnRandomRoom(minDoorSpawns, VERTICAL_ROOM_SPACING);
 		Factory_PrefabRooms.RoomPrefab roomPrefab = prefabFactory.getRoomPrefabDetails(roomObj.name);
 		// Load the prefab details into the data object
 		Data_Room newRoom = new Data_Room(GS.ROOMS.Count, roomObj, roomPrefab);
@@ -291,7 +309,7 @@ public class Control_GameState : MonoBehaviour {
 		// INITIALIZE PLAYER CHARACTER
 		GS.setPlayerCharacter("PlayerCharacter");
 		Data_PlayerCharacter Toni = GS.getToni();
-		Toni.updatePosition(ritualRoom, Global_Settings.read("RITUAL_PENTAGRAM_CENTER"), 0);
+		Toni.updatePosition(ritualRoom, RITUAL_PENTAGRAM_CENTER, 0);
 		Toni.resetRoomHistory();
 
 		// Make it look like Toni has just walked in through the right door (next to the pentagram)
@@ -339,7 +357,6 @@ public class Control_GameState : MonoBehaviour {
 
 	// Place a door within both game state and game space
 	private Data_Door spawnDoor(int doorType, Data_Room parent, float xPos) {
-		float horizontalRoomMargin = Global_Settings.read("HORIZONTAL_ROOM_MARGIN");
 		Transform parentTransform = parent.gameObj.transform;
 		float parentWidth = parent.width;
 		GameObject doorGameObj;
@@ -347,7 +364,7 @@ public class Control_GameState : MonoBehaviour {
 		switch(doorType) {
 		case Data_Door.TYPE_LEFT_SIDE:
 			doorGameObj = prefabFactory.spawnLeftSideDoor(parentTransform, parentWidth);
-			xPos = (horizontalRoomMargin - parentWidth) / 2; // Overwrite any specified position with a virtual one outside of actual room constraints
+			xPos = (HORIZONTAL_ROOM_MARGIN - parentWidth) / 2; // Overwrite any specified position with a virtual one outside of actual room constraints
 			break;
 		default:
 		case Data_Door.TYPE_BACK_DOOR:
@@ -355,7 +372,7 @@ public class Control_GameState : MonoBehaviour {
 			break;
 		case Data_Door.TYPE_RIGHT_SIDE:
 			doorGameObj = prefabFactory.spawnRightSideDoor(parentTransform, parentWidth);
-			xPos = (parentWidth - horizontalRoomMargin) / 2;
+			xPos = (parentWidth - HORIZONTAL_ROOM_MARGIN) / 2;
 			break;
 		}
 		// Initialize the door object and add it
@@ -366,10 +383,8 @@ public class Control_GameState : MonoBehaviour {
 
 	// Calls the game state to compute distances between all rooms and doors and checks if some are unreachable
 	private void precomputeAllDistances() {
-		// A rough estimation of what "distance" lies between two sides of a door for the all-pairs shortest distance calculation
-		float doorTransitionCost = Global_Settings.read("CHARA_WALKING_SPEED") * Global_Settings.read("DOOR_TRANSITION_DURATION");
 		// Precompute all-pairs shortest distances
-		GS.precomputeAllPairsShortestDistances(doorTransitionCost);
+		GS.precomputeAllPairsShortestDistances(DOOR_TRANSITION_COST);
 		Debug.Assert(GS.allRoomsReachable);
 	}
 
@@ -403,10 +418,25 @@ public class Control_GameState : MonoBehaviour {
 		newItem.updatePosition(parentRoom, spawnPos.X, spawnPos.Y);
 		newItem.control.loadGameState(GS, newItemIndex);
 
-		// Save the new game state to disk
-		Control_Persistence.saveToDisk(GS);
-
 		return newItem;
+	}
+
+	// Randomly picks a new item for Toni to look for
+	private int pickAnotherItemToSearchFor() {
+		Data_Position pentagramCenter = new Data_Position(STARTING_ROOM_INDEX, RITUAL_PENTAGRAM_CENTER);
+		// First, create a list of all items and weigh them with the cubed distance to the pentagram
+		// Items that are already placed are weighed at 0
+		float[] weights = new float[GS.ITEMS.Count];
+		foreach(Data_Item item in GS.ITEMS.Values) {
+			if(item.state != Data_Item.STATE_PLACED) {
+				float dist = GS.getDistance(pentagramCenter, item.pos);
+				weights[item.INDEX] = dist * dist * dist;
+			} else {
+				weights[item.INDEX] = 0;
+			}
+		}
+		// Now pick a random number within the range and pick the corresponding item
+		return AI_Util.pickRandomWeightedElement(weights);
 	}
 
 	// Updates the scribbles on the wall in the ritual room, indicating the next item to find
