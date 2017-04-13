@@ -26,14 +26,19 @@ public class Control_GameState : MonoBehaviour {
 	private Factory_Graph graphFactory;
 
 	private int STARTING_ROOM_INDEX;
-	private float? AUTOSAVE_FREQUENCY;
+	private float AUTOSAVE_FREQUENCY;
 	private float NEXT_AUTOSAVE_IN;
 	private bool newGameDisabled;
 
 	// Use this for initialization
+	void Awake() {
+		STARTING_ROOM_INDEX = (int)Global_Settings.read("RITUAL_ROOM_INDEX");
+		AUTOSAVE_FREQUENCY = Global_Settings.read("AUTOSAVE_FREQUENCY");
+		NEXT_AUTOSAVE_IN = AUTOSAVE_FREQUENCY;
+	}
+
 	void Start() {
 		MAIN_CAMERA_CONTROL = Camera.main.GetComponent<Control_Camera>();
-		STARTING_ROOM_INDEX = (int)Global_Settings.read("RITUAL_ROOM_INDEX");
 		// Initialize factories
 		prefabFactory = GetComponent<Factory_PrefabController>();
 		graphFactory = GetComponent<Factory_Graph>();
@@ -63,8 +68,8 @@ public class Control_GameState : MonoBehaviour {
 
 		// Timed autosave
 		NEXT_AUTOSAVE_IN -= Time.deltaTime;
-		if(NEXT_AUTOSAVE_IN <= 0.0f && AUTOSAVE_FREQUENCY != null) {
-			NEXT_AUTOSAVE_IN = (float)AUTOSAVE_FREQUENCY;
+		if(NEXT_AUTOSAVE_IN <= 0.0f) {
+			NEXT_AUTOSAVE_IN = AUTOSAVE_FREQUENCY;
 			Control_Persistence.saveToDisk(GS);
 		}
 
@@ -125,10 +130,6 @@ public class Control_GameState : MonoBehaviour {
 		// Train the camera on the main character
 		MAIN_CAMERA_CONTROL.loadGameState(GS);
 		MAIN_CAMERA_CONTROL.setFocusOn(GS.getToni().pos);
-
-		// Initialize autosave
-		AUTOSAVE_FREQUENCY = Global_Settings.read("AUTOSAVE_FREQUENCY");
-		NEXT_AUTOSAVE_IN = (float)AUTOSAVE_FREQUENCY;
 
 		// Initialize the sound system
 		GetComponent<Control_Sound>().loadGameState(GS);
