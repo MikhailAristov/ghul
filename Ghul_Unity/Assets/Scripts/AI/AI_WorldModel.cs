@@ -54,11 +54,17 @@ public class AI_WorldModel {
 		signalModel = new AI_SignalModel(GS, playerModel);
 	}
 
-	public void reset(Data_GameState GS) {
+	// Soft reset only resets Toni's suspected positions
+	public void softReset() {
 		double uniformDistribution = 1.0 / roomCount;
 		for(int i = 0; i < roomCount; i++) {
 			probabilityThatToniIsInRoom[i] = uniformDistribution;
 		}
+	}
+
+	// Full reset completely recalculates all models, as well
+	public void reset(Data_GameState GS) {
+		softReset();
 		playerModel.recalculate(GS);
 		signalModel.recalculate(GS);
 	}

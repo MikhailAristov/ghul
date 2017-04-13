@@ -270,27 +270,34 @@ public class Control_Monster : Control_Character {
 			Toni.control.dropItem();
 		}
 
-		// Correct state handling
-		switch(me.state) {
-		default:
-		case STATE_SEARCHING:
-			enactSearchPolicy(true);
-			break;
-		case STATE_PURSUING:
-			if(!attackAnimationPlaying) {
-				enactPursuitPolicy();
+		try {
+			// Correct state handling
+			switch(me.state) {
+			default:
+			case STATE_SEARCHING:
+				enactSearchPolicy(true);
+				break;
+			case STATE_PURSUING:
+				if(!attackAnimationPlaying) {
+					enactPursuitPolicy();
+				}
+				break;
+			case STATE_WANDERING:
+				enactSearchPolicy(false);
+				break;
+			case STATE_FLEEING:
+				enactFlightPolicy();
+				break;
+			case STATE_STALKING:
+				enactStalkingPolicy();
+				break;
 			}
-			break;
-		case STATE_WANDERING:
-			enactSearchPolicy(false);
-			break;
-		case STATE_FLEEING:
-			enactFlightPolicy();
-			break;
-		case STATE_STALKING:
-			enactStalkingPolicy();
-			break;
+		} catch(NullReferenceException e) {
+			// If a null reference exception is thrown here, it's most likely because the world model is borked and needs a soft reset
+			Debug.LogException(e);
+			me.worldModel.softReset();
 		}
+
 	}
 
 	/* Assigns a utility score to each currently visible door and returns the door with the highest utility
