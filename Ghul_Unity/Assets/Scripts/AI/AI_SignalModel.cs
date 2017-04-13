@@ -18,6 +18,10 @@ public class AI_SignalModel {
 	[SerializeField]
 	private float[,] door2roomMaxDistance;
 	[SerializeField]
+	private float[,] room2roomMinDistance;
+	[SerializeField]
+	private float[,] roomDoor2roomMaxDistance;
+	[SerializeField]
 	private float[] roomWalkableWidth;
 
 	[SerializeField]
@@ -46,7 +50,7 @@ public class AI_SignalModel {
 		// Set the overall parameters
 		roomCount = GS.ROOMS.Count;
 		doorCount = GS.DOORS.Count;
-		noiseCount = 6;
+		noiseCount = Control_Sound.NOISE_TYPE_ZAP;
 		// Recalculate distance boundaries between each door and room
 		precomputeDoorToRoomDistanceFunctions(GS);
 		// Recalculate the likelihoods of specific noises from specific room being heard at certain doors
@@ -68,15 +72,20 @@ public class AI_SignalModel {
 		door2roomMaxDistance = new float[doorCount, roomCount];
 		door2roomDistanceFunction = new float[doorCount, roomCount][];
 		roomWalkableWidth = new float[roomCount];
+		// Room-to-room min and max distance
+		room2roomMinDistance = new float[roomCount, roomCount];
+		Array.Copy(GS.distanceBetweenTwoRooms, room2roomMinDistance, roomCount * roomCount);
+		roomDoor2roomMaxDistance = new float[roomCount, roomCount];
+		Array.Clear(roomDoor2roomMaxDistance, 0, roomCount * roomCount);
 		// Loop through all rooms and doors
-		bool[] doorPruned = new bool[GS.DOORS.Count]; int prunedCount;
-		int[] relevantDoors; int lastRelevantDoorId;
-		int breakpointCount;
+		bool[] doorPruned = new bool[GS.DOORS.Count];
+		int[] relevantDoors;
+		int prunedCount, lastRelevantDoorId, breakpointCount;
 		foreach(Data_Room originRoom in GS.ROOMS.Values) {
 			roomWalkableWidth[originRoom.INDEX] = originRoom.rightWalkBoundary - originRoom.leftWalkBoundary;
 			foreach(Data_Door targetDoor in GS.DOORS.Values) {
 				// Prune away any doors that are Pareto dominated by another door in the origin room
-				Array.Clear(doorPruned, 0, GS.DOORS.Count);
+				Array.Clear(doorPruned, 0, doorCount);
 				prunedCount = 0;
 				foreach(Data_Door d1 in originRoom.DOORS.Values) {
 					foreach(Data_Door d2 in originRoom.DOORS.Values) {
@@ -131,6 +140,9 @@ public class AI_SignalModel {
 					if(dist > door2roomMaxDistance[targetDoor.INDEX, originRoom.INDEX]) {
 						door2roomMaxDistance[targetDoor.INDEX, originRoom.INDEX] = dist;
 					}
+					if(dist > roomDoor2roomMaxDistance[targetDoor.isIn.INDEX, originRoom.INDEX]) {
+						roomDoor2roomMaxDistance[targetDoor.isIn.INDEX, originRoom.INDEX] = dist;
+					}
 				}
 			}
 		}
@@ -141,7 +153,6 @@ public class AI_SignalModel {
 	// p( Door = d | OriginRoom = r , NoiseType = nt )
 	private void precomputeDoorAudibilityLikelihoods(Data_GameState GS) {
 		likelihoodNoiseHeardAtDoor = new double[noiseCount, roomCount, doorCount];
-		Array.Clear(likelihoodNoiseHeardAtDoor, 0, noiseCount * roomCount * doorCount);
 		// For each noise, first determine its maximumum traveling distance
 		double singleDoorProb = 1.0 / doorCount;
 		int reachableDoorCount;
@@ -177,7 +188,7 @@ public class AI_SignalModel {
 		// Then do the same for Toni making noises, using the player model
 		double cumulativeLikelihoodOfToniMakingNoise = 0;
 		foreach(Data_Room room in GS.ROOMS.Values) {
-			for(int noise = 0; noise < noiseCount; noise++) {
+			for(int noise = Control_Sound.NOISE_TYPE_WALK; noise < noiseCount; noise++) {
 				cumulativeLikelihoodOfToniMakingNoise += playerModel.noiseLikelihood(noise, room.INDEX);
 			}
 		}
@@ -196,7 +207,7 @@ public class AI_SignalModel {
 		double result = 0;
 		// This is some crazy stochastic voodoo magic...
 		for(int r = 0; r < roomCount; r++) {
-			for(int n = 0; n < noiseCount; n++) {
+			for(int n = Control_Sound.NOISE_TYPE_WALK; n < noiseCount; n++) {
 				result += signalLikelihood(volume, door, n, r) * likelihoodNoiseHeardAtDoor[n, r, door.INDEX] * noiseAndOriginLikelihood(n, r, tonisRoom);
 			}
 		}
@@ -209,8 +220,7 @@ public class AI_SignalModel {
 		double estimatedDistanceToOrigin = Math.Sqrt(Control_Sound.getInitialLoudness(noiseType) / volume);
 		// Count how many points within the supposed origin room the sound could have originated from
 		int possibleOriginPoints = 0;
-		float intervalStart;
-		float intervalEnd;
+		float intervalStart, intervalEnd;
 		if(estimatedDistanceToOrigin >= door2roomMinDistance[door.INDEX, origin] &&
 		   estimatedDistanceToOrigin <= door2roomMaxDistance[door.INDEX, origin]) {
 			// Check whether the estimated distance of origin lies between the "breakpoints" of the specified room
@@ -244,7 +254,7 @@ public class AI_SignalModel {
 	// f( noise type | the noise was made by the house )
 	private double noiseLikelihoodByHouse(int noiseType) {
 		// Uniform distribution
-		return (1.0 / noiseCount);
+		return (1.0 / (noiseCount - 1));
 	}
 
 	// f( origin room | Toni is in tonisRoom, whether Toni was the one who made that noise )
@@ -258,15 +268,15 @@ public class AI_SignalModel {
 		}
 	}
 
-	// f( null signal | Toni is in tonisRoom )
-	public double nullSignalLikelihood(int tonisRoom) {
+	// f( null signal | Toni is in tonisRoom, monster is in monsterRoom)
+	public double nullSignalLikelihood(int tonisRoom, int monsterRoom) {
 		double result = 0, tempSumOverToniNoise, tempSumOverHouseNoise;
 		for(int toniNoise = 0; toniNoise < noiseCount; toniNoise++) {
 			tempSumOverToniNoise = 0;
 			for(int houseNoise = 0; houseNoise < noiseCount; houseNoise++) {
 				tempSumOverHouseNoise = 0;
 				for(int houseNoiseOriginRoom = 0; houseNoiseOriginRoom < roomCount; houseNoiseOriginRoom++) {
-					tempSumOverToniNoise += nullSignalLikelihood(toniNoise, tonisRoom, houseNoise, houseNoiseOriginRoom);
+					tempSumOverToniNoise += nullSignalLikelihood(toniNoise, tonisRoom, houseNoise, houseNoiseOriginRoom, monsterRoom);
 				}
 				tempSumOverToniNoise += tempSumOverHouseNoise * noiseLikelihoodByHouse(houseNoise);
 			}
@@ -275,9 +285,42 @@ public class AI_SignalModel {
 		return (result / roomCount);
 	}
 
-	// f( null signal | Toni makes toniNoise in tonisRoom, house makes houseNoise in houseNoiseOriginRoom)
-	public double nullSignalLikelihood(int toniNoise, int tonisRoom, int houseNoise, int houseNoiseOriginRoom) {
-		return 1;
+	// f( null signal | Toni makes toniNoise in tonisRoom, house makes houseNoise in houseNoiseOriginRoom, monster listens in monsterRoom)
+	public double nullSignalLikelihood(int toniNoise, int tonisRoom, int houseNoise, int houseNoiseOriginRoom, int monsterRoom) {
+		double result = 1.0;
+		if(toniNoise == Control_Sound.NOISE_TYPE_NONE) {
+			if(houseNoise == Control_Sound.NOISE_TYPE_NONE) {
+				// Case 1: Neither Toni, nor the house made any sound
+				// Trivially, the monster cannot hear any sound (null signal) in this case, therefore its likelihood is 1 (max)
+			} else {
+				// Case 2: House made a sound, but Toni didn't
+				// The monster perceives a null signal if the origin room is too far away to hear this signal
+				result -= audibilityLikelihood(houseNoise, houseNoiseOriginRoom, monsterRoom);
+			}
+		} else {
+			if(houseNoise == Control_Sound.NOISE_TYPE_NONE) {
+				// Case 3: Toni made a sound, but the house didn't
+				// The monster perceives a null signal if Toni's room is too far away to hear this signal
+				result -= audibilityLikelihood(toniNoise, tonisRoom, monsterRoom);
+			} else {
+				// Case 4: Both Toni and the house made a sound during the same time step
+				// In this unlikely event, fuse the two likelihoods together uniformly
+				result -= (audibilityLikelihood(houseNoise, houseNoiseOriginRoom, monsterRoom) + audibilityLikelihood(toniNoise, tonisRoom, monsterRoom)) / 2;
+			}
+		}
+		return result;
+	}
+
+	// Approx. how likely it is that the signal from origiRoom will be heard in the targetRoom
+	public double audibilityLikelihood(int noiseType, int originRoom, int targetRoom) {
+		double maxNoiseTravelDistance = Math.Sqrt(Control_Sound.getInitialLoudness(noiseType) / Control_Sound.NOISE_INAUDIBLE);
+		if(maxNoiseTravelDistance > roomDoor2roomMaxDistance[targetRoom, originRoom]) {
+			return 1.0;
+		} else if(maxNoiseTravelDistance > room2roomMinDistance[targetRoom, originRoom]) {
+			return (maxNoiseTravelDistance - room2roomMinDistance[targetRoom, originRoom]) / (roomDoor2roomMaxDistance[targetRoom, originRoom] - room2roomMinDistance[targetRoom, originRoom]);
+		} else {
+			return 0;
+		}
 	}
 
 }

@@ -118,7 +118,7 @@ public class AI_WorldModel {
 		double normalization = 0;
 		for(int i = 0; i < roomCount; i++) {
 			// Posteriore := likelihood * priore (normalization constant to be applied later)
-			newVector[i] = signalModel.nullSignalLikelihood(i) * probabilityThatToniIsInRoom[i];
+			newVector[i] = signalModel.nullSignalLikelihood(i, monsterRoomIndex) * probabilityThatToniIsInRoom[i];
 			normalization += newVector[i];
 		}
 		// Lastly, normalize the probabilities to sum up to 1
@@ -130,7 +130,7 @@ public class AI_WorldModel {
 
 	private void updateMostLikelyRoomIndices() {
 		mostLikelyTonisRoomIndex = -1; secondMostLikelyTonisRoomIndex = -1;
-		double highestProbability = -1.0; double secondHighestProbability = -2.0;
+		double highestProbability = -1.0, secondHighestProbability = -2.0;
 		for(int i = 0; i < roomCount; i++) {
 			if(probabilityThatToniIsInRoom[i] > highestProbability) {
 				// Shift the ranking by one
