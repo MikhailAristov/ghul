@@ -271,16 +271,18 @@ public class AI_SignalModel {
 	// f( null signal | Toni is in tonisRoom, monster is in monsterRoom)
 	public double nullSignalLikelihood(int tonisRoom, int monsterRoom) {
 		double result = 0, tempSumOverToniNoise, tempSumOverHouseNoise;
-		for(int toniNoise = 0; toniNoise < noiseCount; toniNoise++) {
-			tempSumOverToniNoise = 0;
-			for(int houseNoise = 0; houseNoise < noiseCount; houseNoise++) {
-				tempSumOverHouseNoise = 0;
-				for(int houseNoiseOriginRoom = 0; houseNoiseOriginRoom < roomCount; houseNoiseOriginRoom++) {
-					tempSumOverToniNoise += nullSignalLikelihood(toniNoise, tonisRoom, houseNoise, houseNoiseOriginRoom, monsterRoom);
+		if(tonisRoom != monsterRoom) {
+			for(int toniNoise = 0; toniNoise < noiseCount; toniNoise++) {
+				tempSumOverToniNoise = 0;
+				for(int houseNoise = 0; houseNoise < noiseCount; houseNoise++) {
+					tempSumOverHouseNoise = 0;
+					for(int houseNoiseOriginRoom = 0; houseNoiseOriginRoom < roomCount; houseNoiseOriginRoom++) {
+						tempSumOverToniNoise += nullSignalLikelihood(toniNoise, tonisRoom, houseNoise, houseNoiseOriginRoom, monsterRoom);
+					}
+					tempSumOverToniNoise += tempSumOverHouseNoise * noiseLikelihoodByHouse(houseNoise);
 				}
-				tempSumOverToniNoise += tempSumOverHouseNoise * noiseLikelihoodByHouse(houseNoise);
+				result += tempSumOverToniNoise * noiseLikelihood(toniNoise, tonisRoom, tonisRoom, true);
 			}
-			result += tempSumOverToniNoise * noiseLikelihood(toniNoise, tonisRoom, tonisRoom, true);
 		}
 		return (result / roomCount);
 	}

@@ -145,7 +145,7 @@ public class Control_Monster : Control_Character {
 				newNoiseHeard = false;
 			} else {
 				// If no noise has been heard, filter anyway
-				//me.worldModel.filterWithNullSignal();
+				me.worldModel.filterWithNullSignal();
 			}
 			// Just to clean things up...
 			if(cumultativeImpasseDuration > 0) {
