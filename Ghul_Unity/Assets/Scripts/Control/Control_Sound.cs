@@ -26,7 +26,6 @@ public class Control_Sound : MonoBehaviour {
 	public const int NOISE_TYPE_DOOR = 3;
 	public const int NOISE_TYPE_ITEM = 4;
 	public const int NOISE_TYPE_ZAP = 5;
-	// TODO public const int NOISE_TYPE_HIDE = 5;
 
 	// Noise loudness values:
 	// This is the effective volume at which the noise is no longer transmitted to the monster
