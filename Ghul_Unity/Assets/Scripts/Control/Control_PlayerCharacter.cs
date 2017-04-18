@@ -137,7 +137,7 @@ public class Control_PlayerCharacter : Control_Character {
 			StopCoroutine("displayInventory");
 			StartCoroutine("displayInventory");
 		}
-		if(Debug.isDebugBuild && Input.GetButtonDown("Jump")) { // Drop (debug only)
+		if(Debug.isDebugBuild && Input.GetButtonDown("Drop")) { // Drop (debug only)
 			dropItem();
 		}
 
