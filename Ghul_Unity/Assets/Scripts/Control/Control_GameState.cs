@@ -81,6 +81,11 @@ public class Control_GameState : MonoBehaviour {
 		NewGameButton.GetComponent<Image>().color = new Color(100f / 255f, 0f, 0f);
 	}
 
+	private void reenableNewGameButton() {
+		newGameDisabled = false;
+		NewGameButton.GetComponent<Image>().color = new Color(136f / 255f, 136f / 255f, 136f / 255f);
+	}
+
 	// Update is called once per frame
 	void Update() {
 		if(GS == null || GS.SUSPENDED) {
@@ -98,6 +103,14 @@ public class Control_GameState : MonoBehaviour {
 		if(Input.GetButton("Cancel")) {
 			GS.SUSPENDED = true;
 			MainMenuCanvas.enabled = true;
+		}
+
+		// For the purpose of debugging, allow game reset hotkey
+		if(Debug.isDebugBuild && Input.GetButtonDown("Reset Game State")) {
+			GS.SUSPENDED = true;
+			GS.OVERALL_STATE = STATE_COLLECTION_PHASE;
+			reenableNewGameButton();
+			onNewGameSelect();
 		}
 
 		switch(GS.OVERALL_STATE) {
