@@ -226,17 +226,16 @@ public class Control_PlayerCharacter : Control_Character {
 			if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
 				if (animat != null) {
 					if (Math.Abs(getMe().currentVelocity) < ANIM_MIN_SPEED_FOR_WALKING) {
-						animat.SetBool("IsWalking", false);
-						animat.SetBool("IsRunning", false);
+						animat.SetBool("Is Walking", false);
+						animat.SetBool("Is Running", false);
 					} else if (Math.Abs(getMe().currentVelocity) >= ANIM_MIN_SPEED_FOR_WALKING) {
-						animat.SetBool("IsWalking", true);
-						animat.SetBool("IsRunning", false);
+						animat.SetBool("Is Walking", true);
+						animat.SetBool("Is Running", false);
 					}
 
 					if (isRunningAnim) {
-						Debug.Log("Running. Speed = " + Math.Abs(getMe().currentVelocity));
-						animat.SetBool("IsWalking", true);
-						animat.SetBool("IsRunning", true);
+						animat.SetBool("Is Walking", true);
+						animat.SetBool("Is Running", true);
 					}
 				}
 			}
