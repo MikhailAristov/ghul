@@ -27,20 +27,11 @@ public abstract class Control_Character : MonoBehaviour {
 	private float cumulativeAttackDuration;
 	private Data_Position positionAtTheLastTimeStep;
 
-	private Animator anim;
+	// required for animation transition (it makes more sense to link it to the run button rather than speed)
+	protected bool isRunningAnim;
 
 	protected void FixedUpdate() {
 		if(GS != null && !GS.SUSPENDED) {
-			// Asign the animator if it has not been done yet
-			if (anim == null) {
-				Transform stickmanImageTransform = transform.Find("Stickman");
-				if (stickmanImageTransform != null) {
-					GameObject stickmanImageObject = stickmanImageTransform.gameObject;
-					if (stickmanImageObject != null) {
-						anim = stickmanImageObject.GetComponent<Animator>();
-					}
-				}
-			}
 
 			// Update character's velocity
 			if(positionAtTheLastTimeStep != null && positionAtTheLastTimeStep.RoomId == getMe().pos.RoomId) {
@@ -49,11 +40,6 @@ public abstract class Control_Character : MonoBehaviour {
 				getMe().currentVelocity = 0;
 			}
 			positionAtTheLastTimeStep = getMe().pos.clone();
-
-			// Update animation
-			if (anim != null && anim.isInitialized) {
-				anim.SetFloat("Speed", Math.Abs(getMe().currentVelocity));
-			}
 
 			// If the character is attacking, count up the attack duration
 			if(attackAnimationPlaying) {
@@ -75,8 +61,10 @@ public abstract class Control_Character : MonoBehaviour {
 			velocity = RUNNING_SPEED;
 			noiseType = Control_Sound.NOISE_TYPE_RUN;
 			updateStamina(true);
+			isRunningAnim = true;
 		} else {
 			updateStamina(false);
+			isRunningAnim = false;
 		}
 
 		// Calculate the new position
