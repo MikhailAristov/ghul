@@ -6,15 +6,21 @@ using System;
 public class Data_Item : Data_Character {
 
 	// Possible item states:
-	public const int STATE_INITIAL = 1;	// the item has just been spawned and has not yet been interacted with 
-	public const int STATE_CARRIED = 2;	// the item is currently being carried by the player character
-	public const int STATE_DROPPED = 3;	// the item was carried by the player character but was dropped
-	public const int STATE_ON_CADAVER = 4;	// the item was carried by the player character when he died
-	public const int STATE_PLACED = 5;		// the item had been placed for the ritual in the main room
+	// the item has just been spawned and has not yet been interacted with
+	public const int STATE_INITIAL = 1;
+	// the item is currently being carried by the player character
+	public const int STATE_CARRIED = 2;
+	// the item was carried by the player character but was dropped
+	public const int STATE_DROPPED = 3;
+	// the item was carried by the player character when he died
+	public const int STATE_ON_CADAVER = 4;
+	// the item had been placed for the ritual in the main room
+	public const int STATE_PLACED = 5;
 
 	// Pointer to the character behavior aspect of the container object
 	[NonSerialized]
 	public Control_Item control;
+
 	public override Control_Character getControl() {
 		throw new NotImplementedException();
 	}
@@ -22,8 +28,8 @@ public class Data_Item : Data_Character {
 	// Index of the room in the global registry
 	[SerializeField]
 	private int _INDEX;
-	public int INDEX
-	{
+
+	public int INDEX {
 		get { return _INDEX; }
 		set { _INDEX = value; }
 	}
@@ -31,8 +37,8 @@ public class Data_Item : Data_Character {
 	// The current state of the item (available values see above)
 	[SerializeField]
 	private int _itemState;
-	public int state
-	{ 
+
+	public int state { 
 		get { return _itemState; } 
 		set { _itemState = value; }
 	}
@@ -60,8 +66,7 @@ public class Data_Item : Data_Character {
 	}
 
 	// Resets game object references, e.g. after a saved state load
-	public void fixObjectReferences(Data_GameState GS, Factory_PrefabController prefabFactory)
-	{
+	public void fixObjectReferences(Data_GameState GS, Factory_PrefabController prefabFactory) {
 		isIn = GS.getRoomByIndex(pos.RoomId);
 		// Find the game object or recreate it if necessary
 		gameObj = GameObject.Find(_gameObjName);

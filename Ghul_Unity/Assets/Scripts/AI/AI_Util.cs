@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using System.Collections;
+using System.Collections.Generic;
 
 public class AI_Util {
 
@@ -62,6 +63,38 @@ public class AI_Util {
 			}
 		}
 
+		return result;
+	}
+
+	public static void shuffleList<T>(List<T> input) {
+		int count = input.Count;
+		int last = count - 1;
+		for(int i = 0; i < last; i++) {
+			int r = UnityEngine.Random.Range(i, count);
+			T tmp = input[i];
+			input[i] = input[r];
+			input[r] = tmp;
+		}
+	}
+
+	public static int pickRandomWeightedElement(float[] weights) {
+		float[] w = new float[weights.Length];
+		Array.Copy(weights, w, weights.Length);
+		// Normalize and sum up the weights
+		float sum = 0;
+		for(int i = 0; i < w.Length; i++) {
+			if(w[i] < 0) {
+				w[i] = 0;
+			}
+			sum += w[i];
+		}
+		// Pick a random number and pick a random corresponding element
+		float random = UnityEngine.Random.Range(0, sum);
+		int result = -1;
+		do {
+			result += 1;
+			random -= w[result];
+		} while(random > 0 || w[result] == 0);
 		return result;
 	}
 }

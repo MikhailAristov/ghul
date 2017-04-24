@@ -13,7 +13,7 @@ public class Global_Settings {
 
 			// Level generation setttings
 			{ "VERTICAL_ROOM_SPACING",			-5.0f },	// Must be bigger than SCREEN_SIZE_VERTICAL
-			{ "TOTAL_NUMBER_OF_ROOMS",			8.0f },		// How many rooms are to there to be in the game, including the Ritual Room; must be more than 5!
+			{ "TOTAL_NUMBER_OF_ROOMS",			10.0f },	// How many rooms are to there to be in the game, including the Ritual Room; must be more than 5!
 
 			// Level layout setttings
 			{ "HORIZONTAL_ROOM_MARGIN",			0.5625f },	// Prevents movement to screen edge past the margin
@@ -60,7 +60,7 @@ public class Global_Settings {
 			{ "ITEM_CARRY_ELEVATION",			-0.33f },	// Distance from the horizontal center of the room at which items are carried by chara
 			{ "ITEM_FLOOR_LEVEL",				-1.8f },	// Distance from the horizontal center of the room at which items are lying on the floor
 			{ "INVENTORY_DISPLAY_DURATION",		2.0f },		// How long the inventory overlay is shown when invoked
-			{ "TOTAL_NUMBER_OF_ITEMS_PLACED",	8.0f },	// needs casting to int when used
+			{ "TOTAL_NUMBER_OF_ITEMS_PLACED",	10.0f },	// needs casting to int when used
 
 			// Artificial intelligence and modelling settings
 			{ "TIME_STEP",		Time.fixedDeltaTime },		// ...

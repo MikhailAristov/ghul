@@ -78,7 +78,12 @@ public class Control_GraphMixup : MonoBehaviour {
 			default:
 				break;
 			}
+
+
 		}
+		// DEBUG
+		//graph.printCompleteGraphInformation();
+		// END OF DEBUG
 	}
 
 	// Removes the spawn's connection if:
@@ -146,6 +151,9 @@ public class Control_GraphMixup : MonoBehaviour {
 			//Debug.Log("Cannot remove connection between door spawns " + spawn.INDEX + " and " + otherSpawn.INDEX);
 			//Debug.Log("connection is separator: " + connectionIsSeparator + ", ritualRoomNearby: " + ritualRoomPotentiallySeparator + ", other Error: " + otherError);
 		} else {
+			foreach (Data_GraphRoomVertice vertex in graph.ABSTRACT_ROOMS.Values) {
+				vertex.updateNumDoors();
+			}
 			Debug.Log("Removed connection between door spawns " + spawn.INDEX + " and " + otherSpawn.INDEX);
 		}
 	}
@@ -171,6 +179,9 @@ public class Control_GraphMixup : MonoBehaviour {
 			}
 		}
 		if (rotationSuccessful) {
+			foreach (Data_GraphRoomVertice vertex in graph.ABSTRACT_ROOMS.Values) {
+				vertex.updateNumDoors();
+			}
 			Debug.Log("Rotated room " + room.INDEX + " exactly " + numOfRotations + " times.");
 		}
 	}
@@ -189,7 +200,13 @@ public class Control_GraphMixup : MonoBehaviour {
 
 		bool connectionIsSeparator = false;
 		bool ritualRoomPotentiallySeparator = false;
+		bool selfConnectedRoom = false;
 		bool otherError = false;
+
+		if (spawn.roomId == otherSpawn.roomId) {
+			selfConnectedRoom = true;
+		}
+
 		// Remove the connection. If the mix up fails, reconnect it afterwards.
 		spawn.disconnect();
 		otherSpawn.disconnect();
@@ -234,18 +251,28 @@ public class Control_GraphMixup : MonoBehaviour {
 			outgoingSpawnIdsOnCycle.Add(iteratorSpawn.INDEX);
 		}
 
-		if (connectionIsSeparator || ritualRoomPotentiallySeparator || otherError) {
+		if (connectionIsSeparator || ritualRoomPotentiallySeparator || selfConnectedRoom || otherError) {
 			// Removal failed
 			spawn.connectTo(otherSpawn.INDEX);
 			otherSpawn.connectTo(spawn.INDEX);
-			//Debug.Log("Cannot reconnect door spawns " + spawn.INDEX + " and " + otherSpawn.INDEX + "with other spawns.");
-			//Debug.Log("connection is separator: " + connectionIsSeparator + ", ritualRoomNearby: " + ritualRoomPotentiallySeparator + ", other Error: " + otherError);
+			//Debug.Log("Cannot reconnect door spawns " + spawn.INDEX + " and " + otherSpawn.INDEX + " with other spawns.");
+			//Debug.Log("connection is separator: " + connectionIsSeparator + ", ritualRoomNearby: " + ritualRoomPotentiallySeparator + 
+			//	", selfConnectedRoom: " + selfConnectedRoom + ", other Error: " + otherError);
 		} else {
 			// Select a random connection on the cycle.
 			int r = (int)UnityEngine.Random.Range(0.0f, outgoingSpawnIdsOnCycle.Count);
 			int firstSpawnID = outgoingSpawnIdsOnCycle[r];
 			Data_GraphDoorSpawn firstSpawn = graph.DOOR_SPAWNS[firstSpawnID];
 			Data_GraphDoorSpawn secondSpawn = graph.DOOR_SPAWNS[firstSpawn.CONNECTS_TO_SPAWN_ID];
+
+			// Not allowed: Connecting a room with itself. Can absolutely screw up the graph.
+			if (firstSpawn.roomId == spawn.roomId || secondSpawn.roomId == otherSpawn.roomId) {
+				// Removal failed
+				spawn.connectTo(otherSpawn.INDEX);
+				otherSpawn.connectTo(spawn.INDEX);
+				//Debug.Log("Tried reconnecting the door spawn connection (" + spawn.INDEX + ", " + otherSpawn.INDEX + "), but would have connected room to itself. Aborted.");
+				return;
+			}
 
 			firstSpawn.connectTo(spawn.INDEX);
 			spawn.connectTo(firstSpawn.INDEX);
@@ -254,6 +281,9 @@ public class Control_GraphMixup : MonoBehaviour {
 			firstSpawn.resetNumUses();
 			secondSpawn.resetNumUses();
 
+			foreach (Data_GraphRoomVertice vertex in graph.ABSTRACT_ROOMS.Values) {
+				vertex.updateNumDoors();
+			}
 			Debug.Log("Reconnection: (" + spawn.INDEX + "," + otherSpawn.INDEX + "), (" + firstSpawn.INDEX + "," + secondSpawn.INDEX + ") -> ("
 				+ spawn.INDEX + "," + firstSpawn.INDEX + "), (" + otherSpawn.INDEX + "," + secondSpawn.INDEX + "). These are door spawn IDs.");
 		}

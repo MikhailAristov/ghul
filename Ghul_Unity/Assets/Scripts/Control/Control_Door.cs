@@ -11,7 +11,7 @@ public class Control_Door : MonoBehaviour {
 	public const int STATE_CLOSED = 0;
 	public const int STATE_OPEN = 1;
 
-	private int currentState;
+	public int currentState;
 	private float timeUntilClosing;
 
 	private float doorOpenDuration;
@@ -19,25 +19,28 @@ public class Control_Door : MonoBehaviour {
 	private float verticalHearingThreshold;
 
 	// Use this for initialization
-	void Start () {
-		currentState = STATE_CLOSED;
-		OpenSprite.SetActive(false);
-
+	void Awake() {
 		doorOpenDuration = Global_Settings.read("DOOR_OPEN_DURATION");
 		doorOpenCheckFrequency = doorOpenDuration / 10f;
 		verticalHearingThreshold = Global_Settings.read("SCREEN_SIZE_VERTICAL") / 10f;
+	}
 
-		CloseSound = ClosedSprite.GetComponent<AudioSource>();
+	void Start() {
+		OpenSprite.SetActive(currentState == STATE_OPEN);
+		ClosedSprite.SetActive(currentState == STATE_CLOSED);
 		OpenSound = OpenSprite.GetComponent<AudioSource>();
+		CloseSound = ClosedSprite.GetComponent<AudioSource>();
 	}
 
 	// Opens the door if it's closed, keeps it open longer otherwise
-	public void open() {
+	public void open(bool silently = false) {
 		timeUntilClosing = doorOpenDuration;
 		if(currentState != STATE_OPEN) {
 			ClosedSprite.SetActive(false);
 			OpenSprite.SetActive(true);
-			playSound(OpenSound);
+			if(!silently) {
+				playSound(OpenSound);
+			}
 			currentState = STATE_OPEN;
 			StartCoroutine(waitForClosure());
 		}

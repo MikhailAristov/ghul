@@ -12,6 +12,11 @@ public class AI_WorldModel {
 	[SerializeField]
 	private AI_SignalModel signalModel;
 
+	public AI_PlayerParameters playerParameters {
+		get { return playerModel.PLAYER_PARAMETERS; }
+		private set { return; }
+	}
+
 	[SerializeField]
 	private int roomCount;
 	[SerializeField]
@@ -26,8 +31,13 @@ public class AI_WorldModel {
 	[SerializeField]
 	private int secondMostLikelyTonisRoomIndex;
 	public double certainty {
-		get { 
-			return probabilityThatToniIsInRoom[mostLikelyTonisRoomIndex] - probabilityThatToniIsInRoom[secondMostLikelyTonisRoomIndex];
+		get {
+			try {
+				return probabilityThatToniIsInRoom[mostLikelyTonisRoomIndex] - probabilityThatToniIsInRoom[secondMostLikelyTonisRoomIndex];
+			} catch(IndexOutOfRangeException) {
+				Debug.LogWarning("index out of range!");
+				return 0;
+			}
 		}
 		private set { return; }
 	}
@@ -44,11 +54,17 @@ public class AI_WorldModel {
 		signalModel = new AI_SignalModel(GS, playerModel);
 	}
 
-	public void reset(Data_GameState GS) {
+	// Soft reset only resets Toni's suspected positions
+	public void softReset() {
 		double uniformDistribution = 1.0 / roomCount;
 		for(int i = 0; i < roomCount; i++) {
 			probabilityThatToniIsInRoom[i] = uniformDistribution;
 		}
+	}
+
+	// Full reset completely recalculates all models, as well
+	public void reset(Data_GameState GS) {
+		softReset();
 		playerModel.recalculate(GS);
 		signalModel.recalculate(GS);
 	}
@@ -84,28 +100,43 @@ public class AI_WorldModel {
 		for(int j = 0; j < roomCount; j++) {
 			probabilityThatToniIsInRoom[j] = ((j == monsterRoomIndex) ? 0 : newVector[j] / normalizationConstant);
 		}
-		updateMostLikelyRoomIndices();
 	}
 
 	// Update the world model with a given measurement
 	// MUST be called in a FixedUpdate after predictOneTimeStep()!
 	public void filter(float loudness, Data_Door door) {
 		// A simple Bayesian Wonham filter
+		double normalization = 0;
 		for(int i = 0; i < roomCount; i++) {
 			// Posteriore := likelihood * priore (normalization constant to be applied later)
 			newVector[i] = signalModel.signalLikelihood(loudness, door, i) * probabilityThatToniIsInRoom[i];
+			normalization += newVector[i];
 		}
-		// Now calculate the normalization constant and update the probabilities with it
-		double normalizationConstant = newVector.Sum();
+		// Lastly, normalize the probabilities to sum up to 1
 		for(int j = 0; j < roomCount; j++) {
-			probabilityThatToniIsInRoom[j] = newVector[j] / normalizationConstant;
+			probabilityThatToniIsInRoom[j] = newVector[j] / normalization;
+		}
+		updateMostLikelyRoomIndices();
+	}
+
+	// Update the world model in absence of a measurement ("null signal")
+	public void filterWithNullSignal() {
+		double normalization = 0;
+		for(int i = 0; i < roomCount; i++) {
+			// Posteriore := likelihood * priore (normalization constant to be applied later)
+			newVector[i] = signalModel.nullSignalLikelihood(i, monsterRoomIndex) * probabilityThatToniIsInRoom[i];
+			normalization += newVector[i];
+		}
+		// Lastly, normalize the probabilities to sum up to 1
+		for(int j = 0; j < roomCount; j++) {
+			probabilityThatToniIsInRoom[j] = newVector[j] / normalization;
 		}
 		updateMostLikelyRoomIndices();
 	}
 
 	private void updateMostLikelyRoomIndices() {
 		mostLikelyTonisRoomIndex = -1; secondMostLikelyTonisRoomIndex = -1;
-		double highestProbability = -1.0; double secondHighestProbability = -2.0;
+		double highestProbability = -1.0, secondHighestProbability = -2.0;
 		for(int i = 0; i < roomCount; i++) {
 			if(probabilityThatToniIsInRoom[i] > highestProbability) {
 				// Shift the ranking by one
