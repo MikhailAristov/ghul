@@ -5,6 +5,9 @@ using System.Collections;
 
 public class Control_PlayerCharacter : Control_Character {
 
+	// Thresholds for animation transitions. Public for fine-tuning (Running is triggered via isRunningAnim variable in Control_Character when Run-Button is pressed)
+	public float ANIM_MIN_SPEED_FOR_WALKING = 0.01f;
+
 	[NonSerialized]
 	private Data_PlayerCharacter me;
 
@@ -49,6 +52,9 @@ public class Control_PlayerCharacter : Control_Character {
 	private AudioSource zappingSound;
 	private GameObject zappingParticleObject;
 	private ParticleSystem zappingParticles;
+
+	// Animator for transitioning between animation states
+	private Animator animat;
 
 	// Most basic initialization
 	void Awake() {
@@ -97,6 +103,15 @@ public class Control_PlayerCharacter : Control_Character {
 		inventoryUI.transform.FindChild("CurrentItem").GetComponent<Image>().CrossFadeAlpha(0.0f, 0.0f, false);
 		soundSystem = GameObject.Find("GameState").GetComponent<Control_Sound>();
 		walkingDistanceSinceLastNoise = 0;
+
+		// Setting the animator
+		Transform stickmanImageTransform = transform.Find("Stickman");
+		if (stickmanImageTransform != null) {
+			GameObject stickmanImageObject = stickmanImageTransform.gameObject;
+			if (stickmanImageObject != null) {
+				animat = stickmanImageObject.GetComponent<Animator>();
+			}
+		}
 	}
 
 	// To make sure the game state is fully initialized before loading it, this function is called by game state class itself
@@ -206,6 +221,24 @@ public class Control_PlayerCharacter : Control_Character {
 			}
 			// Update the distance walked in the current room
 			me.increaseWalkedDistance(me.currentVelocity * Time.fixedDeltaTime);
+
+			// Transition for walking / running animation
+			if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
+				if (animat != null) {
+					if (Math.Abs(getMe().currentVelocity) < ANIM_MIN_SPEED_FOR_WALKING) {
+						animat.SetBool("Is Walking", false);
+						animat.SetBool("Is Running", false);
+					} else if (Math.Abs(getMe().currentVelocity) >= ANIM_MIN_SPEED_FOR_WALKING) {
+						animat.SetBool("Is Walking", true);
+						animat.SetBool("Is Running", false);
+					}
+
+					if (isRunningAnim) {
+						animat.SetBool("Is Walking", true);
+						animat.SetBool("Is Running", true);
+					}
+				}
+			}
 		}
 	}
 
