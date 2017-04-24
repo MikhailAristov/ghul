@@ -418,7 +418,7 @@ public class Control_PlayerCharacter : Control_Character {
 		// Fade camera back in
 		mainCameraControl.fadeIn(DOOR_TRANSITION_DURATION / 2);
 		// Make noise
-		soundSystem.makeNoise(Control_Sound.NOISE_TYPE_DOOR, doorTaken.pos);
+		soundSystem.makeNoise(Control_Sound.NOISE_TYPE_DOOR, doorTaken.connectsTo.pos);
 		walkingDistanceSinceLastNoise = 0;
 		// Save the game
 		Control_Persistence.saveToDisk(GS);
