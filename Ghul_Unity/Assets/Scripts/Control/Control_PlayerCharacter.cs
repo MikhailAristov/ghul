@@ -228,12 +228,10 @@ public class Control_PlayerCharacter : Control_Character {
 					if (Math.Abs(getMe().currentVelocity) < ANIM_MIN_SPEED_FOR_WALKING) {
 						animat.SetBool("Is Walking", false);
 						animat.SetBool("Is Running", false);
-					} else if (Math.Abs(getMe().currentVelocity) >= ANIM_MIN_SPEED_FOR_WALKING) {
+					} else if (Math.Abs(getMe().currentVelocity) >= ANIM_MIN_SPEED_FOR_WALKING && !isRunningAnim) {
 						animat.SetBool("Is Walking", true);
 						animat.SetBool("Is Running", false);
-					}
-
-					if (isRunningAnim) {
+					} else if (isRunningAnim) {
 						animat.SetBool("Is Walking", true);
 						animat.SetBool("Is Running", true);
 					}
