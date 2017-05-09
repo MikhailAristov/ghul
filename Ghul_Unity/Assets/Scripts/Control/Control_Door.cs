@@ -1,15 +1,26 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 public class Control_Door : MonoBehaviour {
 
 	public GameObject ClosedSprite;
-	private AudioSource CloseSound;
 	public GameObject OpenSprite;
-	private AudioSource OpenSound;
+	private AudioSource knobSound;
+	private AudioSource creakSound;
 
 	public const int STATE_CLOSED = 0;
 	public const int STATE_OPEN = 1;
+
+	private const int SOUND_TYPE_CLOSE = 0;
+	private const int SOUND_TYPE_OPEN = 1;
+
+	private const float CREAKING_SOUND_PROBABILITY = 0.15f;
+
+	private List<AudioClip> closingSounds;
+	private List<AudioClip> openingSounds;
+	private List<AudioClip> creakingSounds;
 
 	public int currentState;
 	private float timeUntilClosing;
@@ -23,13 +34,19 @@ public class Control_Door : MonoBehaviour {
 		doorOpenDuration = Global_Settings.read("DOOR_OPEN_DURATION");
 		doorOpenCheckFrequency = doorOpenDuration / 10f;
 		verticalHearingThreshold = Global_Settings.read("SCREEN_SIZE_VERTICAL") / 10f;
+
+		knobSound = GetComponents<AudioSource>()[0];
+		creakSound = GetComponents<AudioSource>()[1];
+
+		// Define all sounds
+		closingSounds = new List<AudioClip>(Resources.LoadAll("Doors/ClosingSounds", typeof(AudioClip)).Cast<AudioClip>());
+		openingSounds = new List<AudioClip>(Resources.LoadAll("Doors/OpeningSounds", typeof(AudioClip)).Cast<AudioClip>());
+		creakingSounds = new List<AudioClip>(Resources.LoadAll("Doors/CreakingSounds", typeof(AudioClip)).Cast<AudioClip>());
 	}
 
 	void Start() {
 		OpenSprite.SetActive(currentState == STATE_OPEN);
 		ClosedSprite.SetActive(currentState == STATE_CLOSED);
-		OpenSound = OpenSprite.GetComponent<AudioSource>();
-		CloseSound = ClosedSprite.GetComponent<AudioSource>();
 	}
 
 	// Opens the door if it's closed, keeps it open longer otherwise
@@ -39,7 +56,7 @@ public class Control_Door : MonoBehaviour {
 			ClosedSprite.SetActive(false);
 			OpenSprite.SetActive(true);
 			if(!silently) {
-				playSound(OpenSound);
+				playSound(SOUND_TYPE_OPEN);
 			}
 			currentState = STATE_OPEN;
 			StartCoroutine(waitForClosure());
@@ -55,16 +72,35 @@ public class Control_Door : MonoBehaviour {
 		}
 		OpenSprite.SetActive(false);
 		ClosedSprite.SetActive(true);
-		playSound(CloseSound);
+		playSound(SOUND_TYPE_CLOSE);
 		currentState = STATE_CLOSED;
 	}
 
 	// Play the specified sound if the main camera (i.e. Toni) is within the current room
-	private void playSound(AudioSource sound) {
-		float verticalDistanceToCamera = Mathf.Abs(transform.position.y - Camera.main.transform.position.y);
-		if(sound != null && verticalDistanceToCamera <= verticalHearingThreshold) {
-			sound.mute = false;
-			sound.Play();
+	private void playSound(int soundType) {
+		if(Mathf.Abs(transform.position.y - Camera.main.transform.position.y) > verticalHearingThreshold || (knobSound.clip != null && knobSound.isPlaying)) {
+			return;
 		}
+
+		// Play a random sound of the given type
+		switch(soundType) {
+		case SOUND_TYPE_CLOSE:
+			knobSound.clip = closingSounds[UnityEngine.Random.Range(0, closingSounds.Count)];
+			knobSound.Play();
+			break;
+		case SOUND_TYPE_OPEN:
+			// Always play an opening sound
+			knobSound.clip = openingSounds[UnityEngine.Random.Range(0, openingSounds.Count)];
+			knobSound.Play();
+			// Also randomply play the creaking sound
+			if(UnityEngine.Random.Range(0f, 1f) < CREAKING_SOUND_PROBABILITY) {
+				creakSound.clip = creakingSounds[UnityEngine.Random.Range(0, creakingSounds.Count)];
+				creakSound.Play();
+			}
+			break;
+		default:
+			return;
+		}
+
 	}
 }

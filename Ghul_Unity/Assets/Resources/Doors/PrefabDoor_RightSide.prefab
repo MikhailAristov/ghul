@@ -20,7 +20,6 @@ GameObject:
   m_Component:
   - 4: {fileID: 4000012030936420}
   - 212: {fileID: 212000013278678494}
-  - 82: {fileID: 82000010207783310}
   m_Layer: 0
   m_Name: Closed
   m_TagString: Untagged
@@ -37,7 +36,6 @@ GameObject:
   m_Component:
   - 4: {fileID: 4000010636541448}
   - 212: {fileID: 212000012288059568}
-  - 82: {fileID: 82000013456196694}
   m_Layer: 0
   m_Name: Open
   m_TagString: Untagged
@@ -54,6 +52,8 @@ GameObject:
   m_Component:
   - 4: {fileID: 4000010325188036}
   - 114: {fileID: 114000012148803360}
+  - 82: {fileID: 82000012696874952}
+  - 82: {fileID: 82000011707444888}
   m_Layer: 0
   m_Name: PrefabDoor_RightSide
   m_TagString: Door
@@ -102,26 +102,26 @@ Transform:
   m_Children: []
   m_Father: {fileID: 4000010325188036}
   m_RootOrder: 0
---- !u!82 &82000010207783310
+--- !u!82 &82000011707444888
 AudioSource:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000011060596538}
+  m_GameObject: {fileID: 1000011539948062}
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: 0fda39c725da7bd4da2833d3ba1fd317, type: 3}
+  m_audioClip: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 0.1
+  m_Volume: 0.5
   m_Pitch: 1
   Loop: 0
-  Mute: 1
+  Mute: 0
   Spatialize: 0
   Priority: 128
   DopplerLevel: 1
   MinDistance: 1
-  MaxDistance: 500
+  MaxDistance: 10
   Pan2D: 0
   rolloffMode: 0
   BypassEffects: 0
@@ -147,7 +147,7 @@ AudioSource:
     serializedVersion: 2
     m_Curve:
     - time: 0
-      value: 1
+      value: 0
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -176,26 +176,26 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 0
---- !u!82 &82000013456196694
+--- !u!82 &82000012696874952
 AudioSource:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000011496567840}
+  m_GameObject: {fileID: 1000011539948062}
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: b6c61575d2758804da98b817a4393dfe, type: 3}
+  m_audioClip: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 0.08
+  m_Volume: 0.5
   m_Pitch: 1
   Loop: 0
-  Mute: 1
+  Mute: 0
   Spatialize: 0
   Priority: 128
   DopplerLevel: 1
   MinDistance: 1
-  MaxDistance: 500
+  MaxDistance: 10
   Pan2D: 0
   rolloffMode: 0
   BypassEffects: 0
@@ -221,7 +221,7 @@ AudioSource:
     serializedVersion: 2
     m_Curve:
     - time: 0
-      value: 1
+      value: 0
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -263,6 +263,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ClosedSprite: {fileID: 1000011060596538}
   OpenSprite: {fileID: 1000011496567840}
+  currentState: 0
 --- !u!212 &212000012288059568
 SpriteRenderer:
   m_ObjectHideFlags: 1
