@@ -78,7 +78,7 @@ public class Control_Door : MonoBehaviour {
 
 	// Play the specified sound if the main camera (i.e. Toni) is within the current room
 	private void playSound(int soundType) {
-		if(Mathf.Abs(transform.position.y - Camera.main.transform.position.y) > verticalHearingThreshold || (knobSound.clip != null && knobSound.isPlaying)) {
+		if(Mathf.Abs(transform.position.y - Camera.main.transform.position.y) > verticalHearingThreshold) {
 			return;
 		}
 
@@ -93,7 +93,7 @@ public class Control_Door : MonoBehaviour {
 			knobSound.clip = openingSounds[UnityEngine.Random.Range(0, openingSounds.Count)];
 			knobSound.Play();
 			// Also randomply play the creaking sound
-			if(UnityEngine.Random.Range(0f, 1f) < CREAKING_SOUND_PROBABILITY) {
+			if(UnityEngine.Random.Range(0f, 1f) < CREAKING_SOUND_PROBABILITY && !creakSound.isPlaying) {
 				creakSound.clip = creakingSounds[UnityEngine.Random.Range(0, creakingSounds.Count)];
 				creakSound.Play();
 			}
@@ -101,6 +101,5 @@ public class Control_Door : MonoBehaviour {
 		default:
 			return;
 		}
-
 	}
 }
