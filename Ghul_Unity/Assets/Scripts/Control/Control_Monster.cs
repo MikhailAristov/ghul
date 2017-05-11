@@ -5,7 +5,10 @@ using System.Collections.Generic;
 using System.Linq;
 
 public class Control_Monster : Control_Character {
-	
+
+	// Thresholds for animation transitions.
+	public float ANIM_MIN_SPEED_FOR_WALKING = 0.01f;
+
 	[NonSerialized]
 	private Data_Monster me;
 
@@ -61,6 +64,10 @@ public class Control_Monster : Control_Character {
 	private GameObject civilianObject;
 	private SpriteRenderer civilianRenderer;
 
+	// Animator for transitioning between animation states
+	private Animator animatorMonster;
+	private Animator animatorCivilian;
+
 	void Start() {
 		monsterImageObject = GameObject.Find("MonsterImage");
 		monsterRenderer = monsterImageObject.GetComponent<SpriteRenderer>(); // Find the child "Stickman", then its Sprite Renderer and then the renderer's sprite
@@ -68,6 +75,14 @@ public class Control_Monster : Control_Character {
 		civilianRenderer = civilianObject.GetComponent<SpriteRenderer>();
 		civilianObject.SetActive(false); // Civ-Monster not visible at first.
 		attackArmRenderer = attackArm.GetComponent<LineRenderer>();
+
+		// Setting the animator
+		if (monsterImageObject != null) {
+			animatorMonster = monsterImageObject.GetComponent<Animator>();
+		}
+		if (civilianObject != null) {
+			animatorCivilian = civilianObject.GetComponent<Animator>();
+		}
 	}
 
 	// To make sure the game state is fully initialized before loading it, this function is called by game state class itself
@@ -153,6 +168,27 @@ public class Control_Monster : Control_Character {
 			}
 		}
 
+		// Handling the animation
+		if (GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
+			// Transition for walking / attacking
+			if (animatorMonster != null) {
+				if (Math.Abs (getMe ().currentVelocity) < ANIM_MIN_SPEED_FOR_WALKING) {
+					animatorMonster.SetBool ("Is Walking", false);
+				} else if (Math.Abs (getMe ().currentVelocity) >= ANIM_MIN_SPEED_FOR_WALKING) {
+					animatorMonster.SetBool ("Is Walking", true);
+				}
+			}
+		} else if (GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE) {
+			// Transition for walking
+			if (animatorCivilian != null) {
+				if (Math.Abs (getMe ().currentVelocity) < ANIM_MIN_SPEED_FOR_WALKING) {
+					animatorCivilian.SetBool ("Is Walking", false);
+				} else if (Math.Abs (getMe ().currentVelocity) >= ANIM_MIN_SPEED_FOR_WALKING) {
+					animatorCivilian.SetBool ("Is Walking", true);
+				}
+			}
+		}
+
 		// Update monster state as necessary
 		updateState();
 	}
@@ -216,6 +252,7 @@ public class Control_Monster : Control_Character {
 						StartCoroutine(playAttackAnimation(Toni.atPos, Toni));
 						stateUpdateCooldown = ATTACK_DURATION + ATTACK_COOLDOWN;
 					}
+					animatorMonster.SetTrigger("Attack");
 				}
 				// Otherwise, keep pursuing
 			} else {
