@@ -67,6 +67,9 @@ public class Control_Monster : Control_Character {
 	// Animator for transitioning between animation states
 	private Animator animatorMonster;
 	private Animator animatorCivilian;
+	private Transform monsterImageTransform; // For sprite offset during attack
+	private bool animatorStateAttack;
+	private const float ATTACK_SPRITE_OFFSET = 1.75f;
 
 	void Start() {
 		monsterImageObject = GameObject.Find("MonsterImage");
@@ -83,6 +86,7 @@ public class Control_Monster : Control_Character {
 		if (civilianObject != null) {
 			animatorCivilian = civilianObject.GetComponent<Animator>();
 		}
+		animatorStateAttack = false;
 	}
 
 	// To make sure the game state is fully initialized before loading it, this function is called by game state class itself
@@ -252,7 +256,19 @@ public class Control_Monster : Control_Character {
 						StartCoroutine(playAttackAnimation(Toni.atPos, Toni));
 						stateUpdateCooldown = ATTACK_DURATION + ATTACK_COOLDOWN;
 					}
+
+					// Activate the attack animation. Note, that the monster sprite needs to be moved momentarily since it's off center.
 					animatorMonster.SetTrigger("Attack");
+					/*
+					if (monsterImageTransform == null) {
+						monsterImageTransform = animatorMonster.gameObject.transform;
+					}
+					if (animatorMonster.gameObject.GetComponent<SpriteRenderer> ().flipX) {
+						monsterImageTransform.Translate(new Vector3(ATTACK_SPRITE_OFFSET, 0.0f, 0.0f));
+					} else {
+						monsterImageTransform.Translate(new Vector3((-1) * ATTACK_SPRITE_OFFSET, 0.0f, 0.0f));
+					}
+					*/
 				}
 				// Otherwise, keep pursuing
 			} else {
@@ -306,6 +322,23 @@ public class Control_Monster : Control_Character {
 		if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE && GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < MARGIN_ITEM_STEAL) {
 			Toni.control.dropItem();
 		}
+
+		/*
+		if (GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE || GS.OVERALL_STATE == Control_GameState.STATE_TRANSFORMATION) {
+			// Checking whether attack is over and moving the sprite if that is the case.
+			if (animatorMonster.GetCurrentAnimatorStateInfo(0).IsName("Monster_attack") && !animatorStateAttack) {
+				animatorStateAttack = true;
+			}
+			if (animatorMonster.GetCurrentAnimatorStateInfo(0).IsName("Monster_idle") && animatorStateAttack) {
+				animatorStateAttack = false;
+				if (animatorMonster.gameObject.GetComponent<SpriteRenderer> ().flipX) {
+					monsterImageTransform.Translate(new Vector3((-1) * ATTACK_SPRITE_OFFSET, 0.0f, 0.0f));
+				} else {
+					monsterImageTransform.Translate(new Vector3(ATTACK_SPRITE_OFFSET, 0.0f, 0.0f));
+				}
+			}
+		}
+		*/
 
 		try {
 			// Correct state handling

@@ -2,6 +2,7 @@
 using UnityEngine.UI;
 using System;
 using System.Collections;
+using UnityEditor.Animations;
 
 public class Control_PlayerCharacter : Control_Character {
 
@@ -56,6 +57,9 @@ public class Control_PlayerCharacter : Control_Character {
 	// Animator for transitioning between animation states
 	private Animator animatorHuman;
 	private Animator animatorMonsterToni;
+	private Transform monsterToniTransform; // For sprite offset during attack
+	private bool animatorStateAttack;
+	private const float ATTACK_SPRITE_OFFSET = 1.75f;
 
 	// Most basic initialization
 	void Awake() {
@@ -120,6 +124,7 @@ public class Control_PlayerCharacter : Control_Character {
 				animatorMonsterToni = toniMonsterObject.GetComponent<Animator>();
 			}
 		}
+		animatorStateAttack = false;
 	}
 
 	// To make sure the game state is fully initialized before loading it, this function is called by game state class itself
@@ -154,7 +159,17 @@ public class Control_PlayerCharacter : Control_Character {
 				takeItem();
 			} else if(!attackAnimationPlaying) {
 				StartCoroutine(playAttackAnimation(me.atPos + (monsterToniRenderer.flipX ? 1f : -1f), GS.getMonster()));
+
+				// Activate the attack animation. Note, that the monster sprite needs to be moved momentarily since it's off center.
 				animatorMonsterToni.SetTrigger("Attack");
+				if (monsterToniTransform == null) {
+					monsterToniTransform = animatorMonsterToni.gameObject.transform;
+				}
+				if (animatorMonsterToni.gameObject.GetComponent<SpriteRenderer> ().flipX) {
+					monsterToniTransform.Translate(new Vector3(ATTACK_SPRITE_OFFSET, 0.0f, 0.0f));
+				} else {
+					monsterToniTransform.Translate(new Vector3((-1) * ATTACK_SPRITE_OFFSET, 0.0f, 0.0f));
+				}
 			}
 		}
 		if(Input.GetButtonDown("Inventory")) { // Show inventory
@@ -188,7 +203,7 @@ public class Control_PlayerCharacter : Control_Character {
 		}
 
 		// Horizontal movement
-		if(Mathf.Abs(Input.GetAxis("Horizontal")) > 0.01f) {
+		if(Mathf.Abs(Input.GetAxis("Horizontal")) > 0.01f && !animatorStateAttack) {
 			me.timeWithoutAction = 0;
 			Data_Door walkIntoDoor = walk(Input.GetAxis("Horizontal"), Input.GetButton("Run"), Time.deltaTime);
 			if(walkIntoDoor != null) {
@@ -207,6 +222,21 @@ public class Control_PlayerCharacter : Control_Character {
 				StartCoroutine(dieAndRespawn());
 			}
 			mainCameraControl.setRedOverlay(me.timeWithoutAction / SUICIDLE_DURATION);
+		}
+
+		if (GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE || GS.OVERALL_STATE == Control_GameState.STATE_TRANSFORMATION) {
+			// Checking whether attack is over and moving the sprite if that is the case.
+			if (animatorMonsterToni.GetCurrentAnimatorStateInfo(0).IsName("Monster_attack") && !animatorStateAttack) {
+				animatorStateAttack = true;
+			}
+			if (animatorMonsterToni.GetCurrentAnimatorStateInfo(0).IsName("Monster_idle") && animatorStateAttack) {
+				animatorStateAttack = false;
+				if (animatorMonsterToni.gameObject.GetComponent<SpriteRenderer> ().flipX) {
+					monsterToniTransform.Translate(new Vector3((-1) * ATTACK_SPRITE_OFFSET, 0.0f, 0.0f));
+				} else {
+					monsterToniTransform.Translate(new Vector3(ATTACK_SPRITE_OFFSET, 0.0f, 0.0f));
+				}
+			}
 		}
 	}
 
@@ -244,7 +274,7 @@ public class Control_PlayerCharacter : Control_Character {
 					animatorHuman.SetBool ("Is Running", true);
 				}
 			}
-		} else if (GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE) {
+		} else if (GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE || GS.OVERALL_STATE == Control_GameState.STATE_TRANSFORMATION) {
 			// Transition for walking / attacking
 			if (animatorMonsterToni != null) {
 				if (Math.Abs (getMe ().currentVelocity) < ANIM_MIN_SPEED_FOR_WALKING) {
