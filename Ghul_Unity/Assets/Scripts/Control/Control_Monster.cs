@@ -68,7 +68,6 @@ public class Control_Monster : Control_Character {
 	private Animator animatorMonster;
 	private Animator animatorCivilian;
 	private Transform monsterImageTransform; // For sprite offset during attack
-	private bool animatorStateAttack;
 	private const float ATTACK_SPRITE_OFFSET = 1.75f;
 
 	void Start() {
@@ -86,7 +85,6 @@ public class Control_Monster : Control_Character {
 		if (civilianObject != null) {
 			animatorCivilian = civilianObject.GetComponent<Animator>();
 		}
-		animatorStateAttack = false;
 	}
 
 	// To make sure the game state is fully initialized before loading it, this function is called by game state class itself
