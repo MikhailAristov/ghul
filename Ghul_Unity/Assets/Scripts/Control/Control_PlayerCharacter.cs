@@ -353,6 +353,11 @@ public class Control_PlayerCharacter : Control_Character {
 			setSpriteFlip(true); // Flip the sprite towards the wall scribbles
 			stickmanRenderer.enabled = true;
 
+			// Reset movements
+			Input.ResetInputAxes();
+			animatorHuman.SetBool("Is Walking", false);
+			animatorHuman.SetBool("Is Running", false);
+
 			// Trigger the house mix up and a new item
 			GS.TONI_KILLED = true;
 			GS.ANOTHER_ITEM_PLEASE = true;
@@ -504,6 +509,12 @@ public class Control_PlayerCharacter : Control_Character {
 		// Make noise
 		soundSystem.makeNoise(Control_Sound.NOISE_TYPE_DOOR, doorTaken.connectsTo.pos);
 		walkingDistanceSinceLastNoise = 0;
+		// Reset current inputs if they would cause Toni to walk back through the same door
+		if((doorTaken.connectsTo.type == Data_Door.TYPE_RIGHT_SIDE && Input.GetAxis("Horizontal") > 0.01f) ||
+		   (doorTaken.connectsTo.type == Data_Door.TYPE_LEFT_SIDE && Input.GetAxis("Horizontal") < -0.01f) ||
+		   (doorTaken.connectsTo.type == Data_Door.TYPE_BACK_DOOR && Input.GetButtonDown("Vertical"))) {
+			Input.ResetInputAxes();
+		}
 		// Save the game
 		Control_Persistence.saveToDisk(GS);
 	}
