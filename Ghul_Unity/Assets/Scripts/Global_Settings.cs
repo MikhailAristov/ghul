@@ -32,13 +32,13 @@ public class Global_Settings {
 			{ "DOOR_OPEN_DURATION",				1.0f },		// How long a door stays open after someone goes through it
 
 			// Character movement settings
-			{ "CHARA_WALKING_SPEED",			5.0f },
-			{ "CHARA_RUNNING_SPEED",			8.0f },
+			{ "CHARA_WALKING_SPEED",			3.0f },
+			{ "CHARA_RUNNING_SPEED",			5.0f },
 			{ "CHARA_SINGLE_STEP_LENGTH",		1.4f },		// this is how many (virtual) meters chara can walk before making a noise
 			{ "SUICIDLE_DURATION",				30.0f },	// How long the suicidle animation takes
 
 			// Monster settings
-			{ "MONSTER_WALKING_SPEED",			5.2f },
+			{ "MONSTER_WALKING_SPEED",			4.5f },
 			{ "MONSTER_SLOW_WALKING_SPEED",		2.5f },		// when the monster randomly walks around
 			{ "MONSTER_ATTACK_RANGE",			3.0f },		// the distance from the monster that it main attack hits
 			{ "MONSTER_ATTACK_MARGIN",			0.5f },		// the size of the "hitbox" for the monster's attack
