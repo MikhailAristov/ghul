@@ -216,6 +216,156 @@
 				2.325
 			],
             "itemSpawns": [ ]
+        },
+        {
+            "prefabName": "PrefabRoom_Study2",
+            "displayName": "Study #2",
+            "size": {
+                "x": 6.4125,
+                "y": 4.8
+            },
+            "maxInstances": 1,
+            "doorSpawnLeft": true,
+            "doorSpawnRight": true,
+            "doorSpawns": [
+				-0.43125
+			],
+            "itemSpawns": [
+                {
+                    "x": 1.35,
+                    "y": -0.3375
+                },
+                {
+                    "x": -1.9875,
+                    "y": -1.3125
+                }
+            ]
+        },
+        {
+            "prefabName": "PrefabRoom_Library2",
+            "displayName": "Library #2",
+            "size": {
+                "x": 7.2375,
+                "y": 4.8
+            },
+            "maxInstances": 1,
+            "doorSpawnLeft": true,
+            "doorSpawnRight": true,
+            "doorSpawns": [
+				0.45
+			],
+            "itemSpawns": [
+                {
+                    "x": 1.6125,
+                    "y": -1.3875
+                },
+                {
+                    "x": -0.9,
+                    "y": -0.375
+                }
+            ]
+        },
+        {
+            "prefabName": "PrefabRoom_LivingRoom2",
+            "displayName": "Living Room #2",
+            "size": {
+                "x": 6.4875,
+                "y": 4.8
+            },
+            "maxInstances": 1,
+            "doorSpawnLeft": true,
+            "doorSpawnRight": true,
+            "doorSpawns": [
+				0
+			],
+            "itemSpawns": [
+                {
+                    "x": 2.25,
+                    "y": -1.5375
+                },
+                {
+                    "x": -1.35,
+                    "y": -1.0125
+                }
+            ]
+        },
+        {
+            "prefabName": "PrefabRoom_DiningRoom",
+            "displayName": "Dining Room",
+            "size": {
+                "x": 6.4125,
+                "y": 4.8
+            },
+            "maxInstances": 1,
+            "doorSpawnLeft": true,
+            "doorSpawnRight": true,
+            "doorSpawns": [ ],
+            "itemSpawns": [
+                {
+                    "x": -1.6125,
+                    "y": -0.1125
+                },
+                {
+                    "x": 0.6,
+                    "y": -0.4125
+                },
+                {
+                    "x": 2.025,
+                    "y": -1.05
+                }
+            ]
+        },
+        {
+            "prefabName": "PrefabRoom_Hallway4",
+            "displayName": "Hallway with the Bloody Smear",
+            "size": {
+                "x": 9.6,
+                "y": 4.8
+            },
+            "maxInstances": 1,
+            "doorSpawnLeft": true,
+            "doorSpawnRight": true,
+            "doorSpawns": [
+				-2.775,
+				-0.9375,
+				0.9375,
+				2.775
+			],
+            "itemSpawns": [ ]
+        },
+        {
+            "prefabName": "PrefabRoom_Hallway5",
+            "displayName": "Hallway with the Swords",
+            "size": {
+                "x": 8.1,
+                "y": 4.8
+            },
+            "maxInstances": 1,
+            "doorSpawnLeft": true,
+            "doorSpawnRight": true,
+            "doorSpawns": [
+				-2.325,
+				0,
+				2.325
+			],
+            "itemSpawns": [ ]
+        },
+        {
+            "prefabName": "PrefabRoom_Hallway6",
+            "displayName": "Hallway with the Mirrors",
+            "size": {
+                "x": 8.1,
+                "y": 4.8
+            },
+            "maxInstances": 1,
+            "doorSpawnLeft": true,
+            "doorSpawnRight": true,
+            "doorSpawns": [
+				-2.325,
+				0,
+				2.325
+			],
+            "itemSpawns": [ ]
         }
     ]
 }
