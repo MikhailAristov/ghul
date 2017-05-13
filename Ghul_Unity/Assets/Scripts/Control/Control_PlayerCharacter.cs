@@ -7,7 +7,7 @@ using UnityEditor.Animations;
 public class Control_PlayerCharacter : Control_Character {
 
 	// Thresholds for animation transitions. Public for fine-tuning (Running is triggered via isRunningAnim variable in Control_Character when Run-Button is pressed)
-	public float ANIM_MIN_SPEED_FOR_WALKING = 0.01f;
+	public float ANIM_MIN_SPEED_FOR_WALKING = 0.001f;
 
 	[NonSerialized]
 	private Data_PlayerCharacter me;
@@ -111,16 +111,16 @@ public class Control_PlayerCharacter : Control_Character {
 
 		// Setting the animator
 		Transform stickmanImageTransform = transform.Find("Stickman");
-		if (stickmanImageTransform != null) {
+		if(stickmanImageTransform != null) {
 			GameObject stickmanImageObject = stickmanImageTransform.gameObject;
-			if (stickmanImageObject != null) {
+			if(stickmanImageObject != null) {
 				animatorHuman = stickmanImageObject.GetComponent<Animator>();
 			}
 		}
-		Transform toniMonsterTransform = transform.Find ("MonsterToniImage");
-		if (toniMonsterTransform != null) {
+		Transform toniMonsterTransform = transform.Find("MonsterToniImage");
+		if(toniMonsterTransform != null) {
 			GameObject toniMonsterObject = toniMonsterTransform.gameObject;
-			if (toniMonsterObject != null) {
+			if(toniMonsterObject != null) {
 				animatorMonsterToni = toniMonsterObject.GetComponent<Animator>();
 			}
 		}
@@ -162,10 +162,10 @@ public class Control_PlayerCharacter : Control_Character {
 
 				// Activate the attack animation. Note, that the monster sprite needs to be moved momentarily since it's off center.
 				animatorMonsterToni.SetTrigger("Attack");
-				if (monsterToniTransform == null) {
+				if(monsterToniTransform == null) {
 					monsterToniTransform = animatorMonsterToni.gameObject.transform;
 				}
-				if (animatorMonsterToni.gameObject.GetComponent<SpriteRenderer> ().flipX) {
+				if(animatorMonsterToni.gameObject.GetComponent<SpriteRenderer>().flipX) {
 					monsterToniTransform.Translate(new Vector3(ATTACK_SPRITE_OFFSET, 0.0f, 0.0f));
 				} else {
 					monsterToniTransform.Translate(new Vector3((-1) * ATTACK_SPRITE_OFFSET, 0.0f, 0.0f));
@@ -224,19 +224,49 @@ public class Control_PlayerCharacter : Control_Character {
 			mainCameraControl.setRedOverlay(me.timeWithoutAction / SUICIDLE_DURATION);
 		}
 
-		if (GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE || GS.OVERALL_STATE == Control_GameState.STATE_TRANSFORMATION) {
+		if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE || GS.OVERALL_STATE == Control_GameState.STATE_TRANSFORMATION) {
 			// Checking whether attack is over and moving the sprite if that is the case.
-			if (animatorMonsterToni.GetCurrentAnimatorStateInfo(0).IsName("Monster_attack") && !animatorStateAttack) {
+			if(animatorMonsterToni.GetCurrentAnimatorStateInfo(0).IsName("Monster_attack") && !animatorStateAttack) {
 				animatorStateAttack = true;
 			}
-			if (animatorMonsterToni.GetCurrentAnimatorStateInfo(0).IsName("Monster_idle") && animatorStateAttack) {
+			if(animatorMonsterToni.GetCurrentAnimatorStateInfo(0).IsName("Monster_idle") && animatorStateAttack) {
 				animatorStateAttack = false;
-				if (animatorMonsterToni.gameObject.GetComponent<SpriteRenderer> ().flipX) {
+				if(animatorMonsterToni.gameObject.GetComponent<SpriteRenderer>().flipX) {
 					monsterToniTransform.Translate(new Vector3((-1) * ATTACK_SPRITE_OFFSET, 0.0f, 0.0f));
 				} else {
 					monsterToniTransform.Translate(new Vector3(ATTACK_SPRITE_OFFSET, 0.0f, 0.0f));
 				}
 			}
+		}
+
+		// Transition for walking / running animation
+		switch(GS.OVERALL_STATE) {
+		case Control_GameState.STATE_COLLECTION_PHASE:
+			if(animatorHuman != null) {
+				if(Math.Abs(getMe().currentVelocity) < ANIM_MIN_SPEED_FOR_WALKING) {
+					animatorHuman.SetBool("Is Walking", false);
+					animatorHuman.SetBool("Is Running", false);
+				} else if(Math.Abs(getMe().currentVelocity) >= ANIM_MIN_SPEED_FOR_WALKING && !isRunningAnim) {
+					animatorHuman.SetBool("Is Walking", true);
+					animatorHuman.SetBool("Is Running", false);
+				} else if(isRunningAnim) {
+					animatorHuman.SetBool("Is Walking", true);
+					animatorHuman.SetBool("Is Running", true);
+				}
+			}
+			break;
+		case Control_GameState.STATE_MONSTER_PHASE:
+		case Control_GameState.STATE_TRANSFORMATION:
+			if(animatorMonsterToni != null) {
+				if(Math.Abs(getMe().currentVelocity) < ANIM_MIN_SPEED_FOR_WALKING) {
+					animatorMonsterToni.SetBool("Is Walking", false);
+				} else if(Math.Abs(getMe().currentVelocity) >= ANIM_MIN_SPEED_FOR_WALKING) {
+					animatorMonsterToni.SetBool("Is Walking", true);
+				}
+			}
+			break;
+		default:
+			break;
 		}
 	}
 
@@ -249,43 +279,18 @@ public class Control_PlayerCharacter : Control_Character {
 		}
 
 		// Update the movement statistics during the collection stage
-		if (GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
+		if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
 			// Update the ticks for running and standing statistics
-			if (Math.Abs (me.currentVelocity) < 0.1f) {
+			if(Math.Abs(me.currentVelocity) < 0.1f) {
 				me.cntStandingSinceLastDeath++;
-			} else if (Math.Abs (me.currentVelocity) < WALKING_RUNNING_THRESHOLD) {
+			} else if(Math.Abs(me.currentVelocity) < WALKING_RUNNING_THRESHOLD) {
 				me.cntWalkingSinceLastDeath++;
 			} else {
 				me.cntRunningSinceLastDeath++;
 			}
 			// Update the distance walked in the current room
-			me.increaseWalkedDistance (me.currentVelocity * Time.fixedDeltaTime);
-
-			// Transition for walking / running animation
-			if (animatorHuman != null) {
-				if (Math.Abs (getMe ().currentVelocity) < ANIM_MIN_SPEED_FOR_WALKING) {
-					animatorHuman.SetBool ("Is Walking", false);
-					animatorHuman.SetBool ("Is Running", false);
-				} else if (Math.Abs (getMe ().currentVelocity) >= ANIM_MIN_SPEED_FOR_WALKING && !isRunningAnim) {
-					animatorHuman.SetBool ("Is Walking", true);
-					animatorHuman.SetBool ("Is Running", false);
-				} else if (isRunningAnim) {
-					animatorHuman.SetBool ("Is Walking", true);
-					animatorHuman.SetBool ("Is Running", true);
-				}
-			}
-		} else if (GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE || GS.OVERALL_STATE == Control_GameState.STATE_TRANSFORMATION) {
-			// Transition for walking / attacking
-			if (animatorMonsterToni != null) {
-				if (Math.Abs (getMe ().currentVelocity) < ANIM_MIN_SPEED_FOR_WALKING) {
-					animatorMonsterToni.SetBool ("Is Walking", false);
-				} else if (Math.Abs (getMe ().currentVelocity) >= ANIM_MIN_SPEED_FOR_WALKING) {
-					animatorMonsterToni.SetBool ("Is Walking", true);
-				}
-			}
+			me.increaseWalkedDistance(me.currentVelocity * Time.fixedDeltaTime);
 		}
-
-
 	}
 
 	// Superclass functions implemented
