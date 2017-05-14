@@ -37,6 +37,7 @@ public class Control_Monster : Control_Character {
 	public const int STATE_SEARCHING = 1;
 	public const int STATE_STALKING = 2;
 	public const int STATE_PURSUING = 3;
+	//public const int STATE_GLARING = 4;
 	public const int STATE_FLEEING = 5;
 
 	private const double utilityPenaltyRitualRoom = double.MaxValue / 2;
@@ -227,66 +228,75 @@ public class Control_Monster : Control_Character {
 		me.AGGRO = 0.1f * GS.numItemsPlaced + me.timeSinceLastKill / 60.0f;
 		me.AGGRO += (Toni.carriedItem != null) ? me.AGGRO : 0;
 
-		// Update AI state 
-		switch(me.state) {
-		// If, while searching, a definitive position is established, start stalking
-		case STATE_SEARCHING:
-			if(me.worldModel.certainty >= certaintyThresholdToStartStalking) {
-				// Keep the monster in the stalking mode for a bit to ensure it spots the player
-				stateUpdateCooldown = DOOR_TRANSITION_DURATION;
-				me.state = STATE_STALKING;
-				nextDoorToGoThrough = null;
-			}
-			break;
-		// If, while stalking, monster sees Toni, start pursuing
-		// But if Toni's position no longer certain, start searching again
-		case STATE_STALKING:
-			if(GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < distanceThresholdToStartPursuing) {
-				me.state = STATE_PURSUING;
-			} else if(me.worldModel.certainty < certaintyThresholdToStartStalking) {
-				me.state = STATE_SEARCHING;
-			}
-			break;
-		// If, while pursuing, monster sees Toni is within attack range, initiate an attack
-		// On the other hand, if Toni cannot be seen, start stalking again
-		case STATE_PURSUING:
-			if(GS.monsterSeesToni) {
-				if(!attackAnimationPlaying) {
-					// If you see Toni, predict where he will when the attack animation completes...
-					float tonisPredictedPosition = Toni.atPos + ATTACK_DURATION * Toni.currentVelocity;
-					// ...as well as where the attack his his direction would land
-					float attackLandingPoint = me.atPos + Math.Sign(Toni.atPos - me.atPos) * ATTACK_RANGE;
-					// If Toni's predicted position and the attack landing point are within the attack margin (hit box), initiate attack
-					if(!Toni.isInvulnerable && Math.Abs(tonisPredictedPosition - attackLandingPoint) < EFFECTIVE_ATTACK_MARGIN) {
-						StartCoroutine(playAttackAnimation(Toni.atPos, Toni));
-						stateUpdateCooldown = ATTACK_DURATION + ATTACK_COOLDOWN;
-					}
+		// Update AI state; cycle through the conditions several times, if necessary
+		int previousState = me.state, iterationCounter = 0; 
+		do {
+			previousState = me.state;
+			switch(previousState) {
+			// If, while searching, a definitive position is established, start stalking
+			case STATE_SEARCHING:
+				if(me.worldModel.certainty >= certaintyThresholdToStartStalking) {
+					// Keep the monster in the stalking mode for a bit to ensure it spots the player
+					stateUpdateCooldown = DOOR_TRANSITION_DURATION;
+					me.state = STATE_STALKING;
+					nextDoorToGoThrough = null;
 				}
-				// Otherwise, keep pursuing
-			} else {
-				// If you don't see Toni anymore, go back to stalking
-				stateUpdateCooldown = DOOR_TRANSITION_DURATION;
-				me.state = STATE_STALKING;
+				break;
+			// If, while stalking, monster sees Toni, start pursuing
+			// But if Toni's position no longer certain, start searching again
+			case STATE_STALKING:
+				if(GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < distanceThresholdToStartPursuing) {
+					me.state = STATE_PURSUING;
+				} else if(me.worldModel.certainty < certaintyThresholdToStartStalking) {
+					me.state = STATE_SEARCHING;
+				}
+				break;
+			// If, while pursuing, monster sees Toni is within attack range, initiate an attack
+			// On the other hand, if Toni cannot be seen, start stalking again
+			case STATE_PURSUING:
+				if(GS.monsterSeesToni) {
+					if(!attackAnimationPlaying) {
+						// If you see Toni, predict where he will when the attack animation completes...
+						float tonisPredictedPosition = Toni.atPos + ATTACK_DURATION * Toni.currentVelocity;
+						// ...as well as where the attack his his direction would land
+						float attackLandingPoint = me.atPos + Math.Sign(Toni.atPos - me.atPos) * ATTACK_RANGE;
+						// If Toni's predicted position and the attack landing point are within the attack margin (hit box), initiate attack
+						if(!Toni.isInvulnerable && Math.Abs(tonisPredictedPosition - attackLandingPoint) < EFFECTIVE_ATTACK_MARGIN) {
+							StartCoroutine(playAttackAnimation(Toni.atPos, Toni));
+							stateUpdateCooldown = ATTACK_DURATION + ATTACK_COOLDOWN;
+						}
+					}
+					// Otherwise, keep pursuing
+				} else {
+					// If you don't see Toni anymore, go back to stalking
+					stateUpdateCooldown = DOOR_TRANSITION_DURATION;
+					me.state = STATE_STALKING;
+				}
+				break;
+			// Wandering is a special case: if the ritual has been performed, start fleeing from Toni
+			case STATE_WANDERING:
+				if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE &&
+				   GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < HALF_SCREEN_SIZE_HORIZONTAL) {
+					me.state = STATE_FLEEING;
+				}
+				break;
+			// Stop fleeing if Toni is no longer seen
+			case STATE_FLEEING:
+				if(!GS.monsterSeesToni || GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_DEAD) {
+					me.state = STATE_WANDERING;
+				}
+				break;
+			// Searching is the default state
+			default:
+				me.state = STATE_SEARCHING;
+				break;
 			}
-			break;
-		// Wandering is a special case: if the ritual has been performed, start fleeing from Toni
-		case STATE_WANDERING:
-			if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE &&
-			   GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < HALF_SCREEN_SIZE_HORIZONTAL) {
-				me.state = STATE_FLEEING;
+			// Sanity check
+			if(iterationCounter++ > 10) {
+				Debug.LogError("Monster state transition limit exceeded! Last two states: " + previousState + ", " + me.state);
+				break;
 			}
-			break;
-		// Stop fleeing if Toni is no longer seen
-		case STATE_FLEEING:
-			if(!GS.monsterSeesToni || GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_DEAD) {
-				me.state = STATE_WANDERING;
-			}
-			break;
-		// Searching is the default state
-		default:
-			me.state = STATE_SEARCHING;
-			break;
-		}
+		} while(previousState != me.state);
 	}
 
 	// Update is called once per frame
@@ -443,20 +453,20 @@ public class Control_Monster : Control_Character {
 
 	// Go towards the closest room to where Toni is most likely to be
 	private void enactStalkingPolicy() {
-		if(nextDoorToGoThrough == null) {
-			// If monster sees Toni, go through the closest door that doesn't lead you past Toni
-			// This is not unlike the fleeing policy, but ritual room is still off-limits
-			if(GS.monsterSeesToni) {
-				// Penalties: ritual room > going past Toni > distance to door > Toni's room = previous room
-				nextDoorToGoThrough = findNextDoorToVisit(false, 10.0, utilityPenaltyRitualRoom, 0, 0, utilityPenaltyToniInTheWay);
-			} else {
+		// If monster sees Toni, stare at him until he either leaves or comes withing striking range
+		if(GS.monsterSeesToni) {
+			nextDoorToGoThrough = null;
+			setSpriteFlip(Toni.atPos < me.atPos);
+		} else {
+			// Otherwise, look for the next door to go through
+			if(nextDoorToGoThrough == null) {
 				// Penalize going into Toni's supposed room until the aggro is high enough to engage right away
 				double meetingToniPenalty = (distanceThresholdToStartPursuing >= HALF_SCREEN_SIZE_HORIZONTAL) ? 0 : utilityPenaltyTonisRoom;
 				// Penalties: ritual room > Toni's room (opt.) > distance to door > previous room = going past Toni
 				nextDoorToGoThrough = findNextDoorToVisit(true, 10.0, utilityPenaltyRitualRoom, 0, meetingToniPenalty, 0);
 			}
+			walkToAndThroughDoor(nextDoorToGoThrough, false, Time.deltaTime);
 		}
-		walkToAndThroughDoor(nextDoorToGoThrough, false, Time.deltaTime);
 	}
 
 	// Run towards within striking range of Toni
@@ -500,13 +510,15 @@ public class Control_Monster : Control_Character {
 	// Walk towards the door and through it, if possible
 	private void walkToAndThroughDoor(Data_Door door, bool run, float deltaTime) {
 		Debug.Assert(door != null);
-		float distToDoor = door.visiblePos - me.atPos;
-		if(Math.Abs(distToDoor) <= MARGIN_DOOR_ENTRANCE) {
-			StartCoroutine(goThroughTheDoor(door));
-		} else {
-			Data_Door triggeredDoor = walk(distToDoor, run, deltaTime);
-			if(triggeredDoor == door) {
-				StartCoroutine(goThroughTheDoor(triggeredDoor));
+		if(door != null) {
+			float distToDoor = door.visiblePos - me.atPos;
+			if(Math.Abs(distToDoor) <= MARGIN_DOOR_ENTRANCE) {
+				StartCoroutine(goThroughTheDoor(door));
+			} else {
+				Data_Door triggeredDoor = walk(distToDoor, run, deltaTime);
+				if(triggeredDoor == door) {
+					StartCoroutine(goThroughTheDoor(triggeredDoor));
+				}
 			}
 		}
 	}
