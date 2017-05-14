@@ -11,9 +11,6 @@ public class Control_Monster : Control_Character {
 
 	[NonSerialized]
 	private Data_Monster me;
-
-	public float spriteSizeX;
-
 	protected override Data_Character getMe() {
 		return me as Data_Character;
 	}
@@ -63,20 +60,18 @@ public class Control_Monster : Control_Character {
 	// Graphics parameters
 	private GameObject monsterImageObject;
 	private SpriteRenderer monsterRenderer;
-	private Transform monsterTransform;
+	private Transform monsterImageTransform;
 	private GameObject civilianObject;
 	private SpriteRenderer civilianRenderer;
 
 	// Animator for transitioning between animation states
 	private Animator animatorMonster;
 	private Animator animatorCivilian;
-	private const float ATTACK_SPRITE_OFFSET = 1.75f;
-	private bool monsterSpriteIsShiftedForAttackAnimation;
 
 	void Start() {
 		monsterImageObject = GameObject.Find("MonsterImage");
 		monsterRenderer = monsterImageObject.GetComponent<SpriteRenderer>();
-		monsterTransform = monsterRenderer.transform;
+		monsterImageTransform = monsterRenderer.transform;
 
 		// Find the child "Stickman", then its Sprite Renderer and then the renderer's sprite
 		civilianObject = GameObject.Find("StickmanCivilian");
@@ -301,17 +296,15 @@ public class Control_Monster : Control_Character {
 			// And also, the monster's body is off center on attack PNGs
 			if((attackAnimationPlaying || monsterRenderer.sprite.bounds.size.x > 0.64)) {
 				if(!monsterSpriteIsShiftedForAttackAnimation) {
-					monsterTransform.localPosition = 
-						new Vector3(monsterRenderer.flipX ? ATTACK_SPRITE_OFFSET : -ATTACK_SPRITE_OFFSET, monsterTransform.localPosition.y, monsterTransform.localPosition.z);
+					monsterImageTransform.localPosition = 
+						new Vector3(monsterRenderer.flipX ? MONSTER_SPRITE_SHIFT_DURING_ATTACK : -MONSTER_SPRITE_SHIFT_DURING_ATTACK, monsterImageTransform.localPosition.y, monsterImageTransform.localPosition.z);
 					monsterSpriteIsShiftedForAttackAnimation = true;
 				}
 			} else if(monsterSpriteIsShiftedForAttackAnimation) {
-				monsterTransform.localPosition = new Vector3(0, monsterTransform.localPosition.y, monsterTransform.localPosition.z);
+				monsterImageTransform.localPosition = new Vector3(0, monsterImageTransform.localPosition.y, monsterImageTransform.localPosition.z);
 				monsterSpriteIsShiftedForAttackAnimation = false;
 			}
 		}
-
-		spriteSizeX = monsterRenderer.sprite.bounds.size.x;
 
 		if(me.etherialCooldown > 0.0f) { // While the character is etherial, don't do anything
 			me.etherialCooldown -= Time.deltaTime;

@@ -23,7 +23,7 @@ public class Global_Settings {
 			{ "RITUAL_ROOM_INDEX",				0.0f },		// The index of the room with the ritual pentagram (has to be cast to int)
 			{ "RITUAL_PENTAGRAM_CENTER",		2.71875f },	// The center pentagram space (relative to room center)
 			{ "RITUAL_PENTAGRAM_RADIUS",		0.88125f },	// The distance between pentagram center and edge in either direction
-			{ "RITUAL_ITEMS_REQUIRED",			0.0f },		// How many items are needed for the ritual (has to be cast to int)
+			{ "RITUAL_ITEMS_REQUIRED",			5.0f },		// How many items are needed for the ritual (has to be cast to int)
 			{ "RITUAL_ITEM_PLACEMENT",			1.0f },		// How long, in seconds, it takes to place an item on the pentagram
 
 			// Door settings
