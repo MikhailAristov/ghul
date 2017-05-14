@@ -45,7 +45,10 @@ public class Control_Monster : Control_Character {
 	private const double utilityPenaltyToniInTheWay = double.MaxValue / 4;
 
 	private float stateUpdateCooldown;
-	private float distanceThresholdToStartPursuing; // = AGGRO * screen width / 2
+	private float distanceThresholdToStartPursuing {
+		get { return me.AGGRO * HALF_SCREEN_SIZE_HORIZONTAL; }
+		set { return; }
+	}
 	private double certaintyThresholdToStartStalking;
 	private float cumultativeImpasseDuration;
 
@@ -56,6 +59,7 @@ public class Control_Monster : Control_Character {
 
 	// prefab, to be placed for each death
 	public Transform tombstone;
+	public GameObject AttackZone;
 
 	// Graphics parameters
 	private GameObject monsterImageObject;
@@ -131,6 +135,10 @@ public class Control_Monster : Control_Character {
 			if(!GS.SUSPENDED) {
 				foreach(Data_Room room in GS.ROOMS.Values) {
 					room.env.updateDangerIndicator(me.worldModel.probabilityThatToniIsInRoom[room.INDEX]);
+				}
+				if(AttackZone.activeSelf && Debug.isDebugBuild) {
+					AttackZone.transform.localScale = 
+						new Vector3(distanceThresholdToStartPursuing, AttackZone.transform.localScale.y, AttackZone.transform.localScale.z);
 				}
 			}
 			yield return new WaitForSecondsRealtime(interval);
@@ -233,7 +241,6 @@ public class Control_Monster : Control_Character {
 		// If, while stalking, monster sees Toni, start pursuing
 		// But if Toni's position no longer certain, start searching again
 		case STATE_STALKING:
-			distanceThresholdToStartPursuing = me.AGGRO * HALF_SCREEN_SIZE_HORIZONTAL; 
 			if(GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < distanceThresholdToStartPursuing) {
 				me.state = STATE_PURSUING;
 			} else if(me.worldModel.certainty < certaintyThresholdToStartStalking) {
