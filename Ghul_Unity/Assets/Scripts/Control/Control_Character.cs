@@ -22,7 +22,6 @@ public abstract class Control_Character : MonoBehaviour {
 	protected float ATTACK_DURATION;
 	protected float ATTACK_COOLDOWN;
 
-	protected LineRenderer attackArmRenderer;
 	protected bool attackAnimationPlaying;
 	private float cumulativeAttackDuration;
 	private Data_Position positionAtTheLastTimeStep;
@@ -32,7 +31,6 @@ public abstract class Control_Character : MonoBehaviour {
 
 	protected void FixedUpdate() {
 		if(GS != null && !GS.SUSPENDED) {
-
 			// Update character's velocity
 			if(positionAtTheLastTimeStep != null && positionAtTheLastTimeStep.RoomId == getMe().pos.RoomId) {
 				getMe().currentVelocity = (getMe().pos.X - positionAtTheLastTimeStep.X) / Time.fixedDeltaTime;
@@ -156,18 +154,17 @@ public abstract class Control_Character : MonoBehaviour {
 		float attackPoint = attackOrigin.X + Math.Sign(targetPos - attackOrigin.X) * ATTACK_RANGE;
 		Debug.Log(getMe() + " attacks from " + getMe().pos + " to " + attackPoint + " at T+" + Time.timeSinceLevelLoad);
 		// PHASE 1: Attack
+		startAttackAnimation();
 		while(cumulativeAttackDuration < ATTACK_DURATION) {
 			// If the attacker moves from the original spot, immediately cancel the attack
 			if(getMe().isIn.INDEX != attackOrigin.RoomId || Math.Abs(getMe().atPos - attackOrigin.X) > ATTACK_MARGIN) {
 				Debug.LogWarning(getMe() + " moved, attack canceled!");
 				attackIsCanceledByMoving = true;
 				break;
-			} else if(!GS.SUSPENDED) {
-				// TODO play one frame forward
-				attackArmRenderer.SetPosition(1, new Vector3((cumulativeAttackDuration / ATTACK_DURATION) * (attackPoint - attackOrigin.X), 0, 0));
 			}
 			yield return new WaitForSeconds(1f/60f);
 		}
+		stopAttackAnimation();
 		Debug.Log(getMe() + " completes attack in " + cumulativeAttackDuration + " s, Toni was at " + GS.getToni().atPos);
 		// PHASE 2: Resolve
 		if(!attackIsCanceledByMoving && !target.isInvulnerable &&
@@ -176,10 +173,11 @@ public abstract class Control_Character : MonoBehaviour {
 			postKillHook();
 		}
 		// PHASE 3: Cooldown
-		attackArmRenderer.SetPosition(1, new Vector2(0, 0));
 		yield return new WaitForSeconds(ATTACK_COOLDOWN); // Can't attack immediately after attacking, even if it was canceled (prevents spam)
 		attackAnimationPlaying = false;
 	}
 	public abstract void getHit();
 	protected abstract void postKillHook();
+	protected abstract void startAttackAnimation();
+	protected abstract void stopAttackAnimation();
 }

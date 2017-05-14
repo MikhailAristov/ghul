@@ -42,11 +42,11 @@ public class Control_PlayerCharacter : Control_Character {
 	private SpriteRenderer stickmanRenderer;
 	private GameObject monsterToniObject;
 	private SpriteRenderer monsterToniRenderer;
+	private Transform monsterToniTransform;
 	private Control_Camera mainCameraControl;
 	private Control_Sound soundSystem;
 	public Canvas inventoryUI;
 	public GameObject pentagram;
-	public GameObject attackArm;
 
 	// Zapping-effect parameters
 	private GameObject zappingSoundObject;
@@ -57,9 +57,8 @@ public class Control_PlayerCharacter : Control_Character {
 	// Animator for transitioning between animation states
 	private Animator animatorHuman;
 	private Animator animatorMonsterToni;
-	private Transform monsterToniTransform; // For sprite offset during attack
-	private bool animatorStateAttack;
 	private const float ATTACK_SPRITE_OFFSET = 1.75f;
+	private bool monsterSpriteIsShiftedForAttackAnimation;
 
 	// Most basic initialization
 	void Awake() {
@@ -97,12 +96,12 @@ public class Control_PlayerCharacter : Control_Character {
 		stickmanRenderer = stickmanObject.GetComponent<SpriteRenderer>(); // Find the child "Stickman", then its Sprite Renderer and then the renderer's sprite
 		monsterToniObject = GameObject.Find("MonsterToniImage");
 		monsterToniRenderer = monsterToniObject.GetComponent<SpriteRenderer>();
+		monsterToniTransform = monsterToniRenderer.transform;
 		monsterToniObject.SetActive(false); // Monster-Toni not visible at first.
 		zappingSoundObject = GameObject.Find("ZappingSound");
 		zappingSound = zappingSoundObject.GetComponent<AudioSource>();
 		zappingParticleObject = GameObject.Find("ZapEffect");
 		zappingParticles = zappingParticleObject.GetComponent<ParticleSystem>();
-		attackArmRenderer = attackArm.GetComponent<LineRenderer>();
 
 		mainCameraControl = Camera.main.GetComponent<Control_Camera>();
 		inventoryUI.transform.FindChild("CurrentItem").GetComponent<Image>().CrossFadeAlpha(0.0f, 0.0f, false);
@@ -124,7 +123,6 @@ public class Control_PlayerCharacter : Control_Character {
 				animatorMonsterToni = toniMonsterObject.GetComponent<Animator>();
 			}
 		}
-		animatorStateAttack = false;
 	}
 
 	// To make sure the game state is fully initialized before loading it, this function is called by game state class itself
@@ -142,9 +140,26 @@ public class Control_PlayerCharacter : Control_Character {
 	// Update is called once per frame
 	void Update() {
 		// Don't do anything if the game state is not loaded yet or suspended or in the final endgame state
-		if(GS == null || GS.SUSPENDED || GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_DEAD) { 
+		if(GS == null || GS.SUSPENDED || GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_DEAD) {
+			animatorHuman.speed = 0;
+			animatorMonsterToni.speed = 0;
 			return; 
-		} 
+		} else {
+			animatorHuman.speed = 1f;
+			animatorMonsterToni.speed = 1f;
+			// Shift the sprite during the attack animation, because attack PNGs are wider than walking/running ones
+			// And also, the monster's body is off center on attack PNGs
+			if((attackAnimationPlaying || monsterToniRenderer.sprite.bounds.size.x > 0.64)) {
+				if(!monsterSpriteIsShiftedForAttackAnimation) {
+					monsterToniTransform.localPosition = 
+						new Vector3(monsterToniRenderer.flipX ? ATTACK_SPRITE_OFFSET : -ATTACK_SPRITE_OFFSET, monsterToniTransform.localPosition.y, monsterToniTransform.localPosition.z);
+					monsterSpriteIsShiftedForAttackAnimation = true;
+				}
+			} else if(monsterSpriteIsShiftedForAttackAnimation) {
+				monsterToniTransform.localPosition = new Vector3(0, monsterToniTransform.localPosition.y, monsterToniTransform.localPosition.z);
+				monsterSpriteIsShiftedForAttackAnimation = false;
+			}
+		}
 		if(me.etherialCooldown > 0.0f) { // While the character is etherial, don't do anything
 			me.etherialCooldown -= Time.deltaTime;
 			return;
@@ -159,17 +174,6 @@ public class Control_PlayerCharacter : Control_Character {
 				takeItem();
 			} else if(!attackAnimationPlaying) {
 				StartCoroutine(playAttackAnimation(me.atPos + (monsterToniRenderer.flipX ? 1f : -1f), GS.getMonster()));
-
-				// Activate the attack animation. Note, that the monster sprite needs to be moved momentarily since it's off center.
-				animatorMonsterToni.SetTrigger("Attack");
-				if(monsterToniTransform == null) {
-					monsterToniTransform = animatorMonsterToni.gameObject.transform;
-				}
-				if(animatorMonsterToni.gameObject.GetComponent<SpriteRenderer>().flipX) {
-					monsterToniTransform.Translate(new Vector3(ATTACK_SPRITE_OFFSET, 0.0f, 0.0f));
-				} else {
-					monsterToniTransform.Translate(new Vector3((-1) * ATTACK_SPRITE_OFFSET, 0.0f, 0.0f));
-				}
 			}
 		}
 		if(Input.GetButtonDown("Inventory")) { // Show inventory
@@ -203,7 +207,7 @@ public class Control_PlayerCharacter : Control_Character {
 		}
 
 		// Horizontal movement
-		if(Mathf.Abs(Input.GetAxis("Horizontal")) > 0.01f && !animatorStateAttack) {
+		if(Mathf.Abs(Input.GetAxis("Horizontal")) > 0.01f) {
 			me.timeWithoutAction = 0;
 			Data_Door walkIntoDoor = walk(Input.GetAxis("Horizontal"), Input.GetButton("Run"), Time.deltaTime);
 			if(walkIntoDoor != null) {
@@ -222,21 +226,6 @@ public class Control_PlayerCharacter : Control_Character {
 				StartCoroutine(dieAndRespawn());
 			}
 			mainCameraControl.setRedOverlay(me.timeWithoutAction / SUICIDLE_DURATION);
-		}
-
-		if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE || GS.OVERALL_STATE == Control_GameState.STATE_TRANSFORMATION) {
-			// Checking whether attack is over and moving the sprite if that is the case.
-			if(animatorMonsterToni.GetCurrentAnimatorStateInfo(0).IsName("Monster_attack") && !animatorStateAttack) {
-				animatorStateAttack = true;
-			}
-			if(animatorMonsterToni.GetCurrentAnimatorStateInfo(0).IsName("Monster_idle") && animatorStateAttack) {
-				animatorStateAttack = false;
-				if(animatorMonsterToni.gameObject.GetComponent<SpriteRenderer>().flipX) {
-					monsterToniTransform.Translate(new Vector3((-1) * ATTACK_SPRITE_OFFSET, 0.0f, 0.0f));
-				} else {
-					monsterToniTransform.Translate(new Vector3(ATTACK_SPRITE_OFFSET, 0.0f, 0.0f));
-				}
-			}
 		}
 
 		// Transition for walking / running animation
@@ -551,7 +540,15 @@ public class Control_PlayerCharacter : Control_Character {
 			Debug.Log("Cannot find door spawn ID for at least one of these doors: " + door.INDEX + "," + destinationDoor.INDEX + ". Just got spawn IDs " + spawn1Index + ", " + spawn2Index);
 		}
 	}
-	// The rest stays empty for now (only relevant for the monster)...
-	protected override void postKillHook() {
+	// Attacking animation triggers
+	protected override void startAttackAnimation() {
+		// Activate the attack animation
+		animatorMonsterToni.SetTrigger("Attack");
 	}
+	protected override void stopAttackAnimation() {
+		// Cancel the animation
+		animatorMonsterToni.SetTrigger("AttackCancel");
+	}
+	// The rest stays empty for now (only relevant for the monster)...
+	protected override void postKillHook() {}
 }

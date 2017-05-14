@@ -12,6 +12,8 @@ public class Control_Monster : Control_Character {
 	[NonSerialized]
 	private Data_Monster me;
 
+	public float spriteSizeX;
+
 	protected override Data_Character getMe() {
 		return me as Data_Character;
 	}
@@ -24,8 +26,9 @@ public class Control_Monster : Control_Character {
 	private float MARGIN_ITEM_STEAL;
 	private float WAIT_FOR_TONI_TO_MOVE;
 
-	private float EFFECTIVE_MINIMUM_ATTACK_RANGE; // For prediction and planning of attacks
-	private float EFFECTIVE_ATTACK_MARGIN; // Ditto
+	// For prediction and planning of attacks
+	private float EFFECTIVE_MINIMUM_ATTACK_RANGE;
+	private float EFFECTIVE_ATTACK_MARGIN;
 
 	// Noise data
 	private bool newNoiseHeard;
@@ -37,7 +40,6 @@ public class Control_Monster : Control_Character {
 	public const int STATE_SEARCHING = 1;
 	public const int STATE_STALKING = 2;
 	public const int STATE_PURSUING = 3;
-	// public const int STATE_ATTACKING = 4; // The attacking state is merged into STATE_PURSUING
 	public const int STATE_FLEEING = 5;
 
 	private const double utilityPenaltyRitualRoom = double.MaxValue / 2;
@@ -52,37 +54,40 @@ public class Control_Monster : Control_Character {
 
 	[NonSerialized]
 	public Data_Door nextDoorToGoThrough;
-	private Data_Room previousRoomVisited; // This can be used to prevent endless door walk cycles
+	// This can be used to prevent endless door walk cycles:
+	private Data_Room previousRoomVisited;
 
 	// prefab, to be placed for each death
 	public Transform tombstone;
-	public GameObject attackArm;
 
 	// Graphics parameters
 	private GameObject monsterImageObject;
 	private SpriteRenderer monsterRenderer;
+	private Transform monsterTransform;
 	private GameObject civilianObject;
 	private SpriteRenderer civilianRenderer;
 
 	// Animator for transitioning between animation states
 	private Animator animatorMonster;
 	private Animator animatorCivilian;
-	private Transform monsterImageTransform; // For sprite offset during attack
 	private const float ATTACK_SPRITE_OFFSET = 1.75f;
+	private bool monsterSpriteIsShiftedForAttackAnimation;
 
 	void Start() {
 		monsterImageObject = GameObject.Find("MonsterImage");
-		monsterRenderer = monsterImageObject.GetComponent<SpriteRenderer>(); // Find the child "Stickman", then its Sprite Renderer and then the renderer's sprite
+		monsterRenderer = monsterImageObject.GetComponent<SpriteRenderer>();
+		monsterTransform = monsterRenderer.transform;
+
+		// Find the child "Stickman", then its Sprite Renderer and then the renderer's sprite
 		civilianObject = GameObject.Find("StickmanCivilian");
 		civilianRenderer = civilianObject.GetComponent<SpriteRenderer>();
 		civilianObject.SetActive(false); // Civ-Monster not visible at first.
-		attackArmRenderer = attackArm.GetComponent<LineRenderer>();
 
 		// Setting the animator
-		if (monsterImageObject != null) {
+		if(monsterImageObject != null) {
 			animatorMonster = monsterImageObject.GetComponent<Animator>();
 		}
-		if (civilianObject != null) {
+		if(civilianObject != null) {
 			animatorCivilian = civilianObject.GetComponent<Animator>();
 		}
 	}
@@ -171,22 +176,22 @@ public class Control_Monster : Control_Character {
 		}
 
 		// Handling the animation
-		if (GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
+		if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
 			// Transition for walking / attacking
-			if (animatorMonster != null) {
-				if (Math.Abs (getMe ().currentVelocity) < ANIM_MIN_SPEED_FOR_WALKING) {
-					animatorMonster.SetBool ("Is Walking", false);
-				} else if (Math.Abs (getMe ().currentVelocity) >= ANIM_MIN_SPEED_FOR_WALKING) {
-					animatorMonster.SetBool ("Is Walking", true);
+			if(animatorMonster != null) {
+				if(Math.Abs(getMe().currentVelocity) < ANIM_MIN_SPEED_FOR_WALKING) {
+					animatorMonster.SetBool("Is Walking", false);
+				} else if(Math.Abs(getMe().currentVelocity) >= ANIM_MIN_SPEED_FOR_WALKING) {
+					animatorMonster.SetBool("Is Walking", true);
 				}
 			}
-		} else if (GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE) {
+		} else if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE) {
 			// Transition for walking
-			if (animatorCivilian != null) {
-				if (Math.Abs (getMe ().currentVelocity) < ANIM_MIN_SPEED_FOR_WALKING) {
-					animatorCivilian.SetBool ("Is Walking", false);
-				} else if (Math.Abs (getMe ().currentVelocity) >= ANIM_MIN_SPEED_FOR_WALKING) {
-					animatorCivilian.SetBool ("Is Walking", true);
+			if(animatorCivilian != null) {
+				if(Math.Abs(getMe().currentVelocity) < ANIM_MIN_SPEED_FOR_WALKING) {
+					animatorCivilian.SetBool("Is Walking", false);
+				} else if(Math.Abs(getMe().currentVelocity) >= ANIM_MIN_SPEED_FOR_WALKING) {
+					animatorCivilian.SetBool("Is Walking", true);
 				}
 			}
 		}
@@ -254,19 +259,6 @@ public class Control_Monster : Control_Character {
 						StartCoroutine(playAttackAnimation(Toni.atPos, Toni));
 						stateUpdateCooldown = ATTACK_DURATION + ATTACK_COOLDOWN;
 					}
-
-					// Activate the attack animation. Note, that the monster sprite needs to be moved momentarily since it's off center.
-					animatorMonster.SetTrigger("Attack");
-					/*
-					if (monsterImageTransform == null) {
-						monsterImageTransform = animatorMonster.gameObject.transform;
-					}
-					if (animatorMonster.gameObject.GetComponent<SpriteRenderer> ().flipX) {
-						monsterImageTransform.Translate(new Vector3(ATTACK_SPRITE_OFFSET, 0.0f, 0.0f));
-					} else {
-						monsterImageTransform.Translate(new Vector3((-1) * ATTACK_SPRITE_OFFSET, 0.0f, 0.0f));
-					}
-					*/
 				}
 				// Otherwise, keep pursuing
 			} else {
@@ -297,9 +289,30 @@ public class Control_Monster : Control_Character {
 
 	// Update is called once per frame
 	void Update() {
+		// Don't do anything if the game state is not loaded yet or suspended
 		if(GS == null || GS.SUSPENDED) {
+			animatorMonster.speed = 0;
+			animatorCivilian.speed = 0;
 			return;
-		} // Don't do anything if the game state is not loaded yet or suspended
+		} else {
+			animatorMonster.speed = 1f;
+			animatorCivilian.speed = 1f;
+			// Shift the sprite during the attack animation, because attack PNGs are wider than walking/running ones
+			// And also, the monster's body is off center on attack PNGs
+			if((attackAnimationPlaying || monsterRenderer.sprite.bounds.size.x > 0.64)) {
+				if(!monsterSpriteIsShiftedForAttackAnimation) {
+					monsterTransform.localPosition = 
+						new Vector3(monsterRenderer.flipX ? ATTACK_SPRITE_OFFSET : -ATTACK_SPRITE_OFFSET, monsterTransform.localPosition.y, monsterTransform.localPosition.z);
+					monsterSpriteIsShiftedForAttackAnimation = true;
+				}
+			} else if(monsterSpriteIsShiftedForAttackAnimation) {
+				monsterTransform.localPosition = new Vector3(0, monsterTransform.localPosition.y, monsterTransform.localPosition.z);
+				monsterSpriteIsShiftedForAttackAnimation = false;
+			}
+		}
+
+		spriteSizeX = monsterRenderer.sprite.bounds.size.x;
+
 		if(me.etherialCooldown > 0.0f) { // While the character is etherial, don't do anything
 			me.etherialCooldown -= Time.deltaTime;
 			return;
@@ -320,23 +333,6 @@ public class Control_Monster : Control_Character {
 		if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE && GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < MARGIN_ITEM_STEAL) {
 			Toni.control.dropItem();
 		}
-
-		/*
-		if (GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE || GS.OVERALL_STATE == Control_GameState.STATE_TRANSFORMATION) {
-			// Checking whether attack is over and moving the sprite if that is the case.
-			if (animatorMonster.GetCurrentAnimatorStateInfo(0).IsName("Monster_attack") && !animatorStateAttack) {
-				animatorStateAttack = true;
-			}
-			if (animatorMonster.GetCurrentAnimatorStateInfo(0).IsName("Monster_idle") && animatorStateAttack) {
-				animatorStateAttack = false;
-				if (animatorMonster.gameObject.GetComponent<SpriteRenderer> ().flipX) {
-					monsterImageTransform.Translate(new Vector3((-1) * ATTACK_SPRITE_OFFSET, 0.0f, 0.0f));
-				} else {
-					monsterImageTransform.Translate(new Vector3(ATTACK_SPRITE_OFFSET, 0.0f, 0.0f));
-				}
-			}
-		}
-		*/
 
 		try {
 			// Correct state handling
@@ -365,7 +361,6 @@ public class Control_Monster : Control_Character {
 			Debug.LogException(e);
 			me.worldModel.softReset();
 		}
-
 	}
 
 	/* Assigns a utility score to each currently visible door and returns the door with the highest utility
@@ -488,7 +483,7 @@ public class Control_Monster : Control_Character {
 			float leftAttackVector = Toni.atPos - ATTACK_RANGE - me.atPos;
 			float rightAttackVector = Toni.atPos + ATTACK_RANGE - me.atPos;
 			// If the left attack point is valid and closer to my current position than the right one, return it
-			if(Math.Abs(leftAttackVector) < Math.Abs(rightAttackVector) &&  (me.atPos + leftAttackVector) > me.isIn.leftWalkBoundary) {
+			if(Math.Abs(leftAttackVector) < Math.Abs(rightAttackVector) && (me.atPos + leftAttackVector) > me.isIn.leftWalkBoundary) {
 				return leftAttackVector;
 			}
 			// Ditto for the right one
@@ -584,12 +579,24 @@ public class Control_Monster : Control_Character {
 			dieAndRespawn();
 		}
 	}
+	// Attacking animation triggers
+	protected override void startAttackAnimation() {
+		if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
+			// Activate the attack animation
+			animatorMonster.SetTrigger("Attack");
+		}
+	}
+	protected override void stopAttackAnimation() {
+		// Cancel the animation
+		animatorMonster.SetTrigger("AttackCancel");
+	}
 	// Reset the kill time upon kill
 	protected override void postKillHook() {
 		me.timeSinceLastKill = 0;
 		// Extend the time the monster stands still after killing Toni (while the house is being rebuilt)
 		me.etherialCooldown = Global_Settings.read("TOTAL_DEATH_DURATION");
 	}
+
 	protected override void activateCooldown(float duration) {
 		me.etherialCooldown = duration;
 	}

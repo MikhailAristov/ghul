@@ -23,7 +23,7 @@ public class Global_Settings {
 			{ "RITUAL_ROOM_INDEX",				0.0f },		// The index of the room with the ritual pentagram (has to be cast to int)
 			{ "RITUAL_PENTAGRAM_CENTER",		2.71875f },	// The center pentagram space (relative to room center)
 			{ "RITUAL_PENTAGRAM_RADIUS",		0.88125f },	// The distance between pentagram center and edge in either direction
-			{ "RITUAL_ITEMS_REQUIRED",			5.0f },		// How many items are needed for the ritual (has to be cast to int)
+			{ "RITUAL_ITEMS_REQUIRED",			0.0f },		// How many items are needed for the ritual (has to be cast to int)
 			{ "RITUAL_ITEM_PLACEMENT",			1.0f },		// How long, in seconds, it takes to place an item on the pentagram
 
 			// Door settings
@@ -40,14 +40,14 @@ public class Global_Settings {
 			// Monster settings
 			{ "MONSTER_WALKING_SPEED",			4.5f },
 			{ "MONSTER_SLOW_WALKING_SPEED",		2.5f },		// when the monster randomly walks around
-			{ "MONSTER_ATTACK_RANGE",			3.0f },		// the distance from the monster that it main attack hits
+			{ "MONSTER_ATTACK_RANGE",			3.7f },		// the distance from the monster that it main attack hits
 			{ "MONSTER_ATTACK_MARGIN",			0.5f },		// the size of the "hitbox" for the monster's attack
-			{ "MONSTER_ATTACK_DURATION",		0.3f },		// how long, in seconds, does an attack take from start to hit
-			{ "MONSTER_ATTACK_COOLDOWN",		1.0f },		// how long, in seconds, does an attack take from hit to finish
+			{ "MONSTER_ATTACK_DURATION",		0.5f },		// how long, in seconds, does an attack take from start to hit
+			{ "MONSTER_ATTACK_COOLDOWN",		0.5f },		// how long, in seconds, does an attack take from hit to finish
 			{ "MONSTER_WAIT_FOR_TONI_MOVE",		2.0f },		// how long, in seconds, does the monster wait for Toni to move in a face-off
 
 			{ "TONI_ATTACK_MARGIN",				1.0f },		// the size of the "hitbox" for the monster Toni's attack
-			{ "TONI_ATTACK_DURATION",			0.2f },		// how long, in seconds, does an attack take from start to hit
+			{ "TONI_ATTACK_DURATION",			0.5f },		// how long, in seconds, does an attack take from start to hit
 			{ "TONI_ATTACK_COOLDOWN",			0.5f },		// how long, in seconds, does an attack take from hit to finish
 
 			// Stamina range: 0.0 .. 1.0; increments are applied per second
