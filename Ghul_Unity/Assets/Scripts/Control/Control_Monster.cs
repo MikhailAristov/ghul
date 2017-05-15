@@ -62,7 +62,6 @@ public class Control_Monster : Control_Character {
 	// Graphics parameters
 	private GameObject monsterImageObject;
 	private SpriteRenderer monsterRenderer;
-	private Transform monsterImageTransform;
 	private GameObject civilianObject;
 	private SpriteRenderer civilianRenderer;
 
@@ -73,7 +72,6 @@ public class Control_Monster : Control_Character {
 	void Start() {
 		monsterImageObject = GameObject.Find("MonsterImage");
 		monsterRenderer = monsterImageObject.GetComponent<SpriteRenderer>();
-		monsterImageTransform = monsterRenderer.transform;
 
 		// Find the child "Stickman", then its Sprite Renderer and then the renderer's sprite
 		civilianObject = GameObject.Find("StickmanCivilian");
@@ -306,18 +304,6 @@ public class Control_Monster : Control_Character {
 		} else {
 			animatorMonster.speed = 1f;
 			animatorCivilian.speed = 1f;
-			// Shift the sprite during the attack animation, because attack PNGs are wider than walking/running ones
-			// And also, the monster's body is off center on attack PNGs
-			if((attackAnimationPlaying || monsterRenderer.sprite.bounds.size.x > 0.64)) {
-				if(!monsterSpriteIsShiftedForAttackAnimation) {
-					monsterImageTransform.localPosition = 
-						new Vector3(monsterRenderer.flipX ? MONSTER_SPRITE_SHIFT_DURING_ATTACK : -MONSTER_SPRITE_SHIFT_DURING_ATTACK, monsterImageTransform.localPosition.y, monsterImageTransform.localPosition.z);
-					monsterSpriteIsShiftedForAttackAnimation = true;
-				}
-			} else if(monsterSpriteIsShiftedForAttackAnimation) {
-				monsterImageTransform.localPosition = new Vector3(0, monsterImageTransform.localPosition.y, monsterImageTransform.localPosition.z);
-				monsterSpriteIsShiftedForAttackAnimation = false;
-			}
 		}
 
 		if(me.etherialCooldown > 0.0f) { // While the character is etherial, don't do anything

@@ -38,7 +38,6 @@ public class Control_PlayerCharacter : Control_Character {
 	private SpriteRenderer stickmanRenderer;
 	private GameObject monsterToniObject;
 	private SpriteRenderer monsterToniRenderer;
-	private Transform monsterImageTransform;
 	private Control_Camera mainCameraControl;
 	private Control_Sound soundSystem;
 	public Canvas inventoryUI;
@@ -90,7 +89,6 @@ public class Control_PlayerCharacter : Control_Character {
 		stickmanRenderer = stickmanObject.GetComponent<SpriteRenderer>(); // Find the child "Stickman", then its Sprite Renderer and then the renderer's sprite
 		monsterToniObject = GameObject.Find("MonsterToniImage");
 		monsterToniRenderer = monsterToniObject.GetComponent<SpriteRenderer>();
-		monsterImageTransform = monsterToniRenderer.transform;
 		monsterToniObject.SetActive(false); // Monster-Toni not visible at first.
 		zappingSoundObject = GameObject.Find("ZappingSound");
 		zappingSound = zappingSoundObject.GetComponent<AudioSource>();
@@ -141,18 +139,6 @@ public class Control_PlayerCharacter : Control_Character {
 		} else {
 			animatorHuman.speed = 1f;
 			animatorMonsterToni.speed = 1f;
-			// Shift the sprite during the attack animation, because attack PNGs are wider than walking/running ones
-			// And also, the monster's body is off center on attack PNGs
-			if((attackAnimationPlaying || monsterToniRenderer.sprite.bounds.size.x > 0.64)) {
-				if(!monsterSpriteIsShiftedForAttackAnimation) {
-					monsterImageTransform.localPosition = 
-						new Vector3(monsterToniRenderer.flipX ? MONSTER_SPRITE_SHIFT_DURING_ATTACK : -MONSTER_SPRITE_SHIFT_DURING_ATTACK, monsterImageTransform.localPosition.y, monsterImageTransform.localPosition.z);
-					monsterSpriteIsShiftedForAttackAnimation = true;
-				}
-			} else if(monsterSpriteIsShiftedForAttackAnimation) {
-				monsterImageTransform.localPosition = new Vector3(0, monsterImageTransform.localPosition.y, monsterImageTransform.localPosition.z);
-				monsterSpriteIsShiftedForAttackAnimation = false;
-			}
 		}
 		if(me.etherialCooldown > 0.0f) { // While the character is etherial, don't do anything
 			me.etherialCooldown -= Time.deltaTime;
@@ -372,6 +358,7 @@ public class Control_PlayerCharacter : Control_Character {
 	private void takeItem() {
 		// Can't pick up more than one item, anyway
 		if(me.carriedItem != null) {
+			Debug.Log(me + " is already carrying " + me.carriedItem);
 			return;
 		}
 
