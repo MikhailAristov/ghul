@@ -2,7 +2,6 @@
 using UnityEngine.UI;
 using System;
 using System.Collections;
-using UnityEditor.Animations;
 
 public class Control_PlayerCharacter : Control_Character {
 
