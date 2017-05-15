@@ -32,7 +32,7 @@ public class Global_Settings {
 			{ "DOOR_OPEN_DURATION",				1.0f },		// How long a door stays open after someone goes through it
 
 			// Character movement settings
-			{ "CHARA_WALKING_SPEED",			3.0f },
+			{ "CHARA_WALKING_SPEED",			2.5f },
 			{ "CHARA_RUNNING_SPEED",			5.0f },
 			{ "CHARA_SINGLE_STEP_LENGTH",		1.4f },		// this is how many (virtual) meters chara can walk before making a noise
 			{ "SUICIDLE_DURATION",				30.0f },	// How long the suicidle animation takes

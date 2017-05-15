@@ -560,7 +560,7 @@ public class Control_Monster : Control_Character {
 
 		Vector3 pos = transform.position;
 		// Place a tombstone where the death occured
-		Instantiate(tombstone, new Vector3(pos.x, pos.y - 1.7f, pos.z), Quaternion.identity);
+		Instantiate(tombstone, new Vector3(pos.x, pos.y, pos.z), Quaternion.identity);
 
 		// Move the civilian to a distant room
 		me.updatePosition(GS.getRoomFurthestFrom(me.isIn.INDEX), 0, 0);

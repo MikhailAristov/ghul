@@ -424,17 +424,19 @@ public class Control_PlayerCharacter : Control_Character {
 
 	// The player dies and leaves the item on chara's cadaver
 	private void leaveItemOnCadaver() {
+		// First, reset any item that was already on cadaver back to its spawn point
+		foreach(Data_Item item in GS.ITEMS.Values) {
+			if(item.state == Data_Item.STATE_ON_CADAVER) {
+				item.control.resetToSpawnPosition();
+			}
+		}
+		// Only leave item if you actually carry one
 		if(me.carriedItem != null) {
 			// Drop item down
 			me.carriedItem.control.moveToCadaver();
 			Debug.Log("Item #" + me.carriedItem.INDEX + " left on cadaver");
 			me.carriedItem = null;
-			// Not autosave because death already autosaves
-		} else {
-			Data_Item curItem = GS.getCurrentItem();
-			if(curItem.state == Data_Item.STATE_ON_CADAVER) {
-				curItem.control.resetToSpawnPosition();
-			}
+			// No autosave because death already autosaves
 		}
 	}
 

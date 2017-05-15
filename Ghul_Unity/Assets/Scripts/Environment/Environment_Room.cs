@@ -29,7 +29,7 @@ public class Environment_Room : MonoBehaviour {
 
 		// Set general movement parameters
 		SCREEN_SIZE_HORIZONTAL = Global_Settings.read("SCREEN_SIZE_HORIZONTAL");
-		MARGIN_SIZE_PHYSICAL = Global_Settings.read("HORIZONTAL_ROOM_MARGIN");
+		MARGIN_SIZE_PHYSICAL = Global_Settings.read("HORIZONTAL_ROOM_MARGIN") + Data_Position.PIXEL_GRID_SIZE;
 		MARGIN_SIZE_CAMERA = SCREEN_SIZE_HORIZONTAL / 2;
 		MARGIN_DOOR_ENTRANCE = Global_Settings.read("MARGIN_DOOR_ENTRANCE");
 	}

@@ -199,7 +199,7 @@ public class Control_GameState : MonoBehaviour {
 
 		// Placing the cadaver sprite in the location they used to be
 		Data_Cadaver cadaver = GS.getCadaver();
-		Vector3 positionOfCadaver = new Vector3(cadaver.atPos, cadaver.isIn.gameObj.transform.position.y - 1.55f, 0);
+		Vector3 positionOfCadaver = new Vector3(cadaver.atPos, cadaver.isIn.gameObj.transform.position.y, 0);
 		cadaver.gameObj.transform.Translate(positionOfCadaver - cadaver.gameObj.transform.position);
 		cadaver.updatePosition(cadaver.isIn, cadaver.atPos);
 
@@ -435,6 +435,7 @@ public class Control_GameState : MonoBehaviour {
 		// Place the new item
 		newItem.updatePosition(parentRoom, spawnPos.X, spawnPos.Y);
 		newItem.control.loadGameState(GS, newItemIndex);
+		newItem.control.updateGameObjectPosition();
 
 		return newItem;
 	}

@@ -12,6 +12,7 @@ public class Control_Item : MonoBehaviour {
 	[NonSerialized]
 	private Data_Item me;
 
+	private SpriteRenderer spriteRenderer;
 	public Sprite BloodyScribble;
 
 	private float ITEM_CARRY_ELEVATION;
@@ -20,6 +21,8 @@ public class Control_Item : MonoBehaviour {
 	void Awake() {
 		ITEM_CARRY_ELEVATION = Global_Settings.read("ITEM_CARRY_ELEVATION");
 		ITEM_FLOOR_LEVEL = Global_Settings.read("ITEM_FLOOR_LEVEL");
+
+		spriteRenderer = GetComponent<SpriteRenderer>();
 	}
 
 	// To make sure the game state is fully initialized before loading it, this function is called by game state class itself
@@ -47,11 +50,16 @@ public class Control_Item : MonoBehaviour {
 
 	// Drops a free-falling object on the floor
 	private IEnumerator fallOntoTheFloor() {
-		while(me.elevation > ITEM_FLOOR_LEVEL && gameObject != null) {
-			float newElevation = me.elevation - Time.deltaTime * getDownwardVelocity(ITEM_CARRY_ELEVATION - me.elevation);
-			me.updatePosition(me.isIn, me.pos.X, Math.Max(ITEM_FLOOR_LEVEL, newElevation));
+		if(gameObject != null) {
+			while(me.elevation > ITEM_FLOOR_LEVEL) {
+				float newElevation = me.elevation - Time.deltaTime * getDownwardVelocity(ITEM_CARRY_ELEVATION - me.elevation);
+				me.updatePosition(me.isIn, me.pos.X, Math.Max(ITEM_FLOOR_LEVEL, newElevation));
+				updateGameObjectPosition();
+				yield return null;
+			}
+			// Lastly, adjust the position of the item to align with the pixel grid
+			me.pos.snapToGrid();
 			updateGameObjectPosition();
-			yield return null;
 		}
 	}
 
@@ -66,6 +74,7 @@ public class Control_Item : MonoBehaviour {
 		SpriteRenderer rend = GetComponent<SpriteRenderer>();
 		// Move the sprite to target position
 		me.updatePosition(me.isIn, targetPosition.x, targetPosition.y);
+		me.pos.snapToGrid();
 		updateGameObjectPosition();
 		transform.position = targetPosition;
 		// Set alpha channel to zero
@@ -86,7 +95,7 @@ public class Control_Item : MonoBehaviour {
 	public void updateGameObjectPosition() {
 		// The first two items are placed on the pentagram "in front" of the player character
 		float zPos = transform.position.z;
-		if(me.elevation <= ITEM_FLOOR_LEVEL) {
+		if((me.elevation - spriteRenderer.bounds.size.y / 2) <= ITEM_FLOOR_LEVEL) {
 			zPos = -2f;
 			GetComponent<SpriteRenderer>().sortingLayerName = "Foreground";
 		}
