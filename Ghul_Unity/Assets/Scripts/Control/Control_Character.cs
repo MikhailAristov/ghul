@@ -8,6 +8,7 @@ public abstract class Control_Character : MonoBehaviour {
 	protected Data_GameState GS;
 	[NonSerialized]
 	protected Environment_Room currentEnvironment;
+
 	protected abstract Data_Character getMe();
 
 	// General movement settings
@@ -31,16 +32,27 @@ public abstract class Control_Character : MonoBehaviour {
 
 	// required for animation transition (it makes more sense to link it to the run button rather than speed)
 	protected bool isRunningAnim;
+	protected bool spriteIsAlignedToGrid;
 
 	protected void FixedUpdate() {
 		if(GS != null && !GS.SUSPENDED) {
-			// Update character's velocity
+			// Update character's velocity, and precalculate its absolute value for better performance
 			if(positionAtTheLastTimeStep != null && positionAtTheLastTimeStep.RoomId == getMe().pos.RoomId) {
-				getMe().currentVelocity = (getMe().pos.X - positionAtTheLastTimeStep.X) / Time.fixedDeltaTime;
+				getMe().currentVelocitySigned = (getMe().pos.X - positionAtTheLastTimeStep.X) / Time.fixedDeltaTime;
+				getMe().currentVelocityAbsolute = Math.Abs(getMe().currentVelocitySigned);
 			} else {
-				getMe().currentVelocity = 0;
+				getMe().currentVelocitySigned = 0;
+				getMe().currentVelocityAbsolute = 0;
 			}
 			positionAtTheLastTimeStep = getMe().pos.clone();
+
+			// Snap the character sprite to the pixel grid when not moving
+			if(getMe().currentVelocityAbsolute > ANIM_MIN_SPEED_FOR_WALKING) {
+				spriteIsAlignedToGrid = false;
+			} else if(!spriteIsAlignedToGrid) {
+				transform.Translate(new Vector2(Data_Position.snapToGrid(getMe().atPos) - getMe().atPos, 0));
+				spriteIsAlignedToGrid = true;
+			}
 
 			// If the character is attacking, count up the attack duration
 			if(attackAnimationPlaying) {
@@ -57,8 +69,9 @@ public abstract class Control_Character : MonoBehaviour {
 		setSpriteFlip(direction < 0);
 
 		// Determine movement speed
-		float velocity = WALKING_SPEED; int noiseType = Control_Sound.NOISE_TYPE_WALK;
-		if (run && canRun()) {
+		float velocity = WALKING_SPEED;
+		int noiseType = Control_Sound.NOISE_TYPE_WALK;
+		if(run && canRun()) {
 			velocity = RUNNING_SPEED;
 			noiseType = Control_Sound.NOISE_TYPE_RUN;
 			updateStamina(true);
@@ -78,15 +91,14 @@ public abstract class Control_Character : MonoBehaviour {
 		if(validPosition > newPosition) {		// moving left (negative direction) gets us through the left door
 			Data_Door leftDoor = currentEnvironment.getDoorOnTheLeft();
 			return leftDoor;
-		}
-		else if (validPosition < newPosition) {	// moving right (positive direction) gets us through the right door
+		} else if(validPosition < newPosition) {	// moving right (positive direction) gets us through the right door
 			Data_Door rightDoor = currentEnvironment.getDoorOnTheRight();
 			return rightDoor;
 		}
 
 		// Move the sprite to the new valid position
 		float validDisplacement = validPosition - transform.position.x;
-		if (Mathf.Abs(validDisplacement) > 0.0f) {
+		if(Mathf.Abs(validDisplacement) > 0.0f) {
 			getMe().updatePosition(validPosition);
 			transform.Translate(validDisplacement, 0, 0);
 		}
@@ -96,10 +108,15 @@ public abstract class Control_Character : MonoBehaviour {
 
 		return null;
 	}
+
 	protected abstract void setSpriteFlip(bool state);
+
 	protected abstract bool canRun();
+
 	protected abstract void updateStamina(bool isRunning);
+
 	protected abstract void regainStamina();
+
 	protected abstract void makeWalkingNoise(float walkedDistance, int type, Data_Position atPos);
 
 	// This function transitions the character through a door
@@ -136,10 +153,13 @@ public abstract class Control_Character : MonoBehaviour {
 		// Execute all necessary actions after passing through the door
 		postDoorTransitionHook(door);
 	}
-	// Dummy functions to be implemented 
+	// Dummy functions to be implemented
 	protected abstract void activateCooldown(float duration);
+
 	protected abstract void preDoorTransitionHook(Data_Door doorTaken);
+
 	protected abstract void preRoomLeavingHook(Data_Door doorTaken);
+
 	protected abstract void postDoorTransitionHook(Data_Door doorTaken);
 
 	// Play out the attack animation
@@ -165,13 +185,13 @@ public abstract class Control_Character : MonoBehaviour {
 				attackIsCanceledByMoving = true;
 				break;
 			}
-			yield return new WaitForSeconds(1f/60f);
+			yield return new WaitForSeconds(1f / 60f);
 		}
 		stopAttackAnimation();
 		Debug.Log(getMe() + " completes attack in " + cumulativeAttackDuration + " s, " + target + " was at " + target.atPos);
 		// PHASE 2: Resolve
 		if(!attackIsCanceledByMoving && !target.isInvulnerable &&
-			getMe().isIn == target.isIn && Math.Abs(target.atPos - attackPoint) <= ATTACK_MARGIN) {
+		   getMe().isIn == target.isIn && Math.Abs(target.atPos - attackPoint) <= ATTACK_MARGIN) {
 			target.getControl().getHit();
 			postKillHook();
 		}
@@ -179,8 +199,12 @@ public abstract class Control_Character : MonoBehaviour {
 		yield return new WaitForSeconds(ATTACK_COOLDOWN); // Can't attack immediately after attacking, even if it was canceled (prevents spam)
 		attackAnimationPlaying = false;
 	}
+
 	public abstract void getHit();
+
 	protected abstract void postKillHook();
+
 	protected abstract void startAttackAnimation();
+
 	protected abstract void stopAttackAnimation();
 }

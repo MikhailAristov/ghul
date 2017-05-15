@@ -37,7 +37,9 @@ public abstract class Data_Character {
         private set { return; }
 	}
 	[NonSerialized]
-	public float currentVelocity; // in m/s
+	public float currentVelocitySigned; // in m/s (signed)
+	[NonSerialized]
+	public float currentVelocityAbsolute; // absolute value of the above, in m/s
 	[NonSerialized]
 	public float timeWithoutAction;
 

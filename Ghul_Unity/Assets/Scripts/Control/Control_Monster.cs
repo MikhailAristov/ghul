@@ -154,7 +154,7 @@ public class Control_Monster : Control_Character {
 		if(GS.monsterSeesToni) {
 			me.worldModel.toniKnownToBeInRoom(me.isIn);
 			// Do update the time both Toni and monster have been standing still, though
-			if(Math.Abs(Toni.currentVelocity) < 0.1f && Math.Abs(Toni.atPos - me.atPos) < EFFECTIVE_MINIMUM_ATTACK_RANGE) {
+			if(Toni.currentVelocityAbsolute < ANIM_MIN_SPEED_FOR_WALKING && Math.Abs(Toni.atPos - me.atPos) < EFFECTIVE_MINIMUM_ATTACK_RANGE) {
 				cumultativeImpasseDuration += Time.fixedDeltaTime;
 			} else {
 				cumultativeImpasseDuration = 0;
@@ -180,18 +180,18 @@ public class Control_Monster : Control_Character {
 		if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
 			// Transition for walking / attacking
 			if(animatorMonster != null) {
-				if(Math.Abs(getMe().currentVelocity) < ANIM_MIN_SPEED_FOR_WALKING) {
+				if(me.currentVelocityAbsolute < ANIM_MIN_SPEED_FOR_WALKING) {
 					animatorMonster.SetBool("Is Walking", false);
-				} else if(Math.Abs(getMe().currentVelocity) >= ANIM_MIN_SPEED_FOR_WALKING) {
+				} else if(me.currentVelocityAbsolute >= ANIM_MIN_SPEED_FOR_WALKING) {
 					animatorMonster.SetBool("Is Walking", true);
 				}
 			}
 		} else if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE) {
 			// Transition for walking
 			if(animatorCivilian != null) {
-				if(Math.Abs(getMe().currentVelocity) < ANIM_MIN_SPEED_FOR_WALKING) {
+				if(me.currentVelocityAbsolute < ANIM_MIN_SPEED_FOR_WALKING) {
 					animatorCivilian.SetBool("Is Walking", false);
-				} else if(Math.Abs(getMe().currentVelocity) >= ANIM_MIN_SPEED_FOR_WALKING) {
+				} else if(me.currentVelocityAbsolute >= ANIM_MIN_SPEED_FOR_WALKING) {
 					animatorCivilian.SetBool("Is Walking", true);
 				}
 			}
@@ -254,7 +254,7 @@ public class Control_Monster : Control_Character {
 				if(GS.monsterSeesToni) {
 					if(!attackAnimationPlaying) {
 						// If you see Toni, predict where he will when the attack animation completes...
-						float tonisPredictedPosition = Toni.atPos + ATTACK_DURATION * Toni.currentVelocity;
+						float tonisPredictedPosition = Toni.atPos + ATTACK_DURATION * Toni.currentVelocitySigned;
 						// ...as well as where the attack his his direction would land
 						float attackLandingPoint = me.atPos + Math.Sign(Toni.atPos - me.atPos) * ATTACK_RANGE;
 						// If Toni's predicted position and the attack landing point are within the attack margin (hit box), initiate attack

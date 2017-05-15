@@ -228,10 +228,10 @@ public class Control_PlayerCharacter : Control_Character {
 		switch(GS.OVERALL_STATE) {
 		case Control_GameState.STATE_COLLECTION_PHASE:
 			if(animatorHuman != null) {
-				if(Math.Abs(getMe().currentVelocity) < ANIM_MIN_SPEED_FOR_WALKING) {
+				if(me.currentVelocityAbsolute < ANIM_MIN_SPEED_FOR_WALKING) {
 					animatorHuman.SetBool("Is Walking", false);
 					animatorHuman.SetBool("Is Running", false);
-				} else if(Math.Abs(getMe().currentVelocity) >= ANIM_MIN_SPEED_FOR_WALKING && !isRunningAnim) {
+				} else if(me.currentVelocityAbsolute >= ANIM_MIN_SPEED_FOR_WALKING && !isRunningAnim) {
 					animatorHuman.SetBool("Is Walking", true);
 					animatorHuman.SetBool("Is Running", false);
 				} else if(isRunningAnim) {
@@ -243,9 +243,9 @@ public class Control_PlayerCharacter : Control_Character {
 		case Control_GameState.STATE_MONSTER_PHASE:
 		case Control_GameState.STATE_TRANSFORMATION:
 			if(animatorMonsterToni != null) {
-				if(Math.Abs(getMe().currentVelocity) < ANIM_MIN_SPEED_FOR_WALKING) {
+				if(me.currentVelocityAbsolute < ANIM_MIN_SPEED_FOR_WALKING) {
 					animatorMonsterToni.SetBool("Is Walking", false);
-				} else if(Math.Abs(getMe().currentVelocity) >= ANIM_MIN_SPEED_FOR_WALKING) {
+				} else if(me.currentVelocityAbsolute >= ANIM_MIN_SPEED_FOR_WALKING) {
 					animatorMonsterToni.SetBool("Is Walking", true);
 				}
 			}
@@ -266,15 +266,15 @@ public class Control_PlayerCharacter : Control_Character {
 		// Update the movement statistics during the collection stage
 		if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
 			// Update the ticks for running and standing statistics
-			if(Math.Abs(me.currentVelocity) < 0.1f) {
+			if(me.currentVelocityAbsolute < ANIM_MIN_SPEED_FOR_WALKING) {
 				me.cntStandingSinceLastDeath++;
-			} else if(Math.Abs(me.currentVelocity) < WALKING_RUNNING_THRESHOLD) {
+			} else if(me.currentVelocityAbsolute < WALKING_RUNNING_THRESHOLD) {
 				me.cntWalkingSinceLastDeath++;
 			} else {
 				me.cntRunningSinceLastDeath++;
 			}
 			// Update the distance walked in the current room
-			me.increaseWalkedDistance(me.currentVelocity * Time.fixedDeltaTime);
+			me.increaseWalkedDistance(me.currentVelocityAbsolute * Time.fixedDeltaTime);
 		}
 	}
 
