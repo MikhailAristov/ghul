@@ -171,6 +171,8 @@ public class Control_PlayerCharacter : Control_Character {
 			if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
 				takeItem();
 			} else if(!attackAnimationPlaying) {
+				// TODO: Remove this cooldown if proper attack cancel animations are implemented
+				activateCooldown(ATTACK_DURATION + ATTACK_COOLDOWN);
 				StartCoroutine(playAttackAnimation(me.atPos + (monsterToniRenderer.flipX ? 1f : -1f), GS.getMonster()));
 			}
 		}
@@ -287,7 +289,12 @@ public class Control_PlayerCharacter : Control_Character {
 	}
 
 	protected override bool canRun() {
-		return !me.exhausted; 
+		// Human Toni gets exhausted, monster Toni doesn't
+		if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
+			return !me.exhausted; 
+		} else {
+			return true;
+		}
 	}
 
 	protected override void updateStamina(bool isRunning) {
@@ -479,7 +486,6 @@ public class Control_PlayerCharacter : Control_Character {
 
 	protected override void preDoorTransitionHook(Data_Door doorTaken) {
 		mainCameraControl.fadeOut(DOOR_TRANSITION_DURATION / 2);
-		
 	}
 
 	protected override void preRoomLeavingHook(Data_Door doorTaken) {
@@ -502,8 +508,30 @@ public class Control_PlayerCharacter : Control_Character {
 		   (doorTaken.connectsTo.type == Data_Door.TYPE_BACK_DOOR && Input.GetButtonDown("Vertical"))) {
 			Input.ResetInputAxes();
 		}
+		// During the monster phase, guide monster Toni to the intruders
+		if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE) {
+			guideMonsterToniToIntruders();
+		}
 		// Save the game
 		Control_Persistence.saveToDisk(GS);
+	}
+
+	// This function guides the player to the "civilian" intruders in the house during the monster phase of the game
+	public void guideMonsterToniToIntruders() {
+		if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE && !GS.monsterSeesToni) {
+			// Find the door in the current room that currently has the shortest distance to the intruder
+			Data_Door bestDoor = me.isIn.DOORS.Values[0];
+			float shortestDistance = float.MaxValue, curDistance;
+			foreach(Data_Door door in me.isIn.DOORS.Values) {
+				curDistance = GS.getDistance(door, GS.getMonster().pos);
+				if(curDistance < shortestDistance) {
+					bestDoor = door;
+					shortestDistance = curDistance;
+				}
+			}
+			// (Re-)Open this door
+			bestDoor.control.open(silently:true, hold:true);
+		}
 	}
 
 	private void updateDoorUsageStatistic(Data_Door door, Data_Room currentRoom, Data_Door destinationDoor, Data_Room destinationRoom) {

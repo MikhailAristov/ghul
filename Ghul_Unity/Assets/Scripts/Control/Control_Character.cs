@@ -167,10 +167,10 @@ public abstract class Control_Character : MonoBehaviour {
 			yield return new WaitForSeconds(1f/60f);
 		}
 		stopAttackAnimation();
-		Debug.Log(getMe() + " completes attack in " + cumulativeAttackDuration + " s, Toni was at " + GS.getToni().atPos);
+		Debug.Log(getMe() + " completes attack in " + cumulativeAttackDuration + " s, " + target + " was at " + target.atPos);
 		// PHASE 2: Resolve
 		if(!attackIsCanceledByMoving && !target.isInvulnerable &&
-			GS.monsterSeesToni && Math.Abs(target.atPos - attackPoint) <= ATTACK_MARGIN) {
+			getMe().isIn == target.isIn && Math.Abs(target.atPos - attackPoint) <= ATTACK_MARGIN) {
 			target.getControl().getHit();
 			postKillHook();
 		}

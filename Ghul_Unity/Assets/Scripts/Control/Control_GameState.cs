@@ -216,6 +216,10 @@ public class Control_GameState : MonoBehaviour {
 		if(GS.OVERALL_STATE > STATE_COLLECTION_PHASE) {
 			triggerEndgame(GS.OVERALL_STATE);
 		}
+		// Guide monster Toni
+		if(GS.OVERALL_STATE == STATE_MONSTER_PHASE) {
+			GS.getToni().control.guideMonsterToniToIntruders();
+		}
 	}
 
 	// TODO: Proper endgame
@@ -328,7 +332,7 @@ public class Control_GameState : MonoBehaviour {
 		// Make it look like Toni has just walked in through the right door (next to the pentagram)
 		Toni.updatePosition(ritualRoom, ritualRoom.rightWalkBoundary);
 		Toni.control.loadGameState(GS);
-		ritualRoom.rightmostDoor.control.open(false);
+		ritualRoom.rightmostDoor.control.open();
 
 		// INITIALIZE MONSTER
 		GS.setMonsterCharacter("Monster");

@@ -91,7 +91,7 @@ public class Control_Sound : MonoBehaviour {
 	private IEnumerator updateToniMonsterDistanceDisplay() {
 		while(true) {
 			if(!GS.SUSPENDED) {
-				if(Debug.isDebugBuild || GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE) {
+				if(Debug.isDebugBuild) {
 					MonsterDistanceText.text = string.Format("{0:0.0} m", DIST);
 				} else if(MonsterDistanceText.text.Length > 0) {
 					MonsterDistanceText.text = "";

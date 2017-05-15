@@ -50,8 +50,9 @@ public class Control_Door : MonoBehaviour {
 	}
 
 	// Opens the door if it's closed, keeps it open longer otherwise
-	public void open(bool silently = false) {
-		timeUntilClosing = doorOpenDuration;
+	public void open(bool silently = false, bool hold = false) {
+		// If the "hold" flag is specified, the door stays open for much longer (or until someone goes through it)
+		timeUntilClosing = hold ? doorOpenDuration * 10 : doorOpenDuration;
 		if(currentState != STATE_OPEN) {
 			ClosedSprite.SetActive(false);
 			OpenSprite.SetActive(true);
