@@ -4,6 +4,9 @@ using System.Collections;
 
 public class Control_Item : MonoBehaviour {
 
+	// Because fantasy physics
+	public const float GRAVITATIONAL_CONSTANT = 0.5f * 9.81f;
+
 	[NonSerialized]
 	private Data_GameState GS;
 	[NonSerialized]
@@ -54,9 +57,8 @@ public class Control_Item : MonoBehaviour {
 
 	// Calculates the downward velocity of the falling object from the distance it had already fallen
 	private float getDownwardVelocity(float fallenDistance) {
-		float g = 1.5f * 9.81f; // Because fantasy physics
-		float v = (float)Math.Sqrt(2 * fallenDistance * g);
-		return (v > 0 ? v : g); // Differential equations are a bitch...
+		float v = (float)Math.Sqrt(2 * fallenDistance * GRAVITATIONAL_CONSTANT);
+		return (v > 0 ? v : GRAVITATIONAL_CONSTANT); // Differential equations are a bitch...
 	}
 
 	// When placed, fades in the item at its designated position on the pentagram
