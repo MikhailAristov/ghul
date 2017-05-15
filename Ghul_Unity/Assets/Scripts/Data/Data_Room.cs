@@ -114,7 +114,7 @@ public class Data_Room : IComparable<Data_Room> {
 		gameObj = go;
 		env = go.GetComponent<Environment_Room>();
 		// Get room details from the prefab
-		_width = prefabDetails.size.x;
+		_width = Data_Position.snapToGrid(prefabDetails.size.x);
 		_itemSpawnPoints = new List<Data_Position>();
 		foreach(Vector2 p in prefabDetails.itemSpawns) {
 			_itemSpawnPoints.Add(new Data_Position(I, p, align: true));
