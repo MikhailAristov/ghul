@@ -22,6 +22,7 @@ public abstract class Control_Character : MonoBehaviour {
 	protected float ATTACK_DURATION;
 	protected float ATTACK_COOLDOWN;
 
+	public const float ANIM_MIN_SPEED_FOR_WALKING = 0.001f;
 	public const float MONSTER_SPRITE_SHIFT_DURING_ATTACK = 1.75f;
 	protected bool attackAnimationPlaying;
 	protected bool monsterSpriteIsShiftedForAttackAnimation;

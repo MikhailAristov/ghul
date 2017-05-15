@@ -57,8 +57,8 @@ public class Global_Settings {
 
 			// Item settings
 			{ "MARGIN_ITEM_COLLECT",			0.3f },		// How close a character's center must be to an item to be able to collect it
-			{ "ITEM_CARRY_ELEVATION",			-0.33f },	// Distance from the horizontal center of the room at which items are carried by chara
-			{ "ITEM_FLOOR_LEVEL",				-1.8f },	// Distance from the horizontal center of the room at which items are lying on the floor
+			{ "ITEM_CARRY_ELEVATION",			-1.2f },	// Distance from the horizontal center of the room at which items are carried by chara
+			{ "ITEM_FLOOR_LEVEL",				-1.75f },	// Distance from the horizontal center of the room at which items are lying on the floor
 			{ "INVENTORY_DISPLAY_DURATION",		2.0f },		// How long the inventory overlay is shown when invoked
 			{ "TOTAL_NUMBER_OF_ITEMS_PLACED",	10.0f },	// needs casting to int when used
 

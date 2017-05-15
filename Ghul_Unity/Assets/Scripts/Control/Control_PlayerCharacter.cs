@@ -6,9 +6,6 @@ using UnityEditor.Animations;
 
 public class Control_PlayerCharacter : Control_Character {
 
-	// Thresholds for animation transitions. Public for fine-tuning (Running is triggered via isRunningAnim variable in Control_Character when Run-Button is pressed)
-	public float ANIM_MIN_SPEED_FOR_WALKING = 0.001f;
-
 	[NonSerialized]
 	private Data_PlayerCharacter me;
 
@@ -329,7 +326,7 @@ public class Control_PlayerCharacter : Control_Character {
 		if(GS.OVERALL_STATE < Control_GameState.STATE_TRANSFORMATION) {
 			// Hide Toni's sprite and replace it with the cadaver
 			stickmanRenderer.enabled = false;
-			cadaver.gameObj.transform.position = transform.position + (new Vector3(0, -1.55f));
+			cadaver.gameObj.transform.position = transform.position;
 			cadaver.updatePosition(me.isIn, me.atPos);
 			// Transfer the current item if any to the cadaver
 			leaveItemOnCadaver();

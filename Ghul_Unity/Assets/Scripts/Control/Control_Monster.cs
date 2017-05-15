@@ -6,9 +6,6 @@ using System.Linq;
 
 public class Control_Monster : Control_Character {
 
-	// Thresholds for animation transitions.
-	public float ANIM_MIN_SPEED_FOR_WALKING = 0.01f;
-
 	[NonSerialized]
 	private Data_Monster me;
 	protected override Data_Character getMe() {
