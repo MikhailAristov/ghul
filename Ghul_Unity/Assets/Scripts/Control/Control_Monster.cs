@@ -473,7 +473,13 @@ public class Control_Monster : Control_Character {
 		if(Math.Abs(distToToni) < EFFECTIVE_MINIMUM_ATTACK_RANGE) {
 			// However, if Toni has been standing still for some time, find the nearest attack position and move towards it
 			if(cumultativeImpasseDuration > WAIT_FOR_TONI_TO_MOVE) {
-				walk(getNearestAttackVector(), true, Time.deltaTime);
+				float attackVector = getNearestAttackVector();
+				if(attackVector != 0) {
+					walk(attackVector, true, Time.deltaTime);
+				} else {
+					// ...unless there aren't any valid positions to attack from in this room!
+					setSpriteFlip(distToToni < 0);
+				}
 			} else {
 				setSpriteFlip(distToToni < 0);
 			}
@@ -497,8 +503,8 @@ public class Control_Monster : Control_Character {
 			if(Math.Abs(leftAttackVector) >= Math.Abs(rightAttackVector) && (me.atPos + rightAttackVector) < me.isIn.rightWalkBoundary) {
 				return rightAttackVector;
 			}
-			// Default case: run towards Toni
-			return (Toni.atPos - me.atPos);
+			// Default case: wait for Toni to move
+			return 0;
 		} else {
 			return 0;
 		}
