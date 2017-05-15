@@ -381,7 +381,8 @@ public class Control_GameState : MonoBehaviour {
 		switch(doorType) {
 		case Data_Door.TYPE_LEFT_SIDE:
 			doorGameObj = prefabFactory.spawnLeftSideDoor(parentTransform, parentWidth);
-			xPos = (HORIZONTAL_ROOM_MARGIN - parentWidth) / 2; // Overwrite any specified position with a virtual one outside of actual room constraints
+			// Overwrite any specified position with a virtual one outside of actual room constraints
+			xPos = Data_Position.snapToGrid((HORIZONTAL_ROOM_MARGIN - parentWidth) / 2);
 			break;
 		default:
 		case Data_Door.TYPE_BACK_DOOR:
@@ -389,7 +390,7 @@ public class Control_GameState : MonoBehaviour {
 			break;
 		case Data_Door.TYPE_RIGHT_SIDE:
 			doorGameObj = prefabFactory.spawnRightSideDoor(parentTransform, parentWidth);
-			xPos = (parentWidth - HORIZONTAL_ROOM_MARGIN) / 2;
+			xPos = Data_Position.snapToGrid((parentWidth - HORIZONTAL_ROOM_MARGIN) / 2);
 			break;
 		}
 		// Initialize the door object and add it

@@ -6,39 +6,44 @@ using System.Collections.Generic;
 [Serializable]
 public class Data_Room : IComparable<Data_Room> {
 
-    // Index of the room in the global registry
-    [SerializeField]
-    private int _INDEX;
-    public int INDEX {
-        get { return _INDEX; }
-        private set { _INDEX = value;  }
-    }
+	// Index of the room in the global registry
+	[SerializeField]
+	private int _INDEX;
 
-    // Unique string identifier of the container game object
-    [SerializeField]
-    private string _gameObjName;
-    // Pointer to the container game object
-    [NonSerialized]
-    public GameObject gameObj;
-    // Pointer to the environment behavior aspect of the container object
-    [NonSerialized]
-    public Environment_Room env;
-
-    // Horizontal span of the room (generally equals its spite width)
-    [SerializeField]
-	private float _width;
-    public float width {
-        get { return _width; }
-        private set { _width = value; }
+	public int INDEX {
+		get { return _INDEX; }
+		private set { _INDEX = value; }
 	}
+
+	// Unique string identifier of the container game object
+	[SerializeField]
+	private string _gameObjName;
+	// Pointer to the container game object
+	[NonSerialized]
+	public GameObject gameObj;
+	// Pointer to the environment behavior aspect of the container object
+	[NonSerialized]
+	public Environment_Room env;
+
+	// Horizontal span of the room (generally equals its spite width)
+	[SerializeField]
+	private float _width;
+
+	public float width {
+		get { return _width; }
+		private set { _width = value; }
+	}
+
 	[NonSerialized]
 	private float walkMargin;
+
 	public float leftWalkBoundary {
-		get { return (walkMargin - _width/2); }
+		get { return (walkMargin - _width / 2); }
 		private set { return; }
 	}
+
 	public float rightWalkBoundary {
-		get { return (_width/2 - walkMargin); }
+		get { return (_width / 2 - walkMargin); }
 		private set { return; }
 	}
 
@@ -50,12 +55,14 @@ public class Data_Room : IComparable<Data_Room> {
 	[SerializeField]
 	private List<int> _backDoorIDs;
 	// The door list is autosorted by horizontal position
-    [NonSerialized]
+	[NonSerialized]
 	public SortedList<float, Data_Door> DOORS;
+
 	public Data_Door leftmostDoor {
 		get { return DOORS.Values[0]; }
 		private set { return; }
 	}
+
 	public Data_Door rightmostDoor {
 		get { return DOORS.Values[DOORS.Count - 1]; }
 		private set { return; }
@@ -64,6 +71,7 @@ public class Data_Room : IComparable<Data_Room> {
 	// List of item spawn positions in the room
 	[SerializeField]
 	private List<Data_Position> _itemSpawnPoints;
+
 	public bool hasItemSpawns {
 		get { return (_itemSpawnPoints.Count > 0); }
 		private set { return; }
@@ -72,18 +80,22 @@ public class Data_Room : IComparable<Data_Room> {
 	// List of door spawn positions in the room
 	[SerializeField]
 	private List<float> _doorSpawnPoints;
+
 	public bool hasLeftSideDoorSpawn {
 		get { return (_doorSpawnPoints[0] < -_width); }
 		private set { return; }
 	}
+
 	public bool hasRightSideDoorSpawn {
 		get { return (_doorSpawnPoints[_doorSpawnPoints.Count - 1] > _width); }
 		private set { return; }
 	}
+
 	public int countAllDoorSpawns {
 		get { return _doorSpawnPoints.Count; }
 		private set { return; }
 	}
+
 	public int countBackDoorSpawns {
 		get { return (countAllDoorSpawns - (hasLeftSideDoorSpawn ? 1 : 0) - (hasRightSideDoorSpawn ? 1 : 0)); }
 		private set { return; }
@@ -105,7 +117,7 @@ public class Data_Room : IComparable<Data_Room> {
 		_width = prefabDetails.size.x;
 		_itemSpawnPoints = new List<Data_Position>();
 		foreach(Vector2 p in prefabDetails.itemSpawns) {
-			_itemSpawnPoints.Add(new Data_Position(I, p));
+			_itemSpawnPoints.Add(new Data_Position(I, p, align: true));
 		}
 		walkMargin = Global_Settings.read("HORIZONTAL_ROOM_MARGIN");
 		effectiveWidth = _width - 2 * walkMargin;
@@ -113,16 +125,27 @@ public class Data_Room : IComparable<Data_Room> {
 		meanItemFetchDistance = (_itemSpawnPoints.Count > 0) ? (effectiveWidth / 3) : 0;
 		// Load door spawnpoints
 		_doorSpawnPoints = new List<float>();
-		if(prefabDetails.doorSpawnLeft) { _doorSpawnPoints.Add(float.MinValue); }
-		_doorSpawnPoints.AddRange(prefabDetails.doorSpawns);
-		if(prefabDetails.doorSpawnRight) { _doorSpawnPoints.Add(float.MaxValue); }
+		if(prefabDetails.doorSpawnLeft) {
+			_doorSpawnPoints.Add(float.MinValue);
+		}
+		foreach(float doorSpawn in prefabDetails.doorSpawns) {
+			_doorSpawnPoints.Add(Data_Position.snapToGrid(doorSpawn));
+		}
+		if(prefabDetails.doorSpawnRight) {
+			_doorSpawnPoints.Add(float.MaxValue);
+		}
 		_doorSpawnPoints.Sort();
 		// Doors are added separately
 		removeAllDoors();
 	}
 
-    public int CompareTo(Data_Room other) { return INDEX.CompareTo(other.INDEX); }
-    public override string ToString() { return INDEX.ToString(); }
+	public int CompareTo(Data_Room other) {
+		return INDEX.CompareTo(other.INDEX);
+	}
+
+	public override string ToString() {
+		return INDEX.ToString();
+	}
 
 	// Initializes the room with no doors
 	public void removeAllDoors() {
@@ -148,9 +171,9 @@ public class Data_Room : IComparable<Data_Room> {
 		float xPos = getDoorSpawnPosition(spawnIndex);
 		// Loop through the doors
 		foreach(Data_Door door in DOORS.Values) {
-			if( (door.type == Data_Door.TYPE_LEFT_SIDE	&& xPos <= (horizontalRoomMargin - this._width / 2)) ||
-				(door.type == Data_Door.TYPE_BACK_DOOR	&& Math.Abs(xPos - door.atPos) < marginOfError) ||
-				(door.type == Data_Door.TYPE_RIGHT_SIDE	&& xPos >= (this._width / 2 - horizontalRoomMargin))) {
+			if((door.type == Data_Door.TYPE_LEFT_SIDE	&& xPos <= (horizontalRoomMargin - this._width / 2)) ||
+			   (door.type == Data_Door.TYPE_BACK_DOOR	&& Math.Abs(xPos - door.atPos) < marginOfError) ||
+			   (door.type == Data_Door.TYPE_RIGHT_SIDE	&& xPos >= (this._width / 2 - horizontalRoomMargin))) {
 				return door;
 			}
 		}
@@ -158,8 +181,7 @@ public class Data_Room : IComparable<Data_Room> {
 	}
 
 	// Adds a door to this room
-	public void addDoor(Data_Door D)
-	{
+	public void addDoor(Data_Door D) {
 		switch(D.type) {
 		case Data_Door.TYPE_LEFT_SIDE:
 			_leftSideDoorID = D.INDEX;
@@ -187,8 +209,7 @@ public class Data_Room : IComparable<Data_Room> {
 	}
 
 	// Resets game object references, e.g. after a saved state load
-	public void fixObjectReferences(Data_GameState GS, Factory_PrefabController prefabFactory)
-	{
+	public void fixObjectReferences(Data_GameState GS, Factory_PrefabController prefabFactory) {
 		// Relocate or respawn the game object
 		gameObj = GameObject.Find(_gameObjName);
 		if(gameObj == null) {
@@ -204,7 +225,7 @@ public class Data_Room : IComparable<Data_Room> {
 			DOORS.Add(d.atPos, d);
 			d.isIn = this;
 		}
-		foreach (int id in _backDoorIDs) {
+		foreach(int id in _backDoorIDs) {
 			Data_Door d = GS.getDoorByIndex(id);
 			DOORS.Add(d.atPos, d);
 			d.isIn = this;
