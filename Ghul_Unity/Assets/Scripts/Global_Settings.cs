@@ -40,7 +40,7 @@ public class Global_Settings {
 			// Monster settings
 			{ "MONSTER_WALKING_SPEED",			4.5f },
 			{ "MONSTER_SLOW_WALKING_SPEED",		2.5f },		// when the monster randomly walks around
-			{ "MONSTER_ATTACK_RANGE",			3.7f },		// the distance from the monster that it main attack hits
+			{ "MONSTER_ATTACK_RANGE",			2.55f },	// the distance from the monster that it main attack hits
 			{ "MONSTER_ATTACK_MARGIN",			0.5f },		// the size of the "hitbox" for the monster's attack
 			{ "MONSTER_ATTACK_DURATION",		0.5f },		// how long, in seconds, does an attack take from start to hit
 			{ "MONSTER_ATTACK_COOLDOWN",		0.5f },		// how long, in seconds, does an attack take from hit to finish
