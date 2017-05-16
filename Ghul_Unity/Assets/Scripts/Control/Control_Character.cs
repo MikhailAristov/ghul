@@ -68,10 +68,10 @@ public abstract class Control_Character : MonoBehaviour {
 
 		// Determine movement speed
 		float velocity = WALKING_SPEED;
-		int noiseType = Control_Sound.NOISE_TYPE_WALK;
+		int noiseType = Control_Noise.NOISE_TYPE_WALK;
 		if(run && canRun()) {
 			velocity = RUNNING_SPEED;
-			noiseType = Control_Sound.NOISE_TYPE_RUN;
+			noiseType = Control_Noise.NOISE_TYPE_RUN;
 			updateStamina(true);
 			isRunningAnim = true;
 		} else {

@@ -21,7 +21,7 @@ public class Control_Camera : MonoBehaviour {
 
 	// There must be this much space between the center of the monster sprite
 	// and the edge of the camera's view field to see it "clearly"
-	private static float monsterVisibilityThreshold = 0.6f;
+	private static float monsterVisibilityThreshold = 0.4f;
 
 	void Awake() {
 		SCREEN_SIZE_HORIZONTAL = Global_Settings.read("SCREEN_SIZE_HORIZONTAL");

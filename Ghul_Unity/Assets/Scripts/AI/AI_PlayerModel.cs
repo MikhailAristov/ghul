@@ -127,23 +127,23 @@ public class AI_PlayerModel {
 		// Likelihood depends on the noise type
 		switch(noiseType) {
 		default:
-		case Control_Sound.NOISE_TYPE_NONE:
+		case Control_Noise.NOISE_TYPE_NONE:
 			// Return probability of making NO noise in any given time step
 			// The probability of making ANY noise equals the mean number of steps Toni takes within the room,
 			// plus 1 for leaving through one of the doors, plus 1 for picking up items if there are item spawns in it,
 			// everything divided by the mean number of time steps Toni spends inside the room
 			return 1.0 - ( meanWalkingDistance[roomIndex] / TONI_SINGLE_STEP_LENGTH + (roomHasItemSpawns[roomIndex] ? 2.0 : 1.0) ) / meanStayingTime[roomIndex];
-		case Control_Sound.NOISE_TYPE_WALK:
+		case Control_Noise.NOISE_TYPE_WALK:
 			// Return probability of a walking noise while NOT running
 			return toniWalkingNoiseProbabilityPerTimeStep;
-		case Control_Sound.NOISE_TYPE_RUN:
+		case Control_Noise.NOISE_TYPE_RUN:
 			// Return probability of a walking noise while running
 			return toniRunningNoiseProbabilityPerTimeStep;
-		case Control_Sound.NOISE_TYPE_DOOR:
+		case Control_Noise.NOISE_TYPE_DOOR:
 			// Toni makes the door noise in EVERY room, specifically upon leaving it after the mean staying time
 			return (1.0 / meanStayingTime[roomIndex]);
-		case Control_Sound.NOISE_TYPE_ITEM:
-		case Control_Sound.NOISE_TYPE_ZAP:
+		case Control_Noise.NOISE_TYPE_ITEM:
+		case Control_Noise.NOISE_TYPE_ZAP:
 			// If the room has item spawns, there is a small chance Toni will try picking an item up
 			// Note that the model doesn't actually track items in the house, as that would give the
 			// monster an unfair advantage of knowing at a distance where all items are

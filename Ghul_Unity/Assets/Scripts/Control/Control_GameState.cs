@@ -7,6 +7,8 @@ using System.Collections.Generic;
 public class Control_GameState : MonoBehaviour {
     
 	private Data_GameState GS;
+	private Data_PlayerCharacter TONI;
+	private Data_Monster MONSTER;
 
 	// Before all items are placed for ritual
 	public const int STATE_COLLECTION_PHASE = 0;
@@ -18,7 +20,8 @@ public class Control_GameState : MonoBehaviour {
 	public const int STATE_MONSTER_DEAD = 3;
 
 	public Canvas MainMenuCanvas;
-	public Control_Sound SoundSystem;
+	public Text MonsterDistanceText;
+	public Control_Music JukeBox;
 	public GameObject NewGameButton;
 	public GameObject RitualRoomScribbles;
 
@@ -85,6 +88,12 @@ public class Control_GameState : MonoBehaviour {
 	private void reenableNewGameButton() {
 		newGameDisabled = false;
 		NewGameButton.GetComponent<Image>().color = new Color(136f / 255f, 136f / 255f, 136f / 255f);
+	}
+
+	void FixedUpdate() {
+		if(GS != null && !GS.SUSPENDED) {
+			GS.DISTANCE_TONI_TO_MONSTER = GS.getDistance(TONI.pos, MONSTER.pos);
+		}
 	}
 
 	// Update is called once per frame
@@ -156,7 +165,7 @@ public class Control_GameState : MonoBehaviour {
 			toni.control.activateCooldown(duration);
 			monster.control.activateCooldown(duration);
 			// Play a scary sound
-			SoundSystem.playEncounterJingle();
+			JukeBox.playEncounterJingle();
 		}
 
 		// Check if player died to trigger house mix-up
@@ -180,12 +189,19 @@ public class Control_GameState : MonoBehaviour {
 
 	// This method updates parameters after loading or resetting the game
 	private void setAdditionalParameters() {
+		TONI = GS.getToni();
+		MONSTER = GS.getMonster();
+
 		// Train the camera on the main character
 		MAIN_CAMERA_CONTROL.loadGameState(GS);
-		MAIN_CAMERA_CONTROL.setFocusOn(GS.getToni().pos);
+		MAIN_CAMERA_CONTROL.setFocusOn(TONI.pos);
 
-		// Initialize the sound system
-		SoundSystem.loadGameState(GS);
+		// Initialize the jukebox
+		JukeBox.loadGameState(GS);
+
+		// Reset the distance display
+		StopCoroutine("updateToniMonsterDistanceDisplay");
+		StartCoroutine("updateToniMonsterDistanceDisplay");
 	}
 
 	// This method loads the saved game state to memory
@@ -292,7 +308,9 @@ public class Control_GameState : MonoBehaviour {
 		// Initialize all the characters
 		initializeCharacters();
 		// TODO: This is for debug purposes only, please remove in the final build!
-		GS.getMonster().worldModel.hasMetToni = false;
+		if(Debug.isDebugBuild) {
+			GS.getMonster().worldModel.hasMetToni = false;
+		}
 
 		// Spawn all items
 		for(int i = 0; i < TOTAL_ITEMS_PLACED; i++) {
@@ -543,5 +561,19 @@ public class Control_GameState : MonoBehaviour {
 		// Save and exit
 		Control_Persistence.saveToDisk(GS);
 		Application.Quit();
+	}
+
+	// Continuously recalculates the proximity of monster to chara
+	private IEnumerator updateToniMonsterDistanceDisplay() {
+		while(true) {
+			if(GS != null && !GS.SUSPENDED) {
+				if(Debug.isDebugBuild) {
+					MonsterDistanceText.text = string.Format("{0:0.0} m", GS.DISTANCE_TONI_TO_MONSTER);
+				} else if(MonsterDistanceText.text.Length > 0) {
+					MonsterDistanceText.text = "";
+				}
+			}
+			yield return new WaitForSeconds(0.2f);
+		}
 	}
 }

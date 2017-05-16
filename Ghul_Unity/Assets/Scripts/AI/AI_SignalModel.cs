@@ -50,7 +50,7 @@ public class AI_SignalModel {
 		// Set the overall parameters
 		roomCount = GS.ROOMS.Count;
 		doorCount = GS.DOORS.Count;
-		noiseCount = Control_Sound.NOISE_TYPE_ZAP;
+		noiseCount = Control_Noise.NOISE_TYPE_ZAP;
 		// Recalculate distance boundaries between each door and room
 		precomputeDoorToRoomDistanceFunctions(GS);
 		// Recalculate the likelihoods of specific noises from specific room being heard at certain doors
@@ -157,7 +157,7 @@ public class AI_SignalModel {
 		double singleDoorProb = 1.0 / doorCount;
 		int reachableDoorCount;
 		for(int noise = 0; noise < noiseCount; noise++) {
-			double maxNoiseTravelDistance = Math.Sqrt(Control_Sound.getInitialLoudness(noise) / Control_Sound.NOISE_INAUDIBLE);
+			double maxNoiseTravelDistance = Math.Sqrt(Control_Noise.getInitialLoudness(noise) / Control_Noise.NOISE_INAUDIBLE);
 			// For reach room, compute which doors are reachable
 			foreach(Data_Room room in GS.ROOMS.Values) {
 				reachableDoorCount = 0;
@@ -181,14 +181,14 @@ public class AI_SignalModel {
 	private void precomputeNoiseMakerLikelihoods(Data_GameState GS) {
 		// First, calculate the raw probability of a noise being made by the house
 		// The house makes random noises every so often, and the monster knows it
-		float meanTimeStepsBetweenHouseNoises = ((Control_Sound.RANDOM_NOISE_MAX_DELAY - Control_Sound.RANDOM_NOISE_MIN_DELAY) / 2) / Global_Settings.read("TIME_STEP");
+		float meanTimeStepsBetweenHouseNoises = ((Control_Noise.RANDOM_NOISE_MAX_DELAY - Control_Noise.RANDOM_NOISE_MIN_DELAY) / 2) / Global_Settings.read("TIME_STEP");
 		// So this is the probability of the house making a noise at any given point in time
 		double probHouseMakingNoise = 1.0 / meanTimeStepsBetweenHouseNoises;
 
 		// Then do the same for Toni making noises, using the player model
 		double cumulativeLikelihoodOfToniMakingNoise = 0;
 		foreach(Data_Room room in GS.ROOMS.Values) {
-			for(int noise = Control_Sound.NOISE_TYPE_WALK; noise < noiseCount; noise++) {
+			for(int noise = Control_Noise.NOISE_TYPE_WALK; noise < noiseCount; noise++) {
 				cumulativeLikelihoodOfToniMakingNoise += playerModel.noiseLikelihood(noise, room.INDEX);
 			}
 		}
@@ -207,7 +207,7 @@ public class AI_SignalModel {
 		double result = 0;
 		// This is some crazy stochastic voodoo magic...
 		for(int r = 0; r < roomCount; r++) {
-			for(int n = Control_Sound.NOISE_TYPE_WALK; n < noiseCount; n++) {
+			for(int n = Control_Noise.NOISE_TYPE_WALK; n < noiseCount; n++) {
 				result += signalLikelihood(volume, door, n, r) * likelihoodNoiseHeardAtDoor[n, r, door.INDEX] * noiseAndOriginLikelihood(n, r, tonisRoom);
 			}
 		}
@@ -217,7 +217,7 @@ public class AI_SignalModel {
 	// f( perceivedVolume | atDoor, noise type, origin room )
 	private double signalLikelihood(float volume, Data_Door door, int noiseType, int origin) {
 		// Estimate the distance the signal must have traveled
-		double estimatedDistanceToOrigin = Math.Sqrt(Control_Sound.getInitialLoudness(noiseType) / volume);
+		double estimatedDistanceToOrigin = Math.Sqrt(Control_Noise.getInitialLoudness(noiseType) / volume);
 		// Count how many points within the supposed origin room the sound could have originated from
 		int possibleOriginPoints = 0;
 		float intervalStart, intervalEnd;
@@ -290,8 +290,8 @@ public class AI_SignalModel {
 	// f( null signal | Toni makes toniNoise in tonisRoom, house makes houseNoise in houseNoiseOriginRoom, monster listens in monsterRoom)
 	public double nullSignalLikelihood(int toniNoise, int tonisRoom, int houseNoise, int houseNoiseOriginRoom, int monsterRoom) {
 		double result = 1.0;
-		if(toniNoise == Control_Sound.NOISE_TYPE_NONE) {
-			if(houseNoise == Control_Sound.NOISE_TYPE_NONE) {
+		if(toniNoise == Control_Noise.NOISE_TYPE_NONE) {
+			if(houseNoise == Control_Noise.NOISE_TYPE_NONE) {
 				// Case 1: Neither Toni, nor the house made any sound
 				// Trivially, the monster cannot hear any sound (null signal) in this case, therefore its likelihood is 1 (max)
 			} else {
@@ -300,7 +300,7 @@ public class AI_SignalModel {
 				result -= audibilityLikelihood(houseNoise, houseNoiseOriginRoom, monsterRoom);
 			}
 		} else {
-			if(houseNoise == Control_Sound.NOISE_TYPE_NONE) {
+			if(houseNoise == Control_Noise.NOISE_TYPE_NONE) {
 				// Case 3: Toni made a sound, but the house didn't
 				// The monster perceives a null signal if Toni's room is too far away to hear this signal
 				result -= audibilityLikelihood(toniNoise, tonisRoom, monsterRoom);
@@ -315,7 +315,7 @@ public class AI_SignalModel {
 
 	// Approx. how likely it is that the signal from origiRoom will be heard in the targetRoom
 	public double audibilityLikelihood(int noiseType, int originRoom, int targetRoom) {
-		double maxNoiseTravelDistance = Math.Sqrt(Control_Sound.getInitialLoudness(noiseType) / Control_Sound.NOISE_INAUDIBLE);
+		double maxNoiseTravelDistance = Math.Sqrt(Control_Noise.getInitialLoudness(noiseType) / Control_Noise.NOISE_INAUDIBLE);
 		if(maxNoiseTravelDistance > roomDoor2roomMaxDistance[targetRoom, originRoom]) {
 			return 1.0;
 		} else if(maxNoiseTravelDistance > room2roomMinDistance[targetRoom, originRoom]) {

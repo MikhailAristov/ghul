@@ -39,7 +39,7 @@ public class Control_PlayerCharacter : Control_Character {
 	private GameObject monsterToniObject;
 	private SpriteRenderer monsterToniRenderer;
 	private Control_Camera mainCameraControl;
-	public Control_Sound soundSystem;
+	public Control_Noise noiseSystem;
 	public Canvas inventoryUI;
 	public GameObject pentagram;
 
@@ -293,7 +293,7 @@ public class Control_PlayerCharacter : Control_Character {
 	protected override void makeWalkingNoise(float walkedDistance, int type, Data_Position atPos) {
 		walkingDistanceSinceLastNoise += Mathf.Abs(walkedDistance);
 		if(walkingDistanceSinceLastNoise > SINGLE_STEP_LENGTH) {
-			soundSystem.makeNoise(type, atPos);
+			noiseSystem.makeNoise(type, atPos);
 		}
 	}
 
@@ -378,7 +378,7 @@ public class Control_PlayerCharacter : Control_Character {
 				zappingSound.Play();
 			}
 			// Make a zapping noise at the location
-			soundSystem.makeNoise(Control_Sound.NOISE_TYPE_ZAP, me.pos);
+			noiseSystem.makeNoise(Control_Noise.NOISE_TYPE_ZAP, me.pos);
 			return;
 		}
 
@@ -387,7 +387,7 @@ public class Control_PlayerCharacter : Control_Character {
 		me.carriedItem = thisItem;
 		Debug.Log(thisItem + " has been collected");
 		// Make noise at the current location
-		soundSystem.makeNoise(Control_Sound.NOISE_TYPE_ITEM, me.pos);
+		noiseSystem.makeNoise(Control_Noise.NOISE_TYPE_ITEM, me.pos);
 		// Auto save when collecting an item.
 		Control_Persistence.saveToDisk(GS);
 		// Show inventory
@@ -402,7 +402,7 @@ public class Control_PlayerCharacter : Control_Character {
 			Debug.Log("Item #" + me.carriedItem.INDEX + " dropped");
 			me.carriedItem = null;
 			// Make noise at the current location
-			soundSystem.makeNoise(Control_Sound.NOISE_TYPE_ITEM, me.pos);
+			noiseSystem.makeNoise(Control_Noise.NOISE_TYPE_ITEM, me.pos);
 			// Auto save when dropping an item.
 			Control_Persistence.saveToDisk(GS);
 		}
@@ -484,7 +484,7 @@ public class Control_PlayerCharacter : Control_Character {
 		// Fade camera back in
 		mainCameraControl.fadeIn(DOOR_TRANSITION_DURATION / 2);
 		// Make noise
-		soundSystem.makeNoise(Control_Sound.NOISE_TYPE_DOOR, doorTaken.connectsTo.pos);
+		noiseSystem.makeNoise(Control_Noise.NOISE_TYPE_DOOR, doorTaken.connectsTo.pos);
 		walkingDistanceSinceLastNoise = 0;
 		// Reset current inputs if they would cause Toni to walk back through the same door
 		if((doorTaken.connectsTo.type == Data_Door.TYPE_RIGHT_SIDE && Input.GetAxis("Horizontal") > 0.01f) ||

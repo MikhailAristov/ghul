@@ -22,6 +22,8 @@ public class Data_GameState {
 	public bool TONI_KILLED = false;
 	[NonSerialized] // This lets the game state catch the precise moment the monster dies for the first time in the endgame
 	public bool MONSTER_KILLED = false;
+	[NonSerialized] // This is used in several places
+	public float DISTANCE_TONI_TO_MONSTER;
 
 	[SerializeField]
 	public Data_Graph HOUSE_GRAPH;
