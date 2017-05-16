@@ -18,6 +18,7 @@ public class Control_GameState : MonoBehaviour {
 	public const int STATE_MONSTER_DEAD = 3;
 
 	public Canvas MainMenuCanvas;
+	public Control_Sound SoundSystem;
 	public GameObject NewGameButton;
 	public GameObject RitualRoomScribbles;
 
@@ -141,7 +142,24 @@ public class Control_GameState : MonoBehaviour {
 	// Normal update routine before all items are placed
 	// Can trigger STATE_TRANSFORMATION
 	private void updateDuringCollectionPhase() {
-		// Check if player died to trigger house mix up
+		// Check if Toni meets the monster for the first time
+		if(!GS.getMonster().worldModel.hasMetToni && GS.monsterSeesToni && MAIN_CAMERA_CONTROL.isMonsterClearlyVisible()) {
+			Data_PlayerCharacter toni = GS.getToni();
+			Data_Monster monster = GS.getMonster();
+			// Update the monster's knowledge of meeting Toni
+			monster.worldModel.hasMetToni = true;
+			// Make both characters face each other
+			toni.control.setSpriteFlip(toni.atPos > monster.atPos);
+			monster.control.setSpriteFlip(toni.atPos < monster.atPos);
+			// Put both in equally long cooldown
+			float duration = Global_Settings.read("ENCOUNTER_JINGLE_DURATION");
+			toni.control.activateCooldown(duration);
+			monster.control.activateCooldown(duration);
+			// Play a scary sound
+			SoundSystem.playEncounterJingle();
+		}
+
+		// Check if player died to trigger house mix-up
 		if(GS.TONI_KILLED == true) {
 			GS.TONI_KILLED = false;
 			houseMixup(GS.TONI.deaths);
@@ -167,7 +185,7 @@ public class Control_GameState : MonoBehaviour {
 		MAIN_CAMERA_CONTROL.setFocusOn(GS.getToni().pos);
 
 		// Initialize the sound system
-		GetComponent<Control_Sound>().loadGameState(GS);
+		SoundSystem.loadGameState(GS);
 	}
 
 	// This method loads the saved game state to memory
@@ -273,6 +291,8 @@ public class Control_GameState : MonoBehaviour {
 
 		// Initialize all the characters
 		initializeCharacters();
+		// TODO: This is for debug purposes only, please remove in the final build!
+		GS.getMonster().worldModel.hasMetToni = false;
 
 		// Spawn all items
 		for(int i = 0; i < TOTAL_ITEMS_PLACED; i++) {

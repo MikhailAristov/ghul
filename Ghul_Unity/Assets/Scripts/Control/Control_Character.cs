@@ -107,7 +107,7 @@ public abstract class Control_Character : MonoBehaviour {
 		return null;
 	}
 
-	protected abstract void setSpriteFlip(bool state);
+	public abstract void setSpriteFlip(bool state);
 
 	protected abstract bool canRun();
 
@@ -152,7 +152,7 @@ public abstract class Control_Character : MonoBehaviour {
 		postDoorTransitionHook(door);
 	}
 	// Dummy functions to be implemented
-	protected abstract void activateCooldown(float duration);
+	public abstract void activateCooldown(float duration);
 
 	protected abstract void preDoorTransitionHook(Data_Door doorTaken);
 

@@ -37,6 +37,9 @@ public class Control_Sound : MonoBehaviour {
 	// Loud noises are audible over the estimated maximum possible distance between rooms (empirically: 30 m)
 	public const float NOISE_VOL_LOUD = NOISE_INAUDIBLE * 30f * 30f;
 
+	// Jukebox references
+	public AudioSource EncounterJingle;
+
 	void Update() {
 		if(GS == null || GS.SUSPENDED) {
 			AmbientNoise.mute = true;
@@ -163,6 +166,13 @@ public class Control_Sound : MonoBehaviour {
 				// Transmit the signal to the monster (as long as it's not in the same room)
 				transmitNoiseToMonster(loudness, origin);
 			}
+		}
+	}
+
+	// Play the horror jingle upon the first meeting with a monster
+	public void playEncounterJingle() {
+		if(!EncounterJingle.isPlaying) {
+			EncounterJingle.Play();
 		}
 	}
 }

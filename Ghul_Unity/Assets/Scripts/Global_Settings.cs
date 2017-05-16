@@ -69,6 +69,7 @@ public class Global_Settings {
 			{ "AUTOSAVE_FREQUENCY",				10.0f },	// In seconds
 			{ "CAMERA_PANNING_SPEED",			9.0f },
 			{ "TOTAL_DEATH_DURATION",			3.0f },		// When deathDuration of Data_Character reaches this value the player resets to the starting room
+			{ "ENCOUNTER_JINGLE_DURATION",		6.0f },
 
 			// Comma after the last pair of values is okay, the compiler doesn't care
 		};

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using System;
 
 public class Control_Camera : MonoBehaviour {
 	public Canvas FADEOUT_CANVAS;
@@ -13,8 +14,22 @@ public class Control_Camera : MonoBehaviour {
 	private Data_Position focusOn;
 	private Environment_Room currentEnvironment;
 
+	private float SCREEN_SIZE_HORIZONTAL;
+	private float SCREEN_SIZE_VERTICAL;
 	private float PANNING_SPEED;
 	private float VERTICAL_ROOM_SPACING;
+
+	// There must be this much space between the center of the monster sprite
+	// and the edge of the camera's view field to see it "clearly"
+	private static float monsterVisibilityThreshold = 0.6f;
+
+	void Awake() {
+		SCREEN_SIZE_HORIZONTAL = Global_Settings.read("SCREEN_SIZE_HORIZONTAL");
+		SCREEN_SIZE_VERTICAL = Global_Settings.read("SCREEN_SIZE_VERTICAL");
+		// Set general movement parameters
+		PANNING_SPEED = Global_Settings.read("CAMERA_PANNING_SPEED");
+		VERTICAL_ROOM_SPACING = Global_Settings.read("VERTICAL_ROOM_SPACING");
+	}
 
 	void Start() {
 		fadeoutImage = FADEOUT_CANVAS.GetComponent<Image>();
@@ -26,10 +41,6 @@ public class Control_Camera : MonoBehaviour {
 	// To make sure the game state is fully initialized before loading it, this function is called by game state class itself
 	public void loadGameState(Data_GameState gameState) {
 		GS = gameState;
-
-		// Set general movement parameters
-		PANNING_SPEED = Global_Settings.read("CAMERA_PANNING_SPEED");
-		VERTICAL_ROOM_SPACING = Global_Settings.read("VERTICAL_ROOM_SPACING");
 	}
 
 	// Update is called once per frame
@@ -93,5 +104,22 @@ public class Control_Camera : MonoBehaviour {
 	// Asynchronously fades back from red
 	public void resetRedOverlay() {
 		redoutImage.CrossFadeAlpha(0.0f, 1.0f, false);
+	}
+
+	// Checks if the monster is clearly visible on camera
+	public bool isMonsterClearlyVisible() {
+		if(GS == null) {
+			return false;
+		}
+		// First, check the monster's vertical position
+		Vector3 monsterPos = GS.getMonster().control.transform.position;
+		if(Math.Abs(monsterPos.y - transform.position.y) < SCREEN_SIZE_VERTICAL / 2) {
+			// Then, check the monster horizontal position
+			float leftBound = transform.position.x - SCREEN_SIZE_HORIZONTAL / 2 + monsterVisibilityThreshold;
+			float rightBound = transform.position.x + SCREEN_SIZE_HORIZONTAL / 2 - monsterVisibilityThreshold;
+			return (leftBound <= monsterPos.x && monsterPos.x <= rightBound);
+		} else {
+			return false;
+		}
 	}
 }

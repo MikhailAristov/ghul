@@ -558,7 +558,7 @@ public class Control_Monster : Control_Character {
 	}
 
 	// Superclass functions implemented
-	protected override void setSpriteFlip(bool state) {
+	public override void setSpriteFlip(bool state) {
 		monsterRenderer.flipX = !state;
 		civilianRenderer.flipX = state;
 	}
@@ -598,7 +598,7 @@ public class Control_Monster : Control_Character {
 		me.etherialCooldown = Global_Settings.read("TOTAL_DEATH_DURATION");
 	}
 
-	protected override void activateCooldown(float duration) {
+	public override void activateCooldown(float duration) {
 		me.etherialCooldown = duration;
 	}
 	// The rest stays empty for now (only relevant for Toni)...

@@ -39,7 +39,7 @@ public class Control_PlayerCharacter : Control_Character {
 	private GameObject monsterToniObject;
 	private SpriteRenderer monsterToniRenderer;
 	private Control_Camera mainCameraControl;
-	private Control_Sound soundSystem;
+	public Control_Sound soundSystem;
 	public Canvas inventoryUI;
 	public GameObject pentagram;
 
@@ -97,7 +97,6 @@ public class Control_PlayerCharacter : Control_Character {
 
 		mainCameraControl = Camera.main.GetComponent<Control_Camera>();
 		inventoryUI.transform.FindChild("CurrentItem").GetComponent<Image>().CrossFadeAlpha(0.0f, 0.0f, false);
-		soundSystem = GameObject.Find("GameState").GetComponent<Control_Sound>();
 		walkingDistanceSinceLastNoise = 0;
 
 		// Setting the animator
@@ -265,7 +264,7 @@ public class Control_PlayerCharacter : Control_Character {
 	}
 
 	// Superclass functions implemented
-	protected override void setSpriteFlip(bool state) {
+	public override void setSpriteFlip(bool state) {
 		stickmanRenderer.flipX = state;
 		monsterToniRenderer.flipX = !state;
 	}
@@ -465,7 +464,7 @@ public class Control_PlayerCharacter : Control_Character {
 	}
 
 	// Superclass functions implemented
-	protected override void activateCooldown(float duration) {
+	public override void activateCooldown(float duration) {
 		me.etherialCooldown = duration;
 	}
 
