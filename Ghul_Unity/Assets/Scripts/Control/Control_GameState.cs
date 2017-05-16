@@ -198,6 +198,7 @@ public class Control_GameState : MonoBehaviour {
 
 		// Initialize the jukebox
 		JukeBox.loadGameState(GS);
+		GetComponent<Control_Noise>().loadGameState(GS);
 
 		// Reset the distance display
 		StopCoroutine("updateToniMonsterDistanceDisplay");

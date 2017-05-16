@@ -6,23 +6,31 @@ using System.Collections;
 public class Control_Music : MonoBehaviour {
 
 	private Data_GameState GS;
-
 	private Data_PlayerCharacter TONI;
 
-	public AudioSource AmbientNoise;
 	private float SUICIDLE_DURATION;
+	private const float TRACK_MUTING_DURATION = 5f;
+
+	private float proximityTrackVolumeTarget;
 
 	// Jukebox references
 	private bool allPaused;
+	public AudioSource AmbientNoise;
 	public AudioSource EncounterJingle;
 	public GameObject[] MainTrackList;
 	public GameObject EndgameTrack;
 	private int currentTrack;
+	private AudioSource currentProximityTrack;
 
 	void Awake() {
 		SUICIDLE_DURATION = Global_Settings.read("SUICIDLE_DURATION");
 		allPaused = false;
 		currentTrack = -1;
+	}
+
+	void Start() {
+		AmbientNoise.mute = false;
+		AmbientNoise.volume = 0;
 	}
 
 	void Update() {
@@ -36,16 +44,15 @@ public class Control_Music : MonoBehaviour {
 		switch(GS.OVERALL_STATE) {
 		case(Control_GameState.STATE_COLLECTION_PHASE):
 			if(currentTrack != GS.numItemsPlaced) {
-				//playCollectionPhaseTrack(GS.numItemsPlaced);
+				StartCoroutine(muteTrack(currentTrack, TRACK_MUTING_DURATION));
+				StartCoroutine(unmuteTrack(GS.numItemsPlaced, TRACK_MUTING_DURATION));
+				currentTrack = GS.numItemsPlaced;
+				currentProximityTrack = MainTrackList[currentTrack].GetComponents<AudioSource>()[1];
 			}
-			//moduleMonsterProximitySound();
-			//AmbientNoise.transform.localPosition = Vector3.Lerp(AmbientNoise.transform.localPosition, targetAudioSourcePosition, 0.01f);
+			modulateMonsterProximitySound();
 			break;
 		case(Control_GameState.STATE_MONSTER_PHASE):
 			// By contrast, for the monster phase we place the audio source at the camera and regulate the volume
-			if(AmbientNoise.transform.localPosition.z < 0) {
-				AmbientNoise.transform.localPosition = new Vector3(0, 0, 0);
-			}
 			float targetVolume = Mathf.Min(1.0f, TONI.timeWithoutAction / SUICIDLE_DURATION);
 			AmbientNoise.volume = Mathf.Lerp(AmbientNoise.volume, targetVolume, 0.01f);
 			break;
@@ -53,6 +60,13 @@ public class Control_Music : MonoBehaviour {
 			// Ambient music should not play during other phases
 			AmbientNoise.volume = 0;
 			break;
+		}
+	}
+
+	void FixedUpdate() {
+		// Update the target volume of the proximity track
+		if(GS != null && !GS.SUSPENDED && GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
+			proximityTrackVolumeTarget = 0.5f;
 		}
 	}
 
@@ -69,11 +83,57 @@ public class Control_Music : MonoBehaviour {
 		}
 	}
 
+	// Lerps the volume and the pitch of the current monster proximity track
+	private void modulateMonsterProximitySound() {
+		currentProximityTrack.volume = Mathf.Lerp(currentProximityTrack.volume, proximityTrackVolumeTarget, 0.001f);
+		currentProximityTrack.pitch = Mathf.Lerp(currentProximityTrack.pitch, (1f - proximityTrackVolumeTarget), 0.001f);
+	}
+
+	// Pauses and unpauses a given track
+	private void pauseTrack(int id) {
+		foreach(AudioSource audioSrc in MainTrackList[id].GetComponents<AudioSource>()) {
+			audioSrc.Pause();
+		}
+	}
+
+	private void unpauseTrack(int id) {
+		foreach(AudioSource audioSrc in MainTrackList[id].GetComponents<AudioSource>()) {
+			audioSrc.UnPause();
+		}
+	}
+
+	// Gradually mutes and unmutes a given track over the specified time
+	private IEnumerator muteTrack(int id, float duration) {
+		// If duration is not positive, mute the track immediately
+		if(duration <= 0) {
+			foreach(AudioSource audioSrc in MainTrackList[id].GetComponents<AudioSource>()) {
+				audioSrc.volume = 0;
+			}
+			yield break;
+		}
+		// TODO Otherwise, do so gradually
+	}
+
+	private IEnumerator unmuteTrack(int id, float duration) {
+		// If duration is not positive, unmute the track immediately
+		if(duration <= 0) {
+			foreach(AudioSource audioSrc in MainTrackList[id].GetComponents<AudioSource>()) {
+				audioSrc.volume = 1f;
+			}
+			yield break;
+		}
+		// TODO Otherwise, do so gradually
+	}
+
 	// Pause and unpause all audio sources in the jukebox
 	private void pauseAll() {
 		if(!allPaused) {
 			AmbientNoise.Pause();
 			EncounterJingle.Pause();
+			for(int i = 0; i < MainTrackList.Length; i++) {
+				pauseTrack(i);
+			}
+			// TODO Endgame track
 			allPaused = true;
 		}
 	}
@@ -82,6 +142,10 @@ public class Control_Music : MonoBehaviour {
 		if(allPaused) {
 			AmbientNoise.UnPause();
 			EncounterJingle.UnPause();
+			for(int i = 0; i < MainTrackList.Length; i++) {
+				unpauseTrack(i);
+			}
+			// TODO Endgame track
 			allPaused = false;
 		}
 	}
