@@ -119,7 +119,7 @@ public class Data_Room : IComparable<Data_Room> {
 		foreach(Vector2 p in prefabDetails.itemSpawns) {
 			_itemSpawnPoints.Add(new Data_Position(I, p, align: true));
 		}
-		walkMargin = Global_Settings.read("HORIZONTAL_ROOM_MARGIN");
+		walkMargin = Global_Settings.read("HORIZONTAL_ROOM_MARGIN") + Data_Position.PIXEL_GRID_SIZE;
 		effectiveWidth = _width - 2 * walkMargin;
 		meanExplorationDistance = 1.5 * (_width - Global_Settings.read("SCREEN_SIZE_HORIZONTAL"));
 		meanItemFetchDistance = (_itemSpawnPoints.Count > 0) ? (effectiveWidth / 3) : 0;
