@@ -6,6 +6,7 @@ public class Control_MusicTrack : MonoBehaviour {
 
 	private const float INAUDIBIBILITY_THRESHOLD = 0.01f;
 	private const float MUTING_STEP = 0.1f;
+	private const float LERPING_STEP = 0.01f;
 
 	private AudioSource mainTrack;
 	private AudioSource proximitySubtrack;
@@ -33,9 +34,9 @@ public class Control_MusicTrack : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		if(!isMuted && !isPaused) {
-			mainTrack.volume = Mathf.Lerp(mainTrack.volume, targetMainTrackVolume, 0.01f);
-			proximitySubtrack.volume = Mathf.Lerp(proximitySubtrack.volume, targetProximityTrackVolume, 0.01f);
-			proximitySubtrack.pitch = Mathf.Lerp(proximitySubtrack.pitch, (1f - targetProximityTrackVolume), 0.01f);
+			mainTrack.volume = Mathf.Lerp(mainTrack.volume, targetMainTrackVolume, LERPING_STEP);
+			proximitySubtrack.volume = Mathf.Lerp(proximitySubtrack.volume, targetProximityTrackVolume, LERPING_STEP);
+			proximitySubtrack.pitch = Mathf.Lerp(proximitySubtrack.pitch, (1f - targetProximityTrackVolume * 2f), LERPING_STEP);
 			if(mainTrack.volume < INAUDIBIBILITY_THRESHOLD) {
 				isMuted = true;
 				mainTrack.mute = true;

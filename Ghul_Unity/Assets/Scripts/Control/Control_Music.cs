@@ -10,7 +10,12 @@ public class Control_Music : MonoBehaviour {
 	private float SUICIDLE_DURATION;
 	private const float TRACK_MUTING_DURATION = 5f;
 
+	private const float MIN_PROXIMITY = 3f;
+	private const float MAX_PROXIMITY = 30f;
+
 	private float proximityTrackVolumeFactor;
+	private const float minProximityTrackVolumeFactor = 0.1f;
+	private const float maxProximityTrackVolumeFactor = 1f;
 
 	// Jukebox references
 	private bool allPaused;
@@ -70,7 +75,16 @@ public class Control_Music : MonoBehaviour {
 	void FixedUpdate() {
 		// Update the target volume of the proximity track
 		if(GS != null && !GS.SUSPENDED && GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
-			proximityTrackVolumeFactor = 0.5f;
+			if(GS.DISTANCE_TONI_TO_MONSTER < MIN_PROXIMITY) {
+				proximityTrackVolumeFactor = maxProximityTrackVolumeFactor;
+			} else if(GS.DISTANCE_TONI_TO_MONSTER > MAX_PROXIMITY) {
+				proximityTrackVolumeFactor = minProximityTrackVolumeFactor;
+			} else {
+				// Linear roll-off within bounds
+				proximityTrackVolumeFactor = minProximityTrackVolumeFactor + 
+					(maxProximityTrackVolumeFactor - minProximityTrackVolumeFactor) * (MAX_PROXIMITY - GS.DISTANCE_TONI_TO_MONSTER) / (MAX_PROXIMITY - MIN_PROXIMITY);
+			}
+			proximityTrackVolumeFactor = Mathf.Max(0, Mathf.Min(1f, proximityTrackVolumeFactor));
 		}
 	}
 
