@@ -166,6 +166,8 @@ public class Control_GameState : MonoBehaviour {
 			monster.control.activateCooldown(duration);
 			// Play a scary sound
 			JukeBox.playEncounterJingle();
+			// Make the monster attack as soon as its cooldown ends
+			monster.state = Control_Monster.STATE_PURSUING;
 		}
 
 		// Check if player died to trigger house mix-up
