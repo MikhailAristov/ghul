@@ -463,6 +463,19 @@ public class Control_PlayerCharacter : Control_Character {
 		}
 	}
 
+	// An emergency brake for cutscenes
+	public void halt() {
+		me.currentVelocitySigned = 0;
+		me.currentVelocityAbsolute = 0;
+		if(animatorHuman != null && animatorHuman.isInitialized) {
+			animatorHuman.SetBool("Is Walking", false);
+			animatorHuman.SetBool("Is Running", false);
+		}
+		if(animatorMonsterToni != null && animatorMonsterToni.isInitialized) {
+			animatorMonsterToni.SetBool("Is Walking", false);
+		}
+	}
+
 	// Superclass functions implemented
 	public override void activateCooldown(float duration) {
 		me.etherialCooldown = duration;

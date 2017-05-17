@@ -162,6 +162,7 @@ public class Control_GameState : MonoBehaviour {
 			monster.control.setSpriteFlip(toni.atPos < monster.atPos);
 			// Put both in equally long cooldown
 			float duration = Global_Settings.read("ENCOUNTER_JINGLE_DURATION");
+			toni.control.halt();
 			toni.control.activateCooldown(duration);
 			monster.control.activateCooldown(duration);
 			// Play a scary sound
