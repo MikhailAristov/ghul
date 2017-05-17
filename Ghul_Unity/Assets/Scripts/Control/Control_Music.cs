@@ -6,6 +6,7 @@ public class Control_Music : MonoBehaviour {
 
 	private Data_GameState GS;
 	private Data_PlayerCharacter TONI;
+	private Data_Monster MONSTER;
 
 	private float SUICIDLE_DURATION;
 	private const float TRACK_MUTING_DURATION = 5f;
@@ -48,12 +49,14 @@ public class Control_Music : MonoBehaviour {
 
 		switch(GS.OVERALL_STATE) {
 		case(Control_GameState.STATE_COLLECTION_PHASE):
-			if(currentTrackID != GS.numItemsPlaced) {
-				MainTrackList[currentTrackID].muteTrack(TRACK_MUTING_DURATION);
-				MainTrackList[GS.numItemsPlaced].unmuteTrack(TRACK_MUTING_DURATION);
-				currentTrackID = GS.numItemsPlaced;
+			if(MONSTER.worldModel.hasMetToni) {
+				if(currentTrackID != GS.numItemsPlaced) {
+					MainTrackList[currentTrackID].muteTrack(TRACK_MUTING_DURATION);
+					MainTrackList[GS.numItemsPlaced].unmuteTrack(TRACK_MUTING_DURATION);
+					currentTrackID = GS.numItemsPlaced;
+				}
+				MainTrackList[currentTrackID].updateProximityFactor(proximityTrackVolumeFactor);
 			}
-			MainTrackList[currentTrackID].updateProximityFactor(proximityTrackVolumeFactor);
 			break;
 		case(Control_GameState.STATE_MONSTER_PHASE):
 			// By contrast, for the monster phase we place the audio source at the camera and regulate the volume
@@ -81,8 +84,8 @@ public class Control_Music : MonoBehaviour {
 				proximityTrackVolumeFactor = minProximityTrackVolumeFactor;
 			} else {
 				// Linear roll-off within bounds
-				proximityTrackVolumeFactor = minProximityTrackVolumeFactor + 
-					(maxProximityTrackVolumeFactor - minProximityTrackVolumeFactor) * (MAX_PROXIMITY - GS.DISTANCE_TONI_TO_MONSTER) / (MAX_PROXIMITY - MIN_PROXIMITY);
+				proximityTrackVolumeFactor = minProximityTrackVolumeFactor +
+				(maxProximityTrackVolumeFactor - minProximityTrackVolumeFactor) * (MAX_PROXIMITY - GS.DISTANCE_TONI_TO_MONSTER) / (MAX_PROXIMITY - MIN_PROXIMITY);
 			}
 			proximityTrackVolumeFactor = Mathf.Max(0, Mathf.Min(1f, proximityTrackVolumeFactor));
 		}
@@ -92,10 +95,11 @@ public class Control_Music : MonoBehaviour {
 	public void loadGameState(Data_GameState gameState) {
 		GS = gameState;
 		TONI = gameState.getToni();
+		MONSTER = gameState.getMonster();
 		// Initialize the proper track
 		currentTrackID = GS.numItemsPlaced;
 		for(int i = 0; i < MainTrackList.Length; i++) {
-			if(i == currentTrackID) {
+			if(i == currentTrackID && MONSTER.worldModel.hasMetToni) {
 				MainTrackList[i].unmuteTrack(0);
 			} else {
 				MainTrackList[i].muteTrack(0);
@@ -105,8 +109,13 @@ public class Control_Music : MonoBehaviour {
 
 	// Play the horror jingle upon the first meeting with a monster
 	public void playEncounterJingle() {
-		if(!EncounterJingle.isPlaying) {
-			EncounterJingle.Play();
+		if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
+			if(!EncounterJingle.isPlaying) {
+				EncounterJingle.Play();
+			}
+			if(MainTrackList[currentTrackID].muted) {
+				MainTrackList[currentTrackID].unmuteTrack(duration: TRACK_MUTING_DURATION, delay: Global_Settings.read("ENCOUNTER_JINGLE_DURATION"));
+			}
 		}
 	}
 

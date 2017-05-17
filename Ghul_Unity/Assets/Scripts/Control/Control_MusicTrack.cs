@@ -16,6 +16,11 @@ public class Control_MusicTrack : MonoBehaviour {
 	private bool isMuted;
 	private bool isPaused;
 
+	public bool muted {
+		get { return isMuted; }
+		private set { return; }
+	}
+
 	// Use this for initialization
 	void Start () {
 		AudioSource[] myTracks = GetComponents<AudioSource>();
@@ -75,14 +80,7 @@ public class Control_MusicTrack : MonoBehaviour {
 		if(duration <= 0) {
 			targetMainTrackVolume = 1;
 			mainTrack.volume = 1;
-		}
-		// Unmute the components, if necessary
-		if(isMuted) {
-			mainTrack.mute = false;
-			proximitySubtrack.mute = false;
-			mainTrack.volume = 2 * INAUDIBIBILITY_THRESHOLD;
-			proximitySubtrack.volume = 2 * INAUDIBIBILITY_THRESHOLD;
-			isMuted = false;
+			unmuteAllComponents();
 		}
 		// Otherwise, do so gradually
 		StopAllCoroutines();
@@ -96,7 +94,8 @@ public class Control_MusicTrack : MonoBehaviour {
 			waitUntil += delay;
 			yield return new WaitUntil(() => Time.timeSinceLevelLoad >= waitUntil);
 		}
-		// Mute the track
+		// Unmute the track
+		unmuteAllComponents();
 		float timeStep = duration * MUTING_STEP;
 		do {
 			targetMainTrackVolume = Math.Min(1, targetMainTrackVolume + MUTING_STEP);
@@ -104,6 +103,17 @@ public class Control_MusicTrack : MonoBehaviour {
 			waitUntil += timeStep;
 			yield return new WaitUntil(() => Time.timeSinceLevelLoad >= waitUntil);
 		} while(targetMainTrackVolume < 1);
+	}
+
+	// Unmute the components, if necessary
+	private void unmuteAllComponents() {
+		if(isMuted) {
+			mainTrack.mute = false;
+			proximitySubtrack.mute = false;
+			mainTrack.volume = 2 * INAUDIBIBILITY_THRESHOLD;
+			proximitySubtrack.volume = 2 * INAUDIBIBILITY_THRESHOLD;
+			isMuted = false;
+		}
 	}
 
 	public void updateProximityFactor(float proximityFactor) {
