@@ -346,7 +346,7 @@ public class Control_PlayerCharacter : Control_Character {
 			// During the endgame, simply replace the monster Toni sprite with the cadaver
 			GS.TONI_KILLED = true;
 			monsterToniRenderer.enabled = false;
-			cadaver.gameObj.transform.position = transform.position + (new Vector3(0, -1.55f));
+			cadaver.gameObj.transform.position = transform.position;
 			cadaver.updatePosition(me.isIn, me.atPos);
 			me.etherialCooldown = 0;
 		}

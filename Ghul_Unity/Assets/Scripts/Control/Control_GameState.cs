@@ -235,11 +235,10 @@ public class Control_GameState : MonoBehaviour {
 
 		// Placing the cadaver sprite in the location they used to be (only if moved from the initial placing)
 		Data_Cadaver cadaver = GS.getCadaver();
-		if(cadaver.isIn != null) {
-			Vector3 positionOfCadaver = new Vector3(cadaver.atPos, cadaver.isIn.gameObj.transform.position.y, 0);
-			cadaver.gameObj.transform.Translate(positionOfCadaver - cadaver.gameObj.transform.position);
-			cadaver.updatePosition(cadaver.isIn, cadaver.atPos);
-		}
+		cadaver.fixObjectReferences(GS);
+		Vector3 positionOfCadaver = new Vector3(cadaver.atPos, cadaver.isIn.gameObj.transform.position.y, 0);
+		cadaver.gameObj.transform.Translate(positionOfCadaver - cadaver.gameObj.transform.position);
+		cadaver.updatePosition(cadaver.isIn, cadaver.atPos);
 
 		// Fix the items
 		for(int i = 0; i < GS.ITEMS.Count; i++) {
