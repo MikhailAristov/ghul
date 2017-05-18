@@ -556,8 +556,6 @@ public class Control_Monster : Control_Character {
 
 	// Killing the monster / civilian during endgame
 	public void dieAndRespawn() {
-		GS.MONSTER_KILLED = true;
-
 		Vector3 pos = transform.position;
 		// Place a tombstone where the death occured
 		Instantiate(tombstone, new Vector3(pos.x, pos.y, pos.z), Quaternion.identity);
@@ -569,6 +567,8 @@ public class Control_Monster : Control_Character {
 		// Move the character sprite directly to where the game state says it should be standing
 		Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
 		transform.Translate(savedPosition - transform.position);
+
+		GS.MONSTER_KILLED = true;
 	}
 
 	// Superclass functions implemented

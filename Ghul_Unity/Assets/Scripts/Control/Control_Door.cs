@@ -50,19 +50,32 @@ public class Control_Door : MonoBehaviour {
 	}
 
 	// Opens the door if it's closed, keeps it open longer otherwise
-	public void open(bool silently = false, bool hold = false) {
+	public void open(bool silently = false, bool hold = false, bool forceCreak = false) {
 		// If the "hold" flag is specified, the door stays open for much longer (or until someone goes through it)
 		timeUntilClosing = hold ? doorOpenDuration * 10 : doorOpenDuration;
 		if(currentState != STATE_OPEN) {
 			ClosedSprite.SetActive(false);
 			OpenSprite.SetActive(true);
 			if(!silently) {
-				playSound(SOUND_TYPE_OPEN);
+				playSound(SOUND_TYPE_OPEN, forceCreak);
 			}
 			currentState = STATE_OPEN;
 			StartCoroutine(waitForClosure());
 		}
 		// If the door is already open, it just stays so for longer
+	}
+
+	// Forces the door shut immediately
+	public void forceClose(bool silently = false) {
+		if(currentState != STATE_CLOSED) {
+			timeUntilClosing = 0;
+			OpenSprite.SetActive(false);
+			ClosedSprite.SetActive(true);
+			if(!silently) {
+				playSound(SOUND_TYPE_CLOSE);
+			}
+			currentState = STATE_CLOSED;
+		}
 	}
 
 	// Closes the door after it has been open long enough
@@ -78,7 +91,7 @@ public class Control_Door : MonoBehaviour {
 	}
 
 	// Play the specified sound if the main camera (i.e. Toni) is within the current room
-	private void playSound(int soundType) {
+	private void playSound(int soundType, bool forceCreak = false) {
 		if(Mathf.Abs(transform.position.y - Camera.main.transform.position.y) > verticalHearingThreshold) {
 			return;
 		}
@@ -94,7 +107,7 @@ public class Control_Door : MonoBehaviour {
 			knobSound.clip = openingSounds[UnityEngine.Random.Range(0, openingSounds.Count)];
 			knobSound.Play();
 			// Also randomply play the creaking sound
-			if(UnityEngine.Random.Range(0f, 1f) < CREAKING_SOUND_PROBABILITY && !creakSound.isPlaying) {
+			if((UnityEngine.Random.Range(0f, 1f) < CREAKING_SOUND_PROBABILITY || forceCreak) && !creakSound.isPlaying) {
 				creakSound.clip = creakingSounds[UnityEngine.Random.Range(0, creakingSounds.Count)];
 				creakSound.Play();
 			}

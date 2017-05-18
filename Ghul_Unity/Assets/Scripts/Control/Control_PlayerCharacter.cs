@@ -518,7 +518,7 @@ public class Control_PlayerCharacter : Control_Character {
 	}
 
 	// This function guides the player to the "civilian" intruders in the house during the monster phase of the game
-	public void guideMonsterToniToIntruders() {
+	public void guideMonsterToniToIntruders(bool drawAttention = false) {
 		if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE && !GS.monsterSeesToni) {
 			// Find the door in the current room that currently has the shortest distance to the intruder
 			Data_Door bestDoor = me.isIn.DOORS.Values[0];
@@ -531,7 +531,12 @@ public class Control_PlayerCharacter : Control_Character {
 				}
 			}
 			// (Re-)Open this door
-			bestDoor.control.open(silently:true, hold:true);
+			if(drawAttention) {
+				bestDoor.control.forceClose(silently: true);
+				bestDoor.control.open(silently: false, hold: true, forceCreak: true);
+			} else {
+				bestDoor.control.open(silently: true, hold: true);
+			}
 		}
 	}
 
@@ -576,6 +581,9 @@ public class Control_PlayerCharacter : Control_Character {
 		// Cancel the animation
 		animatorMonsterToni.SetTrigger("AttackCancel");
 	}
-	// The rest stays empty for now (only relevant for the monster)...
-	protected override void postKillHook() {}
+
+	// After each kill, open the door leading to the next intruder
+	protected override void postKillHook() {
+		guideMonsterToniToIntruders(drawAttention: true);
+	}
 }

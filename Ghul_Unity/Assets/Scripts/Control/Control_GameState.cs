@@ -132,6 +132,7 @@ public class Control_GameState : MonoBehaviour {
 			if(GS.MONSTER_KILLED) {
 				GS.OVERALL_STATE = STATE_MONSTER_PHASE;
 				MONSTER.control.setupEndgame();
+				GS.MONSTER_KILLED = false;
 			}
 			break;
 		case STATE_MONSTER_PHASE:
