@@ -563,7 +563,9 @@ public class Control_GameState : MonoBehaviour {
 	// This method is called when the Exit button is activated from the main menu
 	void onExitSelect() {
 		// Save and exit
-		Control_Persistence.saveToDisk(GS);
+		if(GS != null) {
+			Control_Persistence.saveToDisk(GS);
+		}
 		Application.Quit();
 	}
 
