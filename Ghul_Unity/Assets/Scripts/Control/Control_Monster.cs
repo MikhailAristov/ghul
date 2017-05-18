@@ -6,6 +6,9 @@ using System.Linq;
 
 public class Control_Monster : Control_Character {
 
+	// The debugging switch to make the monster non-aggressive
+	public bool MOSTLY_HARMLESS;
+
 	[NonSerialized]
 	private Data_Monster me;
 	protected override Data_Character getMe() {
@@ -34,7 +37,6 @@ public class Control_Monster : Control_Character {
 	public const int STATE_SEARCHING = 1;
 	public const int STATE_STALKING = 2;
 	public const int STATE_PURSUING = 3;
-	//public const int STATE_GLARING = 4;
 	public const int STATE_FLEEING = 5;
 
 	private const double utilityPenaltyRitualRoom = double.MaxValue / 2;
@@ -213,6 +215,14 @@ public class Control_Monster : Control_Character {
 
 	// Updates the internal state if necessary
 	private void updateState() {
+		// Check the harmless flag
+		if(Debug.isDebugBuild && MOSTLY_HARMLESS && GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
+			me.state = STATE_WANDERING;
+			return;
+		} else if(!MOSTLY_HARMLESS && GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE && me.state == STATE_WANDERING) {
+			me.state = STATE_SEARCHING;
+		}
+
 		// Check the state update cooldown
 		if(stateUpdateCooldown > 0) {
 			stateUpdateCooldown -= Time.fixedDeltaTime;
@@ -323,7 +333,8 @@ public class Control_Monster : Control_Character {
 		}
 
 		// During the collection phase of the game, make Toni drop his carried items if he gets too close
-		if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE && GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < MARGIN_ITEM_STEAL) {
+		if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE && GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < MARGIN_ITEM_STEAL
+			&& !(MOSTLY_HARMLESS && Debug.isDebugBuild)) {
 			Toni.control.dropItem();
 		}
 

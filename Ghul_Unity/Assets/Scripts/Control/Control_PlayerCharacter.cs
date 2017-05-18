@@ -73,7 +73,7 @@ public class Control_PlayerCharacter : Control_Character {
 
 		RITUAL_ROOM_INDEX = (int)Global_Settings.read("RITUAL_ROOM_INDEX");
 		RITUAL_PENTAGRAM_CENTER = Global_Settings.read("RITUAL_PENTAGRAM_CENTER");
-		RITUAL_ITEM_PLACEMENT_RADIUS = Global_Settings.read("RITUAL_PENTAGRAM_RADIUS") / 10;
+		RITUAL_ITEM_PLACEMENT_RADIUS = Global_Settings.read("RITUAL_PENTAGRAM_RADIUS") / 2;
 		RITUAL_ITEM_PLACEMENT_DURATION = Global_Settings.read("RITUAL_ITEM_PLACEMENT");
 		SUICIDLE_DURATION = Global_Settings.read("SUICIDLE_DURATION");
 
@@ -355,16 +355,16 @@ public class Control_PlayerCharacter : Control_Character {
 
 	// The player takes a nearby item if there is any
 	private void takeItem() {
-		// Can't pick up more than one item, anyway
-		if(me.carriedItem != null) {
-			Debug.Log(me + " is already carrying " + me.carriedItem);
-			return;
-		}
-
 		// Check if there are any items nearby
 		Data_Item thisItem = GS.getItemAtPos(me.pos, MARGIN_ITEM_COLLECT);
 		if(thisItem == null) {
 			Debug.Log("There is no item to pick up here...");
+			return;
+		} else if(me.carriedItem != null) {
+			// Can't pick up more than one item, anyway
+			Debug.Log(me + " is already carrying " + me.carriedItem);
+			StopCoroutine("displayInventory");
+			StartCoroutine("displayInventory");
 			return;
 		}
 
@@ -436,6 +436,7 @@ public class Control_PlayerCharacter : Control_Character {
 		Debug.Log("Item #" + me.carriedItem.INDEX + " placed for the ritual");
 		me.carriedItem = null;
 		// Wait for the item to fully materialize
+		halt();
 		activateCooldown(RITUAL_ITEM_PLACEMENT_DURATION);
 		yield return new WaitForSeconds(RITUAL_ITEM_PLACEMENT_DURATION);
 		// Auto save when placing is complete

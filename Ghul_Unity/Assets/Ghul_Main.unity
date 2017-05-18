@@ -2948,6 +2948,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b206330d8f878854382e3f5fd3692b46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  MOSTLY_HARMLESS: 0
   tombstone: {fileID: 4000010959148136, guid: 16ed8d7bfd250d146b04f4b1ec8def93, type: 2}
   AttackZone: {fileID: 296330126}
 --- !u!1 &503493983
