@@ -177,7 +177,8 @@ public class Control_PlayerCharacter : Control_Character {
 		}
 
 		// Vertical "movement"
-		if(Input.GetButtonDown("Vertical")) {
+		if(Input.GetButtonDown("Vertical") ||
+			(Input.GetButtonDown("Action") && GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE)) {
 			me.timeWithoutAction = 0;
 			// Check if the character can walk through the door, and if so, move them to the "other side"
 			Data_Door door = currentEnvironment.getDoorAtPos(transform.position.x);
