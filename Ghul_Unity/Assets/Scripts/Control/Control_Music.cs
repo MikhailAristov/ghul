@@ -96,10 +96,11 @@ public class Control_Music : MonoBehaviour {
 		GS = gameState;
 		TONI = gameState.getToni();
 		MONSTER = gameState.getMonster();
-		// Initialize the proper track
+		// Initialize the proper track if still in the collection phase
 		currentTrackID = GS.numItemsPlaced;
 		for(int i = 0; i < MainTrackList.Length; i++) {
-			if(i == currentTrackID && MONSTER.worldModel.hasMetToni) {
+			if(i == currentTrackID && MONSTER.worldModel.hasMetToni &&
+				GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
 				MainTrackList[i].unmuteTrack(0);
 			} else {
 				MainTrackList[i].muteTrack(0);
