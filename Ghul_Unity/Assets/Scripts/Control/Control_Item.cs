@@ -98,6 +98,9 @@ public class Control_Item : MonoBehaviour {
 		if((me.elevation - spriteRenderer.bounds.size.y / 2) <= ITEM_FLOOR_LEVEL) {
 			zPos = -2f;
 			GetComponent<SpriteRenderer>().sortingLayerName = "Foreground";
+		} else {
+			zPos = 0;
+			GetComponent<SpriteRenderer>().sortingLayerName = "Items";
 		}
 		Vector3 targetPos = new Vector3(me.atPos, me.elevation, zPos);
 		if(transform.parent != me.isIn.env.transform) {
