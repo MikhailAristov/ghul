@@ -530,9 +530,10 @@ public class Control_Monster : Control_Character {
 		monsterImageObject.SetActive(false);
 		civilianObject.SetActive(true);
 		me.state = STATE_WANDERING;
-		// Halve the movement speed
-		RUNNING_SPEED = Global_Settings.read("MONSTER_WALKING_SPEED") / 2f;
-		WALKING_SPEED = Global_Settings.read("MONSTER_SLOW_WALKING_SPEED") / 2f;
+		// Change the movement speed to human
+		WALKING_SPEED = Global_Settings.read("CHARA_WALKING_SPEED");
+		// Since the intruders still have infinite stamina, don't let them run at full speed
+		RUNNING_SPEED = Global_Settings.read("CHARA_WALKING_SPEED");
 	}
 
 	private void teleportToRitualRoom() {

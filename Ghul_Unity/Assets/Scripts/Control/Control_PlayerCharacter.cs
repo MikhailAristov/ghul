@@ -451,6 +451,10 @@ public class Control_PlayerCharacter : Control_Character {
 		// Only display monster Toni sprite if monster is still alive
 		monsterToniObject.SetActive(GS.OVERALL_STATE < Control_GameState.STATE_MONSTER_DEAD);
 		monsterToniRenderer.flipX = !stickmanRenderer.flipX;
+		// Update speeds
+		WALKING_SPEED = Global_Settings.read("MONSTER_SLOW_WALKING_SPEED");
+		RUNNING_SPEED = Global_Settings.read("MONSTER_WALKING_SPEED");
+		WALKING_RUNNING_THRESHOLD = (WALKING_SPEED + RUNNING_SPEED) / 2;
 	}
 
 	// Shows the currentlly carried item on the UI
