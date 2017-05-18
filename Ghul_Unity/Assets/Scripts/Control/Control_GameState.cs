@@ -173,7 +173,7 @@ public class Control_GameState : MonoBehaviour {
 		// Check if player died to trigger house mix-up
 		if(GS.TONI_KILLED == true) {
 			GS.TONI_KILLED = false;
-			houseMixup(GS.TONI.deaths);
+			houseMixup(TONI.deaths);
 		}
 
 		// Check if all items have been placed

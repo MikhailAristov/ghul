@@ -41,7 +41,7 @@ public class Data_GameState {
 	public int indexOfSearchedItem;
 
 	[SerializeField]
-	public Data_PlayerCharacter TONI;
+	private Data_PlayerCharacter TONI;
 	[SerializeField]
 	private Data_Monster MONSTER;
 	[SerializeField]
