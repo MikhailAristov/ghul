@@ -182,6 +182,7 @@ public class Control_PlayerCharacter : Control_Character {
 			// Check if the character can walk through the door, and if so, move them to the "other side"
 			Data_Door door = currentEnvironment.getDoorAtPos(transform.position.x);
 			if(door != null) {
+				goingThroughADoor = true;
 				StartCoroutine(goThroughTheDoor(door));
 				return;
 			}
@@ -193,6 +194,7 @@ public class Control_PlayerCharacter : Control_Character {
 			Data_Door walkIntoDoor = walk(Input.GetAxis("Horizontal"), Input.GetButton("Run"), Time.deltaTime);
 			if(walkIntoDoor != null) {
 				// Walk through the door if triggered
+				goingThroughADoor = true;
 				StartCoroutine(goThroughTheDoor(walkIntoDoor));
 				return;
 			}

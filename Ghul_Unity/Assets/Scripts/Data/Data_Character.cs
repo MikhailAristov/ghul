@@ -5,41 +5,44 @@ using System;
 [Serializable]
 public abstract class Data_Character {
 
-    // Character name
-    [SerializeField]
-    protected string _name;
-    public string name
-    {
-        get { return _name; }
-        private set { _name = value; }
-    }
-    // Unique string identifier of the container game object
-    [SerializeField]
-    protected string _gameObjName;
-    // Pointer to the container game object
-    [NonSerialized]
+	// Character name
+	[SerializeField]
+	protected string _name;
+
+	public string name {
+		get { return _name; }
+		private set { _name = value; }
+	}
+	// Unique string identifier of the container game object
+	[SerializeField]
+	protected string _gameObjName;
+	// Pointer to the container game object
+	[NonSerialized]
 	public GameObject gameObj;
+
 	public abstract Control_Character getControl();
 
-    // Position of the character within game space
-    [SerializeField]
-    protected Data_Position _pos;
-    public Data_Position pos
-    {
-        get { return _pos; }
-        private set { return; }
-    }
-    [NonSerialized]
-    public Data_Room isIn;
-    public float atPos
-    {
-        get { return pos.X; }
-        private set { return; }
+	// Position of the character within game space
+	[SerializeField]
+	protected Data_Position _pos;
+
+	public Data_Position pos {
+		get { return _pos; }
+		private set { return; }
 	}
+
 	[NonSerialized]
-	public float currentVelocitySigned; // in m/s (signed)
-	[NonSerialized]
-	public float currentVelocityAbsolute; // absolute value of the above, in m/s
+	public Data_Room isIn;
+
+	public float atPos {
+		get { return pos.X; }
+		private set { return; }
+	}
+
+	[NonSerialized] // in m/s (signed):
+	public float currentVelocitySigned;
+	[NonSerialized] // absolute value of the above, in m/s:
+	public float currentVelocityAbsolute;
 	[NonSerialized]
 	public float timeWithoutAction;
 
@@ -48,8 +51,9 @@ public abstract class Data_Character {
 	protected Data_Position _spawnPos;
 
 	// While this value is above zero, it marks the character as uncontrollable and invulnerable, e.g. upon entering a door or dying
-	[SerializeField]
-	public float etherialCooldown; // in seconds
+	[SerializeField] // in seconds:
+	public float etherialCooldown;
+	
 
 	// Just some shortcut functions
 	public bool isInvulnerable {
@@ -57,41 +61,41 @@ public abstract class Data_Character {
 		private set { return; }
 	}
 
-    // Constructor
-    public Data_Character(string gameObjectName)
-    {
-        _name = gameObjectName;
-        _gameObjName = gameObjectName;
-        gameObj = GameObject.Find(gameObjectName);
-        if (gameObj == null)
-        {
-            throw new ArgumentException("Cannot find character object: " + gameObjectName);
-        }
-    }
+	// Constructor
+	public Data_Character(string gameObjectName) {
+		_name = gameObjectName;
+		_gameObjName = gameObjectName;
+		gameObj = GameObject.Find(gameObjectName);
+		if(gameObj == null) {
+			throw new ArgumentException("Cannot find character object: " + gameObjectName);
+		}
+	}
 
-    public override string ToString() { return name; }
+	public override string ToString() {
+		return name;
+	}
 
-    // Complete position specification
-	public void updatePosition(Data_Room R, float xPos, float yPos)
-    {
-        if (_pos == null) { // Initial specification
+	// Complete position specification
+	public void updatePosition(Data_Room R, float xPos, float yPos) {
+		if(_pos == null) { // Initial specification
 			_pos = new Data_Position(R.INDEX, xPos, yPos);
 			_spawnPos = _pos.clone();
-        } else {
-            _pos.RoomId = R.INDEX;
+		} else {
+			_pos.RoomId = R.INDEX;
 			_pos.X = xPos;
 			_pos.Y = yPos;
-        }
-        isIn = R;
-    }
-    // Quicker updates
+		}
+		isIn = R;
+	}
+	// Quicker updates
 	public void updatePosition(Data_Room R, float xPos) {
 		float yPos = (_pos == null) ? 0f : _pos.Y;
 		updatePosition(R, xPos, yPos);
 	}
-    public void updatePosition(float Pos) {
-        _pos.X = Pos;
-    }
+
+	public void updatePosition(float Pos) {
+		_pos.X = Pos;
+	}
 
 	// Reset the position back to spawn point
 	public void resetPosition(Data_GameState GS) {

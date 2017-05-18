@@ -131,7 +131,7 @@ public class Control_GameState : MonoBehaviour {
 			// Switch to next state as soon as the monster dies
 			if(GS.MONSTER_KILLED) {
 				GS.OVERALL_STATE = STATE_MONSTER_PHASE;
-				GS.getMonster().control.setupEndgame();
+				MONSTER.control.setupEndgame();
 			}
 			break;
 		case STATE_MONSTER_PHASE:
@@ -152,23 +152,22 @@ public class Control_GameState : MonoBehaviour {
 	// Can trigger STATE_TRANSFORMATION
 	private void updateDuringCollectionPhase() {
 		// Check if Toni meets the monster for the first time
-		if(!GS.getMonster().worldModel.hasMetToni && GS.monsterSeesToni && MAIN_CAMERA_CONTROL.isMonsterClearlyVisible()) {
-			Data_PlayerCharacter toni = GS.getToni();
-			Data_Monster monster = GS.getMonster();
+		if(!MONSTER.worldModel.hasMetToni && GS.monsterSeesToni && MAIN_CAMERA_CONTROL.isMonsterClearlyVisible() 
+			&& !TONI.control.goingThroughADoor && !MONSTER.control.goingThroughADoor) {
 			// Update the monster's knowledge of meeting Toni
-			monster.worldModel.hasMetToni = true;
+			MONSTER.worldModel.hasMetToni = true;
 			// Make both characters face each other
-			toni.control.setSpriteFlip(toni.atPos > monster.atPos);
-			monster.control.setSpriteFlip(toni.atPos < monster.atPos);
+			TONI.control.setSpriteFlip(TONI.atPos > MONSTER.atPos);
+			MONSTER.control.setSpriteFlip(TONI.atPos < MONSTER.atPos);
 			// Put both in equally long cooldown
 			float duration = Global_Settings.read("ENCOUNTER_JINGLE_DURATION");
-			toni.control.halt();
-			toni.control.activateCooldown(duration);
-			monster.control.activateCooldown(duration);
+			TONI.control.halt();
+			TONI.control.activateCooldown(duration);
+			MONSTER.control.activateCooldown(duration);
 			// Play a scary sound
 			JukeBox.playEncounterJingle();
 			// Make the monster attack as soon as its cooldown ends
-			monster.state = Control_Monster.STATE_PURSUING;
+			MONSTER.state = Control_Monster.STATE_PURSUING;
 		}
 
 		// Check if player died to trigger house mix-up
@@ -192,9 +191,6 @@ public class Control_GameState : MonoBehaviour {
 
 	// This method updates parameters after loading or resetting the game
 	private void setAdditionalParameters() {
-		TONI = GS.getToni();
-		MONSTER = GS.getMonster();
-
 		// Train the camera on the main character
 		MAIN_CAMERA_CONTROL.loadGameState(GS);
 		MAIN_CAMERA_CONTROL.setFocusOn(TONI.pos);
@@ -216,6 +212,8 @@ public class Control_GameState : MonoBehaviour {
 		if(GS == null) {
 			return;
 		}
+		TONI = GS.getToni();
+		MONSTER = GS.getMonster();
 
 		// Fix all the room object references, including the door and item spot assignments
 		foreach(Data_Room r in GS.ROOMS.Values) {
@@ -229,17 +227,19 @@ public class Control_GameState : MonoBehaviour {
 		}
 
 		// Fix the character, cadaver and monster object references
-		GS.getToni().fixObjectReferences(GS);
-		GS.getToni().control.loadGameState(GS);
-		GS.getMonster().fixObjectReferences(GS);
-		GS.getMonster().control.loadGameState(GS);
-		GS.getCadaver().fixObjectReferences(GS);
+		TONI.fixObjectReferences(GS);
+		TONI.control.loadGameState(GS);
+		MONSTER.fixObjectReferences(GS);
+		MONSTER.control.loadGameState(GS);
+		MONSTER.fixObjectReferences(GS);
 
-		// Placing the cadaver sprite in the location they used to be
+		// Placing the cadaver sprite in the location they used to be (only if moved from the initial placing)
 		Data_Cadaver cadaver = GS.getCadaver();
-		Vector3 positionOfCadaver = new Vector3(cadaver.atPos, cadaver.isIn.gameObj.transform.position.y, 0);
-		cadaver.gameObj.transform.Translate(positionOfCadaver - cadaver.gameObj.transform.position);
-		cadaver.updatePosition(cadaver.isIn, cadaver.atPos);
+		if(cadaver.isIn != null) {
+			Vector3 positionOfCadaver = new Vector3(cadaver.atPos, cadaver.isIn.gameObj.transform.position.y, 0);
+			cadaver.gameObj.transform.Translate(positionOfCadaver - cadaver.gameObj.transform.position);
+			cadaver.updatePosition(cadaver.isIn, cadaver.atPos);
+		}
 
 		// Fix the items
 		for(int i = 0; i < GS.ITEMS.Count; i++) {
@@ -256,7 +256,7 @@ public class Control_GameState : MonoBehaviour {
 		}
 		// Guide monster Toni
 		if(GS.OVERALL_STATE == STATE_MONSTER_PHASE) {
-			GS.getToni().control.guideMonsterToniToIntruders();
+			TONI.control.guideMonsterToniToIntruders();
 		}
 	}
 
@@ -266,10 +266,10 @@ public class Control_GameState : MonoBehaviour {
 			// Disable new game button
 			disableNewGameButton();
 			// Transform Toni
-			GS.getToni().control.setupEndgame();
+			TONI.control.setupEndgame();
 		}
 		if(overallState > STATE_TRANSFORMATION) {
-			GS.getMonster().control.setupEndgame();
+			MONSTER.control.setupEndgame();
 		}
 	}
 
@@ -277,7 +277,7 @@ public class Control_GameState : MonoBehaviour {
 	private void resetGameState() {
 		// Update the weights before resetting the complete game state
 		if(GS != null) {
-			GS.getMonster().worldModel.playerParameters.updateWalkingDistanceWeights(GS.getToni().roomHistory);
+			MONSTER.worldModel.playerParameters.updateWalkingDistanceWeights(TONI.roomHistory);
 		}
 
 		// Remove all doors, rooms and items
@@ -313,7 +313,7 @@ public class Control_GameState : MonoBehaviour {
 		initializeCharacters();
 		// TODO: This is for debug purposes only, please remove in the final build!
 		if(Debug.isDebugBuild) {
-			GS.getMonster().worldModel.hasMetToni = false;
+			MONSTER.worldModel.hasMetToni = false;
 		}
 
 		// Spawn all items
@@ -362,25 +362,26 @@ public class Control_GameState : MonoBehaviour {
 
 		// INITIALIZE CADAVER
 		GS.setCadaverCharacter("Cadaver");
-		GS.getCadaver().updatePosition(ritualRoom, -7, 0); // move the cadaver out of sight at first
-		GS.getCadaver().gameObj.transform.position = new Vector3(-7, 0, 0);
+		GS.getCadaver().updatePosition(ritualRoom, 6, 0); // move the cadaver out of sight at first
+		GS.getCadaver().gameObj.transform.position = new Vector3(6, 0, 0);
 
 		// INITIALIZE PLAYER CHARACTER
 		GS.setPlayerCharacter("PlayerCharacter");
-		Data_PlayerCharacter Toni = GS.getToni();
-		Toni.updatePosition(ritualRoom, RITUAL_PENTAGRAM_CENTER, 0);
-		Toni.resetRoomHistory();
+		TONI = GS.getToni();
+		TONI.updatePosition(ritualRoom, RITUAL_PENTAGRAM_CENTER, 0);
+		TONI.resetRoomHistory();
 
 		// Make it look like Toni has just walked in through the right door (next to the pentagram)
-		Toni.updatePosition(ritualRoom, ritualRoom.rightWalkBoundary);
-		Toni.control.loadGameState(GS);
+		TONI.updatePosition(ritualRoom, ritualRoom.rightWalkBoundary);
+		TONI.control.loadGameState(GS);
 		ritualRoom.rightmostDoor.control.open();
 
 		// INITIALIZE MONSTER
 		GS.setMonsterCharacter("Monster");
-		GS.getMonster().updatePosition(GS.getRoomFurthestFrom(STARTING_ROOM_INDEX), 0, 0);
-		GS.getMonster().resetWorldModel(GS);
-		GS.getMonster().control.loadGameState(GS);
+		MONSTER = GS.getMonster();
+		MONSTER.updatePosition(GS.getRoomFurthestFrom(STARTING_ROOM_INDEX), 0, 0);
+		MONSTER.resetWorldModel(GS);
+		MONSTER.control.loadGameState(GS);
 	}
 
 	// Spawns all doors from the door graph
@@ -533,8 +534,8 @@ public class Control_GameState : MonoBehaviour {
 		// Recalculate all distances
 		precomputeAllDistances();
 		// Update the monster's world model, too
-		GS.getMonster().resetWorldModel(GS);
-		GS.getMonster().control.nextDoorToGoThrough = null;
+		MONSTER.resetWorldModel(GS);
+		MONSTER.control.nextDoorToGoThrough = null;
 	}
 
 	// This method is called when the New Game button is activated from the main menu

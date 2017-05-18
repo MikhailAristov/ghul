@@ -24,6 +24,7 @@ public abstract class Control_Character : MonoBehaviour {
 	protected float ATTACK_COOLDOWN;
 
 	public const float ANIM_MIN_SPEED_FOR_WALKING = 0.001f;
+	public bool goingThroughADoor;
 	protected bool attackAnimationPlaying;
 	private float cumulativeAttackDuration;
 	private Data_Position positionAtTheLastTimeStep;
@@ -125,9 +126,11 @@ public abstract class Control_Character : MonoBehaviour {
 		// Doors cannot be walked through until the transformation is over
 		// except for doors leading into the ritual room, so the monster can teleport there
 		if(GS.OVERALL_STATE == Control_GameState.STATE_TRANSFORMATION && destinationRoom.INDEX != RITUAL_ROOM_INDEX) {
+			goingThroughADoor = false;
 			yield break;
 		}
 
+		float waitUntil = Time.timeSinceLevelLoad + DOOR_TRANSITION_DURATION;
 		activateCooldown(DOOR_TRANSITION_DURATION);
 
 		// Open doors
@@ -136,7 +139,7 @@ public abstract class Control_Character : MonoBehaviour {
 
 		// Fade out and wait
 		preDoorTransitionHook(door);
-		yield return new WaitForSeconds(DOOR_TRANSITION_DURATION);
+		yield return new WaitUntil(() => Time.timeSinceLevelLoad >= waitUntil);
 		preRoomLeavingHook(door);
 
 		// Move character within game state
@@ -150,6 +153,7 @@ public abstract class Control_Character : MonoBehaviour {
 
 		// Execute all necessary actions after passing through the door
 		postDoorTransitionHook(door);
+		goingThroughADoor = false;
 	}
 	// Dummy functions to be implemented
 	public abstract void activateCooldown(float duration);

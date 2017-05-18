@@ -513,10 +513,12 @@ public class Control_Monster : Control_Character {
 		if(door != null) {
 			float distToDoor = door.visiblePos - me.atPos;
 			if(Math.Abs(distToDoor) <= MARGIN_DOOR_ENTRANCE) {
+				goingThroughADoor = true;
 				StartCoroutine(goThroughTheDoor(door));
 			} else {
 				Data_Door triggeredDoor = walk(distToDoor, run, deltaTime);
 				if(triggeredDoor == door) {
+					goingThroughADoor = true;
 					StartCoroutine(goThroughTheDoor(triggeredDoor));
 				}
 			}
@@ -548,6 +550,7 @@ public class Control_Monster : Control_Character {
 		// Set AI state to fleeing, just in case
 		me.state = STATE_FLEEING;
 		// "Go" through the door
+		goingThroughADoor = true;
 		StartCoroutine(goThroughTheDoor(targetDoor));
 	}
 
