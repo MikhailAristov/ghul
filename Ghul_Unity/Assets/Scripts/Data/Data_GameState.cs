@@ -61,6 +61,8 @@ public class Data_GameState {
 	public float[,] distanceBetweenTwoDoors;
 	[SerializeField]
 	public float[,] distanceBetweenTwoRooms;
+	[SerializeField]
+	public int[,] separationBetweenTwoRooms;
 
 	public bool allRoomsReachable {
 		get { return (distanceBetweenTwoRooms.Cast<float>().Max() < (float.MaxValue / 2)); }
@@ -243,7 +245,7 @@ public class Data_GameState {
 			for(int j = 0; j < DOORS.Count; j++) {
 				// Distance := 0 if i == j
 				if(i == j) { 
-					distanceBetweenTwoDoors[i, j] = 0.0f; 
+					distanceBetweenTwoDoors[i, j] = 0;
 				}
 				// Distance := door transition cost, if door i connects to door j
 				else if(DOORS[i].connectsTo == DOORS[j]) {
@@ -261,13 +263,21 @@ public class Data_GameState {
 		}
 		// Also prepare the room graph under the same assumption
 		distanceBetweenTwoRooms = new float[ROOMS.Count, ROOMS.Count];
+		separationBetweenTwoRooms = new int[ROOMS.Count, ROOMS.Count];
 		for(int i = 0; i < ROOMS.Count; i++) {
 			for(int j = 0; j < ROOMS.Count; j++) {
-				distanceBetweenTwoRooms[i, j] = (i == j) ? 0.0f : float.MaxValue / 2;
+				if(i == j) {
+					distanceBetweenTwoRooms[i, j] = 0;
+					separationBetweenTwoRooms[i, j] = 0;
+				} else {
+					distanceBetweenTwoRooms[i, j] = float.MaxValue / 2;
+					separationBetweenTwoRooms[i, j] =  int.MaxValue / 2;
+				}
 			}
 		}
 		// Floyd-Warshall algorithm (extended)
 		for(int k = 0; k < DOORS.Count; k++) {
+			int kRoom = DOORS[k].isIn.INDEX;
 			for(int i = 0; i < DOORS.Count; i++) {
 				int iRoom = DOORS[i].isIn.INDEX;
 				for(int j = 0; j < DOORS.Count; j++) {
@@ -279,6 +289,12 @@ public class Data_GameState {
 					// Also update the rooms with the new door distance if necessary
 					if(distanceBetweenTwoRooms[iRoom, jRoom] > distanceBetweenTwoDoors[i, j]) {
 						distanceBetweenTwoRooms[iRoom, jRoom] = distanceBetweenTwoDoors[i, j];
+					}
+					// And the degree of separation
+					if(DOORS[i].connectsTo == DOORS[j] && separationBetweenTwoRooms[iRoom, jRoom] > 1) {
+						separationBetweenTwoRooms[iRoom, jRoom] = 1;
+					} else if(separationBetweenTwoRooms[iRoom, jRoom] > separationBetweenTwoRooms[iRoom, kRoom] + separationBetweenTwoRooms[kRoom, jRoom]) {
+						separationBetweenTwoRooms[iRoom, jRoom] = separationBetweenTwoRooms[iRoom, kRoom] + separationBetweenTwoRooms[kRoom, jRoom];
 					}
 				}
 			}

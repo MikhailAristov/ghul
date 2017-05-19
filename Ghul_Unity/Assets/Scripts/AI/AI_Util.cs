@@ -35,6 +35,21 @@ public class AI_Util {
 
 		Debug.Log(output);
 	}
+
+	public static void displayMatrix(string preface, int[,] input) {
+		int height = input.GetLength(0);
+		int width = input.GetLength(1);
+
+		string output = "" + preface;
+		for(int i = 0; i < height; i++) {
+			output += "\n";
+			for(int j = 0; j < width; j++) {
+				output += string.Format(" {0:D}", input[i, j]);
+			}
+		}
+
+		Debug.Log(output);
+	}
 		
 	public static void displayVector(string preface, double[] input) {
 		int length = input.GetLength(0);
