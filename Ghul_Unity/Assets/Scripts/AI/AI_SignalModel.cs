@@ -39,7 +39,13 @@ public class AI_SignalModel {
 	private double Likelihood_NoiseWasMadeByHouse;
 	// f( door | noise origin room, noise type ) = double[noise type, room index, door index]
 	[SerializeField]
-	public double[,,] likelihoodNoiseHeardAtDoor;
+	private double[,,] likelihoodNoiseHeardAtDoor;
+	// f( noise type, origin room | Toni is in tonisRoom ) = double[noise type, origin room index, Toni's room index]
+	[SerializeField]
+	private double[,,] noiseAndOriginLikelihood;
+	// f( there is no signal | Toni is in tonisRoom, monster is in monsterRoom ) = double[tonisRoom index, monsterRoom index]
+	[SerializeField]
+	public double[,] nullSignalLikelihood;
 
 	public AI_SignalModel(Data_GameState GS, AI_PlayerModel PM) {
 		playerModel = PM;
@@ -57,6 +63,9 @@ public class AI_SignalModel {
 		precomputeDoorAudibilityLikelihoods(GS);
 		// Recalculate noise making likelihoods
 		precomputeNoiseMakerLikelihoods(GS);
+		precomputeNoiseAndOriginLikelihoods();
+		// Recalculate the null signal likelihoods
+		precomputeNullSignalLikelihoods();
 	}
 
 	/* Precomputes the (non-linear) distance function 
@@ -97,7 +106,8 @@ public class AI_SignalModel {
 					}
 				}
 				// Get all the non-pruned door IDs for easier handling
-				relevantDoors = new int[originRoom.DOORS.Count - prunedCount]; int cnt = 0;
+				relevantDoors = new int[originRoom.DOORS.Count - prunedCount];
+				int cnt = 0;
 				Debug.Assert(relevantDoors.Length >= 1);
 				foreach(Data_Door d in originRoom.DOORS.Values) {
 					if(!doorPruned[d.INDEX]) {
@@ -114,7 +124,7 @@ public class AI_SignalModel {
 					GS.distanceBetweenTwoDoors[targetDoor.INDEX, relevantDoors[0]] + Math.Abs(originRoom.leftWalkBoundary - GS.getDoorByIndex(relevantDoors[0]).atPos);
 				// Other breaking points are placed at each non-pruned door and between it and the next one on the right,
 				// with the exact position depending on the doors' individual distances to the targetDoor
-				int thisID; int nextID;
+				int thisID, nextID;
 				for(int i = 0; i < (relevantDoors.Length - 1); i++) {
 					thisID = relevantDoors[i];
 					nextID = relevantDoors[i + 1];
@@ -202,22 +212,44 @@ public class AI_SignalModel {
 		UnityEngine.Debug.Log("SIGNAL MODEL: Likelihood_NoiseWasMadeByToni = " + Likelihood_NoiseWasMadeByToni + ", Likelihood_NoiseWasMadeByHouse = " + Likelihood_NoiseWasMadeByHouse);
 	}
 
+	// Precompute noise and origin likelihoods
+	private void precomputeNoiseAndOriginLikelihoods() {
+		noiseAndOriginLikelihood = new double[noiseCount, roomCount, roomCount];
+		for(int noise = Control_Noise.NOISE_TYPE_WALK; noise < noiseCount; noise++) {
+			for(int originRoomIndex = 0; originRoomIndex < roomCount; originRoomIndex++) {
+				for(int toniRoomIndex = 0; toniRoomIndex < roomCount; toniRoomIndex++) {
+					noiseAndOriginLikelihood[noise, originRoomIndex, toniRoomIndex] = getNoiseAndOriginLikelihood(noise, originRoomIndex, toniRoomIndex);
+				}
+			}
+		}
+	}
+
+	// Precompute null signal likelihoods
+	private void precomputeNullSignalLikelihoods() {
+		nullSignalLikelihood = new double[roomCount, roomCount];
+		for(int toniRoomIndex = 0; toniRoomIndex < roomCount; toniRoomIndex++) {
+			for(int monsterRoomIndex = 0; monsterRoomIndex < roomCount; monsterRoomIndex++) {
+				nullSignalLikelihood[toniRoomIndex, monsterRoomIndex] = getNullSignalLikelihood(toniRoomIndex, monsterRoomIndex);
+			}
+		}
+	}
+
 	// f( perceivedVolume, atDoor | Toni is in tonisRoom )
 	public double signalLikelihood(float volume, Data_Door door, int tonisRoom) {
 		double result = 0;
 		// This is some crazy stochastic voodoo magic...
-		for(int r = 0; r < roomCount; r++) {
-			for(int n = Control_Noise.NOISE_TYPE_WALK; n < noiseCount; n++) {
-				result += signalLikelihood(volume, door, n, r) * likelihoodNoiseHeardAtDoor[n, r, door.INDEX] * noiseAndOriginLikelihood(n, r, tonisRoom);
+		for(int n = Control_Noise.NOISE_TYPE_WALK; n < noiseCount; n++) {
+			// Estimate the distance the signal must have traveled
+			double estimatedDistanceToOrigin = Math.Sqrt(Control_Noise.getInitialLoudness(n) / volume);
+			for(int r = 0; r < roomCount; r++) {
+				result += signalLikelihood(estimatedDistanceToOrigin, door, r) * likelihoodNoiseHeardAtDoor[n, r, door.INDEX] * noiseAndOriginLikelihood[n, r, tonisRoom];
 			}
 		}
 		return result;
 	}
 
-	// f( perceivedVolume | atDoor, noise type, origin room )
-	private double signalLikelihood(float volume, Data_Door door, int noiseType, int origin) {
-		// Estimate the distance the signal must have traveled
-		double estimatedDistanceToOrigin = Math.Sqrt(Control_Noise.getInitialLoudness(noiseType) / volume);
+	// f( estimatedDistanceToOrigin | atDoor, origin room )
+	private double signalLikelihood(double estimatedDistanceToOrigin, Data_Door door, int origin) {
 		// Count how many points within the supposed origin room the sound could have originated from
 		int possibleOriginPoints = 0;
 		float intervalStart, intervalEnd;
@@ -237,7 +269,7 @@ public class AI_SignalModel {
 	}
 
 	// f( noise type, origin room | Toni is in tonisRoom )
-	private double noiseAndOriginLikelihood(int noiseType, int origin, int tonisRoom) {
+	private double getNoiseAndOriginLikelihood(int noiseType, int origin, int tonisRoom) {
 		double result = 0;
 		// Case 1: The noise was made by Toni
 		result += noiseLikelihood(noiseType, origin, tonisRoom, true) * originLikelihood(origin, tonisRoom, true) * Likelihood_NoiseWasMadeByToni;
@@ -269,7 +301,7 @@ public class AI_SignalModel {
 	}
 
 	// f( null signal | Toni is in tonisRoom, monster is in monsterRoom)
-	public double nullSignalLikelihood(int tonisRoom, int monsterRoom) {
+	private double getNullSignalLikelihood(int tonisRoom, int monsterRoom) {
 		double result = 0, tempSumOverToniNoise, tempSumOverHouseNoise;
 		if(tonisRoom != monsterRoom) {
 			for(int toniNoise = 0; toniNoise < noiseCount; toniNoise++) {
@@ -277,7 +309,7 @@ public class AI_SignalModel {
 				for(int houseNoise = 0; houseNoise < noiseCount; houseNoise++) {
 					tempSumOverHouseNoise = 0;
 					for(int houseNoiseOriginRoom = 0; houseNoiseOriginRoom < roomCount; houseNoiseOriginRoom++) {
-						tempSumOverToniNoise += nullSignalLikelihood(toniNoise, tonisRoom, houseNoise, houseNoiseOriginRoom, monsterRoom);
+						tempSumOverToniNoise += getNullSignalLikelihood(toniNoise, tonisRoom, houseNoise, houseNoiseOriginRoom, monsterRoom);
 					}
 					tempSumOverToniNoise += tempSumOverHouseNoise * noiseLikelihoodByHouse(houseNoise);
 				}
@@ -288,7 +320,7 @@ public class AI_SignalModel {
 	}
 
 	// f( null signal | Toni makes toniNoise in tonisRoom, house makes houseNoise in houseNoiseOriginRoom, monster listens in monsterRoom)
-	public double nullSignalLikelihood(int toniNoise, int tonisRoom, int houseNoise, int houseNoiseOriginRoom, int monsterRoom) {
+	private double getNullSignalLikelihood(int toniNoise, int tonisRoom, int houseNoise, int houseNoiseOriginRoom, int monsterRoom) {
 		double result = 1.0;
 		if(toniNoise == Control_Noise.NOISE_TYPE_NONE) {
 			if(houseNoise == Control_Noise.NOISE_TYPE_NONE) {
@@ -314,7 +346,7 @@ public class AI_SignalModel {
 	}
 
 	// Approx. how likely it is that the signal from origiRoom will be heard in the targetRoom
-	public double audibilityLikelihood(int noiseType, int originRoom, int targetRoom) {
+	private double audibilityLikelihood(int noiseType, int originRoom, int targetRoom) {
 		double maxNoiseTravelDistance = Math.Sqrt(Control_Noise.getInitialLoudness(noiseType) / Control_Noise.NOISE_INAUDIBLE);
 		if(maxNoiseTravelDistance > roomDoor2roomMaxDistance[targetRoom, originRoom]) {
 			return 1.0;

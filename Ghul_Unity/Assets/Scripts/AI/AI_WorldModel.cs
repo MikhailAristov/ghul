@@ -2,7 +2,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 
 [Serializable]
 public class AI_WorldModel {
@@ -91,18 +90,22 @@ public class AI_WorldModel {
 	// Update the world model in absence of measurements
 	// MUST be called every FixedUpdate unless Toni is directly visible!
 	public void predictOneTimeStep() {
+		double normalization = 0;
 		// Simple matrix multiplication of player model transition matrix (transposed)
 		// and the current position distribution vector
 		for(int matrixRow = 0; matrixRow < roomCount; matrixRow++) {
 			newVector[matrixRow] = 0;
-			for(int matrixColumn = 0; matrixColumn < roomCount; matrixColumn++) {
-				newVector[matrixRow] += playerModel.TRANSITION_MATRIX[matrixColumn, matrixRow] * probabilityThatToniIsInRoom[matrixColumn];
+			// Toni is obviously not in the current room, otherwise toniKnownToBeInRoom() would have been called instead
+			if(matrixRow != monsterRoomIndex) {
+				for(int matrixColumn = 0; matrixColumn < roomCount; matrixColumn++) {
+					newVector[matrixRow] += playerModel.TRANSITION_MATRIX[matrixColumn, matrixRow] * probabilityThatToniIsInRoom[matrixColumn];
+				}
+				normalization += newVector[matrixRow];
 			}
 		}
-		// Toni is obviously not in the current room, otherwise toniKnownToBeInRoom() would have been called instead
-		double normalizationConstant = 1.0 - newVector[monsterRoomIndex];
+		// Normalization
 		for(int j = 0; j < roomCount; j++) {
-			probabilityThatToniIsInRoom[j] = ((j == monsterRoomIndex) ? 0 : newVector[j] / normalizationConstant);
+			probabilityThatToniIsInRoom[j] = newVector[j] / normalization;
 		}
 	}
 
@@ -128,7 +131,7 @@ public class AI_WorldModel {
 		double normalization = 0;
 		for(int i = 0; i < roomCount; i++) {
 			// Posteriore := likelihood * priore (normalization constant to be applied later)
-			newVector[i] = signalModel.nullSignalLikelihood(i, monsterRoomIndex) * probabilityThatToniIsInRoom[i];
+			newVector[i] = signalModel.nullSignalLikelihood[i, monsterRoomIndex] * probabilityThatToniIsInRoom[i];
 			normalization += newVector[i];
 		}
 		// Lastly, normalize the probabilities to sum up to 1
