@@ -60,6 +60,9 @@ public class Control_GameState : MonoBehaviour {
 			
 		AUTOSAVE_FREQUENCY = Global_Settings.read("AUTOSAVE_FREQUENCY");
 		NEXT_AUTOSAVE_IN = AUTOSAVE_FREQUENCY;
+
+		// Force full screen
+		Screen.SetResolution(640, 480, true);
 	}
 
 	void Start() {
@@ -567,6 +570,7 @@ public class Control_GameState : MonoBehaviour {
 		if(GS != null) {
 			Control_Persistence.saveToDisk(GS);
 		}
+		Screen.SetResolution(640, 480, false);
 		Application.Quit();
 	}
 
