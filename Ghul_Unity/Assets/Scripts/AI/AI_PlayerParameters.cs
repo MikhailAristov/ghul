@@ -129,7 +129,7 @@ public class AI_PlayerParameters {
 		}
 		// Add the current validation set to the training set to be used next time
 		roomHistory.AddRange(validationSet);
-		Debug.LogFormat("Player room transition model: error: {0:F6}; exploration weight: {1:F3}; item fetch weight: {2:F3}; door2door weight: {3:F3}", currentWeightsCumulativeError, WEIGHT_EXPLORATION_WALK, WEIGHT_ITEM_FETCH_WALK, WEIGHT_DOOR2DOOR_WALK);
+		Debug.LogFormat("Player room transition model: mean error: ±{0:F2} m/room; exploration weight: {1:F3}; item fetch weight: {2:F3}; door2door weight: {3:F3}", Math.Sqrt(currentWeightsCumulativeError), WEIGHT_EXPLORATION_WALK, WEIGHT_ITEM_FETCH_WALK, WEIGHT_DOOR2DOOR_WALK);
 		// Perform a sanity check
 		sanityCheck();
 	}
