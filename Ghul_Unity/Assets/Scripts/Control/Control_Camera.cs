@@ -3,12 +3,12 @@ using UnityEngine.UI;
 using System;
 
 public class Control_Camera : MonoBehaviour {
-	public Canvas FADEOUT_CANVAS;
 	// Used for scene transitions
-	private Image fadeoutImage;
-	public Canvas REDOUT_CANVAS;
+	public Image fadeoutImage;
 	// Used to represent immediate danger
-	private Image redoutImage;
+	public Image redoutImage;
+	// To simulate lighting effects
+	public Image darknessImage;
 
 	private Data_GameState GS;
 	private Data_Position focusOn;
@@ -32,10 +32,9 @@ public class Control_Camera : MonoBehaviour {
 	}
 
 	void Start() {
-		fadeoutImage = FADEOUT_CANVAS.GetComponent<Image>();
-		fadeoutImage.CrossFadeAlpha(0.0f, 0.0f, false);
-		redoutImage = REDOUT_CANVAS.GetComponent<Image>();
-		redoutImage.CrossFadeAlpha(0.0f, 0.0f, false);
+		fadeoutImage.CrossFadeAlpha(0, 0, false);
+		redoutImage.CrossFadeAlpha(0, 0, false);
+		darknessImage.CrossFadeAlpha(0, 0, false);
 	}
 
 	// To make sure the game state is fully initialized before loading it, this function is called by game state class itself
@@ -55,7 +54,7 @@ public class Control_Camera : MonoBehaviour {
 			float displacementY = focusOn.RoomId * VERTICAL_ROOM_SPACING - transform.position.y;
 			float displacementX = targetPositionX - transform.position.x;
 			// If there is a difference in the vertical direction, close it all at once (provisional)
-			if(Mathf.Abs(displacementY) > 0.0f) {
+			if(Mathf.Abs(displacementY) > 0) {
 				// Update the environment
 				this.currentEnvironment = GS.getRoomByIndex(focusOn.RoomId).env;
 				// Reevaluate and apply camera displacement
@@ -68,7 +67,7 @@ public class Control_Camera : MonoBehaviour {
 			// Otherwise, pan gradually
 			displacementX *= Time.deltaTime * PANNING_SPEED;
 			// Correct displacement
-			if(Mathf.Abs(displacementX) > 0.0f) {
+			if(Mathf.Abs(displacementX) > 0) {
 				transform.Translate(displacementX, 0, 0);
 			}
 		}
@@ -87,23 +86,23 @@ public class Control_Camera : MonoBehaviour {
 
 	// Asynchronously fades to black
 	public void fadeOut(float duration) {
-		fadeoutImage.CrossFadeAlpha(1.0f, duration, false);
+		fadeoutImage.CrossFadeAlpha(1f, duration, false);
 	}
 
 	// Asynchronously fades back from black
 	public void fadeIn(float duration) {
-		fadeoutImage.CrossFadeAlpha(0.0f, duration, false);
+		fadeoutImage.CrossFadeAlpha(0, duration, false);
 	}
 
 	// Set red overlay intensity
 	public void setRedOverlay(float intensity) {
-		intensity = Mathf.Min(0.9f, Mathf.Max(0.0f, intensity));
-		REDOUT_CANVAS.GetComponent<CanvasRenderer>().SetAlpha(intensity);
+		intensity = Mathf.Min(0.9f, Mathf.Max(0, intensity));
+		redoutImage.CrossFadeAlpha(intensity, 0, false);
 	}
 
 	// Asynchronously fades back from red
 	public void resetRedOverlay() {
-		redoutImage.CrossFadeAlpha(0.0f, 1.0f, false);
+		redoutImage.CrossFadeAlpha(0, 1f, false);
 	}
 
 	// Checks if the monster is clearly visible on camera

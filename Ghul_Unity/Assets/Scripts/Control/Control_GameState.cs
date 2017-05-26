@@ -323,6 +323,9 @@ public class Control_GameState : MonoBehaviour {
 		for(int i = 0; i < TOTAL_ITEMS_PLACED; i++) {
 			spawnNextItem();
 		}
+
+		// Save the new game, overwriting the previous one
+		Control_Persistence.saveToDisk(GS);
 	}
 
 	// Loads a fake prefab for the ritual room that already exists in the game space from the start
