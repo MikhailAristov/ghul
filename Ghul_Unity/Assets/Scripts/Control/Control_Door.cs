@@ -15,12 +15,14 @@ public class Control_Door : MonoBehaviour {
 
 	private const int SOUND_TYPE_CLOSE = 0;
 	private const int SOUND_TYPE_OPEN = 1;
+	private const int SOUND_TYPE_RATTLE = 2;
 
 	private const float CREAKING_SOUND_PROBABILITY = 0.15f;
 
-	private List<AudioClip> closingSounds;
-	private List<AudioClip> openingSounds;
-	private List<AudioClip> creakingSounds;
+	private static List<AudioClip> closingSounds;
+	private static List<AudioClip> openingSounds;
+	private static List<AudioClip> creakingSounds;
+	private static List<AudioClip> rattlingSounds;
 
 	public int currentState;
 	private float timeUntilClosing;
@@ -39,9 +41,18 @@ public class Control_Door : MonoBehaviour {
 		creakSound = GetComponents<AudioSource>()[1];
 
 		// Define all sounds
-		closingSounds = new List<AudioClip>(Resources.LoadAll("Doors/ClosingSounds", typeof(AudioClip)).Cast<AudioClip>());
-		openingSounds = new List<AudioClip>(Resources.LoadAll("Doors/OpeningSounds", typeof(AudioClip)).Cast<AudioClip>());
-		creakingSounds = new List<AudioClip>(Resources.LoadAll("Doors/CreakingSounds", typeof(AudioClip)).Cast<AudioClip>());
+		if(closingSounds == null) {
+			closingSounds = new List<AudioClip>(Resources.LoadAll("Doors/ClosingSounds", typeof(AudioClip)).Cast<AudioClip>());
+		}
+		if(openingSounds == null) {
+			openingSounds = new List<AudioClip>(Resources.LoadAll("Doors/OpeningSounds", typeof(AudioClip)).Cast<AudioClip>());
+		}
+		if(creakingSounds == null) {
+			creakingSounds = new List<AudioClip>(Resources.LoadAll("Doors/CreakingSounds", typeof(AudioClip)).Cast<AudioClip>());
+		}
+		if(rattlingSounds == null) {
+			rattlingSounds = new List<AudioClip>(Resources.LoadAll("Doors/RattlingSounds", typeof(AudioClip)).Cast<AudioClip>());
+		}
 	}
 
 	void Start() {
@@ -78,6 +89,13 @@ public class Control_Door : MonoBehaviour {
 		}
 	}
 
+	// Rattles the door when it cannot be opened
+	public void rattleDoorknob() {
+		if(currentState == STATE_CLOSED) {
+			playSound(SOUND_TYPE_RATTLE);
+		}
+	}
+
 	// Closes the door after it has been open long enough
 	private IEnumerator waitForClosure() {
 		while(timeUntilClosing > 0f) {
@@ -111,6 +129,10 @@ public class Control_Door : MonoBehaviour {
 				creakSound.clip = creakingSounds[UnityEngine.Random.Range(0, creakingSounds.Count)];
 				creakSound.Play();
 			}
+			break;
+		case SOUND_TYPE_RATTLE:
+			knobSound.clip = rattlingSounds[UnityEngine.Random.Range(0, rattlingSounds.Count)];
+			knobSound.Play();
 			break;
 		default:
 			return;

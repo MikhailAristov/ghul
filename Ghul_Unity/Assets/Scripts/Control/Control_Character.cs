@@ -126,6 +126,7 @@ public abstract class Control_Character : MonoBehaviour {
 		// Doors cannot be walked through until the transformation is over
 		// except for doors leading into the ritual room, so the monster can teleport there
 		if(GS.OVERALL_STATE == Control_GameState.STATE_TRANSFORMATION && destinationRoom.INDEX != RITUAL_ROOM_INDEX) {
+			door.control.rattleDoorknob();
 			goingThroughADoor = false;
 			yield break;
 		}
