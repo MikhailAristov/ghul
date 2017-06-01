@@ -157,7 +157,7 @@ public class Control_GameState : MonoBehaviour {
 	private void updateDuringCollectionPhase() {
 		// Check if Toni meets the monster for the first time
 		if(!MONSTER.worldModel.hasMetToni && GS.monsterSeesToni && MAIN_CAMERA_CONTROL.isMonsterClearlyVisible() 
-			&& !TONI.control.goingThroughADoor && !MONSTER.control.goingThroughADoor) {
+			&& !TONI.control.isGoingThroughADoor && !MONSTER.control.isGoingThroughADoor) {
 			// Update the monster's knowledge of meeting Toni
 			MONSTER.worldModel.hasMetToni = true;
 			// Make both characters face each other

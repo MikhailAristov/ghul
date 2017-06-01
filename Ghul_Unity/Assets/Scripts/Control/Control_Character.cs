@@ -11,6 +11,8 @@ public abstract class Control_Character : MonoBehaviour {
 
 	protected abstract Data_Character getMe();
 
+	public AudioSource AttackSound;
+
 	// General movement settings
 	protected float VERTICAL_ROOM_SPACING;
 	protected float WALKING_SPEED;
@@ -24,10 +26,15 @@ public abstract class Control_Character : MonoBehaviour {
 	protected float ATTACK_COOLDOWN;
 
 	public const float ANIM_MIN_SPEED_FOR_WALKING = 0.001f;
-	public bool goingThroughADoor;
+	protected bool goingThroughADoor;
 	protected bool attackAnimationPlaying;
 	private float cumulativeAttackDuration;
 	private Data_Position positionAtTheLastTimeStep;
+
+	public bool isGoingThroughADoor {
+		get { return goingThroughADoor; }
+		private set { return; }
+	}
 
 	// required for animation transition (it makes more sense to link it to the run button rather than speed)
 	protected bool isRunningAnim;
@@ -181,6 +188,7 @@ public abstract class Control_Character : MonoBehaviour {
 		Debug.Log(getMe() + " attacks from " + getMe().pos + " to " + attackPoint + " at T+" + Time.timeSinceLevelLoad);
 		// PHASE 1: Attack
 		startAttackAnimation();
+		AttackSound.Play();
 		while(cumulativeAttackDuration < ATTACK_DURATION) {
 			// If the attacker moves from the original spot, immediately cancel the attack
 			if(getMe().isIn.INDEX != attackOrigin.RoomId || Math.Abs(getMe().atPos - attackOrigin.X) > ATTACK_MARGIN) {
