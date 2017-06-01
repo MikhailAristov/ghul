@@ -41,7 +41,6 @@ public class Control_MusicTrack : MonoBehaviour {
 		if(!isMuted && !isPaused) {
 			mainTrack.volume = Mathf.Lerp(mainTrack.volume, targetMainTrackVolume, LERPING_STEP);
 			proximitySubtrack.volume = Mathf.Lerp(proximitySubtrack.volume, targetProximityTrackVolume, LERPING_STEP);
-			proximitySubtrack.pitch = Mathf.Lerp(proximitySubtrack.pitch, (1f - targetProximityTrackVolume * 2f), LERPING_STEP);
 			if(mainTrack.volume < INAUDIBIBILITY_THRESHOLD) {
 				isMuted = true;
 				mainTrack.mute = true;

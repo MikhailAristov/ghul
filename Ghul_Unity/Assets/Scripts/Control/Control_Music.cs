@@ -78,16 +78,23 @@ public class Control_Music : MonoBehaviour {
 	void FixedUpdate() {
 		// Update the target volume of the proximity track
 		if(GS != null && !GS.SUSPENDED && GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
-			if(GS.DISTANCE_TONI_TO_MONSTER < MIN_PROXIMITY) {
-				proximityTrackVolumeFactor = maxProximityTrackVolumeFactor;
-			} else if(GS.DISTANCE_TONI_TO_MONSTER > MAX_PROXIMITY) {
-				proximityTrackVolumeFactor = minProximityTrackVolumeFactor;
-			} else {
-				// Linear roll-off within bounds
-				proximityTrackVolumeFactor = minProximityTrackVolumeFactor +
-				(maxProximityTrackVolumeFactor - minProximityTrackVolumeFactor) * (MAX_PROXIMITY - GS.DISTANCE_TONI_TO_MONSTER) / (MAX_PROXIMITY - MIN_PROXIMITY);
+			switch(GS.separationBetweenTwoRooms[TONI.isIn.INDEX, MONSTER.isIn.INDEX]) {
+			case 0:
+				proximityTrackVolumeFactor = 1f;
+				break;
+			case 1:
+				proximityTrackVolumeFactor = 0.8f;
+				break;
+			case 2:
+				proximityTrackVolumeFactor = 0.6f;
+				break;
+			case 3:
+				proximityTrackVolumeFactor = 0.4f;
+				break;
+			default:
+				proximityTrackVolumeFactor = 0.2f;
+				break;
 			}
-			proximityTrackVolumeFactor = Mathf.Max(0, Mathf.Min(1f, proximityTrackVolumeFactor));
 		}
 	}
 
