@@ -54,6 +54,8 @@ public class Control_Monster : Control_Character {
 
 	[NonSerialized]
 	public Data_Door nextDoorToGoThrough;
+	[NonSerialized]
+	public Data_Door doorToLurkAt;
 	// This can be used to prevent endless door walk cycles:
 	private Data_Room previousRoomVisited;
 
@@ -252,7 +254,8 @@ public class Control_Monster : Control_Character {
 			case STATE_STALKING:
 				if(GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < distanceThresholdToStartPursuing) {
 					me.state = STATE_PURSUING;
-				} else if(me.worldModel.certainty < certaintyThresholdToStartStalking) {
+				} else if(GS.separationBetweenTwoRooms[me.pos.RoomId, me.worldModel.mostLikelyTonisRoomIndex] > 1 &&
+					me.worldModel.certainty < certaintyThresholdToStartStalking) {
 					me.state = STATE_SEARCHING;
 				}
 				break;
@@ -450,17 +453,40 @@ public class Control_Monster : Control_Character {
 		// If monster sees Toni, stare at him until he either leaves or comes withing striking range
 		if(GS.monsterSeesToni) {
 			nextDoorToGoThrough = null;
+			doorToLurkAt = null;
 			setSpriteFlip(Toni.atPos < me.atPos);
-		} else {
-			// Otherwise, look for the next door to go through
-			if(nextDoorToGoThrough == null) {
-				// Penalize going into Toni's supposed room until the aggro is high enough to engage right away
-				double meetingToniPenalty = (distanceThresholdToStartPursuing >= HALF_SCREEN_SIZE_HORIZONTAL) ? 0 : utilityPenaltyTonisRoom;
-				// Penalties: ritual room > Toni's room (opt.) > distance to door > previous room = going past Toni
-				nextDoorToGoThrough = findNextDoorToVisit(true, 10.0, utilityPenaltyRitualRoom, 0, meetingToniPenalty, 0);
+			return;
+		} else if(GS.separationBetweenTwoRooms[me.pos.RoomId, me.worldModel.mostLikelyTonisRoomIndex] == 1) {
+			// If the monster cannot see Toni, but believes him to be in an adjacent room,
+			// take position next to the door leading to that room, ready to strike
+			if(doorToLurkAt == null || doorToLurkAt.isIn != me.isIn) {
+				foreach(Data_Door d in me.isIn.DOORS.Values) {
+					if(d.connectsTo.isIn.INDEX == me.worldModel.mostLikelyTonisRoomIndex) {
+						doorToLurkAt = d;
+						break;
+					}
+				}
 			}
-			walkToAndThroughDoor(nextDoorToGoThrough, false, Time.deltaTime);
+			// Walk towards the door, if found
+			if(doorToLurkAt != null) {
+				float attackVector = getNearestAttackVector(doorToLurkAt.atPos);
+				if(attackVector != 0) {
+					walk(attackVector, true, Time.deltaTime);
+					return;
+				}
+			}
+		} else {
+			doorToLurkAt = null;
 		}
+
+		// Per default, look for the next door to go through
+		if(nextDoorToGoThrough == null) {
+			// Penalize going into Toni's supposed room until the aggro is high enough to engage right away
+			double meetingToniPenalty = (distanceThresholdToStartPursuing >= HALF_SCREEN_SIZE_HORIZONTAL) ? 0 : utilityPenaltyTonisRoom;
+			// Penalties: ritual room > Toni's room (opt.) > distance to door > previous room = going past Toni
+			nextDoorToGoThrough = findNextDoorToVisit(true, 10.0, utilityPenaltyRitualRoom, 0, meetingToniPenalty, 0);
+		}
+		walkToAndThroughDoor(nextDoorToGoThrough, false, Time.deltaTime);
 	}
 
 	// Run towards within striking range of Toni
@@ -470,7 +496,7 @@ public class Control_Monster : Control_Character {
 		if(Math.Abs(distToToni) < EFFECTIVE_MINIMUM_ATTACK_RANGE) {
 			// However, if Toni has been standing still for some time, find the nearest attack position and move towards it
 			if(cumultativeImpasseDuration > WAIT_FOR_TONI_TO_MOVE) {
-				float attackVector = getNearestAttackVector();
+				float attackVector = getNearestAttackVector(Toni.atPos);
 				if(attackVector != 0) {
 					walk(attackVector, true, Time.deltaTime);
 				} else {
@@ -487,24 +513,20 @@ public class Control_Monster : Control_Character {
 	}
 
 	// Returns the horizontal distance (positive or negative) to the nearest valid attack position against Toni
-	private float getNearestAttackVector() {
-		if(GS.monsterSeesToni) {
-			// Calculate the both possible attack points
-			float leftAttackVector = Toni.atPos - ATTACK_RANGE - me.atPos;
-			float rightAttackVector = Toni.atPos + ATTACK_RANGE - me.atPos;
-			// If the left attack point is valid and closer to my current position than the right one, return it
-			if(Math.Abs(leftAttackVector) < Math.Abs(rightAttackVector) && (me.atPos + leftAttackVector) > me.isIn.leftWalkBoundary) {
-				return leftAttackVector;
-			}
-			// Ditto for the right one
-			if(Math.Abs(leftAttackVector) >= Math.Abs(rightAttackVector) && (me.atPos + rightAttackVector) < me.isIn.rightWalkBoundary) {
-				return rightAttackVector;
-			}
-			// Default case: wait for Toni to move
-			return 0;
-		} else {
-			return 0;
+	private float getNearestAttackVector(float targetPos) {
+		// Calculate the both possible attack points
+		float leftAttackVector = targetPos - ATTACK_RANGE - me.atPos;
+		float rightAttackVector = targetPos + ATTACK_RANGE - me.atPos;
+		// If the left attack point is valid and closer to my current position than the right one, return it
+		if(Math.Abs(leftAttackVector) < Math.Abs(rightAttackVector) && (me.atPos + leftAttackVector) > me.isIn.leftWalkBoundary) {
+			return leftAttackVector;
 		}
+		// Ditto for the right one
+		if(Math.Abs(leftAttackVector) >= Math.Abs(rightAttackVector) && (me.atPos + rightAttackVector) < me.isIn.rightWalkBoundary) {
+			return rightAttackVector;
+		}
+		// Default case: wait for Toni to move
+		return 0;
 	}
 
 	// Walk towards the door and through it, if possible
