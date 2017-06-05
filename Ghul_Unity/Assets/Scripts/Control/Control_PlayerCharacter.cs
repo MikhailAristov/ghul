@@ -147,10 +147,11 @@ public class Control_PlayerCharacter : Control_Character {
 		me.timeWithoutAction += Time.deltaTime;
 
 		// Item actions or attack after ritual
+		bool foundItem = false;
 		if(Input.GetButtonDown("Action")) {
 			me.timeWithoutAction = 0;
 			if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
-				takeItem();
+				foundItem = takeItem();
 			} else if(!attackAnimationPlaying) {
 				// TODO: Remove this cooldown if proper attack cancel animations are implemented
 				activateCooldown(ATTACK_DURATION + ATTACK_COOLDOWN);
@@ -178,7 +179,7 @@ public class Control_PlayerCharacter : Control_Character {
 
 		// Vertical "movement"
 		if(Input.GetButtonDown("Vertical") ||
-			(Input.GetButtonDown("Action") && GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE)) {
+			(Input.GetButtonDown("Action") && GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE && !foundItem)) {
 			me.timeWithoutAction = 0;
 			// Check if the character can walk through the door, and if so, move them to the "other side"
 			Data_Door door = currentEnvironment.getDoorAtPos(transform.position.x);
@@ -357,18 +358,19 @@ public class Control_PlayerCharacter : Control_Character {
 	}
 
 	// The player takes a nearby item if there is any
-	private void takeItem() {
+	// Returns true if there is an item there, false otherwise
+	private bool takeItem() {
 		// Check if there are any items nearby
 		Data_Item thisItem = GS.getItemAtPos(me.pos, MARGIN_ITEM_COLLECT);
 		if(thisItem == null) {
 			Debug.Log("There is no item to pick up here...");
-			return;
+			return false;
 		} else if(me.carriedItem != null) {
 			// Can't pick up more than one item, anyway
 			Debug.Log(me + " is already carrying " + me.carriedItem);
 			StopCoroutine("displayInventory");
 			StartCoroutine("displayInventory");
-			return;
+			return false;
 		}
 
 		// Check if the item that would be picked up is the one currently sought for the ritual
@@ -382,7 +384,7 @@ public class Control_PlayerCharacter : Control_Character {
 			}
 			// Make a zapping noise at the location
 			noiseSystem.makeNoise(Control_Noise.NOISE_TYPE_ZAP, me.pos);
-			return;
+			return true;
 		}
 
 		// Now that we know that this is the right item, move it to inventory
@@ -395,6 +397,7 @@ public class Control_PlayerCharacter : Control_Character {
 		Control_Persistence.saveToDisk(GS);
 		// Show inventory
 		StartCoroutine("displayInventory");
+		return true;
 	}
 
 	// The player drops the carried item
