@@ -73,6 +73,41 @@ public class Control_Monster : Control_Character {
 	private Animator animatorMonster;
 	private Animator animatorCivilian;
 
+	// Invisibility controls
+	private const float maxVisibility = 0.9f;
+	private const float minVisibility = 0.1f;
+	private int INVISIBLE_AFTER_ITEM;
+	private float INVISIBILITY_TRANSITION_DURATION;
+	private bool currentlyInvisible {
+		get { return (GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE && GS.numItemsPlaced >= INVISIBLE_AFTER_ITEM && !attackAnimationPlaying); }
+		set { return; }
+	}
+	private float visibilityTransitionSpeed = 1f;
+
+	void Awake() {
+		RUNNING_SPEED = Global_Settings.read("MONSTER_WALKING_SPEED");
+		WALKING_SPEED = Global_Settings.read("MONSTER_SLOW_WALKING_SPEED");
+		MARGIN_DOOR_ENTRANCE = Global_Settings.read("MARGIN_DOOR_ENTRANCE");
+		HALF_SCREEN_SIZE_HORIZONTAL = Global_Settings.read("SCREEN_SIZE_HORIZONTAL") / 2;
+
+		ATTACK_RANGE = Global_Settings.read("MONSTER_ATTACK_RANGE");
+		ATTACK_MARGIN = Global_Settings.read("MONSTER_ATTACK_MARGIN");
+		ATTACK_DURATION = Global_Settings.read("MONSTER_ATTACK_DURATION");
+		ATTACK_COOLDOWN = Global_Settings.read("MONSTER_ATTACK_COOLDOWN");
+
+		EFFECTIVE_ATTACK_MARGIN = ATTACK_MARGIN / 2;
+		EFFECTIVE_MINIMUM_ATTACK_RANGE = ATTACK_RANGE - EFFECTIVE_ATTACK_MARGIN;
+
+		VERTICAL_ROOM_SPACING = Global_Settings.read("VERTICAL_ROOM_SPACING");
+		DOOR_TRANSITION_DURATION = Global_Settings.read("DOOR_TRANSITION_DURATION");
+		RITUAL_ROOM_INDEX = (int)Global_Settings.read("RITUAL_ROOM_INDEX");
+		MARGIN_ITEM_STEAL = Global_Settings.read("MARGIN_ITEM_COLLECT") / 10f;
+		WAIT_FOR_TONI_TO_MOVE = Global_Settings.read("MONSTER_WAIT_FOR_TONI_MOVE");
+
+		INVISIBLE_AFTER_ITEM = (int)Global_Settings.read("MONSTER_INVISIBLE_AFTER_ITEM");
+		INVISIBILITY_TRANSITION_DURATION = Global_Settings.read("MONSTER_INVISIBILIY_TRANSITION");
+	}
+
 	void Start() {
 		monsterImageObject = GameObject.Find("MonsterImage");
 		monsterRenderer = monsterImageObject.GetComponent<SpriteRenderer>();
@@ -97,25 +132,6 @@ public class Control_Monster : Control_Character {
 		this.me = gameState.getMonster();
 		this.Toni = gameState.getToni();
 		this.currentEnvironment = me.isIn.env;
-
-		RUNNING_SPEED = Global_Settings.read("MONSTER_WALKING_SPEED");
-		WALKING_SPEED = Global_Settings.read("MONSTER_SLOW_WALKING_SPEED");
-		MARGIN_DOOR_ENTRANCE = Global_Settings.read("MARGIN_DOOR_ENTRANCE");
-		HALF_SCREEN_SIZE_HORIZONTAL = Global_Settings.read("SCREEN_SIZE_HORIZONTAL") / 2;
-
-		ATTACK_RANGE = Global_Settings.read("MONSTER_ATTACK_RANGE");
-		ATTACK_MARGIN = Global_Settings.read("MONSTER_ATTACK_MARGIN");
-		ATTACK_DURATION = Global_Settings.read("MONSTER_ATTACK_DURATION");
-		ATTACK_COOLDOWN = Global_Settings.read("MONSTER_ATTACK_COOLDOWN");
-
-		EFFECTIVE_ATTACK_MARGIN = ATTACK_MARGIN / 2;
-		EFFECTIVE_MINIMUM_ATTACK_RANGE = ATTACK_RANGE - EFFECTIVE_ATTACK_MARGIN;
-
-		VERTICAL_ROOM_SPACING = Global_Settings.read("VERTICAL_ROOM_SPACING");
-		DOOR_TRANSITION_DURATION = Global_Settings.read("DOOR_TRANSITION_DURATION");
-		RITUAL_ROOM_INDEX = (int)Global_Settings.read("RITUAL_ROOM_INDEX");
-		MARGIN_ITEM_STEAL = Global_Settings.read("MARGIN_ITEM_COLLECT") / 10f;
-		WAIT_FOR_TONI_TO_MOVE = Global_Settings.read("MONSTER_WAIT_FOR_TONI_MOVE");
 
 		// Move the character sprite directly to where the game state says it should be standing
 		Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
@@ -319,7 +335,19 @@ public class Control_Monster : Control_Character {
 			animatorCivilian.speed = 1f;
 		}
 
-		if(me.etherialCooldown > 0.0f) { // While the character is etherial, don't do anything
+		// Control visibility
+		if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE && GS.numItemsPlaced >= INVISIBLE_AFTER_ITEM) {
+			if(currentlyInvisible && monsterRenderer.color.a > minVisibility) {
+				float fade = Mathf.SmoothDamp(monsterRenderer.color.a, minVisibility, ref visibilityTransitionSpeed, INVISIBILITY_TRANSITION_DURATION);
+				monsterRenderer.color = new Color(1f, 1f, 1f, fade);
+			} else if(!currentlyInvisible && monsterRenderer.color.a < maxVisibility){
+				float fade = Mathf.SmoothDamp(monsterRenderer.color.a, maxVisibility, ref visibilityTransitionSpeed, INVISIBILITY_TRANSITION_DURATION);
+				monsterRenderer.color = new Color(1f, 1f, 1f, fade);
+			}
+		}
+
+		// While the character is etherial, don't do anything
+		if(me.etherialCooldown > 0.0f) { 
 			me.etherialCooldown -= Time.deltaTime;
 			return;
 		}
@@ -328,6 +356,7 @@ public class Control_Monster : Control_Character {
 		// teleport into the ritual room and stand there passively
 		if(GS.OVERALL_STATE == Control_GameState.STATE_TRANSFORMATION && !GS.MONSTER_KILLED) {
 			if(me.isIn.INDEX != RITUAL_ROOM_INDEX) {
+				monsterRenderer.color = Color.white;
 				teleportToRitualRoom();
 			} else {
 				setSpriteFlip(me.atPos > Toni.atPos);
