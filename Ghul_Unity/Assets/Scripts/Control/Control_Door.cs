@@ -1,17 +1,18 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 public class Control_Door : MonoBehaviour {
 
+	[NonSerialized]
+	private Data_Door me;
+
 	public GameObject ClosedSprite;
 	public GameObject OpenSprite;
 	private AudioSource knobSound;
 	private AudioSource creakSound;
-
-	public const int STATE_CLOSED = 0;
-	public const int STATE_OPEN = 1;
 
 	private const int SOUND_TYPE_CLOSE = 0;
 	private const int SOUND_TYPE_OPEN = 1;
@@ -24,9 +25,7 @@ public class Control_Door : MonoBehaviour {
 	private static List<AudioClip> creakingSounds;
 	private static List<AudioClip> rattlingSounds;
 
-	public int currentState;
 	private float timeUntilClosing;
-
 	private float doorOpenDuration;
 	private float doorOpenCheckFrequency;
 	private float verticalHearingThreshold;
@@ -55,22 +54,24 @@ public class Control_Door : MonoBehaviour {
 		}
 	}
 
-	void Start() {
-		OpenSprite.SetActive(currentState == STATE_OPEN);
-		ClosedSprite.SetActive(currentState == STATE_CLOSED);
+	// Links the control object to the data object
+	public void loadGameState(Data_Door d) {
+		this.me = d;
+		OpenSprite.SetActive(me.state == Data_Door.STATE_OPEN);
+		ClosedSprite.SetActive(me.state != Data_Door.STATE_OPEN);
 	}
 
 	// Opens the door if it's closed, keeps it open longer otherwise
 	public void open(bool silently = false, bool hold = false, bool forceCreak = false) {
 		// If the "hold" flag is specified, the door stays open for much longer (or until someone goes through it)
 		timeUntilClosing = hold ? doorOpenDuration * 10 : doorOpenDuration;
-		if(currentState != STATE_OPEN) {
+		if(me.state != Data_Door.STATE_OPEN) {
 			ClosedSprite.SetActive(false);
 			OpenSprite.SetActive(true);
 			if(!silently) {
 				playSound(SOUND_TYPE_OPEN, forceCreak);
 			}
-			currentState = STATE_OPEN;
+			me.state = Data_Door.STATE_OPEN;
 			StartCoroutine(waitForClosure());
 		}
 		// If the door is already open, it just stays so for longer
@@ -78,20 +79,20 @@ public class Control_Door : MonoBehaviour {
 
 	// Forces the door shut immediately
 	public void forceClose(bool silently = false) {
-		if(currentState != STATE_CLOSED) {
+		if(me.state != Data_Door.STATE_CLOSED) {
 			timeUntilClosing = 0;
 			OpenSprite.SetActive(false);
 			ClosedSprite.SetActive(true);
 			if(!silently) {
 				playSound(SOUND_TYPE_CLOSE);
 			}
-			currentState = STATE_CLOSED;
+			me.state = Data_Door.STATE_CLOSED;
 		}
 	}
 
 	// Rattles the door when it cannot be opened
 	public void rattleDoorknob() {
-		if(currentState == STATE_CLOSED) {
+		if(me.state != Data_Door.STATE_OPEN) {
 			playSound(SOUND_TYPE_RATTLE);
 		}
 	}
@@ -105,7 +106,7 @@ public class Control_Door : MonoBehaviour {
 		OpenSprite.SetActive(false);
 		ClosedSprite.SetActive(true);
 		playSound(SOUND_TYPE_CLOSE);
-		currentState = STATE_CLOSED;
+		me.state = Data_Door.STATE_CLOSED;
 	}
 
 	// Play the specified sound if the main camera (i.e. Toni) is within the current room
