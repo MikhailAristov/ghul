@@ -479,13 +479,16 @@ public class Control_Monster : Control_Character {
 
 	// Go towards the closest room to where Toni is most likely to be
 	private void enactStalkingPolicy() {
+		// Precompute whether the monster is hungry enough to attack Toni
+		bool readyToEngage = distanceThresholdToStartPursuing >= HALF_SCREEN_SIZE_HORIZONTAL;
+
 		// If monster sees Toni, stare at him until he either leaves or comes withing striking range
 		if(GS.monsterSeesToni) {
 			nextDoorToGoThrough = null;
 			doorToLurkAt = null;
 			setSpriteFlip(Toni.atPos < me.atPos);
 			return;
-		} else if(GS.separationBetweenTwoRooms[me.pos.RoomId, me.worldModel.mostLikelyTonisRoomIndex] == 1) {
+		} else if(GS.separationBetweenTwoRooms[me.pos.RoomId, me.worldModel.mostLikelyTonisRoomIndex] == 1 && !readyToEngage) {
 			// If the monster cannot see Toni, but believes him to be in an adjacent room,
 			// take position next to the door leading to that room, ready to strike
 			if(doorToLurkAt == null || doorToLurkAt.isIn != me.isIn) {
@@ -511,7 +514,7 @@ public class Control_Monster : Control_Character {
 		// Per default, look for the next door to go through
 		if(nextDoorToGoThrough == null) {
 			// Penalize going into Toni's supposed room until the aggro is high enough to engage right away
-			double meetingToniPenalty = (distanceThresholdToStartPursuing >= HALF_SCREEN_SIZE_HORIZONTAL) ? 0 : utilityPenaltyTonisRoom;
+			double meetingToniPenalty = readyToEngage ? 0 : utilityPenaltyTonisRoom;
 			// Penalties: ritual room > Toni's room (opt.) > distance to door > previous room = going past Toni
 			nextDoorToGoThrough = findNextDoorToVisit(true, 10.0, utilityPenaltyRitualRoom, 0, meetingToniPenalty, 0);
 		}
