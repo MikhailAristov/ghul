@@ -28,6 +28,8 @@ public class Control_Door : MonoBehaviour {
 	private float timeUntilClosing;
 	private float doorOpenDuration;
 	private float doorOpenCheckFrequency;
+	private float timeUntilLettingGo;
+	private const float doorHeldDuration = 0.1f;
 	private float verticalHearingThreshold;
 
 	// Use this for initialization
@@ -51,6 +53,16 @@ public class Control_Door : MonoBehaviour {
 		}
 		if(rattlingSounds == null) {
 			rattlingSounds = new List<AudioClip>(Resources.LoadAll("Doors/RattlingSounds", typeof(AudioClip)).Cast<AudioClip>());
+		}
+	}
+
+	void FixedUpdate() {
+		// If the door is being held, check whether it timed out
+		if(me != null && me.connectsTo.state == Data_Door.STATE_HELD) {
+			timeUntilLettingGo -= Time.fixedDeltaTime;
+			if(timeUntilLettingGo < 0) {
+				me.connectsTo.state = Data_Door.STATE_CLOSED;
+			}
 		}
 	}
 
@@ -90,6 +102,24 @@ public class Control_Door : MonoBehaviour {
 			}
 			me.state = Data_Door.STATE_CLOSED;
 			me.connectsTo.control.forceClose(silently);
+		}
+	}
+
+	// Forcibly holds the door shut
+	public void hold() {
+		// If the door is still open, force it shut
+		if(me.state == Data_Door.STATE_OPEN) {
+			forceClose();
+		}
+		// Now that it is closed, set the held flag for the OTHER side
+		if(me.connectsTo.state == Data_Door.STATE_CLOSED) {
+			me.connectsTo.state = Data_Door.STATE_HELD;
+			Debug.Log("holding door " + me);
+		}
+		// If it is already being held and this function is called again,
+		// extend the duration until it is let go
+		if(me.connectsTo.state == Data_Door.STATE_HELD) {
+			timeUntilLettingGo = doorHeldDuration;
 		}
 	}
 

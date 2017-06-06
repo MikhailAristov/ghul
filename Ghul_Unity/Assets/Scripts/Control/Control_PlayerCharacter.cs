@@ -492,6 +492,10 @@ public class Control_PlayerCharacter : Control_Character {
 		me.etherialCooldown = duration;
 	}
 
+	protected override void failedDoorTransitionHook(Data_Door doorTaken) {
+		noiseSystem.makeNoise(Control_Noise.NOISE_TYPE_DOOR, me.pos);
+	}
+
 	protected override void preDoorTransitionHook(Data_Door doorTaken) {
 		mainCameraControl.fadeOut(DOOR_TRANSITION_DURATION / 2);
 	}

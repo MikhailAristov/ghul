@@ -131,8 +131,11 @@ public abstract class Control_Character : MonoBehaviour {
 		Data_Room destinationRoom = destinationDoor.isIn;
 
 		// Doors cannot be walked through until the transformation is over
-		// except for doors leading into the ritual room, so the monster can teleport there
-		if(GS.OVERALL_STATE == Control_GameState.STATE_TRANSFORMATION && destinationRoom.INDEX != RITUAL_ROOM_INDEX) {
+		// (except for doors leading into the ritual room, so the monster can teleport there)
+		// or if the door is currently being held shut by the monster
+		if((GS.OVERALL_STATE == Control_GameState.STATE_TRANSFORMATION && destinationRoom.INDEX != RITUAL_ROOM_INDEX) ||
+			door.state == Data_Door.STATE_HELD) {
+			failedDoorTransitionHook(door);
 			door.control.rattleDoorknob();
 			goingThroughADoor = false;
 			yield break;
@@ -164,6 +167,8 @@ public abstract class Control_Character : MonoBehaviour {
 	}
 	// Dummy functions to be implemented
 	public abstract void activateCooldown(float duration);
+
+	protected abstract void failedDoorTransitionHook(Data_Door doorTaken);
 
 	protected abstract void preDoorTransitionHook(Data_Door doorTaken);
 

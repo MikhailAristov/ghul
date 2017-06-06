@@ -46,8 +46,9 @@ public class Global_Settings {
 			{ "MONSTER_ATTACK_COOLDOWN",		0.5f },		// how long, in seconds, does an attack take from hit to finish
 			{ "MONSTER_WAIT_FOR_TONI_MOVE",		2.0f },		// how long, in seconds, does the monster wait for Toni to move in a face-off
 
+			{ "MONSTER_HOLDS_DOORS_AFTER_ITEM",	2.0f },		// after how many placed items the monster learns to hold doors shut
 			{ "MONSTER_INVISIBLE_AFTER_ITEM",	3.0f },		// after how many placed items the monster learns to turn invisible
-			{ "MONSTER_INVISIBILIY_TRANSITION",	0.25f },		// how long it takes, in seconds, to turn invisible and back
+			{ "MONSTER_INVISIBILIY_TRANSITION",	0.25f },	// how long it takes, in seconds, to turn invisible and back
 
 			{ "TONI_ATTACK_MARGIN",				1.0f },		// the size of the "hitbox" for the monster Toni's attack
 			{ "TONI_ATTACK_DURATION",			0.5f },		// how long, in seconds, does an attack take from start to hit

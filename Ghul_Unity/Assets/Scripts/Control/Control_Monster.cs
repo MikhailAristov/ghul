@@ -22,6 +22,7 @@ public class Control_Monster : Control_Character {
 	private float HALF_SCREEN_SIZE_HORIZONTAL;
 	private float MARGIN_ITEM_STEAL;
 	private float WAIT_FOR_TONI_TO_MOVE;
+	private int HOLD_DOORS_AFTER_ITEM;
 
 	// For prediction and planning of attacks
 	private float EFFECTIVE_MINIMUM_ATTACK_RANGE;
@@ -104,6 +105,7 @@ public class Control_Monster : Control_Character {
 		MARGIN_ITEM_STEAL = Global_Settings.read("MARGIN_ITEM_COLLECT") / 10f;
 		WAIT_FOR_TONI_TO_MOVE = Global_Settings.read("MONSTER_WAIT_FOR_TONI_MOVE");
 
+		HOLD_DOORS_AFTER_ITEM = (int)Global_Settings.read("MONSTER_HOLDS_DOORS_AFTER_ITEM");
 		INVISIBLE_AFTER_ITEM = (int)Global_Settings.read("MONSTER_INVISIBLE_AFTER_ITEM");
 		INVISIBILITY_TRANSITION_DURATION = Global_Settings.read("MONSTER_INVISIBILIY_TRANSITION");
 	}
@@ -502,10 +504,13 @@ public class Control_Monster : Control_Character {
 			// Walk towards the door, if found
 			if(doorToLurkAt != null) {
 				float attackVector = getNearestAttackVector(doorToLurkAt.atPos);
-				if(attackVector != 0) {
+				if(Mathf.Abs(attackVector) > 0.001f) {
 					walk(attackVector, true, Time.deltaTime);
-					return;
+				} else if(GS.numItemsPlaced >= HOLD_DOORS_AFTER_ITEM && GS.getCurrentItem().isIn == me.isIn) {
+					// Hold the door shut if the current item is in this room
+					doorToLurkAt.control.hold();
 				}
+				return;
 			}
 		} else {
 			doorToLurkAt = null;
@@ -674,6 +679,7 @@ public class Control_Monster : Control_Character {
 	protected override void updateStamina(bool isRunning) {}
 	protected override void regainStamina() {}
 	protected override void makeWalkingNoise(float walkedDistance, int type, Data_Position atPos) {}
+	protected override void failedDoorTransitionHook(Data_Door doorTaken) {}
 	protected override void preDoorTransitionHook(Data_Door doorTaken) {}
 	protected override void preRoomLeavingHook(Data_Door doorTaken) {}
 }
