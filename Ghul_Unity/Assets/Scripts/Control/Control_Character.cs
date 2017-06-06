@@ -141,9 +141,8 @@ public abstract class Control_Character : MonoBehaviour {
 		float waitUntil = Time.timeSinceLevelLoad + DOOR_TRANSITION_DURATION;
 		activateCooldown(DOOR_TRANSITION_DURATION);
 
-		// Open doors
-		door.gameObj.GetComponent<Control_Door>().open();
-		destinationDoor.gameObj.GetComponent<Control_Door>().open();
+		// Open door
+		door.control.open();
 
 		// Fade out and wait
 		preDoorTransitionHook(door);

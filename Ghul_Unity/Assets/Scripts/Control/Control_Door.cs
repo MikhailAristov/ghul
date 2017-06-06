@@ -73,6 +73,8 @@ public class Control_Door : MonoBehaviour {
 			}
 			me.state = Data_Door.STATE_OPEN;
 			StartCoroutine(waitForClosure());
+			// Also, open the door connected to you on the other side
+			me.connectsTo.control.open(silently, hold, forceCreak);
 		}
 		// If the door is already open, it just stays so for longer
 	}
@@ -87,6 +89,7 @@ public class Control_Door : MonoBehaviour {
 				playSound(SOUND_TYPE_CLOSE);
 			}
 			me.state = Data_Door.STATE_CLOSED;
+			me.connectsTo.control.forceClose(silently);
 		}
 	}
 
