@@ -5,6 +5,7 @@ using System.Collections;
 public class Control_MusicTrack : MonoBehaviour {
 
 	private const float INAUDIBIBILITY_THRESHOLD = 0.01f;
+	private const float MAX_TRACK_VOLUME = 0.8f;
 	private const float MUTING_STEP = 0.1f;
 	private const float LERPING_STEP = 0.01f;
 
@@ -77,8 +78,8 @@ public class Control_MusicTrack : MonoBehaviour {
 	public void unmuteTrack(float duration, float delay = 0) {
 		// If duration is not positive, mute the track immediately
 		if(duration <= 0) {
-			targetMainTrackVolume = 1;
-			mainTrack.volume = 1;
+			targetMainTrackVolume = MAX_TRACK_VOLUME;
+			mainTrack.volume = MAX_TRACK_VOLUME;
 			unmuteAllComponents();
 		}
 		// Otherwise, do so gradually
@@ -97,11 +98,11 @@ public class Control_MusicTrack : MonoBehaviour {
 		unmuteAllComponents();
 		float timeStep = duration * MUTING_STEP;
 		do {
-			targetMainTrackVolume = Math.Min(1, targetMainTrackVolume + MUTING_STEP);
+			targetMainTrackVolume = Math.Min(MAX_TRACK_VOLUME, targetMainTrackVolume + MUTING_STEP);
 			// And wait
 			waitUntil += timeStep;
 			yield return new WaitUntil(() => Time.timeSinceLevelLoad >= waitUntil);
-		} while(targetMainTrackVolume < 1);
+		} while(targetMainTrackVolume < MAX_TRACK_VOLUME);
 	}
 
 	// Unmute the components, if necessary
