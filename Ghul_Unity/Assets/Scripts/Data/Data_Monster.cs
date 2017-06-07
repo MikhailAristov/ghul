@@ -10,6 +10,8 @@ public class Data_Monster : Data_Character {
 	public override Control_Character getControl() {
 		return control as Control_Character; 
 	}
+	[NonSerialized]
+	public Control_MonsterPerception perception;
 	[SerializeField]
 	public AI_WorldModel worldModel;
 

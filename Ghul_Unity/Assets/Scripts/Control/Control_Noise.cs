@@ -81,7 +81,7 @@ public class Control_Noise : MonoBehaviour {
 		float effectiveLoudness = loudness / (distance * distance);
 		// Inform the monster of the noise if it is above the cutoff threshold
 		if(effectiveLoudness > NOISE_INAUDIBLE) {
-			MONSTER.control.hearNoise(GS.getDoorByIndex(doorId), effectiveLoudness);
+			MONSTER.perception.hearNoise(GS.getDoorByIndex(doorId), effectiveLoudness);
 		}
 	}
 

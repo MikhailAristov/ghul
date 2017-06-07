@@ -28,11 +28,6 @@ public class Control_Monster : Control_Character {
 	private float EFFECTIVE_MINIMUM_ATTACK_RANGE;
 	private float EFFECTIVE_ATTACK_MARGIN;
 
-	// Noise data
-	private bool newNoiseHeard;
-	private Data_Door lastNoiseHeardFrom;
-	private float lastNoiseVolume;
-
 	// Monster AI states
 	public const int STATE_WANDERING = 0;
 	public const int STATE_SEARCHING = 1;
@@ -139,9 +134,11 @@ public class Control_Monster : Control_Character {
 		Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
 		transform.Translate(savedPosition - transform.position);
 
-		// Artificial intelligence
-		me.worldModel.updateMyRoom(me.isIn, GS.monsterSeesToni);
+		// Perception sub-system
+		me.perception = GetComponent<Control_MonsterPerception>();
+		me.perception.loadGameState(gameState);
 		StartCoroutine(displayWorldState(1f / 60f));
+
 		// Initialize the state machine
 		stateUpdateCooldown = -1.0f;
 		certaintyThresholdToStartStalking = 0.5;
@@ -170,30 +167,12 @@ public class Control_Monster : Control_Character {
 			return;
 		} // Don't do anything if the game state is not loaded yet or suspended
 
-		// If monster sees Toni, do not update the world model
-		if(GS.monsterSeesToni) {
-			me.worldModel.toniKnownToBeInRoom(me.isIn);
-			// Do update the time both Toni and monster have been standing still, though
-			if(Toni.currentVelocityAbsolute < ANIM_MIN_SPEED_FOR_WALKING && Math.Abs(Toni.atPos - me.atPos) < EFFECTIVE_MINIMUM_ATTACK_RANGE) {
-				cumultativeImpasseDuration += Time.fixedDeltaTime;
-			} else {
-				cumultativeImpasseDuration = 0;
-			}
-		} else {
-			// Otherwise, predict Toni's movements according to blind transition model
-			me.worldModel.predictOneTimeStep();
-			// And if a noise has been heard, update the model accordingly
-			if(newNoiseHeard) {
-				me.worldModel.filter(lastNoiseVolume, lastNoiseHeardFrom);
-				newNoiseHeard = false;
-			} else {
-				// If no noise has been heard, filter anyway
-				me.worldModel.filterWithNullSignal();
-			}
+		// Update the time both Toni and monster have been standing still, if applicable
+		if(GS.monsterSeesToni && Toni.currentVelocityAbsolute < ANIM_MIN_SPEED_FOR_WALKING && Mathf.Abs(Toni.atPos - me.atPos) < EFFECTIVE_MINIMUM_ATTACK_RANGE) {
+			cumultativeImpasseDuration += Time.fixedDeltaTime;
+		} else if(cumultativeImpasseDuration > 0) {
 			// Just to clean things up...
-			if(cumultativeImpasseDuration > 0) {
-				cumultativeImpasseDuration = 0;
-			}
+			cumultativeImpasseDuration = 0;
 		}
 
 		// Handling the animation
@@ -219,18 +198,6 @@ public class Control_Monster : Control_Character {
 
 		// Update monster state as necessary
 		updateState();
-	}
-
-	// The sound system triggers this function to inform the monster of incoming sounds
-	public void hearNoise(Data_Door doorway, float loudness) {
-		lastNoiseVolume = loudness;
-		lastNoiseHeardFrom = doorway;
-		newNoiseHeard = true;
-	}
-
-	// Inform the monster that Toni has just walked through this door to its other side
-	public void seeToniGoThroughDoor(Data_Door originDoor) {
-		me.worldModel.toniKnownToBeInRoom(originDoor.connectsTo.isIn);
 	}
 
 	// Updates the internal state if necessary

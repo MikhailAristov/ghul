@@ -502,7 +502,7 @@ public class Control_PlayerCharacter : Control_Character {
 
 	protected override void preRoomLeavingHook(Data_Door doorTaken) {
 		if(GS.monsterSeesToni) {
-			GS.getMonster().control.seeToniGoThroughDoor(doorTaken);
+			GS.getMonster().perception.seeToniGoThroughDoor(doorTaken);
 		}
 	}
 
