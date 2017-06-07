@@ -2914,6 +2914,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 495099017}
   - 114: {fileID: 495099018}
+  - 114: {fileID: 495099019}
   m_Layer: 0
   m_Name: Monster
   m_TagString: Untagged
@@ -2953,6 +2954,17 @@ MonoBehaviour:
   MOSTLY_HARMLESS: 0
   tombstone: {fileID: 4000010959148136, guid: 16ed8d7bfd250d146b04f4b1ec8def93, type: 2}
   AttackZone: {fileID: 296330126}
+--- !u!114 &495099019
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 495099016}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7cc7bba42c2ac7a419663d8db519174a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &503493983
 GameObject:
   m_ObjectHideFlags: 0
