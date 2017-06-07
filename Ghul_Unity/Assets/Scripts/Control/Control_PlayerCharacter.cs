@@ -52,6 +52,7 @@ public class Control_PlayerCharacter : Control_Character {
 	// Animator for transitioning between animation states
 	private Animator animatorHuman;
 	private Animator animatorMonsterToni;
+	private bool isRunning;
 
 	// Most basic initialization
 	void Awake() {
@@ -190,6 +191,9 @@ public class Control_PlayerCharacter : Control_Character {
 			}
 		}
 
+		// Running switch
+		isRunning = Input.GetButton("Run");
+
 		// Horizontal movement
 		if(Mathf.Abs(Input.GetAxis("Horizontal")) > 0.01f) {
 			me.timeWithoutAction = 0;
@@ -211,36 +215,6 @@ public class Control_PlayerCharacter : Control_Character {
 				StartCoroutine(dieAndRespawn());
 			}
 			mainCameraControl.setRedOverlay(me.timeWithoutAction / SUICIDLE_DURATION);
-		}
-
-		// Transition for walking / running animation
-		switch(GS.OVERALL_STATE) {
-		case Control_GameState.STATE_COLLECTION_PHASE:
-			if(animatorHuman != null) {
-				if(me.currentVelocityAbsolute < ANIM_MIN_SPEED_FOR_WALKING) {
-					animatorHuman.SetBool("Is Walking", false);
-					animatorHuman.SetBool("Is Running", false);
-				} else if(me.currentVelocityAbsolute >= ANIM_MIN_SPEED_FOR_WALKING && !isRunningAnim) {
-					animatorHuman.SetBool("Is Walking", true);
-					animatorHuman.SetBool("Is Running", false);
-				} else if(isRunningAnim) {
-					animatorHuman.SetBool("Is Walking", true);
-					animatorHuman.SetBool("Is Running", true);
-				}
-			}
-			break;
-		case Control_GameState.STATE_MONSTER_PHASE:
-		case Control_GameState.STATE_TRANSFORMATION:
-			if(animatorMonsterToni != null) {
-				if(me.currentVelocityAbsolute < ANIM_MIN_SPEED_FOR_WALKING) {
-					animatorMonsterToni.SetBool("Is Walking", false);
-				} else if(me.currentVelocityAbsolute >= ANIM_MIN_SPEED_FOR_WALKING) {
-					animatorMonsterToni.SetBool("Is Walking", true);
-				}
-			}
-			break;
-		default:
-			break;
 		}
 	}
 
@@ -264,6 +238,24 @@ public class Control_PlayerCharacter : Control_Character {
 			}
 			// Update the distance walked in the current room
 			me.increaseWalkedDistance(me.currentVelocityAbsolute * Time.fixedDeltaTime);
+		}
+
+		// Transition for walking / running animation
+		switch(GS.OVERALL_STATE) {
+		case Control_GameState.STATE_COLLECTION_PHASE:
+			if(animatorHuman != null) {
+				animatorHuman.SetFloat("Speed", me.currentVelocityAbsolute);
+				animatorHuman.SetBool("Is Running", isRunning && me.currentVelocityAbsolute > ANIM_MIN_SPEED_FOR_WALKING);
+			}
+			break;
+		case Control_GameState.STATE_MONSTER_PHASE:
+		case Control_GameState.STATE_TRANSFORMATION:
+			if(animatorMonsterToni != null) {
+				animatorMonsterToni.SetFloat("Speed", me.currentVelocityAbsolute);
+			}
+			break;
+		default:
+			break;
 		}
 	}
 
@@ -334,7 +326,7 @@ public class Control_PlayerCharacter : Control_Character {
 
 			// Reset movements
 			Input.ResetInputAxes();
-			animatorHuman.SetBool("Is Walking", false);
+			animatorHuman.SetFloat("Speed", 0);
 			animatorHuman.SetBool("Is Running", false);
 
 			// Trigger the house mix up and a new item
@@ -479,11 +471,11 @@ public class Control_PlayerCharacter : Control_Character {
 		me.currentVelocitySigned = 0;
 		me.currentVelocityAbsolute = 0;
 		if(animatorHuman != null && animatorHuman.isInitialized) {
-			animatorHuman.SetBool("Is Walking", false);
+			animatorHuman.SetFloat("Speed", 0);
 			animatorHuman.SetBool("Is Running", false);
 		}
 		if(animatorMonsterToni != null && animatorMonsterToni.isInitialized) {
-			animatorMonsterToni.SetBool("Is Walking", false);
+			animatorMonsterToni.SetFloat("Speed", 0);
 		}
 	}
 

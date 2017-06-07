@@ -176,24 +176,10 @@ public class Control_Monster : Control_Character {
 		}
 
 		// Handling the animation
-		if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
-			// Transition for walking / attacking
-			if(animatorMonster != null) {
-				if(me.currentVelocityAbsolute < ANIM_MIN_SPEED_FOR_WALKING) {
-					animatorMonster.SetBool("Is Walking", false);
-				} else if(me.currentVelocityAbsolute >= ANIM_MIN_SPEED_FOR_WALKING) {
-					animatorMonster.SetBool("Is Walking", true);
-				}
-			}
-		} else if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE) {
-			// Transition for walking
-			if(animatorCivilian != null) {
-				if(me.currentVelocityAbsolute < ANIM_MIN_SPEED_FOR_WALKING) {
-					animatorCivilian.SetBool("Is Walking", false);
-				} else if(me.currentVelocityAbsolute >= ANIM_MIN_SPEED_FOR_WALKING) {
-					animatorCivilian.SetBool("Is Walking", true);
-				}
-			}
+		if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE && animatorMonster != null) {
+			animatorMonster.SetFloat("Speed", me.currentVelocityAbsolute);
+		} else if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE && animatorCivilian != null) {
+			animatorCivilian.SetFloat("Speed", me.currentVelocityAbsolute);
 		}
 
 		// Update monster state as necessary

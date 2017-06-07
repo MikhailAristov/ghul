@@ -25,7 +25,7 @@ public abstract class Control_Character : MonoBehaviour {
 	protected float ATTACK_DURATION;
 	protected float ATTACK_COOLDOWN;
 
-	public const float ANIM_MIN_SPEED_FOR_WALKING = 0.001f;
+	protected const float ANIM_MIN_SPEED_FOR_WALKING = 0.01f;
 	protected bool goingThroughADoor;
 	protected bool attackAnimationPlaying;
 	private float cumulativeAttackDuration;
@@ -36,8 +36,6 @@ public abstract class Control_Character : MonoBehaviour {
 		private set { return; }
 	}
 
-	// required for animation transition (it makes more sense to link it to the run button rather than speed)
-	protected bool isRunningAnim;
 	protected bool spriteIsAlignedToGrid;
 
 	protected void FixedUpdate() {
@@ -81,10 +79,8 @@ public abstract class Control_Character : MonoBehaviour {
 			velocity = RUNNING_SPEED;
 			noiseType = Control_Noise.NOISE_TYPE_RUN;
 			updateStamina(true);
-			isRunningAnim = true;
 		} else {
 			updateStamina(false);
-			isRunningAnim = false;
 		}
 
 		// Calculate the new position
