@@ -197,7 +197,7 @@ public class Control_PlayerCharacter : Control_Character {
 		// Horizontal movement
 		if(Mathf.Abs(Input.GetAxis("Horizontal")) > 0.01f) {
 			me.timeWithoutAction = 0;
-			Data_Door walkIntoDoor = walk(Input.GetAxis("Horizontal"), Input.GetButton("Run"), Time.deltaTime);
+			Data_Door walkIntoDoor = walk(Input.GetAxis("Horizontal"), isRunning, Time.deltaTime);
 			if(walkIntoDoor != null) {
 				// Walk through the door if triggered
 				goingThroughADoor = true;
@@ -245,7 +245,7 @@ public class Control_PlayerCharacter : Control_Character {
 		case Control_GameState.STATE_COLLECTION_PHASE:
 			if(animatorHuman != null) {
 				animatorHuman.SetFloat("Speed", me.currentVelocityAbsolute);
-				animatorHuman.SetBool("Is Running", isRunning && me.currentVelocityAbsolute > ANIM_MIN_SPEED_FOR_WALKING);
+				animatorHuman.SetBool("Is Running", isRunning && me.currentVelocityAbsolute > ANIM_MIN_SPEED_FOR_WALKING && canRun());
 			}
 			break;
 		case Control_GameState.STATE_MONSTER_PHASE:
