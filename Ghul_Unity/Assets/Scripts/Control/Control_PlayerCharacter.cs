@@ -493,7 +493,11 @@ public class Control_PlayerCharacter : Control_Character {
 	}
 
 	protected override void failedDoorTransitionHook(Data_Door doorTaken) {
-		noiseSystem.makeNoise(Control_Noise.NOISE_TYPE_DOOR, me.pos);
+		if(doorTaken.state == Data_Door.STATE_HELD) {
+			GS.getMonster().perception.seeToniRattleAtTheDoorknob(doorTaken);
+		} else {
+			noiseSystem.makeNoise(Control_Noise.NOISE_TYPE_DOOR, me.pos);
+		}
 	}
 
 	protected override void preDoorTransitionHook(Data_Door doorTaken) {

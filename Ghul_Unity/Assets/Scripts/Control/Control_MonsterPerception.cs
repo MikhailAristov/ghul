@@ -58,4 +58,9 @@ public class Control_MonsterPerception : MonoBehaviour {
 	public void seeToniGoThroughDoor(Data_Door originDoor) {
 		me.worldModel.toniKnownToBeInRoom(originDoor.connectsTo.isIn);
 	}
+
+	// Inform the monster if Toni rattles on the currently held door
+	public void seeToniRattleAtTheDoorknob(Data_Door rattledDoor) {
+		me.worldModel.toniKnownToBeInRoom(rattledDoor.isIn);
+	}
 }
