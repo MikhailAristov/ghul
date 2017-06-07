@@ -401,7 +401,10 @@ public class Control_Monster : Control_Character {
 				highestDoorUtility = curUtility;
 			}
 		}
-		Debug.Assert(result != null);
+		if(result == null) {
+			Debug.LogError(me + " cannot pick the next door intelligently, picking at random!");
+			result = me.isIn.DOORS.Values[UnityEngine.Random.Range(0, me.isIn.DOORS.Count)];
+		}
 		return result;
 	}
 
