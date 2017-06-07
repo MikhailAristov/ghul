@@ -77,19 +77,17 @@ public class AI_SignalModel {
 	*/
 	private void precomputeDoorToRoomDistanceFunctions(Data_GameState GS) {
 		// Initialize arrays
-		door2roomMinDistance = new float[doorCount, roomCount];
-		door2roomMaxDistance = new float[doorCount, roomCount];
-		door2roomDistanceFunction = new float[doorCount, roomCount][];
-		roomWalkableWidth = new float[roomCount];
+		AI_Util.initializeMatrix(ref door2roomMinDistance, doorCount, roomCount);
+		AI_Util.initializeMatrix(ref door2roomMaxDistance, doorCount, roomCount);
+		AI_Util.initializeMatrix(ref door2roomDistanceFunction, doorCount, roomCount);
+		AI_Util.initializeVector(ref roomWalkableWidth, roomCount);
 		// Room-to-room min and max distance
-		room2roomMinDistance = new float[roomCount, roomCount];
-		Array.Copy(GS.distanceBetweenTwoRooms, room2roomMinDistance, roomCount * roomCount);
-		roomDoor2roomMaxDistance = new float[roomCount, roomCount];
-		Array.Clear(roomDoor2roomMaxDistance, 0, roomCount * roomCount);
+		AI_Util.copyMatrix(ref GS.distanceBetweenTwoRooms, ref room2roomMinDistance);
+		AI_Util.initializeMatrix(ref roomDoor2roomMaxDistance, roomCount, roomCount);
 		// Loop through all rooms and doors
 		bool[] doorPruned = new bool[GS.DOORS.Count];
-		int[] relevantDoors;
-		int prunedCount, lastRelevantDoorId, breakpointCount;
+		int[] relevantDoors = new int[0];
+		int prunedCount, lastRelevantDoorId, breakpointCount, cnt;
 		foreach(Data_Room originRoom in GS.ROOMS.Values) {
 			roomWalkableWidth[originRoom.INDEX] = originRoom.rightWalkBoundary - originRoom.leftWalkBoundary;
 			foreach(Data_Door targetDoor in GS.DOORS.Values) {
@@ -106,8 +104,8 @@ public class AI_SignalModel {
 					}
 				}
 				// Get all the non-pruned door IDs for easier handling
-				relevantDoors = new int[originRoom.DOORS.Count - prunedCount];
-				int cnt = 0;
+				AI_Util.initializeVector(ref relevantDoors, originRoom.DOORS.Count - prunedCount);
+				cnt = 0;
 				Debug.Assert(relevantDoors.Length >= 1);
 				foreach(Data_Door d in originRoom.DOORS.Values) {
 					if(!doorPruned[d.INDEX]) {
@@ -117,7 +115,7 @@ public class AI_SignalModel {
 				}
 				// Find the breaking points between each non-pruned door in order
 				breakpointCount = 2 * relevantDoors.Length;
-				door2roomDistanceFunction[targetDoor.INDEX, originRoom.INDEX] = new float[breakpointCount];
+				AI_Util.initializeVector(ref door2roomDistanceFunction[targetDoor.INDEX, originRoom.INDEX], breakpointCount);
 				// The first breaking point is always at the left wall of the room, 
 				// so the breaking point equals distance to the leftmost non-pruned door plus distance from it to the wall
 				door2roomDistanceFunction[targetDoor.INDEX, originRoom.INDEX][0] =
@@ -162,7 +160,7 @@ public class AI_SignalModel {
 	// MUST be called after precomputeDoorToRoomDistanceBounds()
 	// p( Door = d | OriginRoom = r , NoiseType = nt )
 	private void precomputeDoorAudibilityLikelihoods(Data_GameState GS) {
-		likelihoodNoiseHeardAtDoor = new double[noiseCount, roomCount, doorCount];
+		AI_Util.initializeMatrix(ref likelihoodNoiseHeardAtDoor, noiseCount, roomCount, doorCount);
 		// For each noise, first determine its maximumum traveling distance
 		double singleDoorProb = 1.0 / doorCount;
 		int reachableDoorCount;
@@ -214,7 +212,7 @@ public class AI_SignalModel {
 
 	// Precompute noise and origin likelihoods
 	private void precomputeNoiseAndOriginLikelihoods() {
-		noiseAndOriginLikelihood = new double[noiseCount, roomCount, roomCount];
+		AI_Util.initializeMatrix(ref noiseAndOriginLikelihood, noiseCount, roomCount, roomCount);
 		for(int noise = Control_Noise.NOISE_TYPE_WALK; noise < noiseCount; noise++) {
 			for(int originRoomIndex = 0; originRoomIndex < roomCount; originRoomIndex++) {
 				for(int toniRoomIndex = 0; toniRoomIndex < roomCount; toniRoomIndex++) {
@@ -226,7 +224,7 @@ public class AI_SignalModel {
 
 	// Precompute null signal likelihoods
 	private void precomputeNullSignalLikelihoods() {
-		nullSignalLikelihood = new double[roomCount, roomCount];
+		AI_Util.initializeMatrix(ref nullSignalLikelihood, roomCount, roomCount);
 		for(int toniRoomIndex = 0; toniRoomIndex < roomCount; toniRoomIndex++) {
 			for(int monsterRoomIndex = 0; monsterRoomIndex < roomCount; monsterRoomIndex++) {
 				nullSignalLikelihood[toniRoomIndex, monsterRoomIndex] = getNullSignalLikelihood(toniRoomIndex, monsterRoomIndex);

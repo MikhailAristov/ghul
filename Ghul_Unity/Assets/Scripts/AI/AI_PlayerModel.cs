@@ -79,26 +79,26 @@ public class AI_PlayerModel {
 
 		// Initialize the transition matrix
 		roomCount = GS.ROOMS.Count;
-		TRANSITION_MATRIX = new double[roomCount, roomCount];
-		Array.Clear(TRANSITION_MATRIX, 0, roomCount * roomCount);
+		AI_Util.initializeMatrix(ref TRANSITION_MATRIX, roomCount, roomCount);
 		// For each room, read and save the relevant informations from the game state
-		meanWalkingDistance = new double[roomCount];
-		meanStayingTime 	= new double[roomCount];
-		roomDoorCount 		= new int[roomCount];
-		roomHasItemSpawns 	= new bool[roomCount];
+		AI_Util.initializeVector(ref meanWalkingDistance, roomCount);
+		AI_Util.initializeVector(ref meanStayingTime, roomCount);
+		AI_Util.initializeVector(ref roomDoorCount, roomCount);
+		AI_Util.initializeVector(ref roomHasItemSpawns, roomCount);
 		for(int i = 0; i < roomCount; i++) {
 			roomDoorCount[i] = GS.getRoomByIndex(i).DOORS.Count;
 			roomHasItemSpawns[i] = GS.getRoomByIndex(i).hasItemSpawns;
 			meanStayingTime[i] = calculateMeanStayingTime(GS, i);
 		}
 		// Build a Markov chain representing transition probabilities from one state/room to another after a single time step
+		double probOfStaying, probOfGoingThroughADoor;
 		for(int sourceRoomIndex = 0; sourceRoomIndex < roomCount; sourceRoomIndex++) {
 			// Each row in the matrix represents the transition probabilities FROM a room, and thus must add up to zero
 			// The probability of staying in the current room is modelled via exponential decay, based on average staying time
-			double probOfStaying = Math.Exp(-1.0 / meanStayingTime[sourceRoomIndex]);
+			probOfStaying = Math.Exp(-1.0 / meanStayingTime[sourceRoomIndex]);
 			TRANSITION_MATRIX[sourceRoomIndex, sourceRoomIndex] = probOfStaying;
 			// The probability of transitioning through a door is assumed uniformly distributed across all doors
-			double probOfGoingThroughADoor = (1.0 - probOfStaying) / roomDoorCount[sourceRoomIndex];
+			probOfGoingThroughADoor = (1.0 - probOfStaying) / roomDoorCount[sourceRoomIndex];
 			// Loop through all doors in the current room and add the transition probabilities to neighbouring rooms
 			foreach(Data_Door door in GS.getRoomByIndex(sourceRoomIndex).DOORS.Values) {
 				TRANSITION_MATRIX[sourceRoomIndex, door.connectsTo.isIn.INDEX] += probOfGoingThroughADoor;
@@ -117,9 +117,7 @@ public class AI_PlayerModel {
 										 PLAYER_PARAMETERS.WEIGHT_ITEM_FETCH_WALK * room.meanItemFetchDistance +
 										 PLAYER_PARAMETERS.WEIGHT_DOOR2DOOR_WALK * room.meanDoorToDoorDistance;
 		// Convert the walking distance into mean staying time and return it
-		double meanStayingTimeInSeconds = meanWalkingDistance[roomIndex] / MEAN_TONI_VELOCITY;
-		double meanStayingTimeInTimeSteps = meanStayingTimeInSeconds / TIME_STEP;
-		return meanStayingTimeInTimeSteps;
+		return meanWalkingDistance[roomIndex] / MEAN_TONI_VELOCITY / TIME_STEP;
 	}
 
 	// f( noise type | the room Toni was in when he made the sound )
@@ -141,7 +139,7 @@ public class AI_PlayerModel {
 			return toniRunningNoiseProbabilityPerTimeStep;
 		case Control_Noise.NOISE_TYPE_DOOR:
 			// Toni makes the door noise in EVERY room, specifically upon leaving it after the mean staying time
-			return (1.0 / meanStayingTime[roomIndex]);
+			return 1.0 / meanStayingTime[roomIndex];
 		case Control_Noise.NOISE_TYPE_ITEM:
 		case Control_Noise.NOISE_TYPE_ZAP:
 			// If the room has item spawns, there is a small chance Toni will try picking an item up

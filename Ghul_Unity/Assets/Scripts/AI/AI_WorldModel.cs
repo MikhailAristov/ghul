@@ -32,24 +32,15 @@ public class AI_WorldModel {
 	public int mostLikelyTonisRoomIndex;
 	[SerializeField]
 	private int secondMostLikelyTonisRoomIndex;
-	public double certainty {
-		get {
-			try {
-				return probabilityThatToniIsInRoom[mostLikelyTonisRoomIndex] - probabilityThatToniIsInRoom[secondMostLikelyTonisRoomIndex];
-			} catch(IndexOutOfRangeException) {
-				Debug.LogWarning("index out of range!");
-				return 0;
-			}
-		}
-		private set { return; }
-	}
+	[SerializeField]
+	public double certainty;
 
 	public AI_WorldModel(Data_GameState GS) {
 		// Initialize global parameters
 		roomCount = GS.ROOMS.Count;
 		// Initialize the room probability vector
-		probabilityThatToniIsInRoom = new double[roomCount];
-		newVector = new double[roomCount];
+		AI_Util.initializeVector(ref probabilityThatToniIsInRoom, roomCount);
+		AI_Util.initializeVector(ref newVector, roomCount);
 		toniKnownToBeInRoom(GS.getRoomByIndex((int)Global_Settings.read("RITUAL_ROOM_INDEX")));
 		// Initialize player and signal model subsystems
 		playerModel = new AI_PlayerModel(GS);
@@ -74,7 +65,7 @@ public class AI_WorldModel {
 
 	// Update the world model with the knowledge that Toni is currently seen in a specific room
 	public void toniKnownToBeInRoom(Data_Room room) {
-		Array.Clear(probabilityThatToniIsInRoom, 0, roomCount);
+		AI_Util.initializeVector(ref probabilityThatToniIsInRoom, roomCount);
 		probabilityThatToniIsInRoom[room.INDEX] = 1f;
 		updateMostLikelyRoomIndices();
 	}
@@ -156,5 +147,6 @@ public class AI_WorldModel {
 				secondHighestProbability = probabilityThatToniIsInRoom[i];
 			}
 		}
+		certainty = highestProbability - secondHighestProbability;
 	}
 }

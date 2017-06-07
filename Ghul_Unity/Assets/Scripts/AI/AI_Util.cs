@@ -112,4 +112,42 @@ public class AI_Util {
 		} while(random > 0 || w[result] == 0);
 		return result;
 	}
+
+	// Clears or creates an empty vector
+	public static void initializeVector<T>(ref T[] vector, int size) {
+		if(vector == null || vector.Length != size) {
+			vector = new T[size];
+		} else {
+			Array.Clear(vector, 0, size);
+		}
+	}
+
+	// Clears or creates an empty 2D matrix
+	public static void initializeMatrix<T>(ref T[,] matrix, int size0, int size1) {
+		if(matrix == null || matrix.GetLength(0) != size0 || matrix.GetLength(1) != size1) {
+			matrix = new T[size0, size1];
+		} else {
+			Array.Clear(matrix, 0, size0 * size1);
+		}
+	}
+
+	// Copies a matrix from a reference matrix
+	public static void copyMatrix<T>(ref T[,] copyFrom, ref T[,] copyTo) {
+		if(copyFrom == null) {
+			throw new InvalidOperationException();
+		}
+		if(copyTo == null || copyFrom.GetLength(0) != copyTo.GetLength(0) || copyFrom.GetLength(1) != copyTo.GetLength(1)) {
+			copyTo = new T[copyFrom.GetLength(0), copyFrom.GetLength(1)];
+		}
+		Array.Copy(copyFrom, copyTo, copyFrom.GetLength(0) * copyFrom.GetLength(1));
+	}
+
+	// Clears or creates an empty 3D matrix
+	public static void initializeMatrix<T>(ref T[,,] matrix, int size0, int size1, int size2) {
+		if(matrix == null || matrix.GetLength(0) != size0 || matrix.GetLength(1) != size1 || matrix.GetLength(2) != size2) {
+			matrix = new T[size0, size1, size2];
+		} else {
+			Array.Clear(matrix, 0, size0 * size1 * size2);
+		}
+	}
 }

@@ -162,7 +162,11 @@ public class AI_PlayerParameters {
 		WEIGHT_EXPLORATION_WALK = 0.1;
 		WEIGHT_ITEM_FETCH_WALK = 0.7;
 		WEIGHT_DOOR2DOOR_WALK = 0.4;
-		roomHistory = new List<AI_RoomHistory>();
+		if(roomHistory == null) {
+			roomHistory = new List<AI_RoomHistory>();
+		} else {
+			roomHistory.Clear();
+		}
 		currentWeightsCumulativeError = double.MaxValue;
 	}
 }
