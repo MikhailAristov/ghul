@@ -180,7 +180,7 @@ public class Control_PlayerCharacter : Control_Character {
 
 		// Vertical "movement"
 		if(Input.GetButtonDown("Vertical") ||
-			(Input.GetButtonDown("Action") && GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE && !foundItem)) {
+		   (Input.GetButtonDown("Action") && GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE && !foundItem)) {
 			me.timeWithoutAction = 0;
 			// Check if the character can walk through the door, and if so, move them to the "other side"
 			Data_Door door = currentEnvironment.getDoorAtPos(transform.position.x);
@@ -352,6 +352,12 @@ public class Control_PlayerCharacter : Control_Character {
 	// The player takes a nearby item if there is any
 	// Returns true if there is an item there, false otherwise
 	private bool takeItem() {
+		// Cannot pick any items while moving
+		if(me.currentVelocityAbsolute > ANIM_MIN_SPEED_FOR_WALKING) {
+			Debug.Log("Cannot take items while walking/running!");
+			return false;
+		}
+	
 		// Check if there are any items nearby
 		Data_Item thisItem = GS.getItemAtPos(me.pos, MARGIN_ITEM_COLLECT);
 		if(thisItem == null) {
@@ -584,6 +590,7 @@ public class Control_PlayerCharacter : Control_Character {
 		// Activate the attack animation
 		animatorMonsterToni.SetTrigger("Attack");
 	}
+
 	protected override void stopAttackAnimation() {
 		// Cancel the animation
 		animatorMonsterToni.SetTrigger("AttackCancel");
