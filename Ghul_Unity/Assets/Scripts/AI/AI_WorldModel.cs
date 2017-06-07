@@ -31,8 +31,6 @@ public class AI_WorldModel {
 	[SerializeField]
 	public int mostLikelyTonisRoomIndex;
 	[SerializeField]
-	private int secondMostLikelyTonisRoomIndex;
-	[SerializeField]
 	public double certainty;
 
 	public AI_WorldModel(Data_GameState GS) {
@@ -133,17 +131,14 @@ public class AI_WorldModel {
 	}
 
 	private void updateMostLikelyRoomIndices() {
-		mostLikelyTonisRoomIndex = -1; secondMostLikelyTonisRoomIndex = -1;
 		double highestProbability = -1.0, secondHighestProbability = -2.0;
 		for(int i = 0; i < roomCount; i++) {
 			if(probabilityThatToniIsInRoom[i] > highestProbability) {
 				// Shift the ranking by one
-				secondMostLikelyTonisRoomIndex = mostLikelyTonisRoomIndex;
-				secondHighestProbability = highestProbability;
 				mostLikelyTonisRoomIndex = i;
+				secondHighestProbability = highestProbability;
 				highestProbability = probabilityThatToniIsInRoom[i];
 			} else if(probabilityThatToniIsInRoom[i] > secondHighestProbability) {
-				secondMostLikelyTonisRoomIndex = i;
 				secondHighestProbability = probabilityThatToniIsInRoom[i];
 			}
 		}
