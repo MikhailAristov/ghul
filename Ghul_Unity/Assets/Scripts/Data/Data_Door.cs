@@ -65,7 +65,7 @@ public class Data_Door : IComparable<Data_Door> {
 	}
 
 	public float visiblePos {
-		get { return Math.Max(isIn.leftWalkBoundary, Math.Min(isIn.rightWalkBoundary, atPos)); }
+		get { return Mathf.Clamp(atPos, isIn.leftWalkBoundary, isIn.rightWalkBoundary); }
 		private set { return; }
 	}
 

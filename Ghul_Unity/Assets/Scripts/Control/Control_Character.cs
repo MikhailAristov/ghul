@@ -88,7 +88,7 @@ public abstract class Control_Character : MonoBehaviour {
 		}
 
 		// Calculate the new position
-		direction = Math.Max(-1f, Math.Min(1f, direction)); // limit direction to the allowed interval
+		direction = Mathf.Clamp(direction, -1f, 1f); // limit direction to the allowed interval
 		float displacement = direction * velocity * deltaTime;
 		float newPosition = transform.position.x + displacement;
 		float validPosition = currentEnvironment.validatePosition(newPosition);

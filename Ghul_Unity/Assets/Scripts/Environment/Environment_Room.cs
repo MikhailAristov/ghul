@@ -34,7 +34,7 @@ public class Environment_Room : MonoBehaviour {
 	// Checks whether a position X lies within the boundaries of the room
 	// Returns X if its within the boundaries, or the closest boundary if it is not
 	public float validatePosition(float pos) {
-		return Mathf.Min(Mathf.Max(pos, me.leftWalkBoundary), me.rightWalkBoundary);
+		return Mathf.Clamp(pos, me.leftWalkBoundary, me.rightWalkBoundary);
 	}
 
 	// Checks whether a position X lies within the allowed camera span
@@ -44,7 +44,7 @@ public class Environment_Room : MonoBehaviour {
 			// In rooms smaller than the camera width, just center the view permanently
 			return 0;
 		} else {
-			return Mathf.Min(Mathf.Max(pos, leftCameraBoundary), rightCameraBoundary);
+			return Mathf.Clamp(pos, leftCameraBoundary, rightCameraBoundary);
 		}
 	}
 
@@ -82,7 +82,7 @@ public class Environment_Room : MonoBehaviour {
 	// Updates the size of the DangerIndicator sprite
 	public void updateDangerIndicator(double dangerLevel) {
 		if(DangerIndicator != null && !double.IsNaN(dangerLevel)) {
-			float scaleFactor = 0.1f + 0.9f * (float)Math.Max(0.0, Math.Min(1.0, dangerLevel));
+			float scaleFactor = 0.1f + 0.9f * Mathf.Clamp01((float)dangerLevel);
 			DangerIndicator.transform.localScale = new Vector3(scaleFactor, scaleFactor, scaleFactor);
 		}
 	}

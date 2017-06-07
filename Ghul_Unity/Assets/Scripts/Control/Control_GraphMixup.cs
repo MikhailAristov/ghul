@@ -9,7 +9,7 @@ public class Control_GraphMixup : MonoBehaviour {
 	// Changes the graph layout slightly to frustrate the player, mwhahaha.
 	// degreeOfEvilness = number of potential changes. (upper bound)
 	public static void MixUpGraph(ref Data_Graph graph, int degreeOfEvilness) {
-		degreeOfEvilness = Mathf.Max(0, Mathf.Min(degreeOfEvilness, MAX_EVILNESS));
+		degreeOfEvilness = Mathf.Clamp(degreeOfEvilness, 0, MAX_EVILNESS);
 
 		for (int i = 0; i < degreeOfEvilness; i++) {
 			// Find a connection that has been used the most, but don't take the ritual room's doors too often.

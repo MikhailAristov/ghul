@@ -96,7 +96,7 @@ public class Control_Camera : MonoBehaviour {
 
 	// Set red overlay intensity
 	public void setRedOverlay(float intensity) {
-		intensity = Mathf.Min(0.9f, Mathf.Max(0, intensity));
+		intensity = Mathf.Clamp(intensity, 0, 0.9f);
 		redoutImage.CrossFadeAlpha(intensity, 0, false);
 	}
 
