@@ -120,6 +120,11 @@ public class Control_GameState : MonoBehaviour {
 			MainMenuCanvas.enabled = true;
 		}
 
+		// Roll credits on demand in debug mode
+		if(Input.GetButton("Roll Credits") && Debug.isDebugBuild && !CreditsCanvas.gameObject.activeSelf) {
+			StartCoroutine(rollCredits());
+		}
+
 		// For the purpose of debugging, allow game reset hotkey
 		if(Debug.isDebugBuild && Input.GetButtonDown("Reset Game State")) {
 			GS.SUSPENDED = true;
@@ -597,17 +602,16 @@ public class Control_GameState : MonoBehaviour {
 
 	// Rolls the credits over the screen
 	private IEnumerator rollCredits() {
+		CreditsCanvas.gameObject.SetActive(true);
 		// Wait a couple of seconds
 		float waitUntil = Time.timeSinceLevelLoad + 2f;
 		yield return new WaitUntil(() => Time.timeSinceLevelLoad >= waitUntil);
-		// Update text
-		CreditsCanvas.gameObject.SetActive(true);
-		CreditsCanvas.GetComponent<Text>().text = CreditsText.text;
 		// Adjust the position of the credits text
 		Transform ct = CreditsCanvas.transform;
+		CreditsCanvas.GetComponent<Text>().text = CreditsText.text;
 		float textHeight = ceilToHundred(LayoutUtility.GetPreferredHeight(CreditsCanvas));
 		CreditsCanvas.sizeDelta = new Vector2(ceilToHundred(LayoutUtility.GetPreferredWidth(CreditsCanvas)), textHeight);
-		ct.Translate(new Vector2(0, -(280 + textHeight / 2)/100));
+		ct.localPosition = new Vector2(0, -(240 + textHeight / 2));
 		// Start scrolling the text upwards
 		float timeStep = 0.01f, scrollSpeed = 0.7f;
 		while(ct.localPosition.y < (240 + textHeight / 2)) {
