@@ -1,0 +1,55 @@
+GHUL
+
+
+CHARACTER DESIGN
+
+Nabil Samandari
+Vivien Zornow/Zarita?
+Lena ???
+
+
+CHARACTER ANIMATION
+
+Nabil Samandari
+
+
+CONCEPT ART
+
+Lena ???
+
+
+ENVIRONMENT ART
+
+Vivien Zornow/Zarita?
+
+
+SPRITE ART
+
+Vivien Zornow/Zarita?
+
+
+PROGRAMMING
+
+Mikhail Aristov
+Jakob Dahlum
+
+
+PROCEDURAL ENVIRONMENT GENERATION
+
+Jakob Dahlum
+
+
+ARTIFICIAL INTELLIGENCE
+
+Mikhail Aristov
+
+
+PRODUCER 
+
+Mikhail Aristov
+
+
+PLAYTESTING
+
+Marcel Danz
+Manuel Korrmann

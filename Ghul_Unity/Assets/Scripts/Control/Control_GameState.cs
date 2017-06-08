@@ -24,6 +24,8 @@ public class Control_GameState : MonoBehaviour {
 	public Control_Music JukeBox;
 	public GameObject NewGameButton;
 	public GameObject RitualRoomScribbles;
+	public RectTransform CreditsCanvas;
+	public TextAsset CreditsText;
 
 	private Control_Camera MAIN_CAMERA_CONTROL;
 	private Factory_PrefabController prefabFactory;
@@ -143,6 +145,8 @@ public class Control_GameState : MonoBehaviour {
 			if(GS.TONI_KILLED) {
 				GS.OVERALL_STATE = STATE_MONSTER_DEAD;
 				Control_Persistence.saveToDisk(GS);
+				// Roll the credits
+				StartCoroutine(rollCredits());
 			}
 			break;
 		default:
@@ -589,5 +593,35 @@ public class Control_GameState : MonoBehaviour {
 			}
 			yield return new WaitForSeconds(0.2f);
 		}
+	}
+
+	// Rolls the credits over the screen
+	private IEnumerator rollCredits() {
+		// Wait a couple of seconds
+		float waitUntil = Time.timeSinceLevelLoad + 0f;
+		yield return new WaitUntil(() => Time.timeSinceLevelLoad >= waitUntil);
+		// Update text
+		CreditsCanvas.gameObject.SetActive(true);
+		CreditsCanvas.GetComponent<Text>().text = CreditsText.text;
+		// Adjust the position of the credits text
+		Transform ct = CreditsCanvas.transform;
+		float textHeight = ceilToHundred(LayoutUtility.GetPreferredHeight(CreditsCanvas));
+		CreditsCanvas.sizeDelta = new Vector2(ceilToHundred(LayoutUtility.GetPreferredWidth(CreditsCanvas)), textHeight);
+		ct.Translate(new Vector2(0, -(280 + textHeight / 2)/100));
+		// Start scrolling the text upwards
+		float timeStep = 0.01f, scrollSpeed = 0.7f;
+		while(ct.localPosition.y < (240 + textHeight / 2)) {
+			if(!GS.SUSPENDED) {
+				ct.Translate(new Vector2(0, scrollSpeed * timeStep));
+			}
+			waitUntil += timeStep;
+			yield return new WaitUntil(() => Time.timeSinceLevelLoad >= waitUntil);
+		}
+		CreditsCanvas.gameObject.SetActive(false);
+	}
+
+	// Utility function
+	private float ceilToHundred(float input) {
+		return Mathf.Ceil(input / 100f) * 100f;
 	}
 }
