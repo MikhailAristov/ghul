@@ -5,8 +5,8 @@ GHUL
 CHARACTER DESIGN
 
 Nabil Samandari
-Vivien Zornow/Zarita?
-Lena ???
+Vivien Zornow
+Lena Leisge
 
 
 CHARACTER ANIMATION
@@ -16,17 +16,17 @@ Nabil Samandari
 
 CONCEPT ART
 
-Lena ???
+Lena Leisge
 
 
 ENVIRONMENT ART
 
-Vivien Zornow/Zarita?
+Vivien Zornow
 
 
 SPRITE ART
 
-Vivien Zornow/Zarita?
+Vivien Zornow
 
 
 SOUND DESIGN
