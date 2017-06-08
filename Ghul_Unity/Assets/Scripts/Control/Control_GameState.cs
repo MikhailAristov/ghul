@@ -151,7 +151,7 @@ public class Control_GameState : MonoBehaviour {
 				GS.OVERALL_STATE = STATE_MONSTER_DEAD;
 				Control_Persistence.saveToDisk(GS);
 				// Roll the credits
-				StartCoroutine(rollCredits());
+				StartCoroutine(rollCredits(2));
 			}
 			break;
 		default:
@@ -601,16 +601,16 @@ public class Control_GameState : MonoBehaviour {
 	}
 
 	// Rolls the credits over the screen
-	private IEnumerator rollCredits() {
+	private IEnumerator rollCredits(float delay = 0) {
 		CreditsCanvas.gameObject.SetActive(true);
 		// Wait a couple of seconds
-		float waitUntil = Time.timeSinceLevelLoad + 2f;
+		float waitUntil = Time.timeSinceLevelLoad + delay;
 		yield return new WaitUntil(() => Time.timeSinceLevelLoad >= waitUntil);
 		// Adjust the position of the credits text
 		Transform ct = CreditsCanvas.transform;
 		CreditsCanvas.GetComponent<Text>().text = CreditsText.text;
-		float textHeight = ceilToHundred(LayoutUtility.GetPreferredHeight(CreditsCanvas));
-		CreditsCanvas.sizeDelta = new Vector2(ceilToHundred(LayoutUtility.GetPreferredWidth(CreditsCanvas)), textHeight);
+		float textHeight = LayoutUtility.GetPreferredHeight(CreditsCanvas);
+		CreditsCanvas.sizeDelta = new Vector2(LayoutUtility.GetPreferredWidth(CreditsCanvas), textHeight);
 		ct.localPosition = new Vector2(0, -(240 + textHeight / 2));
 		// Start scrolling the text upwards
 		float timeStep = 0.01f, scrollSpeed = 0.7f;
@@ -622,10 +622,5 @@ public class Control_GameState : MonoBehaviour {
 			yield return new WaitUntil(() => Time.timeSinceLevelLoad >= waitUntil);
 		}
 		CreditsCanvas.gameObject.SetActive(false);
-	}
-
-	// Utility function
-	private float ceilToHundred(float input) {
-		return Mathf.Ceil(input / 100f) * 100f;
 	}
 }
