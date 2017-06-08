@@ -19,10 +19,6 @@ public class Control_Camera : MonoBehaviour {
 	private float PANNING_SPEED;
 	private float VERTICAL_ROOM_SPACING;
 
-	// There must be this much space between the center of the monster sprite
-	// and the edge of the camera's view field to see it "clearly"
-	private static float monsterVisibilityThreshold = 0.4f;
-
 	void Awake() {
 		SCREEN_SIZE_HORIZONTAL = Global_Settings.read("SCREEN_SIZE_HORIZONTAL");
 		SCREEN_SIZE_VERTICAL = Global_Settings.read("SCREEN_SIZE_VERTICAL");
@@ -105,20 +101,16 @@ public class Control_Camera : MonoBehaviour {
 		redoutImage.CrossFadeAlpha(0, 1f, false);
 	}
 
-	// Checks if the monster is clearly visible on camera
-	public bool isMonsterClearlyVisible() {
-		if(GS == null) {
+	// Checks whether a game object is clearly visible to the camera
+	public bool canSeeObject(GameObject obj, float horizonalVisibilityThreshold) {
+		Vector2 objPos = obj.transform.position;
+		// First, check the vertical visibility
+		if(Math.Abs(objPos.y - transform.position.y) > SCREEN_SIZE_VERTICAL / 2) {
 			return false;
 		}
-		// First, check the monster's vertical position
-		Vector3 monsterPos = GS.getMonster().control.transform.position;
-		if(Math.Abs(monsterPos.y - transform.position.y) < SCREEN_SIZE_VERTICAL / 2) {
-			// Then, check the monster horizontal position
-			float leftBound = transform.position.x - SCREEN_SIZE_HORIZONTAL / 2 + monsterVisibilityThreshold;
-			float rightBound = transform.position.x + SCREEN_SIZE_HORIZONTAL / 2 - monsterVisibilityThreshold;
-			return (leftBound <= monsterPos.x && monsterPos.x <= rightBound);
-		} else {
-			return false;
-		}
+		// Then, the horizonal visibility within the given bounds
+		float leftBound = transform.position.x - SCREEN_SIZE_HORIZONTAL / 2 + horizonalVisibilityThreshold;
+		float rightBound = transform.position.x + SCREEN_SIZE_HORIZONTAL / 2 - horizonalVisibilityThreshold;
+		return (leftBound <= objPos.x && objPos.x <= rightBound);
 	}
 }

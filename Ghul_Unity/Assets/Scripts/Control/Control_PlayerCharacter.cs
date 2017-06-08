@@ -12,9 +12,6 @@ public class Control_PlayerCharacter : Control_Character {
 		return me as Data_Character;
 	}
 
-	[NonSerialized]
-	private Data_Cadaver cadaver;
-
 	// General settings
 	private float WALKING_RUNNING_THRESHOLD;
 	private float SINGLE_STEP_LENGTH;
@@ -39,6 +36,7 @@ public class Control_PlayerCharacter : Control_Character {
 	private GameObject monsterToniObject;
 	private SpriteRenderer monsterToniRenderer;
 	private Control_Camera mainCameraControl;
+	public Control_CorpsePool CorpsePoolControl;
 	public Control_Noise noiseSystem;
 	public Canvas inventoryUI;
 	public GameObject pentagram;
@@ -122,7 +120,6 @@ public class Control_PlayerCharacter : Control_Character {
 		this.GS = gameState;
 		this.me = gameState.getToni();
 		this.currentEnvironment = me.isIn.env;
-		this.cadaver = GS.getCadaver();
 		
 		// Move the character sprite directly to where the game state says it should be standing
 		Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
@@ -306,8 +303,8 @@ public class Control_PlayerCharacter : Control_Character {
 		if(GS.OVERALL_STATE < Control_GameState.STATE_TRANSFORMATION) {
 			// Hide Toni's sprite and replace it with the cadaver
 			stickmanRenderer.enabled = false;
-			cadaver.gameObj.transform.position = transform.position;
-			cadaver.updatePosition(me.isIn, me.atPos);
+			CorpsePoolControl.placeHumanCorpse(me.isIn.env.gameObject, me.pos.asLocalVector());
+			GS.updateCadaverPosition(me.pos);
 			// Transfer the current item if any to the cadaver
 			leaveItemOnCadaver();
 
@@ -340,8 +337,8 @@ public class Control_PlayerCharacter : Control_Character {
 			// During the endgame, simply replace the monster Toni sprite with the cadaver
 			GS.TONI_KILLED = true;
 			monsterToniRenderer.enabled = false;
-			cadaver.gameObj.transform.position = transform.position;
-			cadaver.updatePosition(me.isIn, me.atPos);
+			CorpsePoolControl.placeMonsterCorpse(me.isIn.env.gameObject, me.pos.asLocalVector());
+			GS.updateCadaverPosition(me.pos);
 			me.etherialCooldown = 0;
 		}
 

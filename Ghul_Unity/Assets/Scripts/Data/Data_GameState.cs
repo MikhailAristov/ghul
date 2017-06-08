@@ -45,7 +45,7 @@ public class Data_GameState {
 	[SerializeField]
 	private Data_Monster MONSTER;
 	[SerializeField]
-	private Data_Cadaver CADAVER;
+	private Data_Position CADAVER_POSITION;
 
 	public bool monsterSeesToni {
 		get { return (TONI.isIn == MONSTER.isIn && !TONI.isInvulnerable); }
@@ -77,7 +77,7 @@ public class Data_GameState {
 		ITEMS = new SortedList<int, Data_Item>();
 		TONI = null;
 		MONSTER = null;
-		CADAVER = null;
+		CADAVER_POSITION = null;
 		OVERALL_STATE = Control_GameState.STATE_COLLECTION_PHASE;
 		numItemsPlaced = 0;
 	}
@@ -141,13 +141,13 @@ public class Data_GameState {
 	}
 
 	// Sets the cadaver character object
-	public void setCadaverCharacter(string gameObjectName) {
-		CADAVER = new Data_Cadaver(gameObjectName);
+	public void updateCadaverPosition(Data_Position pos) {
+		CADAVER_POSITION = pos.clone();
 	}
 
 	// Returns the cadaver character object
-	public Data_Cadaver getCadaver() {
-		return CADAVER;
+	public Data_Position getCadaverPosition() {
+		return (CADAVER_POSITION == null ? null : CADAVER_POSITION.clone());
 	}
 
 	// Returns a Room object to a given index, if it exists

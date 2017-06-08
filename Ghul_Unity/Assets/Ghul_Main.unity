@@ -2952,7 +2952,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   AttackSound: {fileID: 629350730}
   MOSTLY_HARMLESS: 0
-  tombstone: {fileID: 4000010959148136, guid: 16ed8d7bfd250d146b04f4b1ec8def93, type: 2}
+  CorpsePoolControl: {fileID: 1192129377}
   AttackZone: {fileID: 296330126}
 --- !u!114 &495099019
 MonoBehaviour:
@@ -3074,6 +3074,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   AttackSound: {fileID: 1061054543}
+  CorpsePoolControl: {fileID: 1192129377}
   noiseSystem: {fileID: 1333168854}
   inventoryUI: {fileID: 1029527370}
   pentagram: {fileID: 1673746494}
@@ -3790,48 +3791,6 @@ CanvasRenderer:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 944068628}
---- !u!1001 &992366854
-Prefab:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 4000010959148136, guid: 16ed8d7bfd250d146b04f4b1ec8def93, type: 2}
-      propertyPath: m_LocalPosition.x
-      value: 6
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000010959148136, guid: 16ed8d7bfd250d146b04f4b1ec8def93, type: 2}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000010959148136, guid: 16ed8d7bfd250d146b04f4b1ec8def93, type: 2}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000010959148136, guid: 16ed8d7bfd250d146b04f4b1ec8def93, type: 2}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000010959148136, guid: 16ed8d7bfd250d146b04f4b1ec8def93, type: 2}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000010959148136, guid: 16ed8d7bfd250d146b04f4b1ec8def93, type: 2}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000010959148136, guid: 16ed8d7bfd250d146b04f4b1ec8def93, type: 2}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000010959148136, guid: 16ed8d7bfd250d146b04f4b1ec8def93, type: 2}
-      propertyPath: m_RootOrder
-      value: 4
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-  m_ParentPrefab: {fileID: 100100000, guid: 16ed8d7bfd250d146b04f4b1ec8def93, type: 2}
-  m_IsPrefabParent: 0
 --- !u!1 &1006190933
 GameObject:
   m_ObjectHideFlags: 0
@@ -4779,6 +4738,52 @@ CanvasRenderer:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1185358798}
+--- !u!1 &1192129375
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 1192129376}
+  - 114: {fileID: 1192129377}
+  m_Layer: 0
+  m_Name: CorpsePool
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1192129376
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1192129375}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 10, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 4
+--- !u!114 &1192129377
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1192129375}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c83ae35bd52bc0469151168417a20eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  MainCameraControl: {fileID: 1344317741}
+  HumanCorpsePrefab: {fileID: 1000012098924484, guid: 16ed8d7bfd250d146b04f4b1ec8def93,
+    type: 2}
+  MonsterCorpsePrefab: {fileID: 1000012098924484, guid: 16ed8d7bfd250d146b04f4b1ec8def93,
+    type: 2}
+  CorpsesMoved: 0
 --- !u!1 &1220599431
 GameObject:
   m_ObjectHideFlags: 0
@@ -5085,6 +5090,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MainMenuCanvas: {fileID: 1028994221}
   MonsterDistanceText: {fileID: 482152117}
+  CorpsePoolControl: {fileID: 1192129377}
   JukeBox: {fileID: 853660561}
   NewGameButton: {fileID: 900074687}
   RitualRoomScribbles: {fileID: 1677224451}

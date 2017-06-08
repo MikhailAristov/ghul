@@ -21,6 +21,7 @@ public class Control_GameState : MonoBehaviour {
 
 	public Canvas MainMenuCanvas;
 	public Text MonsterDistanceText;
+	public Control_CorpsePool CorpsePoolControl;
 	public Control_Music JukeBox;
 	public GameObject NewGameButton;
 	public GameObject RitualRoomScribbles;
@@ -165,7 +166,7 @@ public class Control_GameState : MonoBehaviour {
 	// Can trigger STATE_TRANSFORMATION
 	private void updateDuringCollectionPhase() {
 		// Check if Toni meets the monster for the first time
-		if(!MONSTER.worldModel.hasMetToni && GS.monsterSeesToni && MAIN_CAMERA_CONTROL.isMonsterClearlyVisible() 
+		if(!MONSTER.worldModel.hasMetToni && GS.monsterSeesToni && MAIN_CAMERA_CONTROL.canSeeObject(MONSTER.gameObj, 0.4f)
 			&& !TONI.control.isGoingThroughADoor && !MONSTER.control.isGoingThroughADoor) {
 			// Update the monster's knowledge of meeting Toni
 			MONSTER.worldModel.hasMetToni = true;
@@ -246,12 +247,16 @@ public class Control_GameState : MonoBehaviour {
 		MONSTER.control.loadGameState(GS);
 		MONSTER.fixObjectReferences(GS);
 
-		// Placing the cadaver sprite in the location they used to be (only if moved from the initial placing)
-		Data_Cadaver cadaver = GS.getCadaver();
-		cadaver.fixObjectReferences(GS);
-		Vector3 positionOfCadaver = new Vector3(cadaver.atPos, cadaver.isIn.gameObj.transform.position.y, 0);
-		cadaver.gameObj.transform.Translate(positionOfCadaver - cadaver.gameObj.transform.position);
-		cadaver.updatePosition(cadaver.isIn, cadaver.atPos);
+		// Placing the cadaver sprite in the location where it used to be (only if moved from the initial placing)
+		Data_Position cadaverPos = GS.getCadaverPosition();
+		if(cadaverPos != null) {
+			// Place a monster corpse after suicidle, a human corpse otherwise
+			if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_DEAD) {
+				CorpsePoolControl.placeMonsterCorpse(GS.getRoomByIndex(cadaverPos.RoomId).env.gameObject, cadaverPos.asLocalVector());
+			} else {
+				CorpsePoolControl.placeHumanCorpse(GS.getRoomByIndex(cadaverPos.RoomId).env.gameObject, cadaverPos.asLocalVector());
+			}
+		}
 
 		// Fix the items
 		for(int i = 0; i < GS.ITEMS.Count; i++) {
@@ -302,6 +307,8 @@ public class Control_GameState : MonoBehaviour {
 		}
 		// Reset the prefab generator counters
 		prefabFactory.resetAllCounters();
+		// Hide all corpses
+		CorpsePoolControl.resetAll();
 
 		// Create an new game state
 		GS = new Data_GameState();
@@ -374,11 +381,6 @@ public class Control_GameState : MonoBehaviour {
 	// Initializes all characters on a new game
 	private void initializeCharacters() {
 		Data_Room ritualRoom = GS.getRoomByIndex(STARTING_ROOM_INDEX);
-
-		// INITIALIZE CADAVER
-		GS.setCadaverCharacter("Cadaver");
-		GS.getCadaver().updatePosition(ritualRoom, 6, 0); // move the cadaver out of sight at first
-		GS.getCadaver().gameObj.transform.position = new Vector3(6, 0, 0);
 
 		// INITIALIZE PLAYER CHARACTER
 		GS.setPlayerCharacter("PlayerCharacter");

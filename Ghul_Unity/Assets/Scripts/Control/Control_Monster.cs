@@ -55,8 +55,7 @@ public class Control_Monster : Control_Character {
 	// This can be used to prevent endless door walk cycles:
 	private Data_Room previousRoomVisited;
 
-	// prefab, to be placed for each death
-	public Transform tombstone;
+	public Control_CorpsePool CorpsePoolControl;
 	public GameObject AttackZone;
 
 	// Graphics parameters
@@ -572,9 +571,12 @@ public class Control_Monster : Control_Character {
 
 	// Killing the monster / civilian during endgame
 	public void dieAndRespawn() {
-		Vector3 pos = transform.position;
 		// Place a tombstone where the death occured
-		Instantiate(tombstone, new Vector3(pos.x, pos.y, pos.z), Quaternion.identity);
+		if(GS.OVERALL_STATE == Control_GameState.STATE_TRANSFORMATION) {
+			CorpsePoolControl.placeMonsterCorpse(me.isIn.env.gameObject, me.pos.asLocalVector());
+		} else {
+			CorpsePoolControl.placeHumanCorpse(me.isIn.env.gameObject, me.pos.asLocalVector());
+		}
 
 		// Move the civilian to a distant room
 		me.updatePosition(GS.getRoomFurthestFrom(me.isIn.INDEX), 0, 0);

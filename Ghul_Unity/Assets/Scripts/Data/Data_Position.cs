@@ -57,4 +57,8 @@ public class Data_Position {
 	public static float snapToGrid(float value) {
 		return PIXEL_GRID_SIZE * Mathf.Round(value / PIXEL_GRID_SIZE);
 	}
+
+	public Vector2 asLocalVector() {
+		return new Vector2(this.X, this.Y);
+	}
 }
