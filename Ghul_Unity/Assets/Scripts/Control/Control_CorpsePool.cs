@@ -81,14 +81,13 @@ public class Control_CorpsePool : MonoBehaviour {
 		}
 		// If no suitable corpse has been found, instantiate one
 		if(result == null) {
-			result = Instantiate(prefab, position, Quaternion.identity, parent.transform) as GameObject;
+			result = Instantiate(prefab) as GameObject;
 			list.Add(result);
 			result.name = name + list.Count.ToString();
-		} else {
-			// Move the corpse
-			result.transform.parent = parent.transform;
-			result.transform.localPosition = position;
 		}
+		// Move the corpse
+		result.transform.parent = parent.transform;
+		result.transform.localPosition = position;
 		lastCorpse = result;
 		CorpsesMoved = true;
 		return result;
