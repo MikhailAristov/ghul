@@ -67,6 +67,7 @@ public class Control_Monster : Control_Character {
 	// Animator for transitioning between animation states
 	private Animator animatorMonster;
 	private Animator animatorCivilian;
+	private bool isRunning;
 
 	// Invisibility controls
 	private const float maxVisibility = 0.9f;
@@ -174,15 +175,16 @@ public class Control_Monster : Control_Character {
 			cumultativeImpasseDuration = 0;
 		}
 
+		// Update monster state as necessary
+		updateState();
+
 		// Handling the animation
 		if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE && animatorMonster != null) {
 			animatorMonster.SetFloat("Speed", me.currentVelocityAbsolute);
 		} else if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE && animatorCivilian != null) {
 			animatorCivilian.SetFloat("Speed", me.currentVelocityAbsolute);
+			animatorCivilian.SetBool("Is Running", isRunning);
 		}
-
-		// Update monster state as necessary
-		updateState();
 	}
 
 	// Updates the internal state if necessary
@@ -256,12 +258,14 @@ public class Control_Monster : Control_Character {
 				if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE &&
 				   GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < HALF_SCREEN_SIZE_HORIZONTAL) {
 					me.state = STATE_FLEEING;
+					isRunning = true;
 				}
 				break;
 			// Stop fleeing if Toni is no longer seen
 			case STATE_FLEEING:
 				if(!GS.monsterSeesToni || GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_DEAD) {
 					me.state = STATE_WANDERING;
+					isRunning = false;
 				}
 				break;
 			// Searching is the default state
