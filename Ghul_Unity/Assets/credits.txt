@@ -1,6 +1,7 @@
 GHUL
 
 
+
 CHARACTER DESIGN
 
 Nabil Samandari
@@ -26,6 +27,16 @@ Vivien Zornow/Zarita?
 SPRITE ART
 
 Vivien Zornow/Zarita?
+
+
+SOUND DESIGN
+
+Mathilde Hoffmann
+
+
+ORIGINAL SOUNDTRACK
+
+Mathilde Hoffmann
 
 
 PROGRAMMING
