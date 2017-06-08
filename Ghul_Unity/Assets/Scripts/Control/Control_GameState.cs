@@ -598,7 +598,7 @@ public class Control_GameState : MonoBehaviour {
 	// Rolls the credits over the screen
 	private IEnumerator rollCredits() {
 		// Wait a couple of seconds
-		float waitUntil = Time.timeSinceLevelLoad + 0f;
+		float waitUntil = Time.timeSinceLevelLoad + 2f;
 		yield return new WaitUntil(() => Time.timeSinceLevelLoad >= waitUntil);
 		// Update text
 		CreditsCanvas.gameObject.SetActive(true);
