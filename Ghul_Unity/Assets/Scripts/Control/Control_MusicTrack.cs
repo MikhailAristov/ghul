@@ -75,12 +75,17 @@ public class Control_MusicTrack : MonoBehaviour {
 		} while(targetMainTrackVolume > 0);
 	}
 
-	public void unmuteTrack(float duration, float delay = 0) {
+	public void unmuteTrack(float duration, float delay = 0, bool restart = false) {
 		// If duration is not positive, mute the track immediately
 		if(duration <= 0) {
 			targetMainTrackVolume = MAX_TRACK_VOLUME;
 			mainTrack.volume = MAX_TRACK_VOLUME;
 			unmuteAllComponents();
+		}
+		// Restart the tracks if necessary
+		if(restart) {
+			mainTrack.Play();
+			proximitySubtrack.Play();
 		}
 		// Otherwise, do so gradually
 		StopAllCoroutines();

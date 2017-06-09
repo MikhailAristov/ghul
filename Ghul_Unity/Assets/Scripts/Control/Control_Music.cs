@@ -122,7 +122,7 @@ public class Control_Music : MonoBehaviour {
 				EncounterJingle.Play();
 			}
 			if(MainTrackList[currentTrackID].muted) {
-				MainTrackList[currentTrackID].unmuteTrack(duration: TRACK_MUTING_DURATION, delay: Global_Settings.read("ENCOUNTER_JINGLE_DURATION"));
+				MainTrackList[currentTrackID].unmuteTrack(duration: TRACK_MUTING_DURATION, delay: Global_Settings.read("ENCOUNTER_JINGLE_DURATION"), restart: true);
 			}
 		}
 	}
