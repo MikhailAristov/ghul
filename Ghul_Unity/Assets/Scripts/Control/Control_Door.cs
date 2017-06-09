@@ -24,6 +24,7 @@ public class Control_Door : MonoBehaviour {
 	private static List<AudioClip> openingSounds;
 	private static List<AudioClip> creakingSounds;
 	private static List<AudioClip> rattlingSounds;
+	private static int lastCreakingSound;
 
 	private float timeUntilClosing;
 	private float doorOpenDuration;
@@ -50,6 +51,7 @@ public class Control_Door : MonoBehaviour {
 		}
 		if(creakingSounds == null) {
 			creakingSounds = new List<AudioClip>(Resources.LoadAll("Doors/CreakingSounds", typeof(AudioClip)).Cast<AudioClip>());
+			lastCreakingSound = -1;
 		}
 		if(rattlingSounds == null) {
 			rattlingSounds = new List<AudioClip>(Resources.LoadAll("Doors/RattlingSounds", typeof(AudioClip)).Cast<AudioClip>());
@@ -160,7 +162,13 @@ public class Control_Door : MonoBehaviour {
 			knobSound.Play();
 			// Also randomply play the creaking sound
 			if((UnityEngine.Random.Range(0f, 1f) < CREAKING_SOUND_PROBABILITY || forceCreak) && !creakSound.isPlaying) {
-				creakSound.clip = creakingSounds[UnityEngine.Random.Range(0, creakingSounds.Count)];
+				int randomCreakingSound = 0;
+				// Pick a random creaking sounds that has not been used before
+				do {
+					randomCreakingSound = UnityEngine.Random.Range(0, creakingSounds.Count);
+				} while(randomCreakingSound == lastCreakingSound);
+				lastCreakingSound = randomCreakingSound;
+				creakSound.clip = creakingSounds[randomCreakingSound];
 				creakSound.Play();
 			}
 			break;
