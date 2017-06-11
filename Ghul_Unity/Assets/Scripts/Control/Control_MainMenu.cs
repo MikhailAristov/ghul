@@ -6,10 +6,18 @@ public class Control_MainMenu : MonoBehaviour {
 
 	public Control_GameState GameStateControl;
 	public Canvas MainMenuCanvas;
+	public Image ControlsDisplayImage;
 	public GameObject NewGameButton;
 
 	private bool hidden;
 	private bool newGameButtonDisabled;
+
+	private float displayControlsDuration = 1f;
+	private float displayControlsFadeDuration = 2f;
+
+	void State() {
+		ControlsDisplayImage.enabled = false;
+	}
 
 	void Update() {
 		// Update the new game button state
@@ -51,9 +59,27 @@ public class Control_MainMenu : MonoBehaviour {
 	// This method is called when the New Game button is activated from the main menu
 	public void onNewGameSelect() {
 		if(!hidden && !newGameButtonDisabled) {
-			GameStateControl.startNewGame();
+			StartCoroutine(showControlsBeforeNewGame());
 			hide();
 		}
+	}
+
+	private IEnumerator showControlsBeforeNewGame() {
+		float waitUntil = Time.timeSinceLevelLoad + displayControlsDuration;
+		// Hide the menu, show the controls
+		ControlsDisplayImage.CrossFadeAlpha(1f, 0, false);
+		ControlsDisplayImage.enabled = true;
+		hide();
+		// Wait until time or any key pressed
+		Input.ResetInputAxes();
+		yield return new WaitUntil(() => (Time.timeSinceLevelLoad >= waitUntil || Input.anyKey));
+		// Start a new game
+		GameStateControl.startNewGame();
+		// Fade away the image
+		ControlsDisplayImage.CrossFadeAlpha(0, displayControlsFadeDuration, false);
+		waitUntil += displayControlsFadeDuration;
+		yield return new WaitUntil(() => (Time.timeSinceLevelLoad >= waitUntil));
+		ControlsDisplayImage.enabled = false;
 	}
 
 	// This method is called when the Continue button is activated from the main menu
