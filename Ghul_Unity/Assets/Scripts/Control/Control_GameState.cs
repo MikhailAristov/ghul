@@ -23,7 +23,7 @@ public class Control_GameState : MonoBehaviour {
 	public Text MonsterDistanceText;
 	public Control_CorpsePool CorpsePoolControl;
 	public Control_Music JukeBox;
-	public GameObject RitualRoomScribbles;
+	public SpriteRenderer RitualRoomScribbles;
 	public RectTransform CreditsCanvas;
 	public TextAsset CreditsText;
 
@@ -260,7 +260,7 @@ public class Control_GameState : MonoBehaviour {
 			item.control.loadGameState(GS, i);
 			item.control.updateGameObjectPosition();
 		}
-		StartCoroutine(updateWallScribbles(0));
+		StartCoroutine(updateWallScribbles(-10f));
 
 		// Re-trigger the endgame if necessary
 		if(GS.OVERALL_STATE > STATE_COLLECTION_PHASE) {
@@ -514,25 +514,22 @@ public class Control_GameState : MonoBehaviour {
 
 	// Updates the scribbles on the wall in the ritual room, indicating the next item to find
 	private IEnumerator updateWallScribbles(float overTime) {
-		SpriteRenderer rend = RitualRoomScribbles.GetComponent<SpriteRenderer>();
-		Sprite newSprite = GS.getCurrentItem().control.BloodyScribble;
-
 		// If the time given is zero or less, just replace the sprite and exit
 		if(overTime <= 0) {
-			rend.sprite = newSprite;
+			RitualRoomScribbles.sprite = GS.getCurrentItem().control.BloodyScribble;
 			yield break;
 		}
 
 		// Otherwise, first fade out the current scribbles
 		float halfTime = overTime / 2;
 		for(float timeLeft = halfTime; timeLeft > 0; timeLeft -= Time.deltaTime) {
-			rend.color -= new Color(0, 0, 0, Time.deltaTime / halfTime);
+			RitualRoomScribbles.color -= new Color(0, 0, 0, Time.deltaTime / halfTime);
 			yield return null;
 		}
 		// Then update them and fade back in
-		rend.sprite = newSprite;
+		RitualRoomScribbles.sprite = GS.getCurrentItem().control.BloodyScribble;
 		for(float timeLeft = halfTime; timeLeft > 0; timeLeft -= Time.deltaTime) {
-			rend.color += new Color(0, 0, 0, Time.deltaTime / halfTime);
+			RitualRoomScribbles.color += new Color(0, 0, 0, Time.deltaTime / halfTime);
 			yield return null;
 		}
 	}
