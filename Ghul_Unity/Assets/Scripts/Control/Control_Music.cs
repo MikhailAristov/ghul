@@ -79,22 +79,28 @@ public class Control_Music : MonoBehaviour {
 	void FixedUpdate() {
 		// Update the target volume of the proximity track
 		if(GS != null && !GS.SUSPENDED && GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
-			switch(GS.separationBetweenTwoRooms[TONI.isIn.INDEX, MONSTER.isIn.INDEX]) {
-			case 0:
-				proximityTrackVolumeFactor = 1f;
-				break;
-			case 1:
-				proximityTrackVolumeFactor = 0.8f;
-				break;
-			case 2:
-				proximityTrackVolumeFactor = 0.6f;
-				break;
-			case 3:
-				proximityTrackVolumeFactor = 0.4f;
-				break;
-			default:
-				proximityTrackVolumeFactor = 0.2f;
-				break;
+			// Mute the proximity track as long as Toni and the monster have not met
+			if(!MONSTER.worldModel.hasMetToniSinceLastMilestone) {
+				proximityTrackVolumeFactor = 0.0001f;
+			} else {
+				// Otherwise, set it to depend on the current distance between them
+				switch(GS.separationBetweenTwoRooms[TONI.isIn.INDEX, MONSTER.isIn.INDEX]) {
+				case 0:
+					proximityTrackVolumeFactor = 1f;
+					break;
+				case 1:
+					proximityTrackVolumeFactor = 0.8f;
+					break;
+				case 2:
+					proximityTrackVolumeFactor = 0.6f;
+					break;
+				case 3:
+					proximityTrackVolumeFactor = 0.4f;
+					break;
+				default:
+					proximityTrackVolumeFactor = 0.2f;
+					break;
+				}
 			}
 		}
 	}

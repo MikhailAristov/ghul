@@ -160,23 +160,27 @@ public class Control_GameState : MonoBehaviour {
 	// Normal update routine before all items are placed
 	// Can trigger STATE_TRANSFORMATION
 	private void updateDuringCollectionPhase() {
-		// Check if Toni meets the monster for the first time
-		if(!MONSTER.worldModel.hasMetToni && GS.monsterSeesToni && MAIN_CAMERA_CONTROL.canSeeObject(MONSTER.gameObj, 0.4f)
+		// Check if Toni meets the monster
+		if(!MONSTER.worldModel.hasMetToniSinceLastMilestone && GS.monsterSeesToni && MAIN_CAMERA_CONTROL.canSeeObject(MONSTER.gameObj, 0.4f)
 			&& !TONI.control.isGoingThroughADoor && !MONSTER.control.isGoingThroughADoor) {
-			// Update the monster's knowledge of meeting Toni
-			MONSTER.worldModel.hasMetToni = true;
-			// Make both characters face each other
-			TONI.control.setSpriteFlip(TONI.atPos > MONSTER.atPos);
-			MONSTER.control.setSpriteFlip(TONI.atPos < MONSTER.atPos);
-			// Put both in equally long cooldown
-			float duration = Global_Settings.read("ENCOUNTER_JINGLE_DURATION");
-			TONI.control.halt();
-			TONI.control.activateCooldown(duration);
-			MONSTER.control.activateCooldown(duration);
-			// Play a scary sound
-			JukeBox.playEncounterJingle();
-			// Make the monster attack as soon as its cooldown ends
-			MONSTER.state = Control_Monster.STATE_PURSUING;
+			MONSTER.worldModel.hasMetToniSinceLastMilestone = true;
+			// Check if this the first time the monster meets Toni in the entire playthrough
+			if(!MONSTER.worldModel.hasMetToni) {
+				// Update the monster's knowledge of meeting Toni
+				MONSTER.worldModel.hasMetToni = true;
+				// Make both characters face each other
+				TONI.control.setSpriteFlip(TONI.atPos > MONSTER.atPos);
+				MONSTER.control.setSpriteFlip(TONI.atPos < MONSTER.atPos);
+				// Put both in equally long cooldown
+				float duration = Global_Settings.read("ENCOUNTER_JINGLE_DURATION");
+				TONI.control.halt();
+				TONI.control.activateCooldown(duration);
+				MONSTER.control.activateCooldown(duration);
+				// Play a scary sound
+				JukeBox.playEncounterJingle();
+				// Make the monster attack as soon as its cooldown ends
+				MONSTER.state = Control_Monster.STATE_PURSUING;
+			}
 		}
 
 		// Check if player died to trigger house mix-up
@@ -194,6 +198,7 @@ public class Control_GameState : MonoBehaviour {
 				GS.indexOfSearchedItem = pickAnotherItemToSearchFor();
 				GS.ANOTHER_ITEM_PLEASE = false;
 				StartCoroutine(updateWallScribbles(1.0f));
+				MONSTER.worldModel.hasMetToniSinceLastMilestone = false;
 			}
 		}
 	}
