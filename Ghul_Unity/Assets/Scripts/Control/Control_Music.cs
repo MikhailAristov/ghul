@@ -8,7 +8,6 @@ public class Control_Music : MonoBehaviour {
 	private Data_PlayerCharacter TONI;
 	private Data_Monster MONSTER;
 
-	private float SUICIDLE_DURATION;
 	private const float TRACK_MUTING_DURATION = 1f;
 	private const float TRACK_UNMUTING_DURATION = 5f;
 
@@ -24,21 +23,14 @@ public class Control_Music : MonoBehaviour {
 	private bool allMuted;
 	private int currentTrackID;
 
-	public AudioSource AmbientNoise;
 	public AudioSource EncounterJingle;
 	public AudioSource ItemPlacementJingle;
 	public Control_MusicTrack[] MainTrackList;
-	public GameObject EndgameTrack;
+	public AudioSource EndgameTrack;
 
 	void Awake() {
-		SUICIDLE_DURATION = Global_Settings.read("SUICIDLE_DURATION");
 		allPaused = false;
 		allMuted = false;
-	}
-
-	void Start() {
-		AmbientNoise.mute = false;
-		AmbientNoise.volume = 0;
 	}
 
 	void Update() {
@@ -60,12 +52,15 @@ public class Control_Music : MonoBehaviour {
 			}
 			break;
 		case(Control_GameState.STATE_MONSTER_PHASE):
-			// By contrast, for the monster phase we place the audio source at the camera and regulate the volume
-			if(AmbientNoise.mute) {
-				AmbientNoise.mute = false;
+			if(MONSTER.worldModel.hasMetToniSinceLastMilestone) {
+				if(EndgameTrack.mute) {
+					EndgameTrack.Play();
+					EndgameTrack.mute = false;
+				}
+				if(EndgameTrack.volume < 0.999f) {
+					EndgameTrack.volume = Mathf.Lerp(EndgameTrack.volume, 1f, 0.001f);
+				}
 			}
-			float targetVolume = Mathf.Min(1.0f, TONI.timeWithoutAction / SUICIDLE_DURATION);
-			AmbientNoise.volume = Mathf.Lerp(AmbientNoise.volume, targetVolume, 0.01f);
 			break;
 		default:
 			// Ambient music should not play during other phases
@@ -150,34 +145,32 @@ public class Control_Music : MonoBehaviour {
 	// Pause and unpause all audio sources in the jukebox
 	private void pauseAll() {
 		if(!allPaused) {
-			AmbientNoise.Pause();
 			EncounterJingle.Pause();
 			foreach(Control_MusicTrack track in MainTrackList) {
 				track.pause();
 			}
-			// TODO Endgame track
+			EndgameTrack.Pause();
 			allPaused = true;
 		}
 	}
 
 	private void unpauseAll() {
 		if(allPaused) {
-			AmbientNoise.UnPause();
 			EncounterJingle.UnPause();
 			foreach(Control_MusicTrack track in MainTrackList) {
 				track.unpause();
 			}
-			// TODO Endgame track
+			EndgameTrack.UnPause();
 			allPaused = false;
 		}
 	}
 
 	private void muteAll() {
 		if(!allMuted) {
-			AmbientNoise.mute = true;
 			foreach(Control_MusicTrack track in MainTrackList) {
 				track.muteTrack(0);
 			}
+			EndgameTrack.mute = true;
 			allMuted = true;
 		}
 	}
