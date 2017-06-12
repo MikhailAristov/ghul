@@ -23,7 +23,7 @@ public class Control_GameState : MonoBehaviour {
 	public Text MonsterDistanceText;
 	public Control_CorpsePool CorpsePoolControl;
 	public Control_Music JukeBox;
-	public SpriteRenderer RitualRoomScribbles;
+	public GameObject RitualRoomScribbles;
 	public RectTransform CreditsCanvas;
 	public TextAsset CreditsText;
 
@@ -129,12 +129,6 @@ public class Control_GameState : MonoBehaviour {
 			startNewGame();
 		}
 
-		// Check whether monster and Toni have met
-		if(!MONSTER.worldModel.hasMetToniSinceLastMilestone && GS.monsterSeesToni && MAIN_CAMERA_CONTROL.canSeeObject(MONSTER.gameObj, 0.4f)
-			&& !TONI.control.isGoingThroughADoor && !MONSTER.control.isGoingThroughADoor) {
-			MONSTER.worldModel.hasMetToniSinceLastMilestone = true;
-		}
-
 		switch(GS.OVERALL_STATE) {
 		case STATE_COLLECTION_PHASE:
 			updateDuringCollectionPhase();
@@ -144,7 +138,6 @@ public class Control_GameState : MonoBehaviour {
 			if(GS.MONSTER_KILLED) {
 				GS.OVERALL_STATE = STATE_MONSTER_PHASE;
 				MONSTER.control.setupEndgame();
-				MONSTER.worldModel.hasMetToniSinceLastMilestone = false;
 				GS.MONSTER_KILLED = false;
 			}
 			break;
@@ -168,7 +161,8 @@ public class Control_GameState : MonoBehaviour {
 	// Can trigger STATE_TRANSFORMATION
 	private void updateDuringCollectionPhase() {
 		// Check if Toni meets the monster for the first time
-		if(MONSTER.worldModel.hasMetToniSinceLastMilestone && !MONSTER.worldModel.hasMetToni) {
+		if(!MONSTER.worldModel.hasMetToni && GS.monsterSeesToni && MAIN_CAMERA_CONTROL.canSeeObject(MONSTER.gameObj, 0.4f)
+			&& !TONI.control.isGoingThroughADoor && !MONSTER.control.isGoingThroughADoor) {
 			// Update the monster's knowledge of meeting Toni
 			MONSTER.worldModel.hasMetToni = true;
 			// Make both characters face each other
@@ -200,7 +194,6 @@ public class Control_GameState : MonoBehaviour {
 				GS.indexOfSearchedItem = pickAnotherItemToSearchFor();
 				GS.ANOTHER_ITEM_PLEASE = false;
 				StartCoroutine(updateWallScribbles(1.0f));
-				MONSTER.worldModel.hasMetToniSinceLastMilestone = false;
 			}
 		}
 	}
@@ -267,7 +260,7 @@ public class Control_GameState : MonoBehaviour {
 			item.control.loadGameState(GS, i);
 			item.control.updateGameObjectPosition();
 		}
-		StartCoroutine(updateWallScribbles(-10f));
+		StartCoroutine(updateWallScribbles(0));
 
 		// Re-trigger the endgame if necessary
 		if(GS.OVERALL_STATE > STATE_COLLECTION_PHASE) {
@@ -521,26 +514,26 @@ public class Control_GameState : MonoBehaviour {
 
 	// Updates the scribbles on the wall in the ritual room, indicating the next item to find
 	private IEnumerator updateWallScribbles(float overTime) {
+		SpriteRenderer rend = RitualRoomScribbles.GetComponent<SpriteRenderer>();
+		Sprite newSprite = GS.getCurrentItem().control.BloodyScribble;
+
 		// If the time given is zero or less, just replace the sprite and exit
 		if(overTime <= 0) {
-			RitualRoomScribbles.sprite = GS.getCurrentItem().control.BloodyScribble;
+			rend.sprite = newSprite;
 			yield break;
 		}
 
 		// Otherwise, first fade out the current scribbles
-		float timeStep = overTime / 100;
-		float waitUntil = Time.timeSinceLevelLoad;
-		while(RitualRoomScribbles.color.a > 0.001f) {
-			RitualRoomScribbles.color -= new Color(0, 0, 0, 1f/50f);
-			waitUntil += timeStep;
-			yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
+		float halfTime = overTime / 2;
+		for(float timeLeft = halfTime; timeLeft > 0; timeLeft -= Time.deltaTime) {
+			rend.color -= new Color(0, 0, 0, Time.deltaTime / halfTime);
+			yield return null;
 		}
 		// Then update them and fade back in
-		RitualRoomScribbles.sprite = GS.getCurrentItem().control.BloodyScribble;
-		while(RitualRoomScribbles.color.a < 0.999f) {
-			RitualRoomScribbles.color += new Color(0, 0, 0, 1f/50f);
-			waitUntil += timeStep;
-			yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
+		rend.sprite = newSprite;
+		for(float timeLeft = halfTime; timeLeft > 0; timeLeft -= Time.deltaTime) {
+			rend.color += new Color(0, 0, 0, Time.deltaTime / halfTime);
+			yield return null;
 		}
 	}
 

@@ -10,11 +10,9 @@ public class AI_WorldModel {
 	private AI_PlayerModel playerModel;
 	[SerializeField]
 	private AI_SignalModel signalModel;
-	// This next two are only here so they persist across multiple playthroughs
+	// This next one is only here so it persists across multiple playthroughs
 	[SerializeField]
 	public bool hasMetToni;
-	[SerializeField]
-	public bool hasMetToniSinceLastMilestone;
 
 	public AI_PlayerParameters playerParameters {
 		get { return playerModel.PLAYER_PARAMETERS; }
@@ -46,7 +44,6 @@ public class AI_WorldModel {
 		playerModel = new AI_PlayerModel(GS);
 		signalModel = new AI_SignalModel(GS, playerModel);
 		hasMetToni = false;
-		hasMetToniSinceLastMilestone = false;
 	}
 
 	// Soft reset only resets Toni's suspected positions

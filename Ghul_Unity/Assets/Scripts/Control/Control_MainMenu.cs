@@ -17,7 +17,7 @@ public class Control_MainMenu : MonoBehaviour {
 	private bool hidden;
 	private bool newGameButtonDisabled;
 
-	private float displayControlsDuration = 3f;
+	private float displayControlsDuration = 1f;
 	private float displayControlsFadeDuration = 2f;
 
 	void Start() {
