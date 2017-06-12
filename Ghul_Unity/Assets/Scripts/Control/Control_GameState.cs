@@ -526,16 +526,19 @@ public class Control_GameState : MonoBehaviour {
 		}
 
 		// Otherwise, first fade out the current scribbles
-		float halfTime = overTime / 2;
-		for(float timeLeft = halfTime; timeLeft > 0; timeLeft -= Time.deltaTime) {
-			RitualRoomScribbles.color -= new Color(0, 0, 0, Time.deltaTime / halfTime);
-			yield return null;
+		float timeStep = overTime / 100;
+		float waitUntil = Time.timeSinceLevelLoad;
+		while(RitualRoomScribbles.color.a > 0.001f) {
+			RitualRoomScribbles.color -= new Color(0, 0, 0, 1f/50f);
+			waitUntil += timeStep;
+			yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
 		}
 		// Then update them and fade back in
 		RitualRoomScribbles.sprite = GS.getCurrentItem().control.BloodyScribble;
-		for(float timeLeft = halfTime; timeLeft > 0; timeLeft -= Time.deltaTime) {
-			RitualRoomScribbles.color += new Color(0, 0, 0, Time.deltaTime / halfTime);
-			yield return null;
+		while(RitualRoomScribbles.color.a < 0.999f) {
+			RitualRoomScribbles.color += new Color(0, 0, 0, 1f/50f);
+			waitUntil += timeStep;
+			yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
 		}
 	}
 
