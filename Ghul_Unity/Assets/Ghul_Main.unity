@@ -3100,7 +3100,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: 5341f5a9db631b249b7b804ae8fc673a, type: 3}
+  m_audioClip: {fileID: 8300000, guid: 4cdd624919109174ba45adb54771aaf8, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -3257,8 +3257,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca5dc661e26f0884ba69656f6edfbd41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CheckDistanceToCamera: 1
   SteppingSound: {fileID: 1557828320}
+  AttackSound: {fileID: 629350730}
+  CheckDistanceToCamera: 1
   MainCameraControl: {fileID: 1344317741}
 --- !u!1 &685809629
 GameObject:
@@ -3930,6 +3931,7 @@ GameObject:
   - 4: {fileID: 1006190934}
   - 212: {fileID: 1006190935}
   - 95: {fileID: 1006190936}
+  - 114: {fileID: 1006190937}
   m_Layer: 0
   m_Name: MonsterToniImage
   m_TagString: Untagged
@@ -4000,6 +4002,21 @@ Animator:
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
+--- !u!114 &1006190937
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1006190933}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca5dc661e26f0884ba69656f6edfbd41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SteppingSound: {fileID: 825760650}
+  AttackSound: {fileID: 1061054543}
+  CheckDistanceToCamera: 0
+  MainCameraControl: {fileID: 1344317741}
 --- !u!1 &1028994218
 GameObject:
   m_ObjectHideFlags: 0
@@ -4232,7 +4249,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: 5341f5a9db631b249b7b804ae8fc673a, type: 3}
+  m_audioClip: {fileID: 8300000, guid: 4cdd624919109174ba45adb54771aaf8, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -5798,6 +5815,7 @@ GameObject:
   - 4: {fileID: 1621969376}
   - 212: {fileID: 1621969377}
   - 95: {fileID: 1621969378}
+  - 114: {fileID: 1621969379}
   m_Layer: 0
   m_Name: MonsterImage
   m_TagString: Untagged
@@ -5868,6 +5886,21 @@ Animator:
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
+--- !u!114 &1621969379
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1621969375}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca5dc661e26f0884ba69656f6edfbd41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SteppingSound: {fileID: 1557828320}
+  AttackSound: {fileID: 629350730}
+  CheckDistanceToCamera: 1
+  MainCameraControl: {fileID: 1344317741}
 --- !u!1 &1673746494
 GameObject:
   m_ObjectHideFlags: 0
@@ -6434,6 +6467,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca5dc661e26f0884ba69656f6edfbd41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CheckDistanceToCamera: 0
   SteppingSound: {fileID: 825760650}
+  AttackSound: {fileID: 1061054543}
+  CheckDistanceToCamera: 0
   MainCameraControl: {fileID: 1344317741}

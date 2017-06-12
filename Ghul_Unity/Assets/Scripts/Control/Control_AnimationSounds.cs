@@ -3,10 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-public class Control_WalkingSounds : MonoBehaviour {
+public class Control_AnimationSounds : MonoBehaviour {
 
-	public bool CheckDistanceToCamera;
 	public AudioSource SteppingSound;
+	public AudioSource AttackSound;
+	public bool CheckDistanceToCamera;
 	public Control_Camera MainCameraControl;
 
 	private static List<AudioClip> walkingSounds;
@@ -30,19 +31,25 @@ public class Control_WalkingSounds : MonoBehaviour {
 	}
 
 	public void makeRandomWalkingStepNoise() {
-		playSound(walkingSounds[UnityEngine.Random.Range(0, walkingSoundsCount)], walkingSoundVolume);
+		playSteppingSound(walkingSounds[UnityEngine.Random.Range(0, walkingSoundsCount)], walkingSoundVolume);
 	}
 
 	public void makeRandomRunningStepNoise() {
-		playSound(runningSounds[UnityEngine.Random.Range(0, runningSoundsCount)], runningSoundVolume);
+		playSteppingSound(runningSounds[UnityEngine.Random.Range(0, runningSoundsCount)], runningSoundVolume);
 	}
 
-	private void playSound(AudioClip sound, float volume) {
+	private void playSteppingSound(AudioClip sound, float volume) {
 		if(SteppingSound != null && (!CheckDistanceToCamera || MainCameraControl.canSeeObject(gameObject, -100f))) {
 			SteppingSound.Stop();
 			SteppingSound.clip = sound;
 			SteppingSound.volume = volume;
 			SteppingSound.Play();
+		}
+	}
+
+	public void playAttackSound() {
+		if(AttackSound != null && AttackSound.clip != null) {
+			AttackSound.Play();
 		}
 	}
 }
