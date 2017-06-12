@@ -3477,6 +3477,7 @@ GameObject:
   - 114: {fileID: 870049410}
   - 222: {fileID: 870049409}
   - 114: {fileID: 870049408}
+  - 95: {fileID: 870049412}
   m_Layer: 5
   m_Name: ControlsDisplay
   m_TagString: Untagged
@@ -3575,6 +3576,23 @@ Canvas:
   m_SortingLayerID: -1126737267
   m_SortingOrder: 30
   m_TargetDisplay: 0
+--- !u!95 &870049412
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 870049406}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 9abf33a2c1cf9154f92a3094fa586fbe, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
 --- !u!1 &879070032
 GameObject:
   m_ObjectHideFlags: 0
@@ -4093,6 +4111,7 @@ MonoBehaviour:
   GameStateControl: {fileID: 1333168852}
   MainMenuCanvas: {fileID: 1028994221}
   ControlsDisplayImage: {fileID: 870049408}
+  ControlsDisplayAnimator: {fileID: 870049412}
   NewGameButton: {fileID: 900074687}
 --- !u!1 &1029527367
 GameObject:

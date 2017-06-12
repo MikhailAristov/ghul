@@ -7,6 +7,7 @@ public class Control_MainMenu : MonoBehaviour {
 	public Control_GameState GameStateControl;
 	public Canvas MainMenuCanvas;
 	public Image ControlsDisplayImage;
+	public Animator ControlsDisplayAnimator;
 	public GameObject NewGameButton;
 
 	private bool hidden;
@@ -15,7 +16,7 @@ public class Control_MainMenu : MonoBehaviour {
 	private float displayControlsDuration = 1f;
 	private float displayControlsFadeDuration = 2f;
 
-	void State() {
+	void Start() {
 		ControlsDisplayImage.enabled = false;
 	}
 
@@ -67,7 +68,7 @@ public class Control_MainMenu : MonoBehaviour {
 	private IEnumerator showControlsBeforeNewGame() {
 		float waitUntil = Time.timeSinceLevelLoad + displayControlsDuration;
 		// Hide the menu, show the controls
-		ControlsDisplayImage.CrossFadeAlpha(1f, 0, false);
+		ControlsDisplayImage.CrossFadeColor(new Color(1f, 1f, 1f, 1f), 0, false, true);
 		ControlsDisplayImage.enabled = true;
 		hide();
 		// Wait until time or any key pressed
@@ -76,10 +77,12 @@ public class Control_MainMenu : MonoBehaviour {
 		// Start a new game
 		GameStateControl.startNewGame();
 		// Fade away the image
-		ControlsDisplayImage.CrossFadeAlpha(0, displayControlsFadeDuration, false);
+		ControlsDisplayAnimator.speed = 0;
+		ControlsDisplayImage.CrossFadeColor(new Color(0, 0, 0, 0), displayControlsFadeDuration, false, true);
 		waitUntil += displayControlsFadeDuration;
 		yield return new WaitUntil(() => (Time.timeSinceLevelLoad >= waitUntil));
 		ControlsDisplayImage.enabled = false;
+		ControlsDisplayAnimator.speed = 1f;
 	}
 
 	// This method is called when the Continue button is activated from the main menu
