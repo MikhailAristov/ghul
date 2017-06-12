@@ -6244,6 +6244,7 @@ GameObject:
   - 4: {fileID: 2004490471}
   - 212: {fileID: 2004490472}
   - 95: {fileID: 2004490473}
+  - 114: {fileID: 2004490474}
   m_Layer: 0
   m_Name: Stickman
   m_TagString: Untagged
@@ -6314,3 +6315,14 @@ Animator:
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
+--- !u!114 &2004490474
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2004490470}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca5dc661e26f0884ba69656f6edfbd41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
