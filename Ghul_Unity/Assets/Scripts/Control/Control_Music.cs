@@ -9,7 +9,8 @@ public class Control_Music : MonoBehaviour {
 	private Data_Monster MONSTER;
 
 	private float SUICIDLE_DURATION;
-	private const float TRACK_MUTING_DURATION = 5f;
+	private const float TRACK_MUTING_DURATION = 1f;
+	private const float TRACK_UNMUTING_DURATION = 5f;
 
 	private const float MIN_PROXIMITY = 3f;
 	private const float MAX_PROXIMITY = 30f;
@@ -25,6 +26,7 @@ public class Control_Music : MonoBehaviour {
 
 	public AudioSource AmbientNoise;
 	public AudioSource EncounterJingle;
+	public AudioSource ItemPlacementJingle;
 	public Control_MusicTrack[] MainTrackList;
 	public GameObject EndgameTrack;
 
@@ -51,8 +53,7 @@ public class Control_Music : MonoBehaviour {
 		case(Control_GameState.STATE_COLLECTION_PHASE):
 			if(MONSTER.worldModel.hasMetToni) {
 				if(currentTrackID != GS.numItemsPlaced) {
-					MainTrackList[currentTrackID].muteTrack(TRACK_MUTING_DURATION);
-					MainTrackList[GS.numItemsPlaced].unmuteTrack(TRACK_MUTING_DURATION);
+					switchTracks(currentTrackID, GS.numItemsPlaced);
 					currentTrackID = GS.numItemsPlaced;
 				}
 				MainTrackList[currentTrackID].updateProximityFactor(proximityTrackVolumeFactor);
@@ -115,6 +116,19 @@ public class Control_Music : MonoBehaviour {
 		}
 	}
 
+	// Switches the next track to play
+	private void switchTracks(int oldTrack, int newTrack) {
+		// Mute the previous track
+		MainTrackList[oldTrack].muteTrack(TRACK_MUTING_DURATION);
+		// Play the item jingle
+		if(!ItemPlacementJingle.isPlaying) {
+			ItemPlacementJingle.Play();
+		}
+		// Unmute the next track after the jingle stops playing
+		float delay = ItemPlacementJingle.clip.length / 2f;
+		MainTrackList[newTrack].unmuteTrack(duration: TRACK_UNMUTING_DURATION, delay: delay, restart: true);
+	}
+
 	// Play the horror jingle upon the first meeting with a monster
 	public void playEncounterJingle() {
 		if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
@@ -122,7 +136,7 @@ public class Control_Music : MonoBehaviour {
 				EncounterJingle.Play();
 			}
 			if(MainTrackList[currentTrackID].muted) {
-				MainTrackList[currentTrackID].unmuteTrack(duration: TRACK_MUTING_DURATION, delay: Global_Settings.read("ENCOUNTER_JINGLE_DURATION"), restart: true);
+				MainTrackList[currentTrackID].unmuteTrack(duration: TRACK_UNMUTING_DURATION, delay: Global_Settings.read("ENCOUNTER_JINGLE_DURATION"), restart: true);
 			}
 		}
 	}
