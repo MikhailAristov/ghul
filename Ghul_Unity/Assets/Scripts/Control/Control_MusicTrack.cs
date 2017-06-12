@@ -41,7 +41,9 @@ public class Control_MusicTrack : MonoBehaviour {
 	void Update () {
 		if(!isMuted && !isPaused) {
 			mainTrack.volume = Mathf.Lerp(mainTrack.volume, targetMainTrackVolume, LERPING_STEP);
-			proximitySubtrack.volume = Mathf.Lerp(proximitySubtrack.volume, targetProximityTrackVolume, LERPING_STEP);
+			if(Mathf.Abs(proximitySubtrack.volume - targetProximityTrackVolume) > 0.0001f) {
+				proximitySubtrack.volume = Mathf.Lerp(proximitySubtrack.volume, targetProximityTrackVolume, LERPING_STEP);
+			}
 			if(mainTrack.volume < INAUDIBIBILITY_THRESHOLD) {
 				isMuted = true;
 				mainTrack.mute = true;
@@ -75,12 +77,17 @@ public class Control_MusicTrack : MonoBehaviour {
 		} while(targetMainTrackVolume > 0);
 	}
 
-	public void unmuteTrack(float duration, float delay = 0) {
+	public void unmuteTrack(float duration, float delay = 0, bool restart = false) {
 		// If duration is not positive, mute the track immediately
 		if(duration <= 0) {
 			targetMainTrackVolume = MAX_TRACK_VOLUME;
 			mainTrack.volume = MAX_TRACK_VOLUME;
 			unmuteAllComponents();
+		}
+		// Restart the tracks if necessary
+		if(restart) {
+			mainTrack.Play();
+			proximitySubtrack.Play();
 		}
 		// Otherwise, do so gradually
 		StopAllCoroutines();

@@ -19,12 +19,11 @@ public class Control_GameState : MonoBehaviour {
 	// After suicidle has played out completely
 	public const int STATE_MONSTER_DEAD = 3;
 
-	public Canvas MainMenuCanvas;
+	public Control_MainMenu MainMenuControl;
 	public Text MonsterDistanceText;
 	public Control_CorpsePool CorpsePoolControl;
 	public Control_Music JukeBox;
-	public GameObject NewGameButton;
-	public GameObject RitualRoomScribbles;
+	public SpriteRenderer RitualRoomScribbles;
 	public RectTransform CreditsCanvas;
 	public TextAsset CreditsText;
 
@@ -45,7 +44,9 @@ public class Control_GameState : MonoBehaviour {
 
 	private float AUTOSAVE_FREQUENCY;
 	private float NEXT_AUTOSAVE_IN;
-	private bool newGameDisabled;
+	public bool newGameDisabled {
+		get { return (GS != null && GS.OVERALL_STATE > STATE_COLLECTION_PHASE); }
+	}
 
 	// Use this for initialization
 	void Awake() {
@@ -78,22 +79,7 @@ public class Control_GameState : MonoBehaviour {
 		if(GS != null) {
 			setAdditionalParameters();
 			GS.SUSPENDED = true; // Suspend the game while in the main menu initially
-
-			// If the game has transitioned into the endgame, disable the New Game Button
-			if(GS.OVERALL_STATE > STATE_COLLECTION_PHASE) {
-				disableNewGameButton();
-			}
 		}
-	}
-
-	private void disableNewGameButton() {
-		newGameDisabled = true;
-		NewGameButton.GetComponent<Image>().color = new Color(100f / 255f, 0f, 0f);
-	}
-
-	private void reenableNewGameButton() {
-		newGameDisabled = false;
-		NewGameButton.GetComponent<Image>().color = new Color(136f / 255f, 136f / 255f, 136f / 255f);
 	}
 
 	void FixedUpdate() {
@@ -104,7 +90,23 @@ public class Control_GameState : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update() {
-		if(GS == null || GS.SUSPENDED) {
+		if(GS == null) {
+			return;
+		}
+		// Main menu handling
+		bool escapeButtonPressed = Input.GetButton("Cancel");
+		if(GS.SUSPENDED && escapeButtonPressed) {
+			// Hide menu if suspended
+			MainMenuControl.hide();
+			GS.SUSPENDED = false;
+			Input.ResetInputAxes();
+		} else if(!GS.SUSPENDED && escapeButtonPressed) {
+			// Show menu if not suspended
+			GS.SUSPENDED = true;
+			MainMenuControl.show();
+			Input.ResetInputAxes();
+		} else if(GS.SUSPENDED) {
+			// If suspended and nothing pressed, just do nothing
 			return;
 		}
 
@@ -113,12 +115,6 @@ public class Control_GameState : MonoBehaviour {
 		if(NEXT_AUTOSAVE_IN <= 0.0f) {
 			NEXT_AUTOSAVE_IN = AUTOSAVE_FREQUENCY;
 			Control_Persistence.saveToDisk(GS);
-		}
-
-		// Open main menu if the player presses Esc
-		if(Input.GetButton("Cancel")) {
-			GS.SUSPENDED = true;
-			MainMenuCanvas.enabled = true;
 		}
 
 		// Roll credits on demand in debug mode
@@ -130,8 +126,13 @@ public class Control_GameState : MonoBehaviour {
 		if(Debug.isDebugBuild && Input.GetButtonDown("Reset Game State")) {
 			GS.SUSPENDED = true;
 			GS.OVERALL_STATE = STATE_COLLECTION_PHASE;
-			reenableNewGameButton();
-			onNewGameSelect();
+			startNewGame();
+		}
+
+		// Check whether monster and Toni have met
+		if(!MONSTER.worldModel.hasMetToniSinceLastMilestone && GS.monsterSeesToni && MAIN_CAMERA_CONTROL.canSeeObject(MONSTER.gameObj, 0.4f)
+			&& !TONI.control.isGoingThroughADoor && !MONSTER.control.isGoingThroughADoor) {
+			MONSTER.worldModel.hasMetToniSinceLastMilestone = true;
 		}
 
 		switch(GS.OVERALL_STATE) {
@@ -143,6 +144,7 @@ public class Control_GameState : MonoBehaviour {
 			if(GS.MONSTER_KILLED) {
 				GS.OVERALL_STATE = STATE_MONSTER_PHASE;
 				MONSTER.control.setupEndgame();
+				MONSTER.worldModel.hasMetToniSinceLastMilestone = false;
 				GS.MONSTER_KILLED = false;
 			}
 			break;
@@ -166,8 +168,7 @@ public class Control_GameState : MonoBehaviour {
 	// Can trigger STATE_TRANSFORMATION
 	private void updateDuringCollectionPhase() {
 		// Check if Toni meets the monster for the first time
-		if(!MONSTER.worldModel.hasMetToni && GS.monsterSeesToni && MAIN_CAMERA_CONTROL.canSeeObject(MONSTER.gameObj, 0.4f)
-			&& !TONI.control.isGoingThroughADoor && !MONSTER.control.isGoingThroughADoor) {
+		if(MONSTER.worldModel.hasMetToniSinceLastMilestone && !MONSTER.worldModel.hasMetToni) {
 			// Update the monster's knowledge of meeting Toni
 			MONSTER.worldModel.hasMetToni = true;
 			// Make both characters face each other
@@ -199,6 +200,7 @@ public class Control_GameState : MonoBehaviour {
 				GS.indexOfSearchedItem = pickAnotherItemToSearchFor();
 				GS.ANOTHER_ITEM_PLEASE = false;
 				StartCoroutine(updateWallScribbles(1.0f));
+				MONSTER.worldModel.hasMetToniSinceLastMilestone = false;
 			}
 		}
 	}
@@ -265,7 +267,7 @@ public class Control_GameState : MonoBehaviour {
 			item.control.loadGameState(GS, i);
 			item.control.updateGameObjectPosition();
 		}
-		StartCoroutine(updateWallScribbles(0));
+		StartCoroutine(updateWallScribbles(-10f));
 
 		// Re-trigger the endgame if necessary
 		if(GS.OVERALL_STATE > STATE_COLLECTION_PHASE) {
@@ -280,14 +282,13 @@ public class Control_GameState : MonoBehaviour {
 	// TODO: Proper endgame
 	private void triggerEndgame(int overallState) {
 		if(overallState > STATE_COLLECTION_PHASE) {
-			// Disable new game button
-			disableNewGameButton();
 			// Transform Toni
 			TONI.control.setupEndgame();
 		}
 		if(overallState > STATE_TRANSFORMATION) {
 			MONSTER.control.setupEndgame();
 		}
+		Control_Persistence.saveToDisk(GS);
 	}
 
 	// This method initializes the game state back to default
@@ -520,26 +521,26 @@ public class Control_GameState : MonoBehaviour {
 
 	// Updates the scribbles on the wall in the ritual room, indicating the next item to find
 	private IEnumerator updateWallScribbles(float overTime) {
-		SpriteRenderer rend = RitualRoomScribbles.GetComponent<SpriteRenderer>();
-		Sprite newSprite = GS.getCurrentItem().control.BloodyScribble;
-
 		// If the time given is zero or less, just replace the sprite and exit
 		if(overTime <= 0) {
-			rend.sprite = newSprite;
+			RitualRoomScribbles.sprite = GS.getCurrentItem().control.BloodyScribble;
 			yield break;
 		}
 
 		// Otherwise, first fade out the current scribbles
-		float halfTime = overTime / 2;
-		for(float timeLeft = halfTime; timeLeft > 0; timeLeft -= Time.deltaTime) {
-			rend.color -= new Color(0, 0, 0, Time.deltaTime / halfTime);
-			yield return null;
+		float timeStep = overTime / 100;
+		float waitUntil = Time.timeSinceLevelLoad;
+		while(RitualRoomScribbles.color.a > 0.001f) {
+			RitualRoomScribbles.color -= new Color(0, 0, 0, 1f/50f);
+			waitUntil += timeStep;
+			yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
 		}
 		// Then update them and fade back in
-		rend.sprite = newSprite;
-		for(float timeLeft = halfTime; timeLeft > 0; timeLeft -= Time.deltaTime) {
-			rend.color += new Color(0, 0, 0, Time.deltaTime / halfTime);
-			yield return null;
+		RitualRoomScribbles.sprite = GS.getCurrentItem().control.BloodyScribble;
+		while(RitualRoomScribbles.color.a < 0.999f) {
+			RitualRoomScribbles.color += new Color(0, 0, 0, 1f/50f);
+			waitUntil += timeStep;
+			yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
 		}
 	}
 
@@ -556,36 +557,34 @@ public class Control_GameState : MonoBehaviour {
 	}
 
 	// This method is called when the New Game button is activated from the main menu
-	void onNewGameSelect() {
-		// Can only be clicked if not transformed into a monster yet.
-		if(GS == null || (!newGameDisabled && GS.OVERALL_STATE < STATE_TRANSFORMATION)) {
+	public void startNewGame() {
+		// Can only be clicked if not transformed into a monster yet
+		if(!newGameDisabled) {
 			resetGameState();				// Reset the game state
 			setAdditionalParameters();		// Refocus camera and such
-			MainMenuCanvas.enabled = false;	// Dismiss the main menu
 			GS.SUSPENDED = false;			// Continue playing
 		}
 	}
 
 	// This method is called when the Continue button is activated from the main menu
-	void onContinueSelect() {
+	public void continueOldGame() {
 		// If no game state has been loaded before, create a new one
 		if(GS == null) {
 			resetGameState();
 			setAdditionalParameters();
 		}
-		// Then simply dismiss the main menu to continue playing
-		MainMenuCanvas.enabled = false;
 		GS.SUSPENDED = false;
 	}
 
 	// This method is called when the Exit button is activated from the main menu
-	void onExitSelect() {
+	public void quitGame() {
 		// Save and exit
 		if(GS != null) {
 			Control_Persistence.saveToDisk(GS);
 		}
 		Screen.SetResolution(640, 480, false);
 		Application.Quit();
+		Debug.Log("Quitting game...");
 	}
 
 	// Continuously recalculates the proximity of monster to chara

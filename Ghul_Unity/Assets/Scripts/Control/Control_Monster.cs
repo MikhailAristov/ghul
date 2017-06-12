@@ -568,6 +568,7 @@ public class Control_Monster : Control_Character {
 		}
 		// Set AI state to fleeing, just in case
 		me.state = STATE_FLEEING;
+		animatorMonster.SetFloat("Speed", 0);
 		// "Go" through the door
 		goingThroughADoor = true;
 		StartCoroutine(goThroughTheDoor(targetDoor));
