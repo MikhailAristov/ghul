@@ -281,6 +281,7 @@ public class Control_GameState : MonoBehaviour {
 		if(overallState > STATE_TRANSFORMATION) {
 			MONSTER.control.setupEndgame();
 		}
+		Control_Persistence.saveToDisk(GS);
 	}
 
 	// This method initializes the game state back to default

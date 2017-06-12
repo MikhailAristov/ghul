@@ -6,8 +6,13 @@ public class Control_MainMenu : MonoBehaviour {
 
 	public Control_GameState GameStateControl;
 	public Canvas MainMenuCanvas;
+
+	public Image MainMenuBackground;
+	public Sprite MainMenuWithStartButton;
+	public Sprite MainMenuWithoutStartButton;
+
 	public Image ControlsDisplayImage;
-	public GameObject NewGameButton;
+	public Animator ControlsDisplayAnimator;
 
 	private bool hidden;
 	private bool newGameButtonDisabled;
@@ -15,7 +20,7 @@ public class Control_MainMenu : MonoBehaviour {
 	private float displayControlsDuration = 1f;
 	private float displayControlsFadeDuration = 2f;
 
-	void State() {
+	void Start() {
 		ControlsDisplayImage.enabled = false;
 	}
 
@@ -45,14 +50,14 @@ public class Control_MainMenu : MonoBehaviour {
 	private void disableNewGameButton() {
 		if(!newGameButtonDisabled) {
 			newGameButtonDisabled = true;
-			NewGameButton.GetComponent<Image>().color = new Color(100f / 255f, 0f, 0f);
+			MainMenuBackground.sprite = MainMenuWithoutStartButton;
 		}
 	}
 
 	private void reenableNewGameButton() {
 		if(newGameButtonDisabled) {
 			newGameButtonDisabled = false;
-			NewGameButton.GetComponent<Image>().color = new Color(136f / 255f, 136f / 255f, 136f / 255f);
+			MainMenuBackground.sprite = MainMenuWithStartButton;
 		}
 	}
 
@@ -67,7 +72,7 @@ public class Control_MainMenu : MonoBehaviour {
 	private IEnumerator showControlsBeforeNewGame() {
 		float waitUntil = Time.timeSinceLevelLoad + displayControlsDuration;
 		// Hide the menu, show the controls
-		ControlsDisplayImage.CrossFadeAlpha(1f, 0, false);
+		ControlsDisplayImage.CrossFadeColor(new Color(1f, 1f, 1f, 1f), 0, false, true);
 		ControlsDisplayImage.enabled = true;
 		hide();
 		// Wait until time or any key pressed
@@ -76,10 +81,12 @@ public class Control_MainMenu : MonoBehaviour {
 		// Start a new game
 		GameStateControl.startNewGame();
 		// Fade away the image
-		ControlsDisplayImage.CrossFadeAlpha(0, displayControlsFadeDuration, false);
+		ControlsDisplayAnimator.speed = 0;
+		ControlsDisplayImage.CrossFadeColor(new Color(0, 0, 0, 0), displayControlsFadeDuration, false, true);
 		waitUntil += displayControlsFadeDuration;
 		yield return new WaitUntil(() => (Time.timeSinceLevelLoad >= waitUntil));
 		ControlsDisplayImage.enabled = false;
+		ControlsDisplayAnimator.speed = 1f;
 	}
 
 	// This method is called when the Continue button is activated from the main menu
