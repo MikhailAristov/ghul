@@ -254,9 +254,9 @@ public class Control_GameState : MonoBehaviour {
 		if(cadaverPos != null) {
 			// Place a monster corpse after suicidle, a human corpse otherwise
 			if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_DEAD) {
-				CorpsePoolControl.placeMonsterCorpse(GS.getRoomByIndex(cadaverPos.RoomId).env.gameObject, cadaverPos.asLocalVector());
+				CorpsePoolControl.placeMonsterCorpse(GS.getRoomByIndex(cadaverPos.RoomId).env.gameObject, cadaverPos.asLocalVector(), GS.isCadaverFlipped());
 			} else {
-				CorpsePoolControl.placeHumanCorpse(GS.getRoomByIndex(cadaverPos.RoomId).env.gameObject, cadaverPos.asLocalVector());
+				CorpsePoolControl.placeHumanCorpse(GS.getRoomByIndex(cadaverPos.RoomId).env.gameObject, cadaverPos.asLocalVector(), GS.isCadaverFlipped());
 			}
 		}
 

@@ -23,6 +23,7 @@ public class Control_Monster : Control_Character {
 	private float MARGIN_ITEM_STEAL;
 	private float WAIT_FOR_TONI_TO_MOVE;
 	private int HOLD_DOORS_AFTER_ITEM;
+	private float DEATH_ANIMATION_DURATION;
 
 	// For prediction and planning of attacks
 	private float EFFECTIVE_MINIMUM_ATTACK_RANGE;
@@ -103,6 +104,8 @@ public class Control_Monster : Control_Character {
 		HOLD_DOORS_AFTER_ITEM = (int)Global_Settings.read("MONSTER_HOLDS_DOORS_AFTER_ITEM");
 		INVISIBLE_AFTER_ITEM = (int)Global_Settings.read("MONSTER_INVISIBLE_AFTER_ITEM");
 		INVISIBILITY_TRANSITION_DURATION = Global_Settings.read("MONSTER_INVISIBILIY_TRANSITION");
+
+		DEATH_ANIMATION_DURATION = Global_Settings.read("TOTAL_DEATH_DURATION");
 	}
 
 	void Start() {
@@ -575,21 +578,33 @@ public class Control_Monster : Control_Character {
 	}
 
 	// Killing the monster / civilian during endgame
-	public void dieAndRespawn() {
+	public IEnumerator dieAndRespawn() {
+		Debug.Log(me + " died...");
+		activateCooldown(DEATH_ANIMATION_DURATION);
+
 		// Place a tombstone where the death occured
+		float waitUntil = Time.timeSinceLevelLoad + DEATH_ANIMATION_DURATION;
 		if(GS.OVERALL_STATE == Control_GameState.STATE_TRANSFORMATION) {
-			CorpsePoolControl.placeMonsterCorpse(me.isIn.env.gameObject, me.pos.asLocalVector());
+			monsterRenderer.enabled = false;
+			CorpsePoolControl.placeMonsterCorpse(me.isIn.env.gameObject, me.pos.asLocalVector(), civilianRenderer.flipX);
+			yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
 		} else {
-			CorpsePoolControl.placeHumanCorpse(me.isIn.env.gameObject, me.pos.asLocalVector());
+			animatorCivilian.SetTrigger("Is Killed");
+			yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
+			civilianRenderer.enabled = false;
+			animatorCivilian.Rebind();
+			CorpsePoolControl.placeHumanCorpse(me.isIn.env.gameObject, me.pos.asLocalVector(), civilianRenderer.flipX);
 		}
 
 		// Move the civilian to a distant room
 		me.updatePosition(GS.getRoomFurthestFrom(me.isIn.INDEX), 0, 0);
 		me.worldModel.updateMyRoom(me.isIn, false);
 		nextDoorToGoThrough = null;
+
 		// Move the character sprite directly to where the game state says it should be standing
 		Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
 		transform.Translate(savedPosition - transform.position);
+		civilianRenderer.enabled = true;
 
 		GS.MONSTER_KILLED = true;
 	}
@@ -612,9 +627,8 @@ public class Control_Monster : Control_Character {
 
 	// If hit after the ritual was performed, die
 	public override void getHit() {
-		Debug.Log(me + " is hit");
 		if(GS.OVERALL_STATE > Control_GameState.STATE_COLLECTION_PHASE) {
-			dieAndRespawn();
+			StartCoroutine(dieAndRespawn());
 		}
 	}
 	// Attacking animation triggers

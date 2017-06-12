@@ -301,28 +301,35 @@ public class Control_PlayerCharacter : Control_Character {
 		me.etherialCooldown = RESPAWN_TRANSITION_DURATION;
 
 		if(GS.OVERALL_STATE < Control_GameState.STATE_TRANSFORMATION) {
-			// Hide Toni's sprite and replace it with the cadaver
+			float timeStep = RESPAWN_TRANSITION_DURATION / 2, waitUntil = Time.timeSinceLevelLoad;
+
+			// Trigger the death animation and wait until it's half-done
+			waitUntil += timeStep;
+			animatorHuman.SetTrigger("Is Killed");
+			yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
+
+			// Now fade out the main camera while the death animation is still playing
+			mainCameraControl.fadeOut(timeStep);
+			waitUntil += timeStep;
+			yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
+
+			// While the camera is dark, hide Toni's actual body and replace it with a corpse from the pool
 			stickmanRenderer.enabled = false;
-			CorpsePoolControl.placeHumanCorpse(me.isIn.env.gameObject, me.pos.asLocalVector());
-			GS.updateCadaverPosition(me.pos);
+			CorpsePoolControl.placeHumanCorpse(me.isIn.env.gameObject, me.pos.asLocalVector(), stickmanRenderer.flipX);
+			GS.updateCadaverPosition(me.pos, stickmanRenderer.flipX);
 			// Transfer the current item if any to the cadaver
 			leaveItemOnCadaver();
 
-			// Wait before fading out
-			yield return new WaitForSeconds(RESPAWN_TRANSITION_DURATION / 3);
-			mainCameraControl.fadeOut(RESPAWN_TRANSITION_DURATION / 3);
-			// Wait until fade out is complete before moving the sprite
-			yield return new WaitForSeconds(RESPAWN_TRANSITION_DURATION / 3);
-
-			// Move the Toni sprite back to the starting room
+			// Now move the Toni sprite back to the starting room
 			me.resetPosition(GS);
 			currentEnvironment = me.isIn.env;
 			transform.position = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
 			setSpriteFlip(true); // Flip the sprite towards the wall scribbles
 			stickmanRenderer.enabled = true;
 
-			// Reset movements
+			// Reset movements and animations
 			Input.ResetInputAxes();
+			animatorHuman.Rebind();
 			animatorHuman.SetFloat("Speed", 0);
 			animatorHuman.SetBool("Is Running", false);
 
@@ -332,13 +339,13 @@ public class Control_PlayerCharacter : Control_Character {
 			me.deaths++;
 
 			// Fade back in
-			mainCameraControl.fadeIn(RESPAWN_TRANSITION_DURATION / 3);
+			mainCameraControl.fadeIn(timeStep);
 		} else {
 			// During the endgame, simply replace the monster Toni sprite with the cadaver
 			GS.TONI_KILLED = true;
 			monsterToniRenderer.enabled = false;
-			CorpsePoolControl.placeMonsterCorpse(me.isIn.env.gameObject, me.pos.asLocalVector());
-			GS.updateCadaverPosition(me.pos);
+			CorpsePoolControl.placeMonsterCorpse(me.isIn.env.gameObject, me.pos.asLocalVector(), stickmanRenderer.flipX);
+			GS.updateCadaverPosition(me.pos, stickmanRenderer.flipX);
 			me.etherialCooldown = 0;
 		}
 

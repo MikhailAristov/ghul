@@ -46,6 +46,8 @@ public class Data_GameState {
 	private Data_Monster MONSTER;
 	[SerializeField]
 	private Data_Position CADAVER_POSITION;
+	[SerializeField]
+	private bool CadaverFlip;
 
 	public bool monsterSeesToni {
 		get { return (TONI.isIn == MONSTER.isIn && !TONI.isInvulnerable); }
@@ -141,13 +143,17 @@ public class Data_GameState {
 	}
 
 	// Sets the cadaver character object
-	public void updateCadaverPosition(Data_Position pos) {
+	public void updateCadaverPosition(Data_Position pos, bool flipped) {
 		CADAVER_POSITION = pos.clone();
+		CadaverFlip = flipped;
 	}
 
-	// Returns the cadaver character object
+	// Returns the cadaver position
 	public Data_Position getCadaverPosition() {
 		return (CADAVER_POSITION == null ? null : CADAVER_POSITION.clone());
+	}
+	public bool isCadaverFlipped() {
+		return CadaverFlip;
 	}
 
 	// Returns a Room object to a given index, if it exists

@@ -60,17 +60,17 @@ public class Control_CorpsePool : MonoBehaviour {
 	}
 
 	// Creates or recycles a human corpse GameObject and places it where specified
-	public GameObject placeHumanCorpse(GameObject parent, Vector2 position) {
-		return placeCorpse(ref humanCorpses, ref HumanCorpsePrefab, ref lastHumanCorpse, "Human Corpse #", parent, position);
+	public GameObject placeHumanCorpse(GameObject parent, Vector2 position, bool flipped) {
+		return placeCorpse(ref humanCorpses, ref HumanCorpsePrefab, ref lastHumanCorpse, "Human Corpse #", parent, position, flipped);
 	}
 
 	// Creates or recycles a monster corpse GameObject and places it where specified
-	public GameObject placeMonsterCorpse(GameObject parent, Vector2 position) {
-		return placeCorpse(ref monsterCorpses, ref MonsterCorpsePrefab, ref lastMonsterCorpse, "Monster Corpse #", parent, position);
+	public GameObject placeMonsterCorpse(GameObject parent, Vector2 position, bool flipped) {
+		return placeCorpse(ref monsterCorpses, ref MonsterCorpsePrefab, ref lastMonsterCorpse, "Monster Corpse #", parent, position, flipped);
 	}
 
 	// Creates or recycles any corpse GameObject and places it where specified
-	private GameObject placeCorpse(ref List<GameObject> list, ref GameObject prefab, ref GameObject lastCorpse, string name, GameObject parent, Vector2 position) {
+	private GameObject placeCorpse(ref List<GameObject> list, ref GameObject prefab, ref GameObject lastCorpse, string name, GameObject parent, Vector2 position, bool flipped) {
 		GameObject result = null;
 		// First check if there are any free corpses in the pool
 		foreach(GameObject corpse in list) {
@@ -88,6 +88,7 @@ public class Control_CorpsePool : MonoBehaviour {
 		// Move the corpse
 		result.transform.parent = parent.transform;
 		result.transform.localPosition = position;
+		result.GetComponentInChildren<SpriteRenderer>().flipX = flipped;
 		lastCorpse = result;
 		CorpsesMoved = true;
 		return result;
