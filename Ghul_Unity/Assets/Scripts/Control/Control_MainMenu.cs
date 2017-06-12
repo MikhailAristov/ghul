@@ -6,9 +6,13 @@ public class Control_MainMenu : MonoBehaviour {
 
 	public Control_GameState GameStateControl;
 	public Canvas MainMenuCanvas;
+
+	public Image MainMenuBackground;
+	public Sprite MainMenuWithStartButton;
+	public Sprite MainMenuWithoutStartButton;
+
 	public Image ControlsDisplayImage;
 	public Animator ControlsDisplayAnimator;
-	public GameObject NewGameButton;
 
 	private bool hidden;
 	private bool newGameButtonDisabled;
@@ -46,14 +50,14 @@ public class Control_MainMenu : MonoBehaviour {
 	private void disableNewGameButton() {
 		if(!newGameButtonDisabled) {
 			newGameButtonDisabled = true;
-			NewGameButton.GetComponent<Image>().color = new Color(100f / 255f, 0f, 0f);
+			MainMenuBackground.sprite = MainMenuWithoutStartButton;
 		}
 	}
 
 	private void reenableNewGameButton() {
 		if(newGameButtonDisabled) {
 			newGameButtonDisabled = false;
-			NewGameButton.GetComponent<Image>().color = new Color(136f / 255f, 136f / 255f, 136f / 255f);
+			MainMenuBackground.sprite = MainMenuWithStartButton;
 		}
 	}
 
