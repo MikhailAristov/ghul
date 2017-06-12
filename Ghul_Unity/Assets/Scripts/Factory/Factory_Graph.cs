@@ -376,12 +376,19 @@ public class Factory_Graph : MonoBehaviour {
 					spawn = graph.getNextLeftSpawn(spawnID); // left of the first one, in the same room.
 					spawnID = spawn.CONNECTS_TO_SPAWN_ID; // ingoing door spawn in the next room
 
+					int safetyMeasure = 0;
 					while (spawnID != spawnIDsOnCycle[0]) {
 						spawnIDsOnCycle.Add(spawnID);
 						roomIDsOnCycle.Add(graph.DOOR_SPAWN_IS_IN_ROOM[spawnID]);
 
 						spawn = graph.getNextLeftSpawn(spawnID);
 						spawnID = spawn.CONNECTS_TO_SPAWN_ID;
+
+						safetyMeasure++;
+						if (safetyMeasure >= 1000) {
+							Debug.Log("connectAllRooms: Encountered Endless Loop (1), trying other method.");
+							goto case 2;
+						}
 					}
 
 					// The cycle is found. Compute how many new connections are feasible.
@@ -404,12 +411,20 @@ public class Factory_Graph : MonoBehaviour {
 					int numOfNewConnections = UnityEngine.Random.Range(2, maxPossibleConnections + 1);
 					List<int> randomRoomIDs = new List<int>();
 					count = 0;
+
+					safetyMeasure = 0;
 					while (count < numOfNewConnections) {
 						int randomRoomID = roomIDsOnCycle[UnityEngine.Random.Range(0, roomIDsOnCycle.Count)];
 						if (!randomRoomIDs.Contains(randomRoomID)
 						    	&& graph.ABSTRACT_ROOMS[randomRoomID].hasEmptyDoorSpawns()) {
 							randomRoomIDs.Add(randomRoomID);
 							count++;
+						}
+
+						safetyMeasure++;
+						if (safetyMeasure >= 1000) {
+							Debug.Log("connectAllRooms: Encountered Endless Loop (2), trying other method.");
+							goto case 2;
 						}
 					}
 
