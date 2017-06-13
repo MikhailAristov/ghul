@@ -33,7 +33,6 @@ public abstract class Control_Character : MonoBehaviour {
 
 	public bool isGoingThroughADoor {
 		get { return goingThroughADoor; }
-		private set { return; }
 	}
 
 	protected bool spriteIsAlignedToGrid;
@@ -161,9 +160,13 @@ public abstract class Control_Character : MonoBehaviour {
 		postDoorTransitionHook(door);
 		goingThroughADoor = false;
 	}
-	// Dummy functions to be implemented
-	public abstract void activateCooldown(float duration);
 
+	// Set the cooldown
+	public void activateCooldown(float duration) {
+		getMe().cooldown = duration;
+	}
+
+	// Dummy functions to be implemented
 	protected abstract void failedDoorTransitionHook(Data_Door doorTaken);
 
 	protected abstract void preDoorTransitionHook(Data_Door doorTaken);

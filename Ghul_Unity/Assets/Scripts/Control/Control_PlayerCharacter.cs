@@ -137,8 +137,9 @@ public class Control_PlayerCharacter : Control_Character {
 			animatorHuman.speed = 1f;
 			animatorMonsterToni.speed = 1f;
 		}
-		if(me.etherialCooldown > 0.0f) { // While the character is etherial, don't do anything
-			me.etherialCooldown -= Time.deltaTime;
+		// While the character is etherial, don't do anything
+		if(me.cooldown > 0) {
+			me.cooldown -= Time.deltaTime;
 			return;
 		}
 		// This is for the suicidle later...
@@ -296,9 +297,7 @@ public class Control_PlayerCharacter : Control_Character {
 
 	private IEnumerator dieAndRespawn() {
 		Debug.Log(me + " died...");
-
-		// Start cooldown
-		me.etherialCooldown = RESPAWN_TRANSITION_DURATION;
+		activateCooldown(RESPAWN_TRANSITION_DURATION);
 
 		if(GS.OVERALL_STATE < Control_GameState.STATE_TRANSFORMATION) {
 			float timeStep = RESPAWN_TRANSITION_DURATION / 2, waitUntil = Time.timeSinceLevelLoad;
@@ -346,7 +345,7 @@ public class Control_PlayerCharacter : Control_Character {
 			monsterToniRenderer.enabled = false;
 			CorpsePoolControl.placeMonsterCorpse(me.isIn.env.gameObject, me.pos.asLocalVector(), stickmanRenderer.flipX);
 			GS.updateCadaverPosition(me.pos, stickmanRenderer.flipX);
-			me.etherialCooldown = 0;
+			activateCooldown(0);
 		}
 
 		// Trigger an autosave upon changing locations
@@ -490,10 +489,6 @@ public class Control_PlayerCharacter : Control_Character {
 	}
 
 	// Superclass functions implemented
-	public override void activateCooldown(float duration) {
-		me.etherialCooldown = duration;
-	}
-
 	protected override void failedDoorTransitionHook(Data_Door doorTaken) {
 		if(doorTaken.state == Data_Door.STATE_HELD) {
 			GS.getMonster().perception.seeToniRattleAtTheDoorknob(doorTaken);

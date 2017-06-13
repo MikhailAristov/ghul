@@ -50,7 +50,7 @@ public class Data_GameState {
 	private bool CadaverFlip;
 
 	public bool monsterSeesToni {
-		get { return (TONI.isIn == MONSTER.isIn && !TONI.isInvulnerable); }
+		get { return (TONI.isIn == MONSTER.isIn && !TONI.control.isGoingThroughADoor); }
 		private set { return; }
 	}
 

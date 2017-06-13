@@ -44,7 +44,6 @@ public class Control_Monster : Control_Character {
 	private float stateUpdateCooldown;
 	private float distanceThresholdToStartPursuing {
 		get { return me.AGGRO * HALF_SCREEN_SIZE_HORIZONTAL; }
-		set { return; }
 	}
 	private double certaintyThresholdToStartStalking;
 	private float cumultativeImpasseDuration;
@@ -192,6 +191,11 @@ public class Control_Monster : Control_Character {
 
 	// Updates the internal state if necessary
 	private void updateState() {
+		// While the character is on cooldown, don't do anything
+		if(me.cooldown > 0) { 
+			return;
+		}
+
 		// Check the harmless flag
 		if(Debug.isDebugBuild && MOSTLY_HARMLESS && GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
 			me.state = STATE_WANDERING;
@@ -308,8 +312,8 @@ public class Control_Monster : Control_Character {
 		}
 
 		// While the character is etherial, don't do anything
-		if(me.etherialCooldown > 0.0f) { 
-			me.etherialCooldown -= Time.deltaTime;
+		if(me.cooldown > 0) { 
+			me.cooldown -= Time.deltaTime;
 			return;
 		}
 
@@ -646,11 +650,8 @@ public class Control_Monster : Control_Character {
 	protected override void postKillHook() {
 		me.timeSinceLastKill = 0;
 		// Extend the time the monster stands still after killing Toni (while the house is being rebuilt)
-		me.etherialCooldown = Global_Settings.read("TOTAL_DEATH_DURATION");
-	}
-
-	public override void activateCooldown(float duration) {
-		me.etherialCooldown = duration;
+		Debug.Log("setting cooldown to " + Global_Settings.read("TOTAL_DEATH_DURATION"));
+		activateCooldown(Global_Settings.read("TOTAL_DEATH_DURATION"));
 	}
 	// The rest stays empty for now (only relevant for Toni)...
 	protected override void updateStamina(bool isRunning) {}
