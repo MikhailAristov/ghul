@@ -39,12 +39,10 @@ public class Data_Room : IComparable<Data_Room> {
 
 	public float leftWalkBoundary {
 		get { return (walkMargin - _width / 2); }
-		private set { return; }
 	}
 
 	public float rightWalkBoundary {
 		get { return (_width / 2 - walkMargin); }
-		private set { return; }
 	}
 
 	// List of doors within the current room
@@ -60,12 +58,10 @@ public class Data_Room : IComparable<Data_Room> {
 
 	public Data_Door leftmostDoor {
 		get { return DOORS.Values[0]; }
-		private set { return; }
 	}
 
 	public Data_Door rightmostDoor {
 		get { return DOORS.Values[DOORS.Count - 1]; }
-		private set { return; }
 	}
     
 	// List of item spawn positions in the room
@@ -74,7 +70,6 @@ public class Data_Room : IComparable<Data_Room> {
 
 	public bool hasItemSpawns {
 		get { return (_itemSpawnPoints.Count > 0); }
-		private set { return; }
 	}
 
 	// List of door spawn positions in the room
@@ -83,22 +78,18 @@ public class Data_Room : IComparable<Data_Room> {
 
 	public bool hasLeftSideDoorSpawn {
 		get { return (_doorSpawnPoints[0] < -_width); }
-		private set { return; }
 	}
 
 	public bool hasRightSideDoorSpawn {
 		get { return (_doorSpawnPoints[_doorSpawnPoints.Count - 1] > _width); }
-		private set { return; }
 	}
 
 	public int countAllDoorSpawns {
 		get { return _doorSpawnPoints.Count; }
-		private set { return; }
 	}
 
 	public int countBackDoorSpawns {
 		get { return (countAllDoorSpawns - (hasLeftSideDoorSpawn ? 1 : 0) - (hasRightSideDoorSpawn ? 1 : 0)); }
-		private set { return; }
 	}
 
 	// Room properties for AI purposes

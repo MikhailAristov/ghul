@@ -76,7 +76,6 @@ public class Control_Monster : Control_Character {
 	private float INVISIBILITY_TRANSITION_DURATION;
 	private bool currentlyInvisible {
 		get { return (GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE && GS.numItemsPlaced >= INVISIBLE_AFTER_ITEM && !attackAnimationPlaying); }
-		set { return; }
 	}
 	private float visibilityTransitionSpeed = 1f;
 

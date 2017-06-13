@@ -18,7 +18,6 @@ public class AI_WorldModel {
 
 	public AI_PlayerParameters playerParameters {
 		get { return playerModel.PLAYER_PARAMETERS; }
-		private set { return; }
 	}
 
 	[SerializeField]

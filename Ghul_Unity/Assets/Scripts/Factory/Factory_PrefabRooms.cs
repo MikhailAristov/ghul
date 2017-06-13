@@ -21,7 +21,6 @@ public struct Factory_PrefabRooms {
 			get { 
 				return (doorSpawns.Length + (doorSpawnLeft ? 1 : 0) + (doorSpawnRight ? 1 : 0));
 			}
-			set { return; }
 		}
 
 		/*** ITEMS ***/

@@ -33,7 +33,6 @@ public class Data_Door : IComparable<Data_Door> {
 
 	public int type {
 		get { return _type; }
-		private set { return; }
 	}
 
 	// State of the door
@@ -53,7 +52,6 @@ public class Data_Door : IComparable<Data_Door> {
 
 	public Data_Position pos {
 		get { return _pos.clone(); } // Door positions shouldn't be manipulated, hence cloning
-		private set { return; }
 	}
 
 	[NonSerialized]
@@ -61,12 +59,10 @@ public class Data_Door : IComparable<Data_Door> {
 
 	public float atPos {
 		get { return pos.X; }
-		private set { return; }
 	}
 
 	public float visiblePos {
 		get { return Mathf.Clamp(atPos, isIn.leftWalkBoundary, isIn.rightWalkBoundary); }
-		private set { return; }
 	}
 
 	// Connecting door ("other side")

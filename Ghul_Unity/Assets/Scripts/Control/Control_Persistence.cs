@@ -23,7 +23,6 @@ public abstract class Control_Persistence {
 			}
 			return _binFormatter;
 		}
-		set { return; }
 	}
 
 	// Saves the current game state to disk

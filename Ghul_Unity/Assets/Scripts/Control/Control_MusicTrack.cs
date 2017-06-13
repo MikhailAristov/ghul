@@ -19,7 +19,6 @@ public class Control_MusicTrack : MonoBehaviour {
 
 	public bool muted {
 		get { return isMuted; }
-		private set { return; }
 	}
 
 	// Use this for initialization

@@ -46,7 +46,6 @@ public class Data_Item : Data_Character {
 	// Convenience property
 	public float elevation {
 		get { return _pos.Y; }
-		private set { return; }
 	}
 
 	// Constructor
