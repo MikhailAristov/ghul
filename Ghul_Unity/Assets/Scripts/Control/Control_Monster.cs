@@ -649,8 +649,7 @@ public class Control_Monster : Control_Character {
 	protected override void postKillHook() {
 		me.timeSinceLastKill = 0;
 		// Extend the time the monster stands still after killing Toni (while the house is being rebuilt)
-		Debug.Log("setting cooldown to " + Global_Settings.read("TOTAL_DEATH_DURATION"));
-		activateCooldown(Global_Settings.read("TOTAL_DEATH_DURATION"));
+		activateCooldown(DEATH_ANIMATION_DURATION);
 	}
 	// The rest stays empty for now (only relevant for Toni)...
 	protected override void updateStamina(bool isRunning) {}
