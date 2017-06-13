@@ -50,13 +50,11 @@ public class Data_GameState {
 	private bool CadaverFlip;
 
 	public bool monsterSeesToni {
-		get { return (TONI.isIn == MONSTER.isIn && !TONI.isInvulnerable); }
-		private set { return; }
+		get { return (TONI.isIn == MONSTER.isIn && !TONI.control.isGoingThroughADoor); }
 	}
 
 	public float distanceToToni {
 		get { return ((TONI.isIn == MONSTER.isIn) ? (TONI.atPos - MONSTER.atPos) : float.NaN); }
-		private set { return; }
 	}
 
 	[SerializeField]
@@ -68,7 +66,6 @@ public class Data_GameState {
 
 	public bool allRoomsReachable {
 		get { return (distanceBetweenTwoRooms.Cast<float>().Max() < (float.MaxValue / 2)); }
-		private set { return; }
 	}
 
 	// Construct an empty game state

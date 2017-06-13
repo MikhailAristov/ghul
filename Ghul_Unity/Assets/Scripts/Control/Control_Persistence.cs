@@ -23,13 +23,12 @@ public abstract class Control_Persistence {
 			}
 			return _binFormatter;
 		}
-		set { return; }
 	}
 
 	// Saves the current game state to disk
 	public static void saveToDisk(Data_GameState GS) {
 		// The second clause is just to avoid saving weird in-between states:
-		if(!SAVING_DISABLED && GS.getToni().etherialCooldown < 0.1f) {
+		if(!SAVING_DISABLED && GS.getToni().cooldown < 0.1f) {
 			writeToFile(Application.persistentDataPath + "/" + FILENAME_SAVE_RESETTABLE, GS);
 		}
 	}

@@ -29,6 +29,8 @@ public class Control_PlayerCharacter : Control_Character {
 	private float RESPAWN_TRANSITION_DURATION;
 	private float INVENTORY_DISPLAY_DURATION;
 	private float MARGIN_ITEM_COLLECT;
+	private float ITEM_PICKUP_DURATION;
+	private float ITEM_ZAP_DURATION;
 
 	// Graphics parameters
 	private GameObject stickmanObject;
@@ -80,6 +82,9 @@ public class Control_PlayerCharacter : Control_Character {
 		ATTACK_MARGIN = Global_Settings.read("TONI_ATTACK_MARGIN");
 		ATTACK_DURATION = Global_Settings.read("TONI_ATTACK_DURATION");
 		ATTACK_COOLDOWN = Global_Settings.read("TONI_ATTACK_COOLDOWN");
+
+		ITEM_PICKUP_DURATION = Global_Settings.read("ITEM_PICKUP_DURATION");
+		ITEM_ZAP_DURATION = Global_Settings.read("ITEM_ZAP_DURATION");
 	}
 
 	// Use this for initialization; note that only local variables are initialized here, game state is loaded later
@@ -137,8 +142,9 @@ public class Control_PlayerCharacter : Control_Character {
 			animatorHuman.speed = 1f;
 			animatorMonsterToni.speed = 1f;
 		}
-		if(me.etherialCooldown > 0.0f) { // While the character is etherial, don't do anything
-			me.etherialCooldown -= Time.deltaTime;
+		// While the character is etherial, don't do anything
+		if(me.cooldown > 0) {
+			me.cooldown -= Time.deltaTime;
 			return;
 		}
 		// This is for the suicidle later...
@@ -296,9 +302,7 @@ public class Control_PlayerCharacter : Control_Character {
 
 	private IEnumerator dieAndRespawn() {
 		Debug.Log(me + " died...");
-
-		// Start cooldown
-		me.etherialCooldown = RESPAWN_TRANSITION_DURATION;
+		activateCooldown(RESPAWN_TRANSITION_DURATION);
 
 		if(GS.OVERALL_STATE < Control_GameState.STATE_TRANSFORMATION) {
 			float timeStep = RESPAWN_TRANSITION_DURATION / 2, waitUntil = Time.timeSinceLevelLoad;
@@ -346,7 +350,7 @@ public class Control_PlayerCharacter : Control_Character {
 			monsterToniRenderer.enabled = false;
 			CorpsePoolControl.placeMonsterCorpse(me.isIn.env.gameObject, me.pos.asLocalVector(), stickmanRenderer.flipX);
 			GS.updateCadaverPosition(me.pos, stickmanRenderer.flipX);
-			me.etherialCooldown = 0;
+			activateCooldown(0);
 		}
 
 		// Trigger an autosave upon changing locations
@@ -384,6 +388,9 @@ public class Control_PlayerCharacter : Control_Character {
 				zappingParticles.Play();
 				zappingSound.Play();
 			}
+			setSpriteFlip(thisItem.atPos < me.atPos);
+			animatorHuman.SetTrigger("Zapped");
+			activateCooldown(ITEM_ZAP_DURATION);
 			// Make a zapping noise at the location
 			noiseSystem.makeNoise(Control_Noise.NOISE_TYPE_ZAP, me.pos);
 			return true;
@@ -393,6 +400,9 @@ public class Control_PlayerCharacter : Control_Character {
 		thisItem.control.moveToInventory();
 		me.carriedItem = thisItem;
 		Debug.Log(thisItem + " has been collected");
+		// Activate appropriate animation
+		triggerItemAnimation(thisItem.pos.asLocalVector());
+		activateCooldown(ITEM_PICKUP_DURATION);
 		// Make noise at the current location
 		noiseSystem.makeNoise(Control_Noise.NOISE_TYPE_ITEM, me.pos);
 		// Auto save when collecting an item.
@@ -400,6 +410,19 @@ public class Control_PlayerCharacter : Control_Character {
 		// Show inventory
 		StartCoroutine("displayInventory");
 		return true;
+	}
+
+	private void triggerItemAnimation(Vector2 itemPosition) {
+		// First, flip the sprite in the appropriate direction
+		setSpriteFlip(itemPosition.x < me.atPos);
+		// Then, set the proper trigger, depending on where the item is
+		if(itemPosition.y > -0.8f) {
+			animatorHuman.SetTrigger("Take High");
+		} else if(itemPosition.y < -1.4f) {
+			animatorHuman.SetTrigger("Take Low");
+		} else {
+			animatorHuman.SetTrigger("Take Level");
+		}
 	}
 
 	// The player drops the carried item
@@ -439,13 +462,14 @@ public class Control_PlayerCharacter : Control_Character {
 		// Find the next free slot for the item
 		string verticeObjName = "Vertice_" + (GS.numItemsPlaced % 5 + 1);
 		Vector3 verticePos = pentagram.transform.FindChild(verticeObjName).transform.position;
+		// Stop, play animation, and wait for the item to fully materialize
+		halt();
+		triggerItemAnimation(verticePos);
+		activateCooldown(RITUAL_ITEM_PLACEMENT_DURATION);
 		// Place the item in it
 		me.carriedItem.control.placeForRitual(verticePos, RITUAL_ITEM_PLACEMENT_DURATION);
 		Debug.Log("Item #" + me.carriedItem.INDEX + " placed for the ritual");
 		me.carriedItem = null;
-		// Wait for the item to fully materialize
-		halt();
-		activateCooldown(RITUAL_ITEM_PLACEMENT_DURATION);
 		yield return new WaitForSeconds(RITUAL_ITEM_PLACEMENT_DURATION);
 		// Auto save when placing is complete
 		Control_Persistence.saveToDisk(GS);
@@ -490,10 +514,6 @@ public class Control_PlayerCharacter : Control_Character {
 	}
 
 	// Superclass functions implemented
-	public override void activateCooldown(float duration) {
-		me.etherialCooldown = duration;
-	}
-
 	protected override void failedDoorTransitionHook(Data_Door doorTaken) {
 		if(doorTaken.state == Data_Door.STATE_HELD) {
 			GS.getMonster().perception.seeToniRattleAtTheDoorknob(doorTaken);

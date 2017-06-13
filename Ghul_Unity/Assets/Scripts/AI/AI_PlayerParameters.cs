@@ -36,7 +36,6 @@ public class AI_PlayerParameters {
 
 	public double PROB_WALKING {
 		get { return (1.0 - PROB_RUNNING - PROB_STANDING); }
-		private set { return; }
 	}
 
 	private long COUNT_SPEED_MEASUREMENTS;

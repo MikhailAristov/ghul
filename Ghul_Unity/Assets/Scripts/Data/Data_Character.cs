@@ -28,7 +28,6 @@ public abstract class Data_Character {
 
 	public Data_Position pos {
 		get { return _pos; }
-		private set { return; }
 	}
 
 	[NonSerialized]
@@ -36,7 +35,6 @@ public abstract class Data_Character {
 
 	public float atPos {
 		get { return pos.X; }
-		private set { return; }
 	}
 
 	[NonSerialized] // in m/s (signed):
@@ -52,13 +50,11 @@ public abstract class Data_Character {
 
 	// While this value is above zero, it marks the character as uncontrollable and invulnerable, e.g. upon entering a door or dying
 	[SerializeField] // in seconds:
-	public float etherialCooldown;
-	
+	public float cooldown;
 
 	// Just some shortcut functions
 	public bool isInvulnerable {
-		get { return (etherialCooldown > 0); }
-		private set { return; }
+		get { return (getControl() != null && getControl().isGoingThroughADoor); }
 	}
 
 	// Constructor

@@ -23,7 +23,6 @@ public class AI_PlayerModel {
 			}
 			return _playerParams;
 		}
-		private set { return; }
 	}
 
 	[SerializeField]

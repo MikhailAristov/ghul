@@ -55,11 +55,7 @@ public class Data_PlayerCharacter : Data_Character {
 	public Data_PlayerCharacter(string gameObjectName) : base(gameObjectName) {
 		control = gameObj.GetComponent<Control_PlayerCharacter>();
 		// Initialize gameplay parameters
-		etherialCooldown = 0.0f;
-		stamina = 1.0f;
-		exhausted = false;
-		carriedItem = null;
-		deaths = 0;
+		stamina = 1f;
 		resetMovementCounters();
 	}
 
