@@ -397,18 +397,7 @@ public class Control_PlayerCharacter : Control_Character {
 		}
 
 		// Now that we know that this is the right item, move it to inventory
-		thisItem.control.moveToInventory();
-		me.carriedItem = thisItem;
-		Debug.Log(thisItem + " has been collected");
-		// Activate appropriate animation
-		triggerItemAnimation(thisItem.pos.asLocalVector());
-		activateCooldown(ITEM_PICKUP_DURATION);
-		// Make noise at the current location
-		noiseSystem.makeNoise(Control_Noise.NOISE_TYPE_ITEM, me.pos);
-		// Auto save when collecting an item.
-		Control_Persistence.saveToDisk(GS);
-		// Show inventory
-		StartCoroutine("displayInventory");
+		StartCoroutine(pickUpItem(thisItem));
 		return true;
 	}
 
@@ -421,8 +410,29 @@ public class Control_PlayerCharacter : Control_Character {
 		} else if(itemPosition.y < -1.4f) {
 			animatorHuman.SetTrigger("Take Low");
 		} else {
-			animatorHuman.SetTrigger("Take Level");
+			animatorHuman.SetTrigger("Take Mid");
 		}
+	}
+
+	private IEnumerator pickUpItem(Data_Item thisItem) {
+		float waitUntil = Time.timeSinceLevelLoad + ITEM_PICKUP_DURATION / 2;
+		// Activate appropriate animation
+		triggerItemAnimation(thisItem.pos.asLocalVector());
+		activateCooldown(ITEM_PICKUP_DURATION);
+		// Wait until the animation is half-complete
+		yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
+		// Move item to inventory
+		thisItem.control.moveToInventory();
+		me.carriedItem = thisItem;
+		Debug.Log(thisItem + " has been collected");
+		// Make noise at the current location
+		noiseSystem.makeNoise(Control_Noise.NOISE_TYPE_ITEM, me.pos);
+		// Show inventory
+		StartCoroutine("displayInventory");
+		// Now wait until the animation is done before saving
+		yield return new WaitUntil(() => (me.cooldown <= 0));
+		// Auto save when collecting an item.
+		Control_Persistence.saveToDisk(GS);
 	}
 
 	// The player drops the carried item
