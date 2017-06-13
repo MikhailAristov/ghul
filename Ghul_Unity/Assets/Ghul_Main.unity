@@ -3731,7 +3731,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   EncounterJingle: {fileID: 1581269554}
-  ItemPlacementJingle: {fileID: 0}
+  ItemPlacementJingle: {fileID: 845398955}
   MainTrackList:
   - {fileID: 111515869}
   - {fileID: 395841768}
