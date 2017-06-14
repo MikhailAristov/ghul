@@ -8,6 +8,8 @@ public class Control_AnimationSounds : MonoBehaviour {
 	public AudioSource SteppingSound;
 	public AudioSource AttackSound;
 	public AudioSource ZappingSound;
+	public AudioSource MonsterBreathIn;
+	public AudioSource MonsterBreathOut;
 	public bool CheckDistanceToCamera;
 	public Control_Camera MainCameraControl;
 
@@ -57,6 +59,18 @@ public class Control_AnimationSounds : MonoBehaviour {
 	public void playZappingSound() {
 		if(ZappingSound != null && ZappingSound.clip != null) {
 			ZappingSound.Play();
+		}
+	}
+
+	public void monsterBreatheIn() {
+		if(MonsterBreathIn != null && MonsterBreathIn.clip != null) {
+			MonsterBreathIn.Play();
+		}
+	}
+
+	public void monsterBreatheOut() {
+		if(MonsterBreathOut != null && MonsterBreathOut.clip != null) {
+			MonsterBreathOut.Play();
 		}
 	}
 }

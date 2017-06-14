@@ -11,8 +11,6 @@ public abstract class Control_Character : MonoBehaviour {
 
 	protected abstract Data_Character getMe();
 
-	public AudioSource AttackSound;
-
 	// General movement settings
 	protected float VERTICAL_ROOM_SPACING;
 	protected float WALKING_SPEED;
