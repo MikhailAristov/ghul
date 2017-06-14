@@ -43,12 +43,6 @@ public class Control_PlayerCharacter : Control_Character {
 	public Canvas inventoryUI;
 	public GameObject pentagram;
 
-	// Zapping-effect parameters
-	private GameObject zappingSoundObject;
-	private AudioSource zappingSound;
-	private GameObject zappingParticleObject;
-	private ParticleSystem zappingParticles;
-
 	// Animator for transitioning between animation states
 	private Animator animatorHuman;
 	private Animator animatorMonsterToni;
@@ -94,10 +88,6 @@ public class Control_PlayerCharacter : Control_Character {
 		monsterToniObject = GameObject.Find("MonsterToniImage");
 		monsterToniRenderer = monsterToniObject.GetComponent<SpriteRenderer>();
 		monsterToniObject.SetActive(false); // Monster-Toni not visible at first.
-		zappingSoundObject = GameObject.Find("ZappingSound");
-		zappingSound = zappingSoundObject.GetComponent<AudioSource>();
-		zappingParticleObject = GameObject.Find("ZapEffect");
-		zappingParticles = zappingParticleObject.GetComponent<ParticleSystem>();
 
 		mainCameraControl = Camera.main.GetComponent<Control_Camera>();
 		inventoryUI.transform.FindChild("CurrentItem").GetComponent<Image>().CrossFadeAlpha(0.0f, 0.0f, false);
@@ -382,14 +372,8 @@ public class Control_PlayerCharacter : Control_Character {
 		// Check if the item that would be picked up is the one currently sought for the ritual
 		if(thisItem != GS.getCurrentItem()) {
 			Debug.Log(thisItem + " is not the item you are looking for (" + GS.getCurrentItem() + ")");
-			// Activate the zap animation at the current items position
-			if(thisItem.control != null) {
-				zappingParticleObject.transform.position = thisItem.control.transform.position;
-				zappingParticles.Play();
-				zappingSound.Play();
-			}
 			setSpriteFlip(thisItem.atPos < me.atPos);
-			animatorHuman.SetTrigger("Zapped");
+			animatorHuman.SetTrigger("Is Zapped");
 			activateCooldown(ITEM_ZAP_DURATION);
 			// Make a zapping noise at the location
 			noiseSystem.makeNoise(Control_Noise.NOISE_TYPE_ZAP, me.pos);

@@ -7,6 +7,7 @@ public class Control_AnimationSounds : MonoBehaviour {
 
 	public AudioSource SteppingSound;
 	public AudioSource AttackSound;
+	public AudioSource ZappingSound;
 	public bool CheckDistanceToCamera;
 	public Control_Camera MainCameraControl;
 
@@ -50,6 +51,12 @@ public class Control_AnimationSounds : MonoBehaviour {
 	public void playAttackSound() {
 		if(AttackSound != null && AttackSound.clip != null) {
 			AttackSound.Play();
+		}
+	}
+
+	public void playZappingSound() {
+		if(ZappingSound != null && ZappingSound.clip != null) {
+			ZappingSound.Play();
 		}
 	}
 }
