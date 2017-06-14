@@ -84,16 +84,13 @@ public class Control_Music : MonoBehaviour {
 					proximityTrackVolumeFactor = 1f;
 					break;
 				case 1:
-					proximityTrackVolumeFactor = 0.8f;
+					proximityTrackVolumeFactor = 0.216f;
 					break;
 				case 2:
-					proximityTrackVolumeFactor = 0.6f;
-					break;
-				case 3:
-					proximityTrackVolumeFactor = 0.4f;
+					proximityTrackVolumeFactor = 0.01f;
 					break;
 				default:
-					proximityTrackVolumeFactor = 0.2f;
+					proximityTrackVolumeFactor = 0.0f;
 					break;
 				}
 			}
