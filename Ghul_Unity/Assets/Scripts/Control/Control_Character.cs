@@ -179,6 +179,7 @@ public abstract class Control_Character : MonoBehaviour {
 	// Animation automatically cancels out if the attacker moves
 	// targetPos is separated from target because the player (as a monster) can attack even without seeing the monster
 	protected IEnumerator playAttackAnimation(float targetPos, Data_Character target) {
+		float waitUntil = Time.timeSinceLevelLoad;
 		attackAnimationPlaying = true;
 		cumulativeAttackDuration = 0;
 		Data_Position attackOrigin = getMe().pos.clone();
@@ -198,7 +199,8 @@ public abstract class Control_Character : MonoBehaviour {
 				attackIsCanceledByMoving = true;
 				break;
 			}
-			yield return new WaitForSeconds(1f / 60f);
+			waitUntil += 1f / 60f;
+			yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
 		}
 		stopAttackAnimation();
 		Debug.Log(getMe() + " completes attack in " + cumulativeAttackDuration + " s, " + target + " was at " + target.atPos);
@@ -209,7 +211,9 @@ public abstract class Control_Character : MonoBehaviour {
 			postKillHook();
 		}
 		// PHASE 3: Cooldown
-		yield return new WaitForSeconds(ATTACK_COOLDOWN); // Can't attack immediately after attacking, even if it was canceled (prevents spam)
+		waitUntil += ATTACK_COOLDOWN;
+		// Can't attack immediately after attacking, even if it was canceled (prevents spam)
+		yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
 		attackAnimationPlaying = false;
 	}
 
