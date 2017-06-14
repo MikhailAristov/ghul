@@ -232,6 +232,15 @@ public class Data_GameState {
 		return result;
 	}
 
+	// Transitions the game to the next "chapter" of the collection phase
+	public void nextChapter() {
+		if(OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
+			numItemsPlaced++;
+			ANOTHER_ITEM_PLEASE = true;
+			MONSTER.worldModel.hasMetToniSinceLastMilestone = false;
+		}
+	}
+
 	// Calculates all-pairs shortest distances between all doors and all rooms,
 	// wherein the shortest distance between two rooms is the shortest door-to-door conection between them,
 	// and stores both as matrices within the game state

@@ -87,8 +87,7 @@ public class Control_Item : MonoBehaviour {
 			yield return null;
 		}
 		// Update the game state
-		GS.numItemsPlaced++;
-		GS.ANOTHER_ITEM_PLEASE = true;
+		GS.nextChapter();
 	}
 
 	// Update the game object/sprite's position within the game space from the current game state

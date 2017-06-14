@@ -200,7 +200,6 @@ public class Control_GameState : MonoBehaviour {
 				GS.indexOfSearchedItem = pickAnotherItemToSearchFor();
 				GS.ANOTHER_ITEM_PLEASE = false;
 				StartCoroutine(updateWallScribbles(1.0f));
-				MONSTER.worldModel.hasMetToniSinceLastMilestone = false;
 			}
 		}
 	}
@@ -334,6 +333,7 @@ public class Control_GameState : MonoBehaviour {
 		// TODO: This is for debug purposes only, please remove in the final build!
 		if(Debug.isDebugBuild) {
 			MONSTER.worldModel.hasMetToni = false;
+			MONSTER.worldModel.hasMetToniSinceLastMilestone = false;
 		}
 
 		// Spawn all items
