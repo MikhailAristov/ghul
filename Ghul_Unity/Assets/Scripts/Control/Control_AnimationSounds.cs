@@ -51,7 +51,7 @@ public class Control_AnimationSounds : MonoBehaviour {
 	}
 
 	public void playAttackSound() {
-		if(AttackSound != null && AttackSound.clip != null) {
+		if(AttackSound != null && AttackSound.clip != null && (!CheckDistanceToCamera || MainCameraControl.canSeeObject(gameObject, -100f))) {
 			AttackSound.Play();
 		}
 	}
@@ -63,13 +63,13 @@ public class Control_AnimationSounds : MonoBehaviour {
 	}
 
 	public void monsterBreatheIn() {
-		if(MonsterBreathIn != null && MonsterBreathIn.clip != null) {
+		if(MonsterBreathIn != null && MonsterBreathIn.clip != null && (!CheckDistanceToCamera || MainCameraControl.canSeeObject(gameObject, -100f))) {
 			MonsterBreathIn.Play();
 		}
 	}
 
 	public void monsterBreatheOut() {
-		if(MonsterBreathOut != null && MonsterBreathOut.clip != null) {
+		if(MonsterBreathOut != null && MonsterBreathOut.clip != null && (!CheckDistanceToCamera || MainCameraControl.canSeeObject(gameObject, -100f))) {
 			MonsterBreathOut.Play();
 		}
 	}
