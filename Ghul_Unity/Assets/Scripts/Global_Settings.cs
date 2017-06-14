@@ -35,7 +35,7 @@ public class Global_Settings {
 			// Character movement settings
 			{ "CHARA_WALKING_SPEED",			1.95f },
 			{ "CHARA_RUNNING_SPEED",			4.275f },
-			{ "CHARA_SINGLE_STEP_LENGTH",		1.4f },		// this is how many (virtual) meters chara can walk before making a noise
+			{ "CHARA_SINGLE_STEP_LENGTH",		0.8f },		// this is how many (virtual) meters chara can walk before making a noise
 			{ "SUICIDLE_DURATION",				30.0f },	// How long the suicidle animation takes
 
 			// Monster settings
