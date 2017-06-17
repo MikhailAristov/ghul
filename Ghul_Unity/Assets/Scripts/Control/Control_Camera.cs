@@ -7,8 +7,6 @@ public class Control_Camera : MonoBehaviour {
 	public Image fadeoutImage;
 	// Used to represent immediate danger
 	public Image redoutImage;
-	// To simulate lighting effects
-	public Image darknessImage;
 
 	private Data_GameState GS;
 	private Data_Position focusOn;
@@ -30,7 +28,6 @@ public class Control_Camera : MonoBehaviour {
 	void Start() {
 		fadeoutImage.CrossFadeAlpha(0, 0, false);
 		redoutImage.CrossFadeAlpha(0, 0, false);
-		darknessImage.CrossFadeAlpha(0, 0, false);
 	}
 
 	// To make sure the game state is fully initialized before loading it, this function is called by game state class itself
