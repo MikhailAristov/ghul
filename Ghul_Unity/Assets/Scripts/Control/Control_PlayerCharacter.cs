@@ -453,19 +453,22 @@ public class Control_PlayerCharacter : Control_Character {
 
 	// The player reaches the pentagram with an item
 	private IEnumerator putItemOntoPentagram() {
+		float waitUntil = Time.timeSinceLevelLoad + ITEM_PICKUP_DURATION;
 		// Find the next free slot for the item
 		string verticeObjName = "Vertice_" + (GS.numItemsPlaced % 5 + 1);
 		Vector3 verticePos = pentagram.transform.FindChild(verticeObjName).transform.position;
 		// Stop, play animation, and wait for the item to fully materialize
 		halt();
 		triggerItemAnimation(verticePos);
-		activateCooldown(RITUAL_ITEM_PLACEMENT_DURATION);
+		activateCooldown(ITEM_PICKUP_DURATION + RITUAL_ITEM_PLACEMENT_DURATION);
+		yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
 		// Place the item in it
 		me.carriedItem.control.placeForRitual(verticePos, RITUAL_ITEM_PLACEMENT_DURATION);
 		Debug.Log("Item #" + me.carriedItem.INDEX + " placed for the ritual");
 		me.carriedItem = null;
-		yield return new WaitForSeconds(RITUAL_ITEM_PLACEMENT_DURATION);
 		// Auto save when placing is complete
+		waitUntil += RITUAL_ITEM_PLACEMENT_DURATION;
+		yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
 		Control_Persistence.saveToDisk(GS);
 	}
 
