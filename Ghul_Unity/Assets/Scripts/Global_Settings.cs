@@ -68,7 +68,6 @@ public class Global_Settings {
 			{ "ITEM_PICKUP_DURATION",			1.0f },		// How long Toni needs to pick up an item
 			{ "ITEM_ZAP_DURATION",				1.0f },		// How long Toni is disabled after trying to pick up a wrong item
 
-
 			// Artificial intelligence and modelling settings
 			{ "TIME_STEP",		Time.fixedDeltaTime },		// ...
 
@@ -76,7 +75,7 @@ public class Global_Settings {
 			{ "AUTOSAVE_FREQUENCY",				10.0f },	// In seconds
 			{ "CAMERA_PANNING_SPEED",			9.0f },
 			{ "TOTAL_DEATH_DURATION",			2.5f },		// When deathDuration of Data_Character reaches this value the player resets to the starting room
-			{ "ENCOUNTER_JINGLE_DURATION",		6.0f },
+			{ "ENCOUNTER_JINGLE_DURATION",		3.0f },
 
 			// Comma after the last pair of values is okay, the compiler doesn't care
 		};
