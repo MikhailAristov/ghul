@@ -375,8 +375,8 @@ public class Control_Monster : Control_Character {
 	private Data_Door findNextDoorToVisit(bool aggressive, double localDistanceFactor, double ritualRoomPenalty, double previousRoomPenalty, double meetingToniPenalty, double toniInTheWayPenalty) {
 		Data_Door result = null;
 		// Analyze available door options
-		double highestDoorUtility = double.MinValue;
-		double curUtility;
+		double highestDoorUtility = double.MinValue, curUtility;
+		Debug.Assert(me.isIn.DOORS.Values.Count > 0);
 		foreach(Data_Door door in me.isIn.DOORS.Values) {
 			int targetRoomIndex = door.connectsTo.isIn.INDEX;
 
@@ -411,6 +411,7 @@ public class Control_Monster : Control_Character {
 			}
 		}
 		if(result == null) {
+			// TODO Sometimes this deadlocks and leads to the monster entering the ritual room!
 			Debug.LogError(me + " cannot pick the next door intelligently, picking at random!");
 			result = me.isIn.DOORS.Values[UnityEngine.Random.Range(0, me.isIn.DOORS.Count)];
 		}
