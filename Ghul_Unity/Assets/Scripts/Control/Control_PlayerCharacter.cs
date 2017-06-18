@@ -334,9 +334,9 @@ public class Control_PlayerCharacter : Control_Character {
 
 			// Reset movements and animations
 			Input.ResetInputAxes();
-			animatorHuman.Rebind();
 			animatorHuman.SetFloat("Speed", 0);
 			animatorHuman.SetBool("Is Running", false);
+			animatorHuman.SetTrigger("Is Resurrected");
 
 			// Trigger the house mix up and a new item
 			GS.TONI_KILLED = true;

@@ -4059,7 +4059,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fadeoutImage: {fileID: 118877560}
   redoutImage: {fileID: 1970681122}
-  darknessImage: {fileID: 0}
 --- !u!1 &1544311810
 GameObject:
   m_ObjectHideFlags: 0
