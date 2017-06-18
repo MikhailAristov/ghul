@@ -361,6 +361,7 @@ public class Control_PlayerCharacter : Control_Character {
 	// The player takes a nearby item if there is any
 	private IEnumerator takeItem(Data_Item thisItem) {
 		float waitUntil = Time.timeSinceLevelLoad;
+		halt();
 		// Check if the item that would be picked up is the one currently sought for the ritual
 		if(thisItem != GS.getCurrentItem()) {
 			// If not, play the zap
