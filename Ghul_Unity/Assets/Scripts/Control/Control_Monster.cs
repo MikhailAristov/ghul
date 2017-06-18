@@ -411,9 +411,7 @@ public class Control_Monster : Control_Character {
 			}
 		}
 		if(result == null) {
-			// TODO Sometimes this deadlocks and leads to the monster entering the ritual room!
-			Debug.LogError(me + " cannot pick the next door intelligently, picking at random!");
-			result = me.isIn.DOORS.Values[UnityEngine.Random.Range(0, me.isIn.DOORS.Count)];
+			throw new NullReferenceException(me + " cannot pick the next door intelligently!");
 		}
 		return result;
 	}
