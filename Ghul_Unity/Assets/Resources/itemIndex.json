@@ -43,7 +43,7 @@
                 "x": 0.64,
                 "y": 0.64
             },
-            "maxInstances": 1
+            "maxInstances": 0
         },
         {
             "prefabName": "PrefabItem_Gem1",
