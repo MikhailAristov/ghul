@@ -297,6 +297,7 @@ public class Control_PlayerCharacter : Control_Character {
 	}
 
 	public override void getHit() {
+		halt();
 		StartCoroutine(dieAndRespawn());
 	}
 
