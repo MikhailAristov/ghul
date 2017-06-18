@@ -140,23 +140,34 @@ public class Control_PlayerCharacter : Control_Character {
 		// This is for the suicidle later...
 		me.timeWithoutAction += Time.deltaTime;
 
-		// Item actions or attack after ritual
-		bool foundItem = false;
+		// Item actions before the ritual or attack action after ritual
 		if(Input.GetButtonDown("Action")) {
-			me.timeWithoutAction = 0;
 			if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
-				foundItem = takeItem();
+				// If the player is already carrying the item, display it instead
+				if(me.carriedItem != null) {
+					StartCoroutine(displayInventory());
+				} else {
+					// Otherwise, check whether there is an item to be picked up at the current location
+					Data_Item thisItem = GS.getItemAtPos(me.pos, MARGIN_ITEM_COLLECT);
+					// If so, play the animation to take it
+					if(thisItem != null) {
+						StartCoroutine(takeItem(thisItem));
+					}
+				}
 			} else if(!attackAnimationPlaying) {
-				// TODO: Remove this cooldown if proper attack cancel animations are implemented
+				me.timeWithoutAction = 0;
 				activateCooldown(ATTACK_DURATION + ATTACK_COOLDOWN);
 				StartCoroutine(playAttackAnimation(me.atPos + (monsterToniRenderer.flipX ? 1f : -1f), GS.getMonster()));
 			}
 		}
-		if(Input.GetButtonDown("Inventory")) { // Show inventory
-			StopCoroutine("displayInventory");
-			StartCoroutine("displayInventory");
+
+		// Show inventory
+		if(Input.GetButtonDown("Inventory")) { 
+			StartCoroutine(displayInventory());
 		}
-		if(Debug.isDebugBuild && Input.GetButtonDown("Drop")) { // Drop (debug only)
+
+		// Drop (debug only)
+		if(Debug.isDebugBuild && Input.GetButtonDown("Drop")) {
 			dropItem();
 		}
 
@@ -172,8 +183,7 @@ public class Control_PlayerCharacter : Control_Character {
 		}
 
 		// Vertical "movement"
-		if(Input.GetButtonDown("Vertical") ||
-		   (Input.GetButtonDown("Action") && GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE && !foundItem)) {
+		if(Input.GetButtonDown("Vertical")) {
 			me.timeWithoutAction = 0;
 			// Check if the character can walk through the door, and if so, move them to the "other side"
 			Data_Door door = currentEnvironment.getDoorAtPos(transform.position.x);
@@ -348,41 +358,38 @@ public class Control_PlayerCharacter : Control_Character {
 	}
 
 	// The player takes a nearby item if there is any
-	// Returns true if there is an item there, false otherwise
-	private bool takeItem() {
-		// Cannot pick any items while moving
-		if(me.currentVelocityAbsolute > ANIM_MIN_SPEED_FOR_WALKING) {
-			Debug.Log("Cannot take items while walking/running!");
-			return false;
-		}
-	
-		// Check if there are any items nearby
-		Data_Item thisItem = GS.getItemAtPos(me.pos, MARGIN_ITEM_COLLECT);
-		if(thisItem == null) {
-			Debug.Log("There is no item to pick up here...");
-			return false;
-		} else if(me.carriedItem != null) {
-			// Can't pick up more than one item, anyway
-			Debug.Log(me + " is already carrying " + me.carriedItem);
-			StopCoroutine("displayInventory");
-			StartCoroutine("displayInventory");
-			return false;
-		}
-
+	private IEnumerator takeItem(Data_Item thisItem) {
+		float waitUntil = Time.timeSinceLevelLoad;
 		// Check if the item that would be picked up is the one currently sought for the ritual
 		if(thisItem != GS.getCurrentItem()) {
+			// If not, play the zap
 			Debug.Log(thisItem + " is not the item you are looking for (" + GS.getCurrentItem() + ")");
 			setSpriteFlip(thisItem.atPos < me.atPos);
 			animatorHuman.SetTrigger("Is Zapped");
 			activateCooldown(ITEM_ZAP_DURATION);
 			// Make a zapping noise at the location
 			noiseSystem.makeNoise(Control_Noise.NOISE_TYPE_ZAP, me.pos);
-			return true;
+		} else {
+			// If this is the correct item, take it
+			// Activate appropriate animation
+			triggerItemAnimation(thisItem.pos.asLocalVector());
+			activateCooldown(ITEM_PICKUP_DURATION);
+			// Wait until the animation is half-complete
+			waitUntil += ITEM_PICKUP_DURATION / 2;
+			yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
+			// Move item to inventory
+			thisItem.control.moveToInventory();
+			me.carriedItem = thisItem;
+			Debug.Log(thisItem + " has been collected");
+			// Make noise at the current location
+			noiseSystem.makeNoise(Control_Noise.NOISE_TYPE_ITEM, me.pos);
+			// Show inventory
+			StartCoroutine(displayInventory());
+			// Now wait until the animation is done before saving
+			yield return new WaitUntil(() => (me.cooldown <= 0));
+			// Auto save when collecting an item.
+			Control_Persistence.saveToDisk(GS);
 		}
-
-		// Now that we know that this is the right item, move it to inventory
-		StartCoroutine(pickUpItem(thisItem));
-		return true;
 	}
 
 	private void triggerItemAnimation(Vector2 itemPosition) {
@@ -396,27 +403,6 @@ public class Control_PlayerCharacter : Control_Character {
 		} else {
 			animatorHuman.SetTrigger("Take Mid");
 		}
-	}
-
-	private IEnumerator pickUpItem(Data_Item thisItem) {
-		float waitUntil = Time.timeSinceLevelLoad + ITEM_PICKUP_DURATION / 2;
-		// Activate appropriate animation
-		triggerItemAnimation(thisItem.pos.asLocalVector());
-		activateCooldown(ITEM_PICKUP_DURATION);
-		// Wait until the animation is half-complete
-		yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
-		// Move item to inventory
-		thisItem.control.moveToInventory();
-		me.carriedItem = thisItem;
-		Debug.Log(thisItem + " has been collected");
-		// Make noise at the current location
-		noiseSystem.makeNoise(Control_Noise.NOISE_TYPE_ITEM, me.pos);
-		// Show inventory
-		StartCoroutine("displayInventory");
-		// Now wait until the animation is done before saving
-		yield return new WaitUntil(() => (me.cooldown <= 0));
-		// Auto save when collecting an item.
-		Control_Persistence.saveToDisk(GS);
 	}
 
 	// The player drops the carried item
