@@ -51,6 +51,7 @@ public class Data_Item : Data_Character {
 	// Constructor
 	public Data_Item(string gameObjectName) : base(gameObjectName) {
 		control = gameObj.GetComponent<Control_Item>();
+		Debug.Assert(control != null);
 		_itemState = Data_Item.STATE_INITIAL;
 	}
 

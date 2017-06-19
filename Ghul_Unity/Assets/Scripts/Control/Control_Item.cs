@@ -29,6 +29,7 @@ public class Control_Item : MonoBehaviour {
 	public void loadGameState(Data_GameState gameState, int ownIndex) {
 		this.GS = gameState;
 		this.me = gameState.getItemByIndex(ownIndex);
+		Debug.Assert(me != null);
 
 		// Check the item visibility
 		GetComponent<Renderer>().enabled = me.isVisible();
@@ -127,6 +128,7 @@ public class Control_Item : MonoBehaviour {
 
 	// When CHARA picks it up
 	public void moveToInventory() {
+		Debug.Assert(me != null);
 		if(me.isTakeable()) {
 			StopCoroutine("fallOntoTheFloor");
 			me.state = Data_Item.STATE_CARRIED;
