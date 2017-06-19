@@ -530,13 +530,17 @@ public class Control_PlayerCharacter : Control_Character {
 					bestDoor = door;
 					shortestDistance = curDistance;
 				}
+				// Also, close this door if it has been opened and held earlier
+				if(door.control.isHeldOpen) {
+					door.control.forceClose(silently: true);
+				}
 			}
 			// (Re-)Open this door
 			if(drawAttention) {
 				bestDoor.control.forceClose(silently: true);
-				bestDoor.control.open(silently: false, hold: true, forceCreak: true);
+				bestDoor.control.open(silently: false, holdOpen: true, forceCreak: true);
 			} else {
-				bestDoor.control.open(silently: true, hold: true);
+				bestDoor.control.open(silently: true, holdOpen: true);
 			}
 		}
 	}

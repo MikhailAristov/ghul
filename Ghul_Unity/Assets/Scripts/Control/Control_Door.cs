@@ -33,6 +33,11 @@ public class Control_Door : MonoBehaviour {
 	private const float doorHeldDuration = 0.1f;
 	private float verticalHearingThreshold;
 
+	// Returns whether the door is currently being held open (to guide Monster Toni)
+	public bool isHeldOpen {
+		get { return (me.state == Data_Door.STATE_OPEN && timeUntilClosing > doorOpenDuration); }
+	}
+
 	// Use this for initialization
 	void Awake() {
 		doorOpenDuration = Global_Settings.read("DOOR_OPEN_DURATION");
@@ -76,9 +81,9 @@ public class Control_Door : MonoBehaviour {
 	}
 
 	// Opens the door if it's closed, keeps it open longer otherwise
-	public void open(bool silently = false, bool hold = false, bool forceCreak = false) {
+	public void open(bool silently = false, bool holdOpen = false, bool forceCreak = false) {
 		// If the "hold" flag is specified, the door stays open for much longer (or until someone goes through it)
-		timeUntilClosing = hold ? doorOpenDuration * 10 : doorOpenDuration;
+		timeUntilClosing = holdOpen ? doorOpenDuration * 10 : doorOpenDuration;
 		if(me.state != Data_Door.STATE_OPEN) {
 			ClosedSprite.SetActive(false);
 			OpenSprite.SetActive(true);
@@ -88,7 +93,7 @@ public class Control_Door : MonoBehaviour {
 			me.state = Data_Door.STATE_OPEN;
 			StartCoroutine(waitForClosure());
 			// Also, open the door connected to you on the other side
-			me.connectsTo.control.open(silently, hold, forceCreak);
+			me.connectsTo.control.open(silently, holdOpen, forceCreak);
 		}
 		// If the door is already open, it just stays so for longer
 	}
