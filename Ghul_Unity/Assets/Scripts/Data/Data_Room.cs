@@ -25,6 +25,10 @@ public class Data_Room : IComparable<Data_Room> {
 	[NonSerialized]
 	public Environment_Room env;
 
+	// Whether Toni can enter this room
+	[SerializeField]
+	public bool ToniCannotEnter;
+
 	// Horizontal span of the room (generally equals its spite width)
 	[SerializeField]
 	private float _width;
@@ -104,6 +108,7 @@ public class Data_Room : IComparable<Data_Room> {
 		_gameObjName = go.name;
 		gameObj = go;
 		env = go.GetComponent<Environment_Room>();
+		ToniCannotEnter = false;
 		// Get room details from the prefab
 		_width = Data_Position.snapToGrid(prefabDetails.size.x);
 		_itemSpawnPoints = new List<Data_Position>();

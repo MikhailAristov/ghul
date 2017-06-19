@@ -115,6 +115,7 @@ public class Data_GameState {
 	public Data_Item addItem(string gameObjectName) {
 		int INDEX = ITEMS.Count;
 		Data_Item newItem = new Data_Item(gameObjectName);
+		newItem.INDEX = INDEX;
 		ITEMS.Add(INDEX, newItem);
 		return newItem;
 	}

@@ -143,6 +143,7 @@ public class Control_GameState : MonoBehaviour {
 			// Switch to next state as soon as the monster dies
 			if(GS.MONSTER_KILLED) {
 				GS.OVERALL_STATE = STATE_MONSTER_PHASE;
+				updateRoomLocksForToni(GS.ROOMS.Count, 0);
 				MONSTER.control.setupEndgame();
 				MONSTER.worldModel.hasMetToniSinceLastMilestone = false;
 				GS.MONSTER_KILLED = false;
@@ -197,6 +198,7 @@ public class Control_GameState : MonoBehaviour {
 			triggerEndgame(GS.OVERALL_STATE);
 		} else { // Otherwise, check if wall scribbles need to be updated
 			if(GS.ANOTHER_ITEM_PLEASE) {
+				updateRoomLocksForToni(8, GS.numItemsPlaced + 1);
 				GS.indexOfSearchedItem = pickAnotherItemToSearchFor();
 				GS.ANOTHER_ITEM_PLEASE = false;
 				StartCoroutine(updateWallScribbles(1.0f));
@@ -280,13 +282,16 @@ public class Control_GameState : MonoBehaviour {
 
 	// TODO: Proper endgame
 	private void triggerEndgame(int overallState) {
+		int roomsToUnlock = 1;
 		if(overallState > STATE_COLLECTION_PHASE) {
 			// Transform Toni
 			TONI.control.setupEndgame();
 		}
 		if(overallState > STATE_TRANSFORMATION) {
+			roomsToUnlock = GS.ROOMS.Count;
 			MONSTER.control.setupEndgame();
 		}
+		updateRoomLocksForToni(roomsToUnlock, RITUAL_ITEMS_REQUIRED);
 		Control_Persistence.saveToDisk(GS);
 	}
 
@@ -340,6 +345,8 @@ public class Control_GameState : MonoBehaviour {
 		for(int i = 0; i < TOTAL_ITEMS_PLACED; i++) {
 			spawnNextItem();
 		}
+		// Setting this flag implicitly calls updateRoomLocksForToni() on the next Update() frame:
+		GS.ANOTHER_ITEM_PLEASE = true;
 
 		// Save the new game, overwriting the previous one
 		Control_Persistence.saveToDisk(GS);
@@ -353,7 +360,7 @@ public class Control_GameState : MonoBehaviour {
 		Data_Room ritualRoom = new Data_Room(GS.ROOMS.Count, ritualRoomGameObject, ritualRoomPrefab);
 		GS.addRoom(ritualRoom);
 		// Load the environment
-		ritualRoom.env.loadGameState(GS, 0);
+		ritualRoom.env.loadGameState(GS, STARTING_ROOM_INDEX);
 	}
 
 	// Spawn all other rooms randomly from prefabs up to a certain count
@@ -467,10 +474,48 @@ public class Control_GameState : MonoBehaviour {
 		Debug.Assert(GS.allRoomsReachable);
 	}
 
+	// Locks the rooms of the house, so that only the specified number of room is reachable from the ritual room
+	// More rooms may be unlocked than specified IFF if the specified number of rooms does not contain any items
+	private void updateRoomLocksForToni(int minRoomsToLeaveUnlocked, int reachableItemsNeeded) {
+		//Debug.Log("unlocking " + minRoomsToLeaveUnlocked + " rooms so that " + reachableItemsNeeded + " items are reachable");
+		// Find the highest degree of separation of any room from the ritual room
+		int roomCount = GS.ROOMS.Values.Count, maxDegreeOfSeparation = 0;
+		for(int i = 0; i < roomCount; i++) {
+			if(maxDegreeOfSeparation < GS.separationBetweenTwoRooms[STARTING_ROOM_INDEX, i]) {
+				maxDegreeOfSeparation = GS.separationBetweenTwoRooms[STARTING_ROOM_INDEX, i];
+			}
+		}
+		// Count the items currently in each room
+		int[] itemCountInRoom = new int[roomCount];
+		foreach(Data_Item item in GS.ITEMS.Values) {
+			itemCountInRoom[item.pos.RoomId]++;
+		}
+		// Re-lock all rooms
+		int unlockedRoomCount = 0;
+		foreach(Data_Room room in GS.ROOMS.Values) {
+			room.ToniCannotEnter = true;
+		}
+		// Unlock the minimum number of rooms, so that the minimum required items are reachable
+		int reachableItemsCount = 0;
+		for(int curSep = 0; curSep <= maxDegreeOfSeparation; curSep++) {
+			foreach(Data_Room room in GS.ROOMS.Values) {
+				if(GS.separationBetweenTwoRooms[STARTING_ROOM_INDEX, room.INDEX] == curSep) {
+					room.ToniCannotEnter = false;
+					unlockedRoomCount += 1;
+					reachableItemsCount += itemCountInRoom[room.INDEX];
+					//Debug.Log("unlocked room " + room);
+					// Check if the minimum required number of rooms has been unlocked, and quit if that's the case
+					if(unlockedRoomCount >= minRoomsToLeaveUnlocked && reachableItemsCount >= reachableItemsNeeded) {
+						Debug.Log("unlocked " + unlockedRoomCount + " rooms so that " + reachableItemsCount + " items are reachable");
+						return;
+					} 
+				}
+			}
+		}
+	}
+
 	// Places the next item in a random spot
 	private Data_Item spawnNextItem() {
-		int newItemIndex = GS.ITEMS.Count;
-
 		// Calculate spawn position that isn't used yet
 		Data_Position spawnPos = null;
 		bool alreadyTakenPos = true;
@@ -491,11 +536,10 @@ public class Control_GameState : MonoBehaviour {
 		// Spawn a new item from prefabs
 		GameObject newItemObj = prefabFactory.spawnRandomItem(parentRoomTransform, gameObjectPos);
 		Data_Item newItem = GS.addItem(newItemObj.name);
-		newItem.INDEX = newItemIndex;
 
 		// Place the new item
 		newItem.updatePosition(parentRoom, spawnPos.X, spawnPos.Y);
-		newItem.control.loadGameState(GS, newItemIndex);
+		newItem.control.loadGameState(GS, newItem.INDEX);
 		newItem.control.updateGameObjectPosition();
 
 		return newItem;
@@ -505,15 +549,16 @@ public class Control_GameState : MonoBehaviour {
 	private int pickAnotherItemToSearchFor() {
 		Data_Position pentagramCenter = new Data_Position(STARTING_ROOM_INDEX, RITUAL_PENTAGRAM_CENTER);
 		// First, create a list of all items and weigh them with the cubed distance to the pentagram
-		// Items that are already placed are weighed at 0
+		// Items that are already placed or are in unreachable rooms are weighed at 0
 		float[] weights = new float[GS.ITEMS.Count];
 		foreach(Data_Item item in GS.ITEMS.Values) {
-			if(item.state != Data_Item.STATE_PLACED) {
+			if(item.state != Data_Item.STATE_PLACED && !item.isIn.ToniCannotEnter) {
 				float dist = GS.getDistance(pentagramCenter, item.pos);
 				weights[item.INDEX] = dist * dist * dist;
 			} else {
 				weights[item.INDEX] = 0;
 			}
+			//Debug.Log(item + "'s index is " + item.INDEX + " and weight is " + weights[item.INDEX]);
 		}
 		// Now pick a random number within the range and pick the corresponding item
 		return AI_Util.pickRandomWeightedElement(weights);
@@ -549,8 +594,9 @@ public class Control_GameState : MonoBehaviour {
 		float evilness = Mathf.Max(1.0f, (float)itemCount * 0.5f + ((float)deaths * 0.2f));
 		Control_GraphMixup.MixUpGraph(ref GS.HOUSE_GRAPH, (int)evilness);
 		respawnAndConnectAllDoors();
-		// Recalculate all distances
+		// Recalculate all distances and re-lock the rooms
 		precomputeAllDistances();
+		updateRoomLocksForToni(8, GS.numItemsPlaced + 1);
 		// Update the monster's world model, too
 		MONSTER.resetWorldModel(GS);
 		MONSTER.control.nextDoorToGoThrough = null;

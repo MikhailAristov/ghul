@@ -34,6 +34,10 @@ public abstract class Control_Character : MonoBehaviour {
 		get { return goingThroughADoor; }
 	}
 
+	public bool isPlayerCharacter {
+		get { return (this.GetType().Name == "Control_PlayerCharacter"); }
+	}
+
 	protected bool spriteIsAlignedToGrid;
 
 	protected void FixedUpdate() {
@@ -127,11 +131,10 @@ public abstract class Control_Character : MonoBehaviour {
 		Data_Door destinationDoor = door.connectsTo;
 		Data_Room destinationRoom = destinationDoor.isIn;
 
-		// Doors cannot be walked through until the transformation is over
-		// (except for doors leading into the ritual room, so the monster can teleport there)
+		// Doors leading into locked-off room cannot be walked through
 		// or if the door is currently being held shut by the monster
-		if((GS.OVERALL_STATE == Control_GameState.STATE_TRANSFORMATION && destinationRoom.INDEX != RITUAL_ROOM_INDEX) ||
-			door.state == Data_Door.STATE_HELD) {
+		if(door.state == Data_Door.STATE_HELD || (isPlayerCharacter && destinationRoom.ToniCannotEnter)) {
+			door.control.forceClose();
 			failedDoorTransitionHook(door);
 			door.control.rattleDoorknob();
 			goingThroughADoor = false;
