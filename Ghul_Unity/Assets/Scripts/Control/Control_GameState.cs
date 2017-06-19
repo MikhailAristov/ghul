@@ -198,7 +198,7 @@ public class Control_GameState : MonoBehaviour {
 			triggerEndgame(GS.OVERALL_STATE);
 		} else { // Otherwise, check if wall scribbles need to be updated
 			if(GS.ANOTHER_ITEM_PLEASE) {
-				updateRoomLocksForToni(8, GS.numItemsPlaced + 1);
+				updateRoomLocksForToni(getAccessibleRoomCountInCurrentChapter(), GS.numItemsPlaced + 1);
 				GS.indexOfSearchedItem = pickAnotherItemToSearchFor();
 				GS.ANOTHER_ITEM_PLEASE = false;
 				StartCoroutine(updateWallScribbles(1.0f));
@@ -514,6 +514,18 @@ public class Control_GameState : MonoBehaviour {
 		}
 	}
 
+	// Returns how many doors should be unlocked at any given chapter
+	private int getAccessibleRoomCountInCurrentChapter() {
+		switch(Mathf.Clamp(GS.numItemsPlaced, 0, 4)) {
+		case 0:
+			return (int)Global_Settings.read("ROOMS_UNLOCKED_AT_ZERO_ITEMS");
+		case 1:
+			return (int)Global_Settings.read("ROOMS_UNLOCKED_AFTER_ONE_ITEM");
+		default:
+			return GS.ROOMS.Count;
+		}
+	}
+
 	// Places the next item in a random spot
 	private Data_Item spawnNextItem() {
 		// Calculate spawn position that isn't used yet
@@ -596,7 +608,7 @@ public class Control_GameState : MonoBehaviour {
 		respawnAndConnectAllDoors();
 		// Recalculate all distances and re-lock the rooms
 		precomputeAllDistances();
-		updateRoomLocksForToni(8, GS.numItemsPlaced + 1);
+		updateRoomLocksForToni(getAccessibleRoomCountInCurrentChapter(), GS.numItemsPlaced + 1);
 		// Update the monster's world model, too
 		MONSTER.resetWorldModel(GS);
 		MONSTER.control.nextDoorToGoThrough = null;
