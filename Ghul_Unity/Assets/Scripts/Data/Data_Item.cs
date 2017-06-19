@@ -70,6 +70,7 @@ public class Data_Item : Data_Character {
 		// Find the game object or recreate it if necessary
 		gameObj = GameObject.Find(_gameObjName);
 		if(gameObj == null) {
+			Debug.Assert(prefabFactory != null);
 			Vector3 localPos = new Vector3(atPos, elevation, -0.1f);
 			gameObj = prefabFactory.spawnItemFromName(_gameObjName, isIn.env.transform, localPos);
 		}
