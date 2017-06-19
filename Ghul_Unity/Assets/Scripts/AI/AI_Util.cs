@@ -93,23 +93,25 @@ public class AI_Util {
 	}
 
 	public static int pickRandomWeightedElement(float[] weights) {
-		float[] w = new float[weights.Length];
-		Array.Copy(weights, w, weights.Length);
 		// Normalize and sum up the weights
 		float sum = 0;
-		for(int i = 0; i < w.Length; i++) {
-			if(w[i] < 0) {
-				w[i] = 0;
+		for(int i = 0; i < weights.Length; i++) {
+			if(weights[i] < 0) {
+				weights[i] = 0;
 			}
-			sum += w[i];
+			sum += weights[i];
+		}
+		// Check the sum is great than zero
+		if(sum <= 0) {
+			throw new ArgumentOutOfRangeException("sum = " + sum + ", but must be a non-zero positive number!");
 		}
 		// Pick a random number and pick a random corresponding element
 		float random = UnityEngine.Random.Range(0, sum);
 		int result = -1;
 		do {
 			result += 1;
-			random -= w[result];
-		} while(random > 0 || w[result] == 0);
+			random -= weights[result];
+		} while(random > 0 || weights[result] == 0);
 		return result;
 	}
 
