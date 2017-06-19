@@ -506,7 +506,7 @@ public class Control_GameState : MonoBehaviour {
 					//Debug.Log("unlocked room " + room);
 					// Check if the minimum required number of rooms has been unlocked, and quit if that's the case
 					if(unlockedRoomCount >= minRoomsToLeaveUnlocked && reachableItemsCount >= reachableItemsNeeded) {
-						Debug.Log("unlocked " + unlockedRoomCount + " rooms so that " + reachableItemsCount + " items are reachable");
+						Debug.Log("Unlocked " + unlockedRoomCount + " rooms so that " + reachableItemsCount + " items are reachable");
 						return;
 					} 
 				}
@@ -521,6 +521,8 @@ public class Control_GameState : MonoBehaviour {
 			return (int)Global_Settings.read("ROOMS_UNLOCKED_AT_ZERO_ITEMS");
 		case 1:
 			return (int)Global_Settings.read("ROOMS_UNLOCKED_AFTER_ONE_ITEM");
+		case 2:
+			return (int)Global_Settings.read("ROOMS_UNLOCKED_AFTER_TWO_ITEMS");
 		default:
 			return GS.ROOMS.Count;
 		}

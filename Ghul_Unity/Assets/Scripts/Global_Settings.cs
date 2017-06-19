@@ -77,8 +77,9 @@ public class Global_Settings {
 			{ "TOTAL_DEATH_DURATION",			4.5f },		// When deathDuration of Data_Character reaches this value the player resets to the starting room
 			{ "ENCOUNTER_JINGLE_DURATION",		3.0f },
 			{ "ROOMS_UNLOCKED_AT_ZERO_ITEMS",	5.0f },		// How many rooms are accessible at the start of the game
-			{ "ROOMS_UNLOCKED_AFTER_ONE_ITEM",	10.0f },	// How many rooms are accessible after placing the first item on the pengram
-			// (Placing the second item unlocks all remaining rooms!)
+			{ "ROOMS_UNLOCKED_AFTER_ONE_ITEM",	8.0f },		// How many rooms are accessible after placing the first item on the pengram
+			{ "ROOMS_UNLOCKED_AFTER_TWO_ITEMS",	11.0f },	// How many rooms are accessible after placing the second item on the pengram
+			// (Placing the third item unlocks all remaining rooms!)
 
 			// Comma after the last pair of values is okay, the compiler doesn't care
 		};
