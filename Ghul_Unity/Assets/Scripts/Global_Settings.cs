@@ -66,7 +66,7 @@ public class Global_Settings {
 			{ "ITEM_FLOOR_LEVEL",				-1.7625f },	// Distance from the horizontal center of the room at which items are lying on the floor
 			{ "INVENTORY_DISPLAY_DURATION",		2.0f },		// How long the inventory overlay is shown when invoked
 			{ "ITEM_PICKUP_DURATION",			1.3f },		// How long Toni needs to pick up an item
-			{ "ITEM_ZAP_DURATION",				1.3f },		// How long Toni is disabled after trying to pick up a wrong item
+			{ "ITEM_ZAP_DURATION",				1.6f },		// How long Toni is disabled after trying to pick up a wrong item
 
 			// Artificial intelligence and modelling settings
 			{ "TIME_STEP",		Time.fixedDeltaTime },		// ...
