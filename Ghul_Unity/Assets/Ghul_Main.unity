@@ -1246,6 +1246,12 @@ MonoBehaviour:
   MOSTLY_HARMLESS: 0
   CorpsePoolControl: {fileID: 1192129377}
   AttackZone: {fileID: 296330126}
+  monsterImageObject: {fileID: 1621969375}
+  monsterRenderer: {fileID: 1621969377}
+  civilianObject: {fileID: 630955588}
+  civilianRenderer: {fileID: 630955590}
+  animatorMonster: {fileID: 1621969378}
+  animatorCivilian: {fileID: 630955591}
 --- !u!114 &495099019
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1395,10 +1401,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd01fd0dd8c39ec4e8de5c3890dd262c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  stickmanObject: {fileID: 2004490470}
+  stickmanRenderer: {fileID: 2004490472}
+  monsterToniObject: {fileID: 1006190933}
+  monsterToniRenderer: {fileID: 1006190935}
+  mainCameraControl: {fileID: 1344317741}
   CorpsePoolControl: {fileID: 1192129377}
   noiseSystem: {fileID: 1333168854}
-  inventoryUI: {fileID: 1029527370}
+  carriedItemUI: {fileID: 944068630}
   pentagram: {fileID: 1673746494}
+  animatorHuman: {fileID: 2004490473}
+  animatorMonsterToni: {fileID: 1006190936}
 --- !u!1 &584980006
 GameObject:
   m_ObjectHideFlags: 0
@@ -1547,7 +1560,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &630955589
 Transform:
   m_ObjectHideFlags: 0
@@ -2615,7 +2628,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1006190934
 Transform:
   m_ObjectHideFlags: 0

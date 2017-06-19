@@ -72,11 +72,6 @@ public class Control_Camera : MonoBehaviour {
 		currentEnvironment = GS.getRoomByIndex(pos.RoomId).env;
 	}
 
-	// Update the camera position
-	public void updateCameraStatus() {
-		Debug.Log("Camera looks at #" + focusOn.RoomId + " at position " + focusOn.X);
-	}
-
 	// Asynchronously fades to black
 	public void fadeOut(float duration) {
 		fadeoutImage.CrossFadeAlpha(1f, duration, false);

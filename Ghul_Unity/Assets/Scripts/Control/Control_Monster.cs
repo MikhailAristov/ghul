@@ -51,7 +51,7 @@ public class Control_Monster : Control_Character {
 	[NonSerialized]
 	public Data_Door nextDoorToGoThrough;
 	[NonSerialized]
-	public Data_Door doorToLurkAt;
+	private Data_Door doorToLurkAt;
 	// This can be used to prevent endless door walk cycles:
 	private Data_Room previousRoomVisited;
 
@@ -59,14 +59,14 @@ public class Control_Monster : Control_Character {
 	public GameObject AttackZone;
 
 	// Graphics parameters
-	private GameObject monsterImageObject;
-	private SpriteRenderer monsterRenderer;
-	private GameObject civilianObject;
-	private SpriteRenderer civilianRenderer;
+	public GameObject monsterImageObject;
+	public SpriteRenderer monsterRenderer;
+	public GameObject civilianObject;
+	public SpriteRenderer civilianRenderer;
 
 	// Animator for transitioning between animation states
-	private Animator animatorMonster;
-	private Animator animatorCivilian;
+	public Animator animatorMonster;
+	public Animator animatorCivilian;
 	private bool isRunning;
 
 	// Invisibility controls
@@ -104,24 +104,6 @@ public class Control_Monster : Control_Character {
 		INVISIBILITY_TRANSITION_DURATION = Global_Settings.read("MONSTER_INVISIBILIY_TRANSITION");
 
 		DEATH_ANIMATION_DURATION = Global_Settings.read("TOTAL_DEATH_DURATION");
-	}
-
-	void Start() {
-		monsterImageObject = GameObject.Find("MonsterImage");
-		monsterRenderer = monsterImageObject.GetComponent<SpriteRenderer>();
-
-		// Find the child "Stickman", then its Sprite Renderer and then the renderer's sprite
-		civilianObject = GameObject.Find("StickmanCivilian");
-		civilianRenderer = civilianObject.GetComponent<SpriteRenderer>();
-		civilianObject.SetActive(false); // Civ-Monster not visible at first.
-
-		// Setting the animator
-		if(monsterImageObject != null) {
-			animatorMonster = monsterImageObject.GetComponent<Animator>();
-		}
-		if(civilianObject != null) {
-			animatorCivilian = civilianObject.GetComponent<Animator>();
-		}
 	}
 
 	// To make sure the game state is fully initialized before loading it, this function is called by game state class itself
@@ -580,7 +562,7 @@ public class Control_Monster : Control_Character {
 	}
 
 	// Killing the monster / civilian during endgame
-	public IEnumerator dieAndRespawn() {
+	private IEnumerator dieAndRespawn() {
 		Debug.Log(me + " died...");
 		activateCooldown(DEATH_ANIMATION_DURATION);
 

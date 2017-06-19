@@ -33,19 +33,19 @@ public class Control_PlayerCharacter : Control_Character {
 	private float ITEM_ZAP_DURATION;
 
 	// Graphics parameters
-	private GameObject stickmanObject;
-	private SpriteRenderer stickmanRenderer;
-	private GameObject monsterToniObject;
-	private SpriteRenderer monsterToniRenderer;
-	private Control_Camera mainCameraControl;
+	public GameObject stickmanObject;
+	public SpriteRenderer stickmanRenderer;
+	public GameObject monsterToniObject;
+	public SpriteRenderer monsterToniRenderer;
+	public Control_Camera mainCameraControl;
 	public Control_CorpsePool CorpsePoolControl;
 	public Control_Noise noiseSystem;
-	public Canvas inventoryUI;
+	public Image carriedItemUI;
 	public GameObject pentagram;
 
 	// Animator for transitioning between animation states
-	private Animator animatorHuman;
-	private Animator animatorMonsterToni;
+	public Animator animatorHuman;
+	public Animator animatorMonsterToni;
 	private bool isRunning;
 
 	// Most basic initialization
@@ -83,31 +83,8 @@ public class Control_PlayerCharacter : Control_Character {
 
 	// Use this for initialization; note that only local variables are initialized here, game state is loaded later
 	void Start() {
-		stickmanObject = GameObject.Find("Stickman");
-		stickmanRenderer = stickmanObject.GetComponent<SpriteRenderer>(); // Find the child "Stickman", then its Sprite Renderer and then the renderer's sprite
-		monsterToniObject = GameObject.Find("MonsterToniImage");
-		monsterToniRenderer = monsterToniObject.GetComponent<SpriteRenderer>();
-		monsterToniObject.SetActive(false); // Monster-Toni not visible at first.
-
-		mainCameraControl = Camera.main.GetComponent<Control_Camera>();
-		inventoryUI.transform.FindChild("CurrentItem").GetComponent<Image>().CrossFadeAlpha(0.0f, 0.0f, false);
+		carriedItemUI.CrossFadeAlpha(0.0f, 0.0f, false);
 		walkingDistanceSinceLastNoise = 0;
-
-		// Setting the animator
-		Transform stickmanImageTransform = transform.Find("Stickman");
-		if(stickmanImageTransform != null) {
-			GameObject stickmanImageObject = stickmanImageTransform.gameObject;
-			if(stickmanImageObject != null) {
-				animatorHuman = stickmanImageObject.GetComponent<Animator>();
-			}
-		}
-		Transform toniMonsterTransform = transform.Find("MonsterToniImage");
-		if(toniMonsterTransform != null) {
-			GameObject toniMonsterObject = toniMonsterTransform.gameObject;
-			if(toniMonsterObject != null) {
-				animatorMonsterToni = toniMonsterObject.GetComponent<Animator>();
-			}
-		}
 	}
 
 	// To make sure the game state is fully initialized before loading it, this function is called by game state class itself
@@ -476,14 +453,13 @@ public class Control_PlayerCharacter : Control_Character {
 	// Shows the currentlly carried item on the UI
 	private IEnumerator displayInventory() {
 		if(me.carriedItem != null) {
-			Image curItemImg = inventoryUI.transform.FindChild("CurrentItem").GetComponent<Image>();
 			// Update the current image sprite
-			curItemImg.sprite = me.carriedItem.control.transform.GetComponent<SpriteRenderer>().sprite;
+			carriedItemUI.sprite = me.carriedItem.control.transform.GetComponent<SpriteRenderer>().sprite;
 			// Quickly fade the image in and wait
-			curItemImg.CrossFadeAlpha(1.0f, INVENTORY_DISPLAY_DURATION / 4, false);
+			carriedItemUI.CrossFadeAlpha(1.0f, INVENTORY_DISPLAY_DURATION / 4, false);
 			yield return new WaitForSeconds(INVENTORY_DISPLAY_DURATION / 2);
 			// Fade it out again slowly
-			curItemImg.CrossFadeAlpha(0.0f, INVENTORY_DISPLAY_DURATION / 2, false);
+			carriedItemUI.CrossFadeAlpha(0.0f, INVENTORY_DISPLAY_DURATION / 2, false);
 		}
 	}
 
