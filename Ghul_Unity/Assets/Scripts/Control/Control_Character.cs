@@ -24,6 +24,7 @@ public abstract class Control_Character : MonoBehaviour {
 	protected float ATTACK_COOLDOWN;
 
 	protected const float ANIM_MIN_SPEED_FOR_WALKING = 0.01f;
+	protected float animatorMovementSpeed;
 	protected bool goingThroughADoor;
 	protected bool attackAnimationPlaying;
 	private float cumulativeAttackDuration;
@@ -47,8 +48,11 @@ public abstract class Control_Character : MonoBehaviour {
 			}
 			positionAtTheLastTimeStep = getMe().pos.clone();
 
+			// Update animator movement speed via smoothing for low FPS
+			animatorMovementSpeed = Mathf.Lerp(animatorMovementSpeed, getMe().currentVelocityAbsolute, 0.8f);
+
 			// Snap the character sprite to the pixel grid when not moving
-			if(getMe().currentVelocityAbsolute > ANIM_MIN_SPEED_FOR_WALKING) {
+			if(animatorMovementSpeed > ANIM_MIN_SPEED_FOR_WALKING) {
 				spriteIsAlignedToGrid = false;
 			} else if(!spriteIsAlignedToGrid) {
 				transform.Translate(new Vector2(Data_Position.snapToGrid(getMe().atPos) - getMe().atPos, 0));

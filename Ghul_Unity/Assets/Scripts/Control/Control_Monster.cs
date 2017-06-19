@@ -181,9 +181,9 @@ public class Control_Monster : Control_Character {
 
 		// Handling the animation
 		if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE && animatorMonster != null) {
-			animatorMonster.SetFloat("Speed", me.currentVelocityAbsolute);
+			animatorMonster.SetFloat("Speed", animatorMovementSpeed);
 		} else if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE && animatorCivilian != null) {
-			animatorCivilian.SetFloat("Speed", me.currentVelocityAbsolute);
+			animatorCivilian.SetFloat("Speed", animatorMovementSpeed);
 			animatorCivilian.SetBool("Is Running", isRunning);
 		}
 	}

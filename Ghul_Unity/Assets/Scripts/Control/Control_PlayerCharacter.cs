@@ -247,14 +247,14 @@ public class Control_PlayerCharacter : Control_Character {
 		switch(GS.OVERALL_STATE) {
 		case Control_GameState.STATE_COLLECTION_PHASE:
 			if(animatorHuman != null) {
-				animatorHuman.SetFloat("Speed", me.currentVelocityAbsolute);
-				animatorHuman.SetBool("Is Running", isRunning && me.currentVelocityAbsolute > ANIM_MIN_SPEED_FOR_WALKING && canRun());
+				animatorHuman.SetFloat("Speed", animatorMovementSpeed);
+				animatorHuman.SetBool("Is Running", isRunning && animatorMovementSpeed > ANIM_MIN_SPEED_FOR_WALKING && canRun());
 			}
 			break;
 		case Control_GameState.STATE_MONSTER_PHASE:
 		case Control_GameState.STATE_TRANSFORMATION:
 			if(animatorMonsterToni != null) {
-				animatorMonsterToni.SetFloat("Speed", me.currentVelocityAbsolute);
+				animatorMonsterToni.SetFloat("Speed", animatorMovementSpeed);
 			}
 			break;
 		default:
@@ -334,8 +334,7 @@ public class Control_PlayerCharacter : Control_Character {
 
 			// Reset movements and animations
 			Input.ResetInputAxes();
-			animatorHuman.SetFloat("Speed", 0);
-			animatorHuman.SetBool("Is Running", false);
+			halt();
 			animatorHuman.SetTrigger("Is Resurrected");
 
 			// Trigger the house mix up and a new item
@@ -489,6 +488,7 @@ public class Control_PlayerCharacter : Control_Character {
 	public void halt() {
 		me.currentVelocitySigned = 0;
 		me.currentVelocityAbsolute = 0;
+		animatorMovementSpeed = 0;
 		if(animatorHuman != null && animatorHuman.isInitialized) {
 			animatorHuman.SetFloat("Speed", 0);
 			animatorHuman.SetBool("Is Running", false);
