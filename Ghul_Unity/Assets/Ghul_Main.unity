@@ -3496,7 +3496,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.6666667, g: 0.05882353, b: 0.05882353, a: 1}
+  m_Color: {r: 0.9411765, g: 0.15224911, b: 0.15224911, a: 1}
   m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
@@ -3504,18 +3504,18 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_FontData:
-    m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 18
-    m_FontStyle: 1
+    m_Font: {fileID: 12800000, guid: b6630b56d39347e4c943bd79b4e237ad, type: 3}
+    m_FontSize: 30
+    m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 0
     m_MaxSize: 300
     m_Alignment: 4
-    m_AlignByGeometry: 0
+    m_AlignByGeometry: 1
     m_RichText: 0
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 1
-    m_LineSpacing: 0.8
+    m_LineSpacing: 1
   m_Text: 
 --- !u!222 &1185358801
 CanvasRenderer:
@@ -3570,7 +3570,6 @@ MonoBehaviour:
     type: 2}
   MonsterCorpsePrefab: {fileID: 1000012098924484, guid: 16ed8d7bfd250d146b04f4b1ec8def93,
     type: 2}
-  CorpsesMoved: 0
 --- !u!1 &1220599431
 GameObject:
   m_ObjectHideFlags: 0
