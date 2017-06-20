@@ -50,16 +50,16 @@ public class Control_GameState : MonoBehaviour {
 
 	// Use this for initialization
 	void Awake() {
-		RITUAL_ROOM_INDEX = (int)Global_Settings.read("RITUAL_ROOM_INDEX");
-		TOTAL_NUMBER_OF_ROOMS = (int)Global_Settings.read("TOTAL_NUMBER_OF_ROOMS");
+		RITUAL_ROOM_INDEX = Global_Settings.readInt("RITUAL_ROOM_INDEX");
+		TOTAL_NUMBER_OF_ROOMS = Global_Settings.readInt("TOTAL_NUMBER_OF_ROOMS");
 		VERTICAL_ROOM_SPACING = Global_Settings.read("VERTICAL_ROOM_SPACING");
 		HORIZONTAL_ROOM_MARGIN = Global_Settings.read("HORIZONTAL_ROOM_MARGIN");
 
 		// A rough estimation of what "distance" lies between two sides of a door for the all-pairs shortest distance calculation
 		DOOR_TRANSITION_COST = Global_Settings.read("CHARA_WALKING_SPEED") * Global_Settings.read("DOOR_TRANSITION_DURATION");
 
-		TOTAL_ITEMS_PLACED = (int)Global_Settings.read("TOTAL_NUMBER_OF_ITEMS_PLACED");
-		RITUAL_ITEMS_REQUIRED = (int)Global_Settings.read("RITUAL_ITEMS_REQUIRED");
+		TOTAL_ITEMS_PLACED = Global_Settings.readInt("TOTAL_NUMBER_OF_ITEMS_PLACED");
+		RITUAL_ITEMS_REQUIRED = Global_Settings.readInt("RITUAL_ITEMS_REQUIRED");
 		RITUAL_PENTAGRAM_CENTER = Global_Settings.read("RITUAL_PENTAGRAM_CENTER");
 			
 		AUTOSAVE_FREQUENCY = Global_Settings.read("AUTOSAVE_FREQUENCY");
@@ -516,11 +516,11 @@ public class Control_GameState : MonoBehaviour {
 	private int getAccessibleRoomCountInCurrentChapter() {
 		switch(Mathf.Clamp(GS.numItemsPlaced, 0, 4)) {
 		case 0:
-			return (int)Global_Settings.read("ROOMS_UNLOCKED_AT_ZERO_ITEMS");
+			return Global_Settings.readInt("ROOMS_UNLOCKED_AT_ZERO_ITEMS");
 		case 1:
-			return (int)Global_Settings.read("ROOMS_UNLOCKED_AFTER_ONE_ITEM");
+			return Global_Settings.readInt("ROOMS_UNLOCKED_AFTER_ONE_ITEM");
 		case 2:
-			return (int)Global_Settings.read("ROOMS_UNLOCKED_AFTER_TWO_ITEMS");
+			return Global_Settings.readInt("ROOMS_UNLOCKED_AFTER_TWO_ITEMS");
 		default:
 			return GS.ROOMS.Count;
 		}

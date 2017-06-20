@@ -40,7 +40,7 @@ public class AI_WorldModel {
 		// Initialize the room probability vector
 		AI_Util.initializeVector(ref probabilityThatToniIsInRoom, roomCount);
 		AI_Util.initializeVector(ref newVector, roomCount);
-		toniKnownToBeInRoom(GS.getRoomByIndex((int)Global_Settings.read("RITUAL_ROOM_INDEX")));
+		toniKnownToBeInRoom(GS.getRoomByIndex(Global_Settings.readInt("RITUAL_ROOM_INDEX")));
 		// Initialize player and signal model subsystems
 		playerModel = new AI_PlayerModel(GS);
 		signalModel = new AI_SignalModel(GS, playerModel);

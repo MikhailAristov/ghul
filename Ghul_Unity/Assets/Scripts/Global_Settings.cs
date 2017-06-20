@@ -10,11 +10,15 @@ public class Global_Settings {
 			// Screen settings
 			{ "SCREEN_SIZE_HORIZONTAL",			6.4f },		// 640px
 			{ "SCREEN_SIZE_VERTICAL",			4.8f },		// 480px
+			{ "CAMERA_PANNING_SPEED",			9.0f },
 
 			// Level generation setttings
 			{ "VERTICAL_ROOM_SPACING",			-5.0f },	// Must be bigger than SCREEN_SIZE_VERTICAL
 			{ "TOTAL_NUMBER_OF_ROOMS",			17.0f },	// How many rooms are to there to be in the game, including the Ritual Room; must be more than 5!
-			{ "TOTAL_NUMBER_OF_ITEMS_PLACED",	10.0f },	// needs casting to int when used
+			{ "ROOMS_UNLOCKED_AT_ZERO_ITEMS",	5.0f },		// How many rooms are accessible at the start of the game
+			{ "ROOMS_UNLOCKED_AFTER_ONE_ITEM",	8.0f },		// How many rooms are accessible after placing the first item on the pengram
+			{ "ROOMS_UNLOCKED_AFTER_TWO_ITEMS",	11.0f },	// How many rooms are accessible after placing the second item on the pengram
+			// (Placing the third item unlocks all remaining rooms!)
 
 			// Level layout setttings
 			{ "HORIZONTAL_ROOM_MARGIN",			0.5625f },	// Prevents movement to screen edge past the margin
@@ -26,6 +30,7 @@ public class Global_Settings {
 			{ "RITUAL_PENTAGRAM_RADIUS",		0.9f },		// The distance between pentagram center and edge in either direction
 			{ "RITUAL_ITEMS_REQUIRED",			5.0f },		// How many items are needed for the ritual (has to be cast to int)
 			{ "RITUAL_ITEM_PLACEMENT",			1.0f },		// How long, in seconds, it takes to place an item on the pentagram
+			{ "TOTAL_NUMBER_OF_ITEMS_PLACED",	10.0f },	// needs casting to int when used
 
 			// Door settings
 			{ "MARGIN_DOOR_ENTRANCE",			0.8625f },	// How close a character's center of mass must be to the door's center to use it
@@ -73,13 +78,8 @@ public class Global_Settings {
 
 			// Miscellaneous setttings
 			{ "AUTOSAVE_FREQUENCY",				10.0f },	// In seconds
-			{ "CAMERA_PANNING_SPEED",			9.0f },
 			{ "TOTAL_DEATH_DURATION",			4.5f },		// When deathDuration of Data_Character reaches this value the player resets to the starting room
 			{ "ENCOUNTER_JINGLE_DURATION",		3.0f },
-			{ "ROOMS_UNLOCKED_AT_ZERO_ITEMS",	5.0f },		// How many rooms are accessible at the start of the game
-			{ "ROOMS_UNLOCKED_AFTER_ONE_ITEM",	8.0f },		// How many rooms are accessible after placing the first item on the pengram
-			{ "ROOMS_UNLOCKED_AFTER_TWO_ITEMS",	11.0f },	// How many rooms are accessible after placing the second item on the pengram
-			// (Placing the third item unlocks all remaining rooms!)
 
 			// Comma after the last pair of values is okay, the compiler doesn't care
 		};
@@ -87,13 +87,19 @@ public class Global_Settings {
 
 	public static float read(string Name) {
 		// Initialize on first read
-		if(LIST == null) { loadSettings(); }
+		if(LIST == null) {
+			loadSettings();
+		}
 
 		// Check if setting exists and return it, otherwise throw exception
-		if (LIST.ContainsKey(Name)) {
+		if(LIST.ContainsKey(Name)) {
 			return LIST[Name];
 		} else {
-			throw new System.ArgumentException("Setting " + Name + " is not defined"); //Nabil was here
+			throw new System.ArgumentException("Setting " + Name + " is not defined");
 		}
-	} 
+	}
+
+	public static int readInt(string Name) {
+		return Mathf.RoundToInt(read(Name));
+	}
 }

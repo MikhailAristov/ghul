@@ -66,7 +66,7 @@ public class Control_PlayerCharacter : Control_Character {
 		INVENTORY_DISPLAY_DURATION = Global_Settings.read("INVENTORY_DISPLAY_DURATION");
 		MARGIN_ITEM_COLLECT = Global_Settings.read("MARGIN_ITEM_COLLECT");
 
-		RITUAL_ROOM_INDEX = (int)Global_Settings.read("RITUAL_ROOM_INDEX");
+		RITUAL_ROOM_INDEX = Global_Settings.readInt("RITUAL_ROOM_INDEX");
 		RITUAL_PENTAGRAM_CENTER = Global_Settings.read("RITUAL_PENTAGRAM_CENTER");
 		RITUAL_ITEM_PLACEMENT_RADIUS = Global_Settings.read("RITUAL_PENTAGRAM_RADIUS") / 2;
 		RITUAL_ITEM_PLACEMENT_DURATION = Global_Settings.read("RITUAL_ITEM_PLACEMENT");

@@ -239,7 +239,7 @@ public class Data_Graph {
 		}
 		infoText += "\n";
 
-		int numRooms = (int) (Global_Settings.read("TOTAL_NUMBER_OF_ROOMS") + 0.01f);
+		int numRooms = Global_Settings.readInt("TOTAL_NUMBER_OF_ROOMS");
 
 		for (int i = 0; i < numRooms; i++) {
 			Data_GraphRoomVertice room = ABSTRACT_ROOMS[i];
