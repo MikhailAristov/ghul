@@ -8,6 +8,7 @@ public class Control_CorpsePool : MonoBehaviour {
 
 	public Control_Camera MainCameraControl;
 	public GameObject HumanCorpsePrefab;
+	public GameObject HumanSkeletonPrefab;
 	public GameObject MonsterCorpsePrefab;
 
 	private List<GameObject> humanCorpses;
@@ -16,7 +17,7 @@ public class Control_CorpsePool : MonoBehaviour {
 	private GameObject lastHumanCorpse;
 	private GameObject lastMonsterCorpse;
 
-	public bool CorpsesMoved;
+	private bool CorpsesMoved;
 
 	public const float corpseVisibilityThreshold = -0.2f;
 
@@ -64,6 +65,11 @@ public class Control_CorpsePool : MonoBehaviour {
 		return placeCorpse(ref humanCorpses, ref HumanCorpsePrefab, ref lastHumanCorpse, "Human Corpse #", parent, position, flipped);
 	}
 
+	// Creates or recycles a human skeleton GameObject and places it where specified
+	public GameObject placeHumanSkeleton(GameObject parent, Vector2 position, bool flipped) {
+		return placeCorpse(ref humanCorpses, ref HumanSkeletonPrefab, ref lastHumanCorpse, "Human Corpse #", parent, position, flipped);
+	}
+
 	// Creates or recycles a monster corpse GameObject and places it where specified
 	public GameObject placeMonsterCorpse(GameObject parent, Vector2 position, bool flipped) {
 		return placeCorpse(ref monsterCorpses, ref MonsterCorpsePrefab, ref lastMonsterCorpse, "Monster Corpse #", parent, position, flipped);
@@ -87,7 +93,7 @@ public class Control_CorpsePool : MonoBehaviour {
 		}
 		// Move the corpse
 		result.transform.parent = parent.transform;
-		result.transform.localPosition = position;
+		result.transform.localPosition = new Vector3(Data_Position.snapToGrid(position.x), Data_Position.snapToGrid(position.y), 0);
 		result.GetComponentInChildren<SpriteRenderer>().flipX = flipped;
 		lastCorpse = result;
 		CorpsesMoved = true;

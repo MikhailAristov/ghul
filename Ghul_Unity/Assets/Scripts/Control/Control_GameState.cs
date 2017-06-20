@@ -692,6 +692,8 @@ public class Control_GameState : MonoBehaviour {
 		// Focus camera on the blood scribbles
 		MAIN_CAMERA_CONTROL.setPanningSpeedFactor(0.25f);
 		MAIN_CAMERA_CONTROL.setFocusOn(new Data_Position(RITUAL_ROOM_INDEX, RitualRoomScribbles.transform.localPosition.x), snapToPosition:true);
+		// Place the skeletal corpse in the ritual room
+		CorpsePoolControl.placeHumanSkeleton(RitualRoomScribbles.transform.parent.gameObject, new Vector2(1.2375f, 0), false);
 		// Wait for a second
 		waitUntil += lingerOnScribbles;
 		yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);

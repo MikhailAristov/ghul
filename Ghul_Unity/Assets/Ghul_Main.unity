@@ -3566,6 +3566,8 @@ MonoBehaviour:
   MainCameraControl: {fileID: 1344317741}
   HumanCorpsePrefab: {fileID: 1000013366781116, guid: d861f9867944fc4409d358231c378147,
     type: 2}
+  HumanSkeletonPrefab: {fileID: 1000012395292944, guid: c0ab8f1247eacbf48a24edb687e373f3,
+    type: 2}
   MonsterCorpsePrefab: {fileID: 1000012098924484, guid: 16ed8d7bfd250d146b04f4b1ec8def93,
     type: 2}
   CorpsesMoved: 0
