@@ -32,7 +32,7 @@ public class Control_GameState : MonoBehaviour {
 	private Factory_Graph graphFactory;
 
 	// Global parameters
-	private int STARTING_ROOM_INDEX;
+	private int RITUAL_ROOM_INDEX;
 	private int TOTAL_NUMBER_OF_ROOMS;
 	private float VERTICAL_ROOM_SPACING;
 	private float HORIZONTAL_ROOM_MARGIN;
@@ -50,7 +50,7 @@ public class Control_GameState : MonoBehaviour {
 
 	// Use this for initialization
 	void Awake() {
-		STARTING_ROOM_INDEX = (int)Global_Settings.read("RITUAL_ROOM_INDEX");
+		RITUAL_ROOM_INDEX = (int)Global_Settings.read("RITUAL_ROOM_INDEX");
 		TOTAL_NUMBER_OF_ROOMS = (int)Global_Settings.read("TOTAL_NUMBER_OF_ROOMS");
 		VERTICAL_ROOM_SPACING = Global_Settings.read("VERTICAL_ROOM_SPACING");
 		HORIZONTAL_ROOM_MARGIN = Global_Settings.read("HORIZONTAL_ROOM_MARGIN");
@@ -77,7 +77,7 @@ public class Control_GameState : MonoBehaviour {
 		// Load the game if possible
 		continueFromSavedGameState();
 		if(GS != null) {
-			setAdditionalParameters();
+			setAdditionalParameters(newGame:false);
 			GS.SUSPENDED = true; // Suspend the game while in the main menu initially
 		}
 	}
@@ -201,16 +201,18 @@ public class Control_GameState : MonoBehaviour {
 				updateRoomLocksForToni(getAccessibleRoomCountInCurrentChapter(), GS.numItemsPlaced + 1);
 				GS.indexOfSearchedItem = pickAnotherItemToSearchFor();
 				GS.ANOTHER_ITEM_PLEASE = false;
-				StartCoroutine(updateWallScribbles(1.0f));
+				StartCoroutine(updateWallScribbles(GS.numItemsPlaced == 0 ? 0 : 1f));
 			}
 		}
 	}
 
 	// This method updates parameters after loading or resetting the game
-	private void setAdditionalParameters() {
+	private void setAdditionalParameters(bool newGame) {
 		// Train the camera on the main character
 		MAIN_CAMERA_CONTROL.loadGameState(GS);
-		MAIN_CAMERA_CONTROL.setFocusOn(TONI.pos);
+		if(!newGame) {
+			MAIN_CAMERA_CONTROL.setFocusOn(TONI.pos);
+		}
 
 		// Initialize the jukebox
 		JukeBox.loadGameState(GS);
@@ -268,7 +270,7 @@ public class Control_GameState : MonoBehaviour {
 			item.control.loadGameState(GS, i);
 			item.control.updateGameObjectPosition();
 		}
-		StartCoroutine(updateWallScribbles(-10f));
+		StartCoroutine(updateWallScribbles(0));
 
 		// Re-trigger the endgame if necessary
 		if(GS.OVERALL_STATE > STATE_COLLECTION_PHASE) {
@@ -360,7 +362,7 @@ public class Control_GameState : MonoBehaviour {
 		Data_Room ritualRoom = new Data_Room(GS.ROOMS.Count, ritualRoomGameObject, ritualRoomPrefab);
 		GS.addRoom(ritualRoom);
 		// Load the environment
-		ritualRoom.env.loadGameState(GS, STARTING_ROOM_INDEX);
+		ritualRoom.env.loadGameState(GS, RITUAL_ROOM_INDEX);
 	}
 
 	// Spawn all other rooms randomly from prefabs up to a certain count
@@ -388,23 +390,19 @@ public class Control_GameState : MonoBehaviour {
 
 	// Initializes all characters on a new game
 	private void initializeCharacters() {
-		Data_Room ritualRoom = GS.getRoomByIndex(STARTING_ROOM_INDEX);
+		Data_Room ritualRoom = GS.getRoomByIndex(RITUAL_ROOM_INDEX);
 
 		// INITIALIZE PLAYER CHARACTER
 		GS.setPlayerCharacter("PlayerCharacter");
 		TONI = GS.getToni();
 		TONI.updatePosition(ritualRoom, RITUAL_PENTAGRAM_CENTER, 0);
 		TONI.resetRoomHistory();
-
-		// Make it look like Toni has just walked in through the right door (next to the pentagram)
-		TONI.updatePosition(ritualRoom, ritualRoom.rightWalkBoundary);
 		TONI.control.loadGameState(GS);
-		ritualRoom.rightmostDoor.control.open();
 
 		// INITIALIZE MONSTER
 		GS.setMonsterCharacter("Monster");
 		MONSTER = GS.getMonster();
-		MONSTER.updatePosition(GS.getRoomFurthestFrom(STARTING_ROOM_INDEX), 0, 0);
+		MONSTER.updatePosition(GS.getRoomFurthestFrom(RITUAL_ROOM_INDEX), 0, 0);
 		MONSTER.resetWorldModel(GS);
 		MONSTER.control.loadGameState(GS);
 	}
@@ -481,8 +479,8 @@ public class Control_GameState : MonoBehaviour {
 		// Find the highest degree of separation of any room from the ritual room
 		int roomCount = GS.ROOMS.Values.Count, maxDegreeOfSeparation = 0;
 		for(int i = 0; i < roomCount; i++) {
-			if(maxDegreeOfSeparation < GS.separationBetweenTwoRooms[STARTING_ROOM_INDEX, i]) {
-				maxDegreeOfSeparation = GS.separationBetweenTwoRooms[STARTING_ROOM_INDEX, i];
+			if(maxDegreeOfSeparation < GS.separationBetweenTwoRooms[RITUAL_ROOM_INDEX, i]) {
+				maxDegreeOfSeparation = GS.separationBetweenTwoRooms[RITUAL_ROOM_INDEX, i];
 			}
 		}
 		// Count the items currently in each room
@@ -499,7 +497,7 @@ public class Control_GameState : MonoBehaviour {
 		int reachableItemsCount = 0;
 		for(int curSep = 0; curSep <= maxDegreeOfSeparation; curSep++) {
 			foreach(Data_Room room in GS.ROOMS.Values) {
-				if(GS.separationBetweenTwoRooms[STARTING_ROOM_INDEX, room.INDEX] == curSep) {
+				if(GS.separationBetweenTwoRooms[RITUAL_ROOM_INDEX, room.INDEX] == curSep) {
 					room.ToniCannotEnter = false;
 					unlockedRoomCount += 1;
 					reachableItemsCount += itemCountInRoom[room.INDEX];
@@ -561,7 +559,7 @@ public class Control_GameState : MonoBehaviour {
 
 	// Randomly picks a new item for Toni to look for
 	private int pickAnotherItemToSearchFor() {
-		Data_Position pentagramCenter = new Data_Position(STARTING_ROOM_INDEX, RITUAL_PENTAGRAM_CENTER);
+		Data_Position pentagramCenter = new Data_Position(RITUAL_ROOM_INDEX, RITUAL_PENTAGRAM_CENTER);
 		// First, create a list of all items and weigh them with the cubed distance to the pentagram
 		// Items that are already placed or are in unreachable rooms are weighed at 0
 		float[] weights = new float[GS.ITEMS.Count];
@@ -621,7 +619,8 @@ public class Control_GameState : MonoBehaviour {
 		// Can only be clicked if not transformed into a monster yet
 		if(!newGameDisabled) {
 			resetGameState();				// Reset the game state
-			setAdditionalParameters();		// Refocus camera and such
+			setAdditionalParameters(newGame:true);	// Refocus camera and such
+			StartCoroutine(playOpeningCutscene());
 			GS.SUSPENDED = false;			// Continue playing
 		}
 	}
@@ -631,7 +630,7 @@ public class Control_GameState : MonoBehaviour {
 		// If no game state has been loaded before, create a new one
 		if(GS == null) {
 			resetGameState();
-			setAdditionalParameters();
+			setAdditionalParameters(newGame:true);
 		}
 		GS.SUSPENDED = false;
 	}
@@ -683,5 +682,25 @@ public class Control_GameState : MonoBehaviour {
 			yield return new WaitUntil(() => Time.timeSinceLevelLoad >= waitUntil);
 		}
 		CreditsCanvas.gameObject.SetActive(false);
+	}
+
+	// Play the opening cutscene of the game
+	private IEnumerator playOpeningCutscene() {
+		float waitUntil = Time.timeSinceLevelLoad, lingerOnScribbles = 3f, waitOnToni = 0.5f;
+		// Put Toni on cooldown
+		TONI.control.activateCooldown(lingerOnScribbles + waitOnToni);
+		// Focus camera on the blood scribbles
+		MAIN_CAMERA_CONTROL.setFocusOn(new Data_Position(RITUAL_ROOM_INDEX, RitualRoomScribbles.transform.localPosition.x), snapToPosition:true);
+		// Wait for a second
+		waitUntil += lingerOnScribbles;
+		yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
+		// Make it look like Toni has just walked in through the right door (next to the pentagram)
+		TONI.control.enterTheHouse();
+		// Wait some more
+		waitUntil += waitOnToni;
+		yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
+		// Swing the camera over to him
+		MAIN_CAMERA_CONTROL.setFocusOn(TONI.pos);
+		// Wait until the cooldown wears off
 	}
 }

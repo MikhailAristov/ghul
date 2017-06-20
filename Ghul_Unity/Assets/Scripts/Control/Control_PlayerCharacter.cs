@@ -439,6 +439,14 @@ public class Control_PlayerCharacter : Control_Character {
 		Control_Persistence.saveToDisk(GS);
 	}
 
+	// For the opening cutscene
+	public void enterTheHouse() {
+		// Find the door
+		Data_Door entryDoor = GS.getRoomByIndex(RITUAL_ROOM_INDEX).rightmostDoor.connectsTo;
+		// And go through it
+		StartCoroutine(goThroughTheDoor(entryDoor));
+	}
+
 	public void setupEndgame() {
 		stickmanObject.SetActive(false);
 		// Only display monster Toni sprite if monster is still alive
@@ -487,7 +495,9 @@ public class Control_PlayerCharacter : Control_Character {
 	}
 
 	protected override void preDoorTransitionHook(Data_Door doorTaken) {
-		mainCameraControl.fadeOut(DOOR_TRANSITION_DURATION / 2);
+		if(mainCameraControl.isFocusedOn(me.pos)) {
+			mainCameraControl.fadeOut(DOOR_TRANSITION_DURATION / 2);
+		}
 	}
 
 	protected override void preRoomLeavingHook(Data_Door doorTaken) {
@@ -500,7 +510,9 @@ public class Control_PlayerCharacter : Control_Character {
 		// Update door usage statistics
 		updateDoorUsageStatistic(doorTaken, doorTaken.isIn, doorTaken.connectsTo, doorTaken.connectsTo.isIn);
 		// Fade camera back in
-		mainCameraControl.fadeIn(DOOR_TRANSITION_DURATION / 2);
+		if(mainCameraControl.isFocusedOn(me.pos)) {
+			mainCameraControl.fadeIn(DOOR_TRANSITION_DURATION / 2);
+		}
 		// Make noise
 		noiseSystem.makeNoise(Control_Noise.NOISE_TYPE_DOOR, doorTaken.connectsTo.pos);
 		walkingDistanceSinceLastNoise = 0;

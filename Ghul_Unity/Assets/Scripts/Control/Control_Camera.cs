@@ -46,10 +46,10 @@ public class Control_Camera : MonoBehaviour {
 			float targetPositionX = currentEnvironment.validateCameraPosition(focusOn.X);
 			float displacementY = focusOn.RoomId * VERTICAL_ROOM_SPACING - transform.position.y;
 			float displacementX = targetPositionX - transform.position.x;
-			// If there is a difference in the vertical direction, close it all at once (provisional)
-			if(Mathf.Abs(displacementY) > 0) {
+			// If there is a difference in the vertical direction, close it all at once
+			if(Mathf.Abs(displacementY) > 0.1f) {
 				// Update the environment
-				this.currentEnvironment = GS.getRoomByIndex(focusOn.RoomId).env;
+				currentEnvironment = GS.getRoomByIndex(focusOn.RoomId).env;
 				// Reevaluate and apply camera displacement
 				displacementX = currentEnvironment.validateCameraPosition(focusOn.X) - transform.position.x;
 				// Move and fade back in
@@ -67,9 +67,17 @@ public class Control_Camera : MonoBehaviour {
 	}
 
 	// Set an object to focus on
-	public void setFocusOn(Data_Position pos) {
+	public void setFocusOn(Data_Position pos, bool snapToPosition = false) {
 		focusOn = pos;
 		currentEnvironment = GS.getRoomByIndex(pos.RoomId).env;
+		if(snapToPosition) {
+			transform.position = new Vector3(currentEnvironment.validateCameraPosition(pos.X), focusOn.RoomId * VERTICAL_ROOM_SPACING, transform.position.z);
+		}
+	}
+
+	// Returns whether the camera is currently focused on the queried position
+	public bool isFocusedOn(Data_Position queryPos) {
+		return (this.focusOn == queryPos);
 	}
 
 	// Asynchronously fades to black
