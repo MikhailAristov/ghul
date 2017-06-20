@@ -60,7 +60,7 @@ public class Control_Camera : MonoBehaviour {
 			// Otherwise, pan gradually
 			displacementX *= Time.deltaTime * PANNING_SPEED;
 			// Correct displacement
-			if(Mathf.Abs(displacementX) > 0) {
+			if(Mathf.Abs(displacementX) > 0.001f) {
 				transform.Translate(displacementX, 0, 0);
 			}
 		}
@@ -112,5 +112,14 @@ public class Control_Camera : MonoBehaviour {
 		float leftBound = transform.position.x - SCREEN_SIZE_HORIZONTAL / 2 + horizonalVisibilityThreshold;
 		float rightBound = transform.position.x + SCREEN_SIZE_HORIZONTAL / 2 - horizonalVisibilityThreshold;
 		return (leftBound <= objPos.x && objPos.x <= rightBound);
+	}
+
+	// Updates the panning speed with the given factor
+	public void setPanningSpeedFactor(float factor) {
+		if(factor > 0) {
+			PANNING_SPEED = factor * Global_Settings.read("CAMERA_PANNING_SPEED");
+		} else {
+			throw new ArgumentOutOfRangeException("factor");
+		}
 	}
 }

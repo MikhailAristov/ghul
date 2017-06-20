@@ -686,10 +686,11 @@ public class Control_GameState : MonoBehaviour {
 
 	// Play the opening cutscene of the game
 	private IEnumerator playOpeningCutscene() {
-		float waitUntil = Time.timeSinceLevelLoad, lingerOnScribbles = 3f, waitOnToni = 0.5f;
+		float waitUntil = Time.timeSinceLevelLoad, lingerOnScribbles = 3f, waitOnToni = 0.5f, waitOnCameraPan = 2.8f;
 		// Put Toni on cooldown
-		TONI.control.activateCooldown(lingerOnScribbles + waitOnToni);
+		TONI.control.activateCooldown(lingerOnScribbles + waitOnToni + waitOnCameraPan);
 		// Focus camera on the blood scribbles
+		MAIN_CAMERA_CONTROL.setPanningSpeedFactor(0.25f);
 		MAIN_CAMERA_CONTROL.setFocusOn(new Data_Position(RITUAL_ROOM_INDEX, RitualRoomScribbles.transform.localPosition.x), snapToPosition:true);
 		// Wait for a second
 		waitUntil += lingerOnScribbles;
@@ -701,6 +702,9 @@ public class Control_GameState : MonoBehaviour {
 		yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
 		// Swing the camera over to him
 		MAIN_CAMERA_CONTROL.setFocusOn(TONI.pos);
-		// Wait until the cooldown wears off
+		// Wait until the cooldown wears off before resetting the camera panning speed
+		waitUntil += waitOnCameraPan;
+		yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
+		MAIN_CAMERA_CONTROL.setPanningSpeedFactor(1f);
 	}
 }
