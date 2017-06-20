@@ -676,7 +676,7 @@ public class Control_GameState : MonoBehaviour {
 		float timeStep = 0.01f, scrollSpeed = 0.7f;
 		while(ct.localPosition.y < (240 + textHeight / 2)) {
 			if(!GS.SUSPENDED) {
-				ct.Translate(new Vector2(0, scrollSpeed * timeStep));
+				ct.Translate(0, scrollSpeed * timeStep, 0);
 			}
 			waitUntil += timeStep;
 			yield return new WaitUntil(() => Time.timeSinceLevelLoad >= waitUntil);

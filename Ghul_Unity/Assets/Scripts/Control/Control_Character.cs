@@ -59,7 +59,7 @@ public abstract class Control_Character : MonoBehaviour {
 			if(animatorMovementSpeed > ANIM_MIN_SPEED_FOR_WALKING) {
 				spriteIsAlignedToGrid = false;
 			} else if(!spriteIsAlignedToGrid) {
-				transform.Translate(new Vector2(Data_Position.snapToGrid(getMe().atPos) - getMe().atPos, 0));
+				transform.Translate((Data_Position.snapToGrid(getMe().atPos) - getMe().atPos), 0, 0);
 				spriteIsAlignedToGrid = true;
 			}
 
