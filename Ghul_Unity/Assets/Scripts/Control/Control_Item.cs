@@ -41,6 +41,15 @@ public class Control_Item : MonoBehaviour {
 			return;
 		} // Don't do anything if the game state is not loaded yet or suspended
 
+		// Debug for the missing reference exception
+		if(me == null) {
+			Debug.LogError(name + " is missing the data object reference!");
+		} else if(me.control == null) {
+			Debug.LogError(name + "'s data object is missing the control back-reference!");
+		} else if(me.control != this) {
+			Debug.LogError(name + "'s data object control back-reference is inconsistent!");
+		}
+
 		// Set the position of the item to chara's position as long as it is carried
 		if(me.state == Data_Item.STATE_CARRIED) {
 			Data_PlayerCharacter chara = GS.getToni();
