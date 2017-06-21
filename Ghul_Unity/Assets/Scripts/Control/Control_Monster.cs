@@ -63,6 +63,8 @@ public class Control_Monster : Control_Character {
 	public SpriteRenderer monsterRenderer;
 	public GameObject civilianObject;
 	public SpriteRenderer civilianRenderer;
+	public GameObject knolliObject;
+	public SpriteRenderer knolliRenderer;
 
 	// Animator for transitioning between animation states
 	public Animator animatorMonster;
@@ -162,9 +164,9 @@ public class Control_Monster : Control_Character {
 		updateState();
 
 		// Handling the animation
-		if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE && animatorMonster != null) {
+		if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE && animatorMonster != null && animatorMonster.isInitialized) {
 			animatorMonster.SetFloat("Speed", animatorMovementSpeed);
-		} else if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE && animatorCivilian != null) {
+		} else if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE && animatorCivilian != null && animatorCivilian.isInitialized) {
 			animatorCivilian.SetFloat("Speed", animatorMovementSpeed);
 			animatorCivilian.SetBool("Is Running", isRunning);
 		}
@@ -533,6 +535,7 @@ public class Control_Monster : Control_Character {
 	// This function carries out the necessary adjustments to the monster's game objects
 	public void setupEndgame() {
 		monsterImageObject.SetActive(false);
+		knolliObject.SetActive(false);
 		civilianObject.SetActive(true);
 		me.state = STATE_WANDERING;
 		// Change the movement speed to human
@@ -555,7 +558,9 @@ public class Control_Monster : Control_Character {
 		}
 		// Set AI state to fleeing, just in case
 		me.state = STATE_FLEEING;
-		animatorMonster.SetFloat("Speed", 0);
+		if(animatorMonster != null && animatorMonster.isInitialized) {
+			animatorMonster.SetFloat("Speed", 0);
+		}
 		// "Go" through the door
 		goingThroughADoor = true;
 		StartCoroutine(goThroughTheDoor(targetDoor));
@@ -573,7 +578,9 @@ public class Control_Monster : Control_Character {
 			CorpsePoolControl.placeMonsterCorpse(me.isIn.env.gameObject, me.pos.asLocalVector(), civilianRenderer.flipX);
 			yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
 		} else {
-			animatorCivilian.SetTrigger("Is Killed");
+			if(animatorCivilian != null && animatorCivilian.isInitialized) {
+				animatorCivilian.SetTrigger("Is Killed");
+			}
 			yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
 			civilianRenderer.enabled = false;
 			animatorCivilian.Rebind();
@@ -597,6 +604,7 @@ public class Control_Monster : Control_Character {
 	public override void setSpriteFlip(bool state) {
 		monsterRenderer.flipX = !state;
 		civilianRenderer.flipX = state;
+		knolliRenderer.flipX = !state;
 	}
 
 	protected override bool canRun() {
@@ -617,14 +625,16 @@ public class Control_Monster : Control_Character {
 	}
 	// Attacking animation triggers
 	protected override void startAttackAnimation() {
-		if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
+		if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE && animatorMonster != null && animatorMonster.isInitialized) {
 			// Activate the attack animation
 			animatorMonster.SetTrigger("Attack");
 		}
 	}
 	protected override void stopAttackAnimation() {
 		// Cancel the animation
-		animatorMonster.SetTrigger("AttackCancel");
+		if(animatorMonster != null && animatorMonster.isInitialized) {
+			animatorMonster.SetTrigger("AttackCancel");
+		}
 	}
 	// Reset the kill time upon kill
 	protected override void postKillHook() {
@@ -639,4 +649,12 @@ public class Control_Monster : Control_Character {
 	protected override void failedDoorTransitionHook(Data_Door doorTaken) {}
 	protected override void preDoorTransitionHook(Data_Door doorTaken) {}
 	protected override void preRoomLeavingHook(Data_Door doorTaken) {}
+
+	// Easter egg: Classic Knolli Knackarsch
+	public void getKnolliClassic() {
+		if(GS.OVERALL_STATE < Control_GameState.STATE_MONSTER_PHASE) {
+			monsterImageObject.SetActive(false);
+			knolliObject.SetActive(true);
+		}
+	}
 }

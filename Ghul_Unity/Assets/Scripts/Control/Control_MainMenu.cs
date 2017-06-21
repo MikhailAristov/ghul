@@ -14,6 +14,9 @@ public class Control_MainMenu : MonoBehaviour {
 	public Image ControlsDisplayImage;
 	public Animator ControlsDisplayAnimator;
 
+	public Control_Monster MonsterControl;
+	private string inputBuffer;
+
 	private bool hidden;
 	private bool newGameButtonDisabled;
 
@@ -22,6 +25,7 @@ public class Control_MainMenu : MonoBehaviour {
 
 	void Start() {
 		ControlsDisplayImage.enabled = false;
+		inputBuffer = "";
 	}
 
 	void Update() {
@@ -30,6 +34,14 @@ public class Control_MainMenu : MonoBehaviour {
 			disableNewGameButton();
 		} else if(newGameButtonDisabled && !GameStateControl.newGameDisabled) {
 			reenableNewGameButton();
+		}
+
+		// Easter egg: summon Knolli Classic
+		if(!hidden && !MonsterControl.knolliObject.activeSelf && Input.inputString != "") {
+			inputBuffer = inputBuffer.Substring(Mathf.Max(0, inputBuffer.Length - 10)) + Input.inputString.ToLower();
+			if(inputBuffer.EndsWith("knolli")) {
+				MonsterControl.getKnolliClassic();
+			}
 		}
 	}
 
@@ -42,6 +54,7 @@ public class Control_MainMenu : MonoBehaviour {
 
 	public void hide() {
 		if(!hidden) {
+			inputBuffer = "";
 			MainMenuCanvas.enabled = false;
 			hidden = true;
 		}

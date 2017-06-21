@@ -223,14 +223,14 @@ public class Control_PlayerCharacter : Control_Character {
 		// Transition for walking / running animation
 		switch(GS.OVERALL_STATE) {
 		case Control_GameState.STATE_COLLECTION_PHASE:
-			if(animatorHuman != null) {
+			if(animatorHuman != null && animatorHuman.isInitialized) {
 				animatorHuman.SetFloat("Speed", animatorMovementSpeed);
 				animatorHuman.SetBool("Is Running", isRunning && animatorMovementSpeed > ANIM_MIN_SPEED_FOR_WALKING && canRun());
 			}
 			break;
 		case Control_GameState.STATE_MONSTER_PHASE:
 		case Control_GameState.STATE_TRANSFORMATION:
-			if(animatorMonsterToni != null) {
+			if(animatorMonsterToni != null && animatorMonsterToni.isInitialized) {
 				animatorMonsterToni.SetFloat("Speed", animatorMovementSpeed);
 			}
 			break;
@@ -287,7 +287,9 @@ public class Control_PlayerCharacter : Control_Character {
 
 			// Trigger the death animation and wait until it's half-done
 			waitUntil += timeStep;
-			animatorHuman.SetTrigger("Is Killed");
+			if(animatorHuman != null && animatorHuman.isInitialized) {
+				animatorHuman.SetTrigger("Is Killed");
+			}
 			yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
 
 			// Now fade out the main camera while the death animation is still playing
@@ -312,7 +314,9 @@ public class Control_PlayerCharacter : Control_Character {
 			// Reset movements and animations
 			Input.ResetInputAxes();
 			halt();
-			animatorHuman.SetTrigger("Is Resurrected");
+			if(animatorHuman != null && animatorHuman.isInitialized) {
+				animatorHuman.SetTrigger("Is Resurrected");
+			}
 
 			// Trigger the house mix up and a new item
 			GS.TONI_KILLED = true;
@@ -343,7 +347,9 @@ public class Control_PlayerCharacter : Control_Character {
 			// If not, play the zap
 			Debug.Log(thisItem + " is not the item you are looking for (" + GS.getCurrentItem() + ")");
 			setSpriteFlip(thisItem.atPos < me.atPos);
-			animatorHuman.SetTrigger("Is Zapped");
+			if(animatorHuman != null && animatorHuman.isInitialized) {
+				animatorHuman.SetTrigger("Is Zapped");
+			}
 			activateCooldown(ITEM_ZAP_DURATION);
 			// Make a zapping noise at the location
 			noiseSystem.makeNoise(Control_Noise.NOISE_TYPE_ZAP, me.pos);
@@ -377,12 +383,14 @@ public class Control_PlayerCharacter : Control_Character {
 		// First, flip the sprite in the appropriate direction
 		setSpriteFlip(itemPosition.x < me.atPos);
 		// Then, set the proper trigger, depending on where the item is
-		if(itemPosition.y > -0.8f) {
-			animatorHuman.SetTrigger("Take High");
-		} else if(itemPosition.y < -1.4f) {
-			animatorHuman.SetTrigger("Take Low");
-		} else {
-			animatorHuman.SetTrigger("Take Mid");
+		if(animatorHuman != null && animatorHuman.isInitialized) {
+			if(itemPosition.y > -0.8f) {
+				animatorHuman.SetTrigger("Take High");
+			} else if(itemPosition.y < -1.4f) {
+				animatorHuman.SetTrigger("Take Low");
+			} else {
+				animatorHuman.SetTrigger("Take Mid");
+			}
 		}
 	}
 
@@ -592,12 +600,16 @@ public class Control_PlayerCharacter : Control_Character {
 	// Attacking animation triggers
 	protected override void startAttackAnimation() {
 		// Activate the attack animation
-		animatorMonsterToni.SetTrigger("Attack");
+		if(animatorMonsterToni != null && animatorMonsterToni.isInitialized) {
+			animatorMonsterToni.SetTrigger("Attack");
+		}
 	}
 
 	protected override void stopAttackAnimation() {
 		// Cancel the animation
-		animatorMonsterToni.SetTrigger("AttackCancel");
+		if(animatorMonsterToni != null && animatorMonsterToni.isInitialized) {
+			animatorMonsterToni.SetTrigger("AttackCancel");
+		}
 	}
 
 	// After each kill, open the door leading to the next intruder
