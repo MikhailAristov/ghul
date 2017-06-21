@@ -80,7 +80,8 @@ public class Control_CorpsePool : MonoBehaviour {
 		GameObject result = null;
 		// First check if there are any free corpses in the pool
 		foreach(GameObject corpse in list) {
-			if(corpse.transform.parent == this.transform) {
+			// corpse.name == prefab.name ensures that a regular corpse is not placed instead of a skeleton in the opening cutscene upon restarting the game
+			if(corpse.transform.parent == this.transform && corpse.name == prefab.name) {
 				result = corpse;
 				break;
 			}
