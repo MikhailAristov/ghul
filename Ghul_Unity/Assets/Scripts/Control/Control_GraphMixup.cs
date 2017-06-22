@@ -181,38 +181,6 @@ public class Control_GraphMixup : MonoBehaviour {
 				break;
 			}
 		}
-		/*
-		// Checking whether a left door is connected to another left door or vice versa. In that case: continue rotating
-		Data_GraphRoomVertice otherRoom;
-		Data_GraphDoorSpawn otherSpawn;
-		int safetyCounter = 0;
-		for (int j = 0; j < room.MAX_NUM_OF_DOORS; j++) {
-			// Iterate over all door spawns
-			spawn = room.DOOR_SPAWNS.Values[j];
-			if (spawn.isConnected() && (spawn.LEFT_SIDE || spawn.RIGHT_SIDE)) {
-				int otherSpawnID = spawn.CONNECTS_TO_SPAWN_ID;
-				int otherRoomID = graph.DOOR_SPAWN_IS_IN_ROOM[otherSpawnID];
-				otherRoom = graph.ABSTRACT_ROOMS[otherRoomID];
-				otherSpawn = otherRoom.DOOR_SPAWNS[otherSpawnID];
-
-				if ((spawn.LEFT_SIDE && otherSpawn.LEFT_SIDE) || (spawn.RIGHT_SIDE && otherSpawn.RIGHT_SIDE)) {
-					// Unwanted connection. Rotate room
-					rotationSuccessful = room.rotate();
-					if (!rotationSuccessful) {
-						break;
-					}
-					// Iterate over all spawns again
-					j = 0;
-				}
-			}
-
-			safetyCounter++;
-			if (safetyCounter >= 1000) {
-				// Room rotates over and over again but has no position that meets our goals
-				rotationSuccessful = false;
-				break;
-			}
-		}*/
 
 		if (rotationSuccessful) {
 			foreach (Data_GraphRoomVertice vertex in graph.ABSTRACT_ROOMS.Values) {
