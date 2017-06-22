@@ -115,6 +115,23 @@ public class Control_Monster : Control_Character {
 		this.Toni = gameState.getToni();
 		this.currentEnvironment = me.isIn.env;
 
+		// Ensure the appropriate sprite display
+		switch(GS.OVERALL_STATE) {
+		default:
+		case Control_GameState.STATE_COLLECTION_PHASE:
+		case Control_GameState.STATE_TRANSFORMATION:
+			monsterImageObject.SetActive(true);
+			knolliObject.SetActive(false);
+			civilianObject.SetActive(false);
+			break;
+		case Control_GameState.STATE_MONSTER_PHASE:
+		case Control_GameState.STATE_MONSTER_DEAD:
+			monsterImageObject.SetActive(false);
+			knolliObject.SetActive(false);
+			civilianObject.SetActive(true);
+			break;
+		}
+
 		// Move the character sprite directly to where the game state says it should be standing
 		Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
 		transform.Translate(savedPosition - transform.position);

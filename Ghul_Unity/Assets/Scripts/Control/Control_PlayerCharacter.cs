@@ -92,7 +92,25 @@ public class Control_PlayerCharacter : Control_Character {
 		this.GS = gameState;
 		this.me = gameState.getToni();
 		this.currentEnvironment = me.isIn.env;
-		
+
+		// Ensure the appropriate sprite display
+		switch(GS.OVERALL_STATE) {
+		default:
+		case Control_GameState.STATE_COLLECTION_PHASE:
+			stickmanObject.SetActive(true);
+			monsterToniObject.SetActive(false);
+			break;
+		case Control_GameState.STATE_TRANSFORMATION:
+		case Control_GameState.STATE_MONSTER_PHASE:
+			stickmanObject.SetActive(true);
+			monsterToniObject.SetActive(false);
+			break;
+		case Control_GameState.STATE_MONSTER_DEAD:
+			stickmanObject.SetActive(false);
+			monsterToniObject.SetActive(false);
+			break;
+		}
+
 		// Move the character sprite directly to where the game state says it should be standing
 		Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
 		transform.Translate(savedPosition - transform.position);
@@ -453,6 +471,8 @@ public class Control_PlayerCharacter : Control_Character {
 		Data_Door entryDoor = GS.getRoomByIndex(RITUAL_ROOM_INDEX).rightmostDoor.connectsTo;
 		// And go through it
 		StartCoroutine(goThroughTheDoor(entryDoor));
+		// Turn Toni towards the center of the ritual room
+		setSpriteFlip(true);
 	}
 
 	public void setupEndgame() {
