@@ -81,6 +81,9 @@ public class Control_GraphMixup : MonoBehaviour {
 
 
 		}
+		// Check whether a left side is connected to another left side (or the same for the right side) and rotating rooms accordingly.
+		Control_GraphMixup.checkSideConnections(ref graph);
+
 		// DEBUG
 		//graph.printCompleteGraphInformation();
 		// END OF DEBUG
@@ -178,6 +181,39 @@ public class Control_GraphMixup : MonoBehaviour {
 				break;
 			}
 		}
+		/*
+		// Checking whether a left door is connected to another left door or vice versa. In that case: continue rotating
+		Data_GraphRoomVertice otherRoom;
+		Data_GraphDoorSpawn otherSpawn;
+		int safetyCounter = 0;
+		for (int j = 0; j < room.MAX_NUM_OF_DOORS; j++) {
+			// Iterate over all door spawns
+			spawn = room.DOOR_SPAWNS.Values[j];
+			if (spawn.isConnected() && (spawn.LEFT_SIDE || spawn.RIGHT_SIDE)) {
+				int otherSpawnID = spawn.CONNECTS_TO_SPAWN_ID;
+				int otherRoomID = graph.DOOR_SPAWN_IS_IN_ROOM[otherSpawnID];
+				otherRoom = graph.ABSTRACT_ROOMS[otherRoomID];
+				otherSpawn = otherRoom.DOOR_SPAWNS[otherSpawnID];
+
+				if ((spawn.LEFT_SIDE && otherSpawn.LEFT_SIDE) || (spawn.RIGHT_SIDE && otherSpawn.RIGHT_SIDE)) {
+					// Unwanted connection. Rotate room
+					rotationSuccessful = room.rotate();
+					if (!rotationSuccessful) {
+						break;
+					}
+					// Iterate over all spawns again
+					j = 0;
+				}
+			}
+
+			safetyCounter++;
+			if (safetyCounter >= 1000) {
+				// Room rotates over and over again but has no position that meets our goals
+				rotationSuccessful = false;
+				break;
+			}
+		}*/
+
 		if (rotationSuccessful) {
 			foreach (Data_GraphRoomVertice vertex in graph.ABSTRACT_ROOMS.Values) {
 				vertex.updateNumDoors();
@@ -286,6 +322,48 @@ public class Control_GraphMixup : MonoBehaviour {
 			}
 			Debug.Log("Reconnection: (" + spawn.INDEX + "," + otherSpawn.INDEX + "), (" + firstSpawn.INDEX + "," + secondSpawn.INDEX + ") -> ("
 				+ spawn.INDEX + "," + firstSpawn.INDEX + "), (" + otherSpawn.INDEX + "," + secondSpawn.INDEX + "). These are door spawn IDs.");
+		}
+	}
+
+	// Checks whether two left sides or two right sides are connected. If true, rotates rooms.
+	private static void checkSideConnections(ref Data_Graph graph) {
+		Data_GraphRoomVertice room, otherRoom;
+		Data_GraphDoorSpawn spawn, otherSpawn;
+		bool rotationNeeded = false;
+
+		for (int i = 0; i < graph.getTotalNumberOfRooms(); i++) {
+			// Iterate over all rooms
+			room = graph.ABSTRACT_ROOMS[i];
+
+			int safetyCounter = 0;
+			for (int j = 0; j < room.MAX_NUM_OF_DOORS; j++) {
+				// Iterate over all door spawns
+				spawn = room.DOOR_SPAWNS.Values[j];
+				if (spawn.isConnected() && (spawn.LEFT_SIDE || spawn.RIGHT_SIDE)) {
+					int otherSpawnID = spawn.CONNECTS_TO_SPAWN_ID;
+					int otherRoomID = graph.DOOR_SPAWN_IS_IN_ROOM[otherSpawnID];
+					otherRoom = graph.ABSTRACT_ROOMS[otherRoomID];
+					otherSpawn = otherRoom.DOOR_SPAWNS[otherSpawnID];
+
+					if ((spawn.LEFT_SIDE && otherSpawn.LEFT_SIDE) || (spawn.RIGHT_SIDE && otherSpawn.RIGHT_SIDE)) {
+						// Rotate room
+						room.rotate();
+						rotationNeeded = true;
+						// Iterate over all spawns again
+						j = 0;
+					}
+				}
+
+				safetyCounter++;
+				if (safetyCounter >= 1000) {
+					// Room rotates over and over again but has no position that meets our goals
+					break;
+				}
+			}
+		}
+
+		if (rotationNeeded) {
+			Debug.Log("Left-Left or Right-Right connection after House Mixup. Rotated to correct it.");
 		}
 	}
 }

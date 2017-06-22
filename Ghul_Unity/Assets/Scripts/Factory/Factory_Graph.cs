@@ -505,7 +505,6 @@ public class Factory_Graph : MonoBehaviour {
 	}
 
 	// Checks whether two left sides or two right sides are connected. If true, rotates rooms.
-	// This can't solve every possible case. In an unlucky situations a room may be connected only to left side doors.
 	private void checkSideConnections() {
 		Data_GraphRoomVertice room, otherRoom;
 		Data_GraphDoorSpawn spawn, otherSpawn;
@@ -514,6 +513,7 @@ public class Factory_Graph : MonoBehaviour {
 			// Iterate over all rooms
 			room = graph.ABSTRACT_ROOMS[i];
 
+			int safetyCounter = 0;
 			for (int j = 0; j < room.MAX_NUM_OF_DOORS; j++) {
 				// Iterate over all door spawns
 				spawn = room.DOOR_SPAWNS.Values[j];
@@ -526,7 +526,15 @@ public class Factory_Graph : MonoBehaviour {
 					if ((spawn.LEFT_SIDE && otherSpawn.LEFT_SIDE) || (spawn.RIGHT_SIDE && otherSpawn.RIGHT_SIDE)) {
 						// Unwanted connection. Rotate otherRoom
 						otherRoom.rotate();
+						// Iterate over all spawns again
+						j = 0;
 					}
+				}
+
+				safetyCounter++;
+				if (safetyCounter >= 1000) {
+					// Room rotates over and over again but has no position that meets our goals
+					break;
 				}
 			}
 		}
