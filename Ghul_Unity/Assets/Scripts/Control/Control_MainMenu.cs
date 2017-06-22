@@ -6,10 +6,9 @@ public class Control_MainMenu : MonoBehaviour {
 
 	public Control_GameState GameStateControl;
 	public Canvas MainMenuCanvas;
-
-	public Image MainMenuBackground;
-	public Sprite MainMenuWithStartButton;
-	public Sprite MainMenuWithoutStartButton;
+	public Button NewGameButton;
+	public Button ContinueButton;
+	public GameObject EscapeBlinker;
 
 	public Image ControlsDisplayImage;
 	public Animator ControlsDisplayAnimator;
@@ -17,14 +16,26 @@ public class Control_MainMenu : MonoBehaviour {
 	public Control_Monster MonsterControl;
 	private string inputBuffer;
 
-	private bool hidden;
-	private bool newGameButtonDisabled;
+	private bool isLaunchMenu;
+
+	private bool hidden {
+		get { return !MainMenuCanvas.enabled; }
+	}
+
+	private bool newGameButtonDisabled {
+		get { return !NewGameButton.interactable; }
+	}
+
+	private bool continueButtonDisabled {
+		get { return !ContinueButton.interactable; }
+	}
 
 	private float displayControlsDuration = 3f;
 	private float displayControlsFadeDuration = 2f;
 
 	void Start() {
 		ControlsDisplayImage.enabled = false;
+		isLaunchMenu = true;
 		inputBuffer = "";
 	}
 
@@ -34,6 +45,14 @@ public class Control_MainMenu : MonoBehaviour {
 			disableNewGameButton();
 		} else if(newGameButtonDisabled && !GameStateControl.newGameDisabled) {
 			reenableNewGameButton();
+		}
+
+		// Dito for the continue button
+		if(!isLaunchMenu && !continueButtonDisabled) {
+			hideContinueButton();
+			showEscapeBlinker();
+		} else if(isLaunchMenu) {
+			hideEscapeBlinker();
 		}
 
 		// Easter egg: summon Knolli Classic
@@ -48,30 +67,41 @@ public class Control_MainMenu : MonoBehaviour {
 	public void show() {
 		if(hidden) {
 			MainMenuCanvas.enabled = true;
-			hidden = false;
 		}
 	}
 
 	public void hide() {
 		if(!hidden) {
 			inputBuffer = "";
+			isLaunchMenu = false;
 			MainMenuCanvas.enabled = false;
-			hidden = true;
 		}
 	}
 
 	private void disableNewGameButton() {
 		if(!newGameButtonDisabled) {
-			newGameButtonDisabled = true;
-			MainMenuBackground.sprite = MainMenuWithoutStartButton;
+			NewGameButton.interactable = false;
 		}
 	}
 
 	private void reenableNewGameButton() {
 		if(newGameButtonDisabled) {
-			newGameButtonDisabled = false;
-			MainMenuBackground.sprite = MainMenuWithStartButton;
+			NewGameButton.interactable = true;
 		}
+	}
+
+	private void hideContinueButton() {
+		if(!continueButtonDisabled) {
+			ContinueButton.interactable = false;
+		}
+	}
+
+	private void showEscapeBlinker() {
+		EscapeBlinker.SetActive(true);
+	}
+
+	private void hideEscapeBlinker() {
+		EscapeBlinker.SetActive(false);
 	}
 
 	// This method is called when the New Game button is activated from the main menu
