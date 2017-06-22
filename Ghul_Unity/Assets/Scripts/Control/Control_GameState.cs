@@ -698,6 +698,7 @@ public class Control_GameState : MonoBehaviour {
 		waitUntil += lingerOnScribbles;
 		yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
 		// Make it look like Toni has just walked in through the right door (next to the pentagram)
+		TONI.control.setSpriteFlip(true); // Turn Toni towards the center of the room
 		TONI.control.enterTheHouse();
 		// Wait some more
 		waitUntil += waitOnToni;
