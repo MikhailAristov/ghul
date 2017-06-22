@@ -4290,7 +4290,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 553f3789f13647b4eb1aa94fc6ff5248, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  IsExpoBuild: 0
+  InExpoMode: 0
   MainMenuControl: {fileID: 1028994223}
   MonsterDistanceText: {fileID: 482152117}
   CorpsePoolControl: {fileID: 1192129377}

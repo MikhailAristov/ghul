@@ -6,6 +6,10 @@ using System.Collections.Generic;
 // This is the controller class that manages the game state data
 public class Control_GameState : MonoBehaviour {
     
+	// In the exposition builds, it is always possible to reset the game state 
+	// on restarting the game, and there is no continue button
+	public bool InExpoMode;
+
 	private Data_GameState GS;
 	private Data_PlayerCharacter TONI;
 	private Data_Monster MONSTER;
@@ -75,10 +79,12 @@ public class Control_GameState : MonoBehaviour {
 		prefabFactory = GetComponent<Factory_PrefabController>();
 		graphFactory = GetComponent<Factory_Graph>();
 		// Load the game if possible
-		continueFromSavedGameState();
-		if(GS != null) {
-			setAdditionalParameters(newGame:false);
-			GS.SUSPENDED = true; // Suspend the game while in the main menu initially
+		if(!InExpoMode) {
+			continueFromSavedGameState();
+			if(GS != null) {
+				setAdditionalParameters(newGame:false);
+				GS.SUSPENDED = true; // Suspend the game while in the main menu initially
+			}
 		}
 	}
 

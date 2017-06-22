@@ -48,11 +48,13 @@ public class Control_MainMenu : MonoBehaviour {
 		}
 
 		// Dito for the continue button
-		if(!isLaunchMenu && !continueButtonDisabled) {
+		if((!isLaunchMenu || GameStateControl.InExpoMode) && !continueButtonDisabled) {
 			hideContinueButton();
+		} 
+
+		// And the escape blinker
+		if(!isLaunchMenu && !EscapeBlinker.activeSelf) {
 			showEscapeBlinker();
-		} else if(isLaunchMenu) {
-			hideEscapeBlinker();
 		}
 
 		// Easter egg: summon Knolli Classic
@@ -98,10 +100,6 @@ public class Control_MainMenu : MonoBehaviour {
 
 	private void showEscapeBlinker() {
 		EscapeBlinker.SetActive(true);
-	}
-
-	private void hideEscapeBlinker() {
-		EscapeBlinker.SetActive(false);
 	}
 
 	// This method is called when the New Game button is activated from the main menu
