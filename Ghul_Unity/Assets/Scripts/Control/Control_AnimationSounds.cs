@@ -7,9 +7,11 @@ public class Control_AnimationSounds : MonoBehaviour {
 
 	public AudioSource SteppingSound;
 	public AudioSource AttackSound;
+	public AudioSource ItemPickupSound;
 	public AudioSource ZappingSound;
 	public AudioSource MonsterBreathIn;
 	public AudioSource MonsterBreathOut;
+	public AudioSource ToniDeathSound;
 	public bool CheckDistanceToCamera;
 	public Control_Camera MainCameraControl;
 
@@ -56,6 +58,12 @@ public class Control_AnimationSounds : MonoBehaviour {
 		}
 	}
 
+	public void playItemPickup() {
+		if(ItemPickupSound != null && ItemPickupSound.clip != null) {
+			ItemPickupSound.Play();
+		}
+	}
+
 	public void playZappingSound() {
 		if(ZappingSound != null && ZappingSound.clip != null) {
 			ZappingSound.Play();
@@ -71,6 +79,12 @@ public class Control_AnimationSounds : MonoBehaviour {
 	public void monsterBreatheOut() {
 		if(MonsterBreathOut != null && MonsterBreathOut.clip != null && (!CheckDistanceToCamera || MainCameraControl.canSeeObject(gameObject, -100f))) {
 			MonsterBreathOut.Play();
+		}
+	}
+
+	public void playToniDeath() {
+		if(ToniDeathSound != null && ToniDeathSound.clip != null && (!CheckDistanceToCamera || MainCameraControl.canSeeObject(gameObject, -100f))) {
+			ToniDeathSound.Play();
 		}
 	}
 }
