@@ -471,6 +471,8 @@ public class Control_PlayerCharacter : Control_Character {
 		Data_Door entryDoor = GS.getRoomByIndex(RITUAL_ROOM_INDEX).rightmostDoor.connectsTo;
 		// And go through it
 		StartCoroutine(goThroughTheDoor(entryDoor));
+		// Turn Toni towards the center of the ritual room
+		setSpriteFlip(true);
 	}
 
 	public void setupEndgame() {
