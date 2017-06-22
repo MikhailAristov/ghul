@@ -146,7 +146,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 271758504}
-  m_RootOrder: 2
+  m_RootOrder: 3
 --- !u!82 &21811786
 AudioSource:
   m_ObjectHideFlags: 0
@@ -717,9 +717,11 @@ Transform:
   m_Children:
   - {fileID: 1061054542}
   - {fileID: 825760649}
+  - {fileID: 1442804420}
   - {fileID: 21811785}
   - {fileID: 2094500992}
   - {fileID: 767210449}
+  - {fileID: 540861370}
   m_Father: {fileID: 558393188}
   m_RootOrder: 3
 --- !u!1 &296330126
@@ -1420,8 +1422,112 @@ Transform:
   - {fileID: 1557828319}
   - {fileID: 446169174}
   - {fileID: 2016365715}
+  - {fileID: 1884885129}
   m_Father: {fileID: 495099017}
   m_RootOrder: 4
+--- !u!1 &540861369
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 540861370}
+  - 82: {fileID: 540861371}
+  m_Layer: 0
+  m_Name: DeathSound
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &540861370
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 540861369}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 271758504}
+  m_RootOrder: 6
+--- !u!82 &540861371
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 540861369}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 8300000, guid: 28c79e92fa4e23b4a82da200d25f8667, type: 3}
+  m_PlayOnAwake: 0
+  m_Volume: 0.1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  Priority: 128
+  DopplerLevel: 0
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 1
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    - time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
 --- !u!1 &558393186
 GameObject:
   m_ObjectHideFlags: 0
@@ -1702,9 +1808,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SteppingSound: {fileID: 1557828320}
   AttackSound: {fileID: 629350730}
+  ItemPickupSound: {fileID: 0}
   ZappingSound: {fileID: 0}
   MonsterBreathIn: {fileID: 446169175}
   MonsterBreathOut: {fileID: 2016365716}
+  ToniDeathSound: {fileID: 1884885128}
   CheckDistanceToCamera: 1
   MainCameraControl: {fileID: 1344317741}
 --- !u!1 &685809629
@@ -1856,7 +1964,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 271758504}
-  m_RootOrder: 4
+  m_RootOrder: 5
 --- !u!82 &767210450
 AudioSource:
   m_ObjectHideFlags: 0
@@ -2770,9 +2878,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SteppingSound: {fileID: 825760650}
   AttackSound: {fileID: 1061054543}
+  ItemPickupSound: {fileID: 0}
   ZappingSound: {fileID: 21811786}
   MonsterBreathIn: {fileID: 2094500993}
   MonsterBreathOut: {fileID: 767210450}
+  ToniDeathSound: {fileID: 0}
   CheckDistanceToCamera: 0
   MainCameraControl: {fileID: 1344317741}
 --- !u!1 &1028994218
@@ -4139,6 +4249,109 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fadeoutImage: {fileID: 118877560}
   redoutImage: {fileID: 1970681122}
+--- !u!1 &1442804419
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 1442804420}
+  - 82: {fileID: 1442804421}
+  m_Layer: 0
+  m_Name: ItemPickupSound
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1442804420
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1442804419}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 271758504}
+  m_RootOrder: 2
+--- !u!82 &1442804421
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1442804419}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 8300000, guid: 560a122e3dafee24ab6ab2f6c5249d7d, type: 3}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  Priority: 128
+  DopplerLevel: 0
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 1
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    - time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
 --- !u!1 &1544311810
 GameObject:
   m_ObjectHideFlags: 0
@@ -4495,9 +4708,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SteppingSound: {fileID: 1557828320}
   AttackSound: {fileID: 629350730}
+  ItemPickupSound: {fileID: 0}
   ZappingSound: {fileID: 0}
   MonsterBreathIn: {fileID: 446169175}
   MonsterBreathOut: {fileID: 2016365716}
+  ToniDeathSound: {fileID: 1884885128}
   CheckDistanceToCamera: 1
   MainCameraControl: {fileID: 1344317741}
 --- !u!1 &1673746494
@@ -4816,6 +5031,109 @@ CanvasRenderer:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1857269363}
+--- !u!1 &1884885127
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 1884885129}
+  - 82: {fileID: 1884885128}
+  m_Layer: 0
+  m_Name: DeathSound
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!82 &1884885128
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1884885127}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 8300000, guid: 28c79e92fa4e23b4a82da200d25f8667, type: 3}
+  m_PlayOnAwake: 0
+  m_Volume: 0.1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  Priority: 128
+  DopplerLevel: 0
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 1
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    - time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+--- !u!4 &1884885129
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1884885127}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -7, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 527278871}
+  m_RootOrder: 4
 --- !u!1 &1970681121
 GameObject:
   m_ObjectHideFlags: 0
@@ -5020,9 +5338,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SteppingSound: {fileID: 825760650}
   AttackSound: {fileID: 1061054543}
+  ItemPickupSound: {fileID: 1442804421}
   ZappingSound: {fileID: 21811786}
   MonsterBreathIn: {fileID: 2094500993}
   MonsterBreathOut: {fileID: 767210450}
+  ToniDeathSound: {fileID: 540861371}
   CheckDistanceToCamera: 0
   MainCameraControl: {fileID: 1344317741}
 --- !u!1 &2016365714
@@ -5156,7 +5476,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 271758504}
-  m_RootOrder: 3
+  m_RootOrder: 4
 --- !u!82 &2094500993
 AudioSource:
   m_ObjectHideFlags: 0
