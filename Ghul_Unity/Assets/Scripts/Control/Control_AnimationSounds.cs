@@ -53,7 +53,7 @@ public class Control_AnimationSounds : MonoBehaviour {
 	void FixedUpdate() {
 		// Update the stereo pan
 		if(mainCameraCanSeeMe) {
-			stereoPan = Mathf.Atan2(transform.position.x - MainCameraControl.transform.position.x, -MainCameraControl.transform.position.z) * 2f;
+			stereoPan = Mathf.Atan2(transform.position.x - MainCameraControl.transform.position.x, -MainCameraControl.transform.position.z) / Mathf.PI * 2f;
 		}
 
 		// Update the item pickup sound, if necessary
