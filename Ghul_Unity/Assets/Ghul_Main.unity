@@ -1996,14 +1996,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SteppingSound: {fileID: 1557828320}
-  AttackSound: {fileID: 629350730}
+  AttackSound: {fileID: 0}
   ItemPickupSound: {fileID: 0}
   ZappingSound: {fileID: 0}
-  MonsterBreathIn: {fileID: 446169175}
-  MonsterBreathOut: {fileID: 2016365716}
+  MonsterBreathIn: {fileID: 0}
+  MonsterBreathOut: {fileID: 0}
   ToniDeathSound: {fileID: 151695502}
   CheckDistanceToCamera: 1
   MainCameraControl: {fileID: 1344317741}
+  GameStateControl: {fileID: 0}
 --- !u!1 &685809629
 GameObject:
   m_ObjectHideFlags: 0
@@ -2369,7 +2370,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: 803a21e1c82a99d4a8c74158f2de55e6, type: 3}
+  m_audioClip: {fileID: 8300000, guid: 70c475d2bbc0e94449b5e26c0aefd623, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -3067,13 +3068,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SteppingSound: {fileID: 825760650}
   AttackSound: {fileID: 1061054543}
-  ItemPickupSound: {fileID: 1684850000}
-  ZappingSound: {fileID: 21811786}
+  ItemPickupSound: {fileID: 0}
+  ZappingSound: {fileID: 0}
   MonsterBreathIn: {fileID: 2094500993}
   MonsterBreathOut: {fileID: 767210450}
-  ToniDeathSound: {fileID: 188979814}
+  ToniDeathSound: {fileID: 0}
   CheckDistanceToCamera: 0
   MainCameraControl: {fileID: 1344317741}
+  GameStateControl: {fileID: 0}
 --- !u!1 &1028994218
 GameObject:
   m_ObjectHideFlags: 0
@@ -4798,9 +4800,10 @@ MonoBehaviour:
   ZappingSound: {fileID: 0}
   MonsterBreathIn: {fileID: 446169175}
   MonsterBreathOut: {fileID: 2016365716}
-  ToniDeathSound: {fileID: 151695502}
+  ToniDeathSound: {fileID: 0}
   CheckDistanceToCamera: 1
   MainCameraControl: {fileID: 1344317741}
+  GameStateControl: {fileID: 0}
 --- !u!1 &1673746494
 GameObject:
   m_ObjectHideFlags: 0
@@ -5471,14 +5474,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SteppingSound: {fileID: 825760650}
-  AttackSound: {fileID: 1061054543}
+  AttackSound: {fileID: 0}
   ItemPickupSound: {fileID: 1684850000}
   ZappingSound: {fileID: 21811786}
-  MonsterBreathIn: {fileID: 2094500993}
-  MonsterBreathOut: {fileID: 767210450}
+  MonsterBreathIn: {fileID: 0}
+  MonsterBreathOut: {fileID: 0}
   ToniDeathSound: {fileID: 188979814}
   CheckDistanceToCamera: 0
   MainCameraControl: {fileID: 1344317741}
+  GameStateControl: {fileID: 1333168852}
 --- !u!1 &2016365714
 GameObject:
   m_ObjectHideFlags: 0
