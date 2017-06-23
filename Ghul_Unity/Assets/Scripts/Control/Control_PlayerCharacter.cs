@@ -520,6 +520,10 @@ public class Control_PlayerCharacter : Control_Character {
 		} else {
 			noiseSystem.makeNoise(Control_Noise.NOISE_TYPE_DOOR, me.pos);
 		}
+		// Play headshake animation
+		if(animatorHuman != null && animatorHuman.isInitialized) {
+			animatorHuman.SetTrigger("Shake Head");
+		}
 	}
 
 	protected override void preDoorTransitionHook(Data_Door doorTaken) {

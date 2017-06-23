@@ -34,7 +34,7 @@ public class Global_Settings {
 
 			// Door settings
 			{ "MARGIN_DOOR_ENTRANCE",			0.8625f },	// How close a character's center of mass must be to the door's center to use it
-			{ "DOOR_TRANSITION_DURATION",		0.4f },		// How long it takes to go through a door
+			{ "DOOR_TRANSITION_DURATION",		0.5f },		// How long it takes to go through a door
 			{ "DOOR_OPEN_DURATION",				1.0f },		// How long a door stays open after someone goes through it
 
 			// Character movement settings
@@ -71,7 +71,7 @@ public class Global_Settings {
 			{ "ITEM_FLOOR_LEVEL",				-1.7625f },	// Distance from the horizontal center of the room at which items are lying on the floor
 			{ "INVENTORY_DISPLAY_DURATION",		2.0f },		// How long the inventory overlay is shown when invoked
 			{ "ITEM_PICKUP_DURATION",			1.3f },		// How long Toni needs to pick up an item
-			{ "ITEM_ZAP_DURATION",				1.6f },		// How long Toni is disabled after trying to pick up a wrong item
+			{ "ITEM_ZAP_DURATION",				1.9f },		// How long Toni is disabled after trying to pick up a wrong item
 
 			// Artificial intelligence and modelling settings
 			{ "TIME_STEP",		Time.fixedDeltaTime },		// ...
