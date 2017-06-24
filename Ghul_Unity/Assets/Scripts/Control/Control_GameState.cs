@@ -51,6 +51,9 @@ public class Control_GameState : MonoBehaviour {
 	public bool newGameDisabled {
 		get { return (GS != null && GS.OVERALL_STATE > STATE_COLLECTION_PHASE); }
 	}
+	public int currentChapter {
+		get { return (GS != null && GS.OVERALL_STATE == STATE_COLLECTION_PHASE) ? (GS.numItemsPlaced + 1) : 0; }
+	}
 
 	// Use this for initialization
 	void Awake() {
