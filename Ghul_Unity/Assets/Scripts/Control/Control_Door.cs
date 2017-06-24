@@ -33,6 +33,10 @@ public class Control_Door : MonoBehaviour {
 	private const float doorHeldDuration = 0.1f;
 	private float verticalHearingThreshold;
 
+	private bool mainCameraCanHearMe {
+		get { return (Mathf.Abs(transform.position.y - Camera.main.transform.position.y) < verticalHearingThreshold); }
+	}
+
 	// Returns whether the door is currently being held open (to guide Monster Toni)
 	public bool isHeldOpen {
 		get { return (me.state == Data_Door.STATE_OPEN && timeUntilClosing > doorOpenDuration); }
@@ -71,6 +75,13 @@ public class Control_Door : MonoBehaviour {
 				me.connectsTo.state = Data_Door.STATE_CLOSED;
 			}
 		}
+
+		// Update the sound pan as long as the camera can hear you
+		if(mainCameraCanHearMe) {
+			float soundPan = Control_AnimationSounds.getHorizontalSoundPan(Camera.main.transform.position.x - transform.position.x);
+			knobSound.panStereo = soundPan;
+			creakSound.panStereo = soundPan;
+		}
 	}
 
 	// Links the control object to the data object
@@ -83,7 +94,7 @@ public class Control_Door : MonoBehaviour {
 	// Opens the door if it's closed, keeps it open longer otherwise
 	public void open(bool silently = false, bool holdOpen = false, bool forceCreak = false) {
 		// If the "hold" flag is specified, the door stays open for much longer (or until someone goes through it)
-		timeUntilClosing = holdOpen ? doorOpenDuration * 10 : doorOpenDuration;
+		timeUntilClosing = holdOpen ? doorOpenDuration * 10f : doorOpenDuration;
 		if(me.state != Data_Door.STATE_OPEN) {
 			ClosedSprite.SetActive(false);
 			OpenSprite.SetActive(true);
@@ -139,7 +150,7 @@ public class Control_Door : MonoBehaviour {
 
 	// Closes the door after it has been open long enough
 	private IEnumerator waitForClosure() {
-		while(timeUntilClosing > 0f) {
+		while(timeUntilClosing > 0) {
 			yield return new WaitForSeconds(doorOpenCheckFrequency);
 			timeUntilClosing -= doorOpenCheckFrequency;
 		}
@@ -151,7 +162,7 @@ public class Control_Door : MonoBehaviour {
 
 	// Play the specified sound if the main camera (i.e. Toni) is within the current room
 	private void playSound(int soundType, bool forceCreak = false) {
-		if(Mathf.Abs(transform.position.y - Camera.main.transform.position.y) > verticalHearingThreshold) {
+		if(!mainCameraCanHearMe) {
 			return;
 		}
 

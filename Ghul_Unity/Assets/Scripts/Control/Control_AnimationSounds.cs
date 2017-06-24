@@ -30,7 +30,6 @@ public class Control_AnimationSounds : MonoBehaviour {
 		get { return (MainCameraControl != null && MainCameraControl.canSeeObject(gameObject, -100f)); }
 	}
 
-	private float stereoPan;
 	private static int currentChapter;
 
 	void Awake() {
@@ -47,13 +46,25 @@ public class Control_AnimationSounds : MonoBehaviour {
 			itemPickupSounds = new List<AudioClip>(Resources.LoadAll("Toni/ItemPickupSounds", typeof(AudioClip)).Cast<AudioClip>());
 			itemPickupSoundsCount = itemPickupSounds.Count;
 		}
-		stereoPan = 0;
 	}
 
 	void FixedUpdate() {
 		// Update the stereo pan
 		if(mainCameraCanSeeMe) {
-			stereoPan = Mathf.Atan2(transform.position.x - MainCameraControl.transform.position.x, -MainCameraControl.transform.position.z) / Mathf.PI * 2f;
+			float stereoPan = getHorizontalSoundPan(MainCameraControl.transform.position.x - transform.position.x);
+			SteppingSound.panStereo = stereoPan;
+			if(AttackSound != null) {
+				AttackSound.panStereo = stereoPan;
+				MonsterBreathIn.panStereo = stereoPan;
+				MonsterBreathOut.panStereo = stereoPan;
+			}
+			if(ItemPickupSound != null) {
+				ItemPickupSound.panStereo = stereoPan;
+				ZappingSound.panStereo = stereoPan;
+			}
+			if(ToniDeathSound != null) {
+				ToniDeathSound.panStereo = stereoPan;
+			}
 		}
 
 		// Update the item pickup sound, if necessary
@@ -76,50 +87,49 @@ public class Control_AnimationSounds : MonoBehaviour {
 			SteppingSound.Stop();
 			SteppingSound.clip = sound;
 			SteppingSound.volume = volume;
-			SteppingSound.panStereo = stereoPan;
 			SteppingSound.Play();
 		}
 	}
 
 	public void playAttackSound() {
 		if(AttackSound != null && AttackSound.clip != null && (!CheckDistanceToCamera || mainCameraCanSeeMe)) {
-			AttackSound.panStereo = stereoPan;
 			AttackSound.Play();
 		}
 	}
 
 	public void playItemPickup() {
 		if(ItemPickupSound != null && ItemPickupSound.clip != null) {
-			ItemPickupSound.panStereo = stereoPan;
 			ItemPickupSound.Play();
 		}
 	}
 
 	public void playZappingSound() {
 		if(ZappingSound != null && ZappingSound.clip != null) {
-			ZappingSound.panStereo = stereoPan;
 			ZappingSound.Play();
 		}
 	}
 
 	public void monsterBreatheIn() {
 		if(MonsterBreathIn != null && MonsterBreathIn.clip != null && (!CheckDistanceToCamera || mainCameraCanSeeMe)) {
-			MonsterBreathIn.panStereo = stereoPan;
 			MonsterBreathIn.Play();
 		}
 	}
 
 	public void monsterBreatheOut() {
 		if(MonsterBreathOut != null && MonsterBreathOut.clip != null && (!CheckDistanceToCamera || mainCameraCanSeeMe)) {
-			MonsterBreathOut.panStereo = stereoPan;
 			MonsterBreathOut.Play();
 		}
 	}
 
 	public void playToniDeath() {
 		if(ToniDeathSound != null && ToniDeathSound.clip != null && (!CheckDistanceToCamera || mainCameraCanSeeMe)) {
-			ToniDeathSound.panStereo = stereoPan;
 			ToniDeathSound.Play();
 		}
+	}
+
+	// Returns the appropriate 2D sound panning value for a horizontal distance to the main camera
+	public static float getHorizontalSoundPan(float horizontalDistToCamera) {
+		float result = Mathf.Atan2(-horizontalDistToCamera, -Camera.main.transform.position.z) / Mathf.PI * 2f;
+		return Mathf.Clamp(result, -1f, 1f);
 	}
 }
