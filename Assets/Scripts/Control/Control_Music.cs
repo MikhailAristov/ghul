@@ -11,12 +11,11 @@ public class Control_Music : MonoBehaviour {
 	private const float TRACK_MUTING_DURATION = 1f;
 	private const float TRACK_UNMUTING_DURATION = 5f;
 
-	private const float MIN_PROXIMITY = 3f;
-	private const float MAX_PROXIMITY = 30f;
-
 	private float proximityTrackVolumeFactor;
 	private const float minProximityTrackVolumeFactor = 0.1f;
 	private const float maxProximityTrackVolumeFactor = 1f;
+
+	private int RITUAL_ITEMS_REQUIRED;
 
 	// Jukebox references
 	private bool allPaused;
@@ -31,6 +30,7 @@ public class Control_Music : MonoBehaviour {
 	void Awake() {
 		allPaused = false;
 		allMuted = false;
+		RITUAL_ITEMS_REQUIRED = Global_Settings.readInt("RITUAL_ITEMS_REQUIRED");
 	}
 
 	void Update() {
@@ -44,7 +44,7 @@ public class Control_Music : MonoBehaviour {
 		switch(GS.OVERALL_STATE) {
 		case(Control_GameState.STATE_COLLECTION_PHASE):
 			if(MONSTER.worldModel.hasMetToni) {
-				if(currentTrackID != GS.numItemsPlaced) {
+				if(currentTrackID != GS.numItemsPlaced && GS.numItemsPlaced < RITUAL_ITEMS_REQUIRED) {
 					switchTracks(currentTrackID, GS.numItemsPlaced);
 					currentTrackID = GS.numItemsPlaced;
 				}
