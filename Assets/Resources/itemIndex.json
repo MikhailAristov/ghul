@@ -1,0 +1,139 @@
+{
+    "list": [
+        {
+            "prefabName": "PrefabItem_Ankh",
+            "displayName": "Ankh",
+            "size": {
+                "x": 0.64,
+                "y": 0.64
+            },
+            "maxInstances": 1
+        },
+        {
+            "prefabName": "PrefabItem_Brain",
+            "displayName": "Brain-in-a-Jar",
+            "size": {
+                "x": 0.64,
+                "y": 0.64
+            },
+            "maxInstances": 1
+        },
+        {
+            "prefabName": "PrefabItem_Chalice",
+            "displayName": "Golden Chalice",
+            "size": {
+                "x": 0.64,
+                "y": 0.64
+            },
+            "maxInstances": 1
+        },
+        {
+            "prefabName": "PrefabItem_CrystalBall",
+            "displayName": "Crystal Ball",
+            "size": {
+                "x": 0.64,
+                "y": 0.64
+            },
+            "maxInstances": 1
+        },
+        {
+            "prefabName": "PrefabItem_Dagger",
+            "displayName": "Dagger",
+            "size": {
+                "x": 0.64,
+                "y": 0.64
+            },
+            "maxInstances": 0
+        },
+        {
+            "prefabName": "PrefabItem_Gem1",
+            "displayName": "Blue Gem",
+            "size": {
+                "x": 0.64,
+                "y": 0.64
+            },
+            "maxInstances": 1
+        },
+        {
+            "prefabName": "PrefabItem_Gem2",
+            "displayName": "Red Gem",
+            "size": {
+                "x": 0.64,
+                "y": 0.64
+            },
+            "maxInstances": 1
+        },
+        {
+            "prefabName": "PrefabItem_Hand",
+            "displayName": "Skeletal Hand",
+            "size": {
+                "x": 0.64,
+                "y": 0.64
+            },
+            "maxInstances": 1
+        },
+        {
+            "prefabName": "PrefabItem_Mirror",
+            "displayName": "Broken Mirror",
+            "size": {
+                "x": 0.64,
+                "y": 0.64
+            },
+            "maxInstances": 1
+        },
+        {
+            "prefabName": "PrefabItem_Ouroboros",
+            "displayName": "Ouroboros",
+            "size": {
+                "x": 0.64,
+                "y": 0.64
+            },
+            "maxInstances": 1
+        },
+        {
+            "prefabName": "PrefabItem_Poison",
+            "displayName": "Poison Vial",
+            "size": {
+                "x": 0.64,
+                "y": 0.64
+            },
+            "maxInstances": 1
+        },
+        {
+            "prefabName": "PrefabItem_Sandclock",
+            "displayName": "Sand Clock",
+            "size": {
+                "x": 0.64,
+                "y": 0.64
+            },
+            "maxInstances": 1
+        },
+        {
+            "prefabName": "PrefabItem_Skull",
+            "displayName": "Human Skull",
+            "size": {
+                "x": 0.64,
+                "y": 0.64
+            },
+            "maxInstances": 1
+        },
+        {
+            "prefabName": "PrefabItem_Spider",
+            "displayName": "Desiccated Spider",
+            "size": {
+                "x": 0.64,
+                "y": 0.64
+            },
+            "maxInstances": 1
+        },
+        {
+            "prefabName": "PrefabItem_Toad",
+            "displayName": "Live Toad",
+            "size": {
+                "x": 0.64,
+                "y": 0.64
+            },
+            "maxInstances": 1
+        }
+    ]
+}
