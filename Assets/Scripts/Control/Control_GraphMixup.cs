@@ -86,7 +86,8 @@ public class Control_GraphMixup : MonoBehaviour {
 		}
 		// Check whether a left side is connected to another left side (or the same for the right side) and rotating rooms accordingly.
 		Control_GraphMixup.checkSideConnections(ref graph);
-		Control_GraphMixup.dijkstraConnectionTest(ref graph);
+		//TODO: Get this working again
+		//Control_GraphMixup.dijkstraConnectionTest(ref graph);
 
 		// DEBUG
 		//graph.printCompleteGraphInformation();
