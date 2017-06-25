@@ -62,6 +62,9 @@ public class Control_GraphMixup : MonoBehaviour {
 			if (!ritualRoomDoorChosen) { techniqueNr = (int)UnityEngine.Random.Range(1.0f, 4.0f); } // Possible values: 1,2,3
 			else { techniqueNr = 2; } // Only rotation
 
+			// DEBUG
+			//techniqueNr = 3; // <- Wenn nicht auskommentiert, wird der Zusammenhangsfehler wahrscheinlicher (zum Testen).
+
 			switch (techniqueNr) {
 			case 1:
 				// Remove the connection (if possible)
@@ -83,10 +86,103 @@ public class Control_GraphMixup : MonoBehaviour {
 		}
 		// Check whether a left side is connected to another left side (or the same for the right side) and rotating rooms accordingly.
 		Control_GraphMixup.checkSideConnections(ref graph);
+		Control_GraphMixup.dijkstraConnectionTest(ref graph);
 
 		// DEBUG
 		//graph.printCompleteGraphInformation();
 		// END OF DEBUG
+	}
+
+	private static void dijkstraConnectionTest(ref Data_Graph graph) {
+		int[] status = new int[graph.ABSTRACT_ROOMS.Count]; // status: 0 = not discovered, 1 = discovered, 2 = relaxations completed
+		status[0] = 1;
+		for (int i = 1; i < status.Length; i++) {
+			status[i] = 0;
+		}
+		bool repeat = true;
+		bool error = false;
+
+		int safetyCounter = 0;
+		while (repeat && safetyCounter < 1000) {
+			repeat = false;
+			safetyCounter++;
+
+			for (int i = 0; i < graph.ABSTRACT_ROOMS.Count; i++) {
+				// Go through the rooms and relax outgoing edges from those with status 1
+				if (status[i] == 1) {
+					repeat = true;
+					Data_GraphRoomVertice room = graph.ABSTRACT_ROOMS[i];
+					for (int j = 0; j < room.DOOR_SPAWNS.Count; j++) {
+						Data_GraphDoorSpawn spawn = room.DOOR_SPAWNS.Values[j];
+						if (spawn.isConnected()) {
+							// Relax edge
+							int otherRoomID = graph.DOOR_SPAWN_IS_IN_ROOM[spawn.CONNECTS_TO_SPAWN_ID];
+							if (status[otherRoomID] == 0) {
+								status[otherRoomID] = 1;
+							}
+						}
+					}
+					// Room finished
+					status[i] = 2;
+				}
+			}
+
+			if (safetyCounter >= 1000) {
+				Debug.Log("Endless Loop in Disjkstra Connection Check (1)");
+				error = true;
+				break;
+			}
+		}
+
+		bool disconnect = false;
+		int disconnectedRoom = -1;
+		if (!error) {
+			// If there's still a status 0 room, there's a disconnection.
+			for (int i = 0; i < status.Length; i++) {
+				if (status[i] == 0) {
+					disconnect = true;
+					disconnectedRoom = i;
+					break;
+				}
+			}
+
+			// Try reconnecting the room to the graph.
+			if (disconnect) {
+				// Find a room to connect to that is reachable from the ritual room.
+				int otherRoomId = -1;
+				int safety = 0;
+				while (otherRoomId == -1 || status[otherRoomId] != 2) {
+					safety++;
+					otherRoomId = Factory_Graph.findRandomRoomNotFullNotEmpty(ref graph);
+
+					if (safety >= 1000) {
+						Debug.Log("Endless Loop in Disjkstra Connection Check (2)");
+						return;
+					}
+				}
+				// Connecting the two rooms
+				if (otherRoomId != -1) {
+					Data_GraphRoomVertice room = graph.ABSTRACT_ROOMS[disconnectedRoom];
+					Data_GraphDoorSpawn spawn = room.getRandomEmptyDoorSpawn();
+					if (spawn == null) {
+						// The disconnected room doesn't have free door spawns. Cutting one of them.
+						spawn = room.getRandomConnectedDoorSpawn();
+						spawn.disconnect();
+					}
+					Data_GraphRoomVertice otherRoom = graph.ABSTRACT_ROOMS[otherRoomId];
+					Data_GraphDoorSpawn otherSpawn = otherRoom.getRandomEmptyDoorSpawn();
+					spawn.connectTo(otherSpawn.INDEX);
+					otherSpawn.connectTo(spawn.INDEX);
+					Debug.Log("Dijkstra-Check discovered a disconnection. Connected spawns (" + spawn.INDEX + ", " + otherSpawn.INDEX + ") in rooms (" + room.INDEX + ", " + otherRoom.INDEX + ")");
+				}
+
+				// Rerun the Side check
+				Control_GraphMixup.checkSideConnections(ref graph);
+
+				// Rerun the Disjkstra check
+				Control_GraphMixup.dijkstraConnectionTest(ref graph);
+			}
+		}
 	}
 
 	// Removes the spawn's connection if:
@@ -145,6 +241,11 @@ public class Control_GraphMixup : MonoBehaviour {
 				break;
 			}
 			iteratorSpawn = nextRoom.getNextConnectedSpawn(iteratorSpawn.CONNECTS_TO_SPAWN_ID);
+
+			if (i >= 100) {
+				// Search takes too long.
+				otherError = true;
+			}
 		}
 			
 		if (connectionIsSeparator || ritualRoomPotentiallySeparator || otherError) {
@@ -253,6 +354,11 @@ public class Control_GraphMixup : MonoBehaviour {
 			}
 			iteratorSpawn = nextRoom.getNextConnectedSpawn(iteratorSpawn.CONNECTS_TO_SPAWN_ID);
 			outgoingSpawnIdsOnCycle.Add(iteratorSpawn.INDEX);
+
+			if (i >= 100) {
+				// Search takes too long
+				otherError = true;
+			}
 		}
 
 		if (connectionIsSeparator || ritualRoomPotentiallySeparator || selfConnectedRoom || otherError) {
@@ -299,11 +405,12 @@ public class Control_GraphMixup : MonoBehaviour {
 		Data_GraphDoorSpawn spawn, otherSpawn;
 		bool rotationNeeded = false;
 
+		int safetyCounterOuter = 0;
 		for (int i = 0; i < graph.getTotalNumberOfRooms(); i++) {
 			// Iterate over all rooms
 			room = graph.ABSTRACT_ROOMS[i];
 
-			int safetyCounter = 0;
+			int safetyCounterInner = 0;
 			for (int j = 0; j < room.MAX_NUM_OF_DOORS; j++) {
 				// Iterate over all door spawns
 				spawn = room.DOOR_SPAWNS.Values[j];
@@ -314,19 +421,29 @@ public class Control_GraphMixup : MonoBehaviour {
 					otherSpawn = otherRoom.DOOR_SPAWNS[otherSpawnID];
 
 					if ((spawn.LEFT_SIDE && otherSpawn.LEFT_SIDE) || (spawn.RIGHT_SIDE && otherSpawn.RIGHT_SIDE)) {
-						// Rotate room
-						room.rotate();
+						// Rotate otherRoom. If we rotate room, all doors may be connected to side doors which make it impossible to find a fitting constellation.
+						otherRoom.rotate();
 						rotationNeeded = true;
-						// Iterate over all spawns again
+						// Iterate over all rooms again
+						i = 0;
 						j = 0;
+						break;
 					}
 				}
 
-				safetyCounter++;
-				if (safetyCounter >= 1000) {
+				safetyCounterInner++;
+				if (safetyCounterInner >= 1000) {
 					// Room rotates over and over again but has no position that meets our goals
+					Debug.Log("checkSideConnections (Mixup): Endless Loop detected (1)");
 					break;
 				}
+			}
+
+			safetyCounterOuter++;
+			if (safetyCounterOuter >= 200) {
+				// This shouldn't even be possible but you never know.
+				Debug.Log("checkSideConnections (Mixup): Endless Loop detected (2)");
+				break;
 			}
 		}
 

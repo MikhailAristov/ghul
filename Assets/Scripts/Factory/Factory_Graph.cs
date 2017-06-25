@@ -327,7 +327,7 @@ public class Factory_Graph : MonoBehaviour {
 				switch (rand) {
 				case 1:
 				// Case 1: Connect it as a degree-1 vertex to any not-full room.
-					int otherRoomID = findRandomRoomNotFullNotEmpty();
+					int otherRoomID = Factory_Graph.findRandomRoomNotFullNotEmpty(ref graph);
 					if (!(otherRoomID == -1)) {
 						graph.connectRoomsFullyRandomly(i, otherRoomID);
 						break;
@@ -467,7 +467,7 @@ public class Factory_Graph : MonoBehaviour {
 	}
 
 	// Finds a room which is already connected to the graph and has at least one free door spawn. The room's id is returned.
-	private int findRandomRoomNotFullNotEmpty() {
+	public static int findRandomRoomNotFullNotEmpty(ref Data_Graph graph) {
 		// prevent endless searching
 		bool possible = false;
 		for (int i = 1; i < graph.getTotalNumberOfRooms(); i++) {
@@ -534,6 +534,7 @@ public class Factory_Graph : MonoBehaviour {
 				safetyCounter++;
 				if (safetyCounter >= 1000) {
 					// Room rotates over and over again but has no position that meets our goals
+					Debug.Log("checkSideConnections (Factory_Graph): Endless Loop detected (1)");
 					break;
 				}
 			}
