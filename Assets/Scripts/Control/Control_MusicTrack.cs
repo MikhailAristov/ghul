@@ -53,7 +53,7 @@ public class Control_MusicTrack : MonoBehaviour {
 				proximitySubtrack.volume = Mathf.Lerp(proximitySubtrack.volume, targetProximityTrackVolume, (targetMainTrackVolume > 0.9f * MAX_TRACK_VOLUME ? LERPING_STEP : LERPING_STEP_FAST));
 			}
 			if(Mathf.Abs(chaseSubtrack.volume - targetChaseTrackVolume) > 0.0001f * MAX_TRACK_VOLUME) {
-				chaseSubtrack.volume = Mathf.Lerp(chaseSubtrack.volume, targetChaseTrackVolume, LERPING_STEP_FAST);
+				chaseSubtrack.volume = Mathf.Lerp(chaseSubtrack.volume, targetChaseTrackVolume, LERPING_STEP);
 			}
 			if(mainTrack.volume < INAUDIBIBILITY_THRESHOLD) {
 				isMuted = true;
