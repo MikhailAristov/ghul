@@ -10,6 +10,7 @@ public class Control_AnimationSounds : MonoBehaviour {
 	public AudioSource ZappingSound;
 	public AudioSource MonsterBreathIn;
 	public AudioSource MonsterBreathOut;
+	public AudioSource MonsterFootDrag;
 	public AudioSource ToniDeathSound;
 	public bool CheckDistanceToCamera;
 	public Control_Camera MainCameraControl;
@@ -19,11 +20,15 @@ public class Control_AnimationSounds : MonoBehaviour {
 	private static int walkingSoundsCount;
 	private static List<AudioClip> runningSounds;
 	private static int runningSoundsCount;
+	private static List<AudioClip> monsterWalkingSounds;
+	private static int monsterWalkingSoundsCount;
+	private static List<AudioClip> monsterDraggingSounds;
+	private static int monsterDraggingSoundsCount;
 
 	private const float walkingSoundVolume = 0.5f;
 	private const float runningSoundVolume = 1f;
 
-	private bool mainCameraCanSeeMe {
+	private bool mainCameraCanHearMe {
 		get { return (MainCameraControl != null && MainCameraControl.canSeeObject(gameObject, -100f)); }
 	}
 
@@ -39,17 +44,26 @@ public class Control_AnimationSounds : MonoBehaviour {
 			runningSounds = new List<AudioClip>(Resources.LoadAll("Toni/RunSounds", typeof(AudioClip)).Cast<AudioClip>());
 			runningSoundsCount = runningSounds.Count;
 		}
+		if(monsterWalkingSounds == null) {
+			monsterWalkingSounds = new List<AudioClip>(Resources.LoadAll("Monster/SteppingSounds", typeof(AudioClip)).Cast<AudioClip>());
+			monsterWalkingSoundsCount = monsterWalkingSounds.Count;
+		}
+		if(monsterDraggingSounds == null) {
+			monsterDraggingSounds = new List<AudioClip>(Resources.LoadAll("Monster/FootDraggingSounds", typeof(AudioClip)).Cast<AudioClip>());
+			monsterDraggingSoundsCount = monsterDraggingSounds.Count;
+		}
 	}
 
 	void FixedUpdate() {
 		// Update the stereo pan
-		if(mainCameraCanSeeMe) {
+		if(mainCameraCanHearMe) {
 			float stereoPan = getHorizontalSoundPan(MainCameraControl.transform.position.x - transform.position.x);
 			SteppingSound.panStereo = stereoPan;
 			if(AttackSound != null) {
 				AttackSound.panStereo = stereoPan;
 				MonsterBreathIn.panStereo = stereoPan;
 				MonsterBreathOut.panStereo = stereoPan;
+				MonsterFootDrag.panStereo = stereoPan;
 			}
 			if(ZappingSound != null) {
 				ZappingSound.panStereo = stereoPan;
@@ -69,7 +83,7 @@ public class Control_AnimationSounds : MonoBehaviour {
 	}
 
 	private void playSteppingSound(AudioClip sound, float volume) {
-		if(SteppingSound != null && (!CheckDistanceToCamera || mainCameraCanSeeMe)) {
+		if(SteppingSound != null && (!CheckDistanceToCamera || mainCameraCanHearMe)) {
 			SteppingSound.Stop();
 			SteppingSound.clip = sound;
 			SteppingSound.volume = volume;
@@ -78,7 +92,7 @@ public class Control_AnimationSounds : MonoBehaviour {
 	}
 
 	public void playAttackSound() {
-		if(AttackSound != null && AttackSound.clip != null && (!CheckDistanceToCamera || mainCameraCanSeeMe)) {
+		if(AttackSound != null && AttackSound.clip != null && (!CheckDistanceToCamera || mainCameraCanHearMe)) {
 			AttackSound.Play();
 		}
 	}
@@ -90,19 +104,30 @@ public class Control_AnimationSounds : MonoBehaviour {
 	}
 
 	public void monsterBreatheIn() {
-		if(MonsterBreathIn != null && MonsterBreathIn.clip != null && (!CheckDistanceToCamera || mainCameraCanSeeMe)) {
+		if(MonsterBreathIn != null && MonsterBreathIn.clip != null && (!CheckDistanceToCamera || mainCameraCanHearMe)) {
 			MonsterBreathIn.Play();
 		}
 	}
 
 	public void monsterBreatheOut() {
-		if(MonsterBreathOut != null && MonsterBreathOut.clip != null && (!CheckDistanceToCamera || mainCameraCanSeeMe)) {
+		if(MonsterBreathOut != null && MonsterBreathOut.clip != null && (!CheckDistanceToCamera || mainCameraCanHearMe)) {
 			MonsterBreathOut.Play();
 		}
 	}
 
+	public void makeRandomMonsterSteppingNoise() {
+		playSteppingSound(monsterWalkingSounds[UnityEngine.Random.Range(0, monsterWalkingSoundsCount)], 1f);
+	}
+
+	public void makeRandomMonsterDraggingNoise() {
+		if(MonsterFootDrag != null && !MonsterFootDrag.isPlaying && (!CheckDistanceToCamera || mainCameraCanHearMe)) {
+			MonsterFootDrag.clip = monsterDraggingSounds[UnityEngine.Random.Range(0, monsterDraggingSoundsCount)];
+			MonsterFootDrag.Play();
+		}
+	}
+
 	public void playToniDeath() {
-		if(ToniDeathSound != null && ToniDeathSound.clip != null && (!CheckDistanceToCamera || mainCameraCanSeeMe)) {
+		if(ToniDeathSound != null && ToniDeathSound.clip != null && (!CheckDistanceToCamera || mainCameraCanHearMe)) {
 			ToniDeathSound.Play();
 		}
 	}

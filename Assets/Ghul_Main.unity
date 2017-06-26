@@ -791,7 +791,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 527278871}
-  m_RootOrder: 4
+  m_RootOrder: 5
 --- !u!1 &188979812
 GameObject:
   m_ObjectHideFlags: 0
@@ -820,7 +820,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 271758504}
-  m_RootOrder: 6
+  m_RootOrder: 7
 --- !u!82 &188979814
 AudioSource:
   m_ObjectHideFlags: 0
@@ -1013,6 +1013,7 @@ Transform:
   - {fileID: 21811785}
   - {fileID: 2094500992}
   - {fileID: 767210449}
+  - {fileID: 2015824651}
   - {fileID: 188979813}
   m_Father: {fileID: 558393188}
   m_RootOrder: 3
@@ -1714,6 +1715,7 @@ Transform:
   - {fileID: 1557828319}
   - {fileID: 446169174}
   - {fileID: 2016365715}
+  - {fileID: 1305376654}
   - {fileID: 151695503}
   m_Father: {fileID: 495099017}
   m_RootOrder: 4
@@ -2001,6 +2003,7 @@ MonoBehaviour:
   ZappingSound: {fileID: 0}
   MonsterBreathIn: {fileID: 0}
   MonsterBreathOut: {fileID: 0}
+  MonsterFootDrag: {fileID: 0}
   ToniDeathSound: {fileID: 151695502}
   CheckDistanceToCamera: 1
   MainCameraControl: {fileID: 1344317741}
@@ -2979,6 +2982,7 @@ MonoBehaviour:
   ZappingSound: {fileID: 0}
   MonsterBreathIn: {fileID: 2094500993}
   MonsterBreathOut: {fileID: 767210450}
+  MonsterFootDrag: {fileID: 2015824652}
   ToniDeathSound: {fileID: 0}
   CheckDistanceToCamera: 0
   MainCameraControl: {fileID: 1344317741}
@@ -4257,6 +4261,109 @@ Transform:
   m_PrefabParentObject: {fileID: 4000013944519472, guid: 48e3f10aa125afe4a89e599edda75895,
     type: 2}
   m_PrefabInternal: {fileID: 1296815949}
+--- !u!1 &1305376653
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 1305376654}
+  - 82: {fileID: 1305376655}
+  m_Layer: 0
+  m_Name: FootDrag
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1305376654
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1305376653}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -7, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 527278871}
+  m_RootOrder: 4
+--- !u!82 &1305376655
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1305376653}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 0.1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  Priority: 128
+  DopplerLevel: 0
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 1
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    - time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
 --- !u!1 &1333168850
 GameObject:
   m_ObjectHideFlags: 0
@@ -4811,6 +4918,7 @@ MonoBehaviour:
   ZappingSound: {fileID: 0}
   MonsterBreathIn: {fileID: 446169175}
   MonsterBreathOut: {fileID: 2016365716}
+  MonsterFootDrag: {fileID: 1305376655}
   ToniDeathSound: {fileID: 0}
   CheckDistanceToCamera: 1
   MainCameraControl: {fileID: 1344317741}
@@ -5489,10 +5597,114 @@ MonoBehaviour:
   ZappingSound: {fileID: 21811786}
   MonsterBreathIn: {fileID: 0}
   MonsterBreathOut: {fileID: 0}
+  MonsterFootDrag: {fileID: 0}
   ToniDeathSound: {fileID: 188979814}
   CheckDistanceToCamera: 0
   MainCameraControl: {fileID: 1344317741}
   GameStateControl: {fileID: 1333168852}
+--- !u!1 &2015824650
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 2015824651}
+  - 82: {fileID: 2015824652}
+  m_Layer: 0
+  m_Name: FootDrag
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2015824651
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2015824650}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 271758504}
+  m_RootOrder: 6
+--- !u!82 &2015824652
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2015824650}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 0.1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  Priority: 128
+  DopplerLevel: 0
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 1
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    - time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
 --- !u!1 &2016365714
 GameObject:
   m_ObjectHideFlags: 0

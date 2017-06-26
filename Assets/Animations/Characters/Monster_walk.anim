@@ -120,7 +120,7 @@ AnimationClip:
   m_GenerateMotionCurves: 0
   m_Events:
   - time: 0
-    functionName: makeRandomRunningStepNoise
+    functionName: makeRandomMonsterSteppingNoise
     data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
@@ -133,8 +133,15 @@ AnimationClip:
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
+  - time: 0.33333334
+    functionName: makeRandomMonsterDraggingNoise
+    data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
   - time: 0.8333333
-    functionName: makeRandomRunningStepNoise
+    functionName: makeRandomMonsterSteppingNoise
     data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
@@ -142,6 +149,13 @@ AnimationClip:
     messageOptions: 0
   - time: 0.9166667
     functionName: monsterBreatheOut
+    data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 1.0833334
+    functionName: makeRandomMonsterDraggingNoise
     data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
