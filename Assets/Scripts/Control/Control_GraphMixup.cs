@@ -62,9 +62,6 @@ public class Control_GraphMixup : MonoBehaviour {
 			if (!ritualRoomDoorChosen) { techniqueNr = (int)UnityEngine.Random.Range(1.0f, 4.0f); } // Possible values: 1,2,3
 			else { techniqueNr = 2; } // Only rotation
 
-			// DEBUG
-			techniqueNr = 3; // <- Wenn nicht auskommentiert, wird der Zusammenhangsfehler wahrscheinlicher (zum Testen).
-
 			switch (techniqueNr) {
 			case 1:
 				// Remove the connection (if possible)
@@ -86,7 +83,6 @@ public class Control_GraphMixup : MonoBehaviour {
 		}
 		// Check whether a left side is connected to another left side (or the same for the right side) and rotating rooms accordingly.
 		Control_GraphMixup.checkSideConnections(ref graph);
-		//TODO: Get this working again
 		Control_GraphMixup.dijkstraConnectionTest(ref graph);
 
 		// DEBUG

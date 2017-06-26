@@ -346,8 +346,7 @@ public class Control_GameState : MonoBehaviour {
 
 		// Initialize all the characters
 		initializeCharacters();
-		// TODO: This is for debug purposes only, please remove in the final build!
-		if(Debug.isDebugBuild) {
+		if(Debug.isDebugBuild || InExpoMode) {
 			MONSTER.worldModel.hasMetToni = false;
 			MONSTER.worldModel.hasMetToniSinceLastMilestone = false;
 		}

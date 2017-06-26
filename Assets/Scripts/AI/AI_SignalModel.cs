@@ -169,7 +169,6 @@ public class AI_SignalModel {
 			foreach(Data_Room room in GS.ROOMS.Values) {
 				reachableDoorCount = 0;
 				foreach(Data_Door door in GS.DOORS.Values) {
-					// TODO: Check whether a door's reachability isn't dominated by another door in the same room
 					if(!room.DOORS.ContainsValue(door) &&
 					   door2roomMinDistance[door.INDEX, room.INDEX] <= maxNoiseTravelDistance) {
 						likelihoodNoiseHeardAtDoor[noise, room.INDEX, door.INDEX] = singleDoorProb;
