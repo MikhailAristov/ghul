@@ -156,9 +156,9 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: 6ac17955257dc1e4cb5bb183950bd4e2, type: 3}
+  m_audioClip: {fileID: 8300000, guid: 05628465c259c6749a7f325166dbd853, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 0.1
+  m_Volume: 1
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -413,7 +413,7 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 111515865}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1768,6 +1768,7 @@ MonoBehaviour:
   mainCameraControl: {fileID: 1344317741}
   CorpsePoolControl: {fileID: 1192129377}
   noiseSystem: {fileID: 1333168854}
+  JukeboxControl: {fileID: 853660561}
   carriedItemUI: {fileID: 944068630}
   pentagram: {fileID: 1673746494}
   animatorHuman: {fileID: 2004490473}
@@ -1997,7 +1998,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SteppingSound: {fileID: 1557828320}
   AttackSound: {fileID: 0}
-  ItemPickupSound: {fileID: 0}
   ZappingSound: {fileID: 0}
   MonsterBreathIn: {fileID: 0}
   MonsterBreathOut: {fileID: 0}
@@ -2332,109 +2332,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 0
---- !u!1 &845398953
-GameObject:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  serializedVersion: 4
-  m_Component:
-  - 4: {fileID: 845398954}
-  - 82: {fileID: 845398955}
-  m_Layer: 0
-  m_Name: ItemPlacementJingle
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &845398954
-Transform:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 845398953}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_Children: []
-  m_Father: {fileID: 853660560}
-  m_RootOrder: 1
---- !u!82 &845398955
-AudioSource:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 845398953}
-  m_Enabled: 1
-  serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: 70c475d2bbc0e94449b5e26c0aefd623, type: 3}
-  m_PlayOnAwake: 0
-  m_Volume: 1
-  m_Pitch: 1
-  Loop: 0
-  Mute: 0
-  Spatialize: 0
-  Priority: 128
-  DopplerLevel: 1
-  MinDistance: 1
-  MaxDistance: 500
-  Pan2D: 0
-  rolloffMode: 0
-  BypassEffects: 0
-  BypassListenerEffects: 0
-  BypassReverbZones: 0
-  rolloffCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-    - time: 1
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  panLevelCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 0
-  spreadCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 0
-  reverbZoneMixCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 0
 --- !u!1 &853660559
 GameObject:
   m_ObjectHideFlags: 0
@@ -2463,7 +2360,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 1581269553}
-  - {fileID: 845398954}
+  - {fileID: 1023594279}
   - {fileID: 111515866}
   - {fileID: 395841765}
   - {fileID: 1291843254}
@@ -2484,7 +2381,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   EncounterJingle: {fileID: 1581269554}
-  ItemPlacementJingle: {fileID: 845398955}
+  ItemJinglePlayer: {fileID: 1023594280}
+  ItemPickupJingles:
+  - {fileID: 8300000, guid: 560a122e3dafee24ab6ab2f6c5249d7d, type: 3}
+  - {fileID: 8300000, guid: 560a122e3dafee24ab6ab2f6c5249d7d, type: 3}
+  - {fileID: 8300000, guid: 560a122e3dafee24ab6ab2f6c5249d7d, type: 3}
+  - {fileID: 8300000, guid: 560a122e3dafee24ab6ab2f6c5249d7d, type: 3}
+  - {fileID: 8300000, guid: 560a122e3dafee24ab6ab2f6c5249d7d, type: 3}
+  ItemPlacementJingles:
+  - {fileID: 8300000, guid: c9fc1ce6c02b69346934ff358c7aa886, type: 3}
+  - {fileID: 8300000, guid: 70c475d2bbc0e94449b5e26c0aefd623, type: 3}
+  - {fileID: 8300000, guid: 79c16f10e021cde48b7bb9498977696b, type: 3}
+  - {fileID: 8300000, guid: 6be6d4b531f42a84bacb4936e2d0e3d3, type: 3}
   MainTrackList:
   - {fileID: 111515869}
   - {fileID: 395841768}
@@ -3068,7 +2976,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SteppingSound: {fileID: 825760650}
   AttackSound: {fileID: 1061054543}
-  ItemPickupSound: {fileID: 0}
   ZappingSound: {fileID: 0}
   MonsterBreathIn: {fileID: 2094500993}
   MonsterBreathOut: {fileID: 767210450}
@@ -3076,6 +2983,109 @@ MonoBehaviour:
   CheckDistanceToCamera: 0
   MainCameraControl: {fileID: 1344317741}
   GameStateControl: {fileID: 0}
+--- !u!1 &1023594278
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 1023594279}
+  - 82: {fileID: 1023594280}
+  m_Layer: 0
+  m_Name: ItemJingle
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1023594279
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1023594278}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 853660560}
+  m_RootOrder: 1
+--- !u!82 &1023594280
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1023594278}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 8300000, guid: 560a122e3dafee24ab6ab2f6c5249d7d, type: 3}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    - time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
 --- !u!1 &1028994218
 GameObject:
   m_ObjectHideFlags: 0
@@ -4798,7 +4808,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SteppingSound: {fileID: 1557828320}
   AttackSound: {fileID: 629350730}
-  ItemPickupSound: {fileID: 0}
   ZappingSound: {fileID: 0}
   MonsterBreathIn: {fileID: 446169175}
   MonsterBreathOut: {fileID: 2016365716}
@@ -5477,7 +5486,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SteppingSound: {fileID: 825760650}
   AttackSound: {fileID: 0}
-  ItemPickupSound: {fileID: 1684850000}
   ZappingSound: {fileID: 21811786}
   MonsterBreathIn: {fileID: 0}
   MonsterBreathOut: {fileID: 0}

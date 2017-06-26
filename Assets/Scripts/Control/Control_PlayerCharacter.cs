@@ -40,6 +40,7 @@ public class Control_PlayerCharacter : Control_Character {
 	public Control_Camera mainCameraControl;
 	public Control_CorpsePool CorpsePoolControl;
 	public Control_Noise noiseSystem;
+	public Control_Music JukeboxControl;
 	public Image carriedItemUI;
 	public GameObject pentagram;
 
@@ -372,9 +373,9 @@ public class Control_PlayerCharacter : Control_Character {
 			// Make a zapping noise at the location
 			noiseSystem.makeNoise(Control_Noise.NOISE_TYPE_ZAP, me.pos);
 		} else {
-			// If this is the correct item, take it
-			// Activate appropriate animation
+			// If this is the correct item, take it by activate the appropriate animation
 			triggerItemAnimation(thisItem.pos.asLocalVector());
+			JukeboxControl.playItemPickupJingle(GS.numItemsPlaced, delay:0.33f);
 			activateCooldown(ITEM_PICKUP_DURATION);
 			// Wait until the animation is half-complete
 			waitUntil += ITEM_PICKUP_DURATION / 2;
@@ -453,6 +454,7 @@ public class Control_PlayerCharacter : Control_Character {
 		// Stop, play animation, and wait for the item to fully materialize
 		halt();
 		triggerItemAnimation(verticePos);
+		JukeboxControl.playItemPlacementJingle(GS.numItemsPlaced, delay:0.33f);
 		activateCooldown(ITEM_PICKUP_DURATION + RITUAL_ITEM_PLACEMENT_DURATION);
 		yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
 		// Place the item in it

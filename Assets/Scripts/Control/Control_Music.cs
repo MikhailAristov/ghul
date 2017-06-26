@@ -15,22 +15,21 @@ public class Control_Music : MonoBehaviour {
 	private const float minProximityTrackVolumeFactor = 0.1f;
 	private const float maxProximityTrackVolumeFactor = 1f;
 
-	private int RITUAL_ITEMS_REQUIRED;
-
 	// Jukebox references
 	private bool allPaused;
 	private bool allMuted;
 	private int currentTrackID;
 
 	public AudioSource EncounterJingle;
-	public AudioSource ItemPlacementJingle;
+	public AudioSource ItemJinglePlayer;
+	public AudioClip[] ItemPickupJingles;
+	public AudioClip[] ItemPlacementJingles;
 	public Control_MusicTrack[] MainTrackList;
 	public AudioSource EndgameTrack;
 
 	void Awake() {
 		allPaused = false;
 		allMuted = false;
-		RITUAL_ITEMS_REQUIRED = Global_Settings.readInt("RITUAL_ITEMS_REQUIRED");
 	}
 
 	void Update() {
@@ -44,7 +43,7 @@ public class Control_Music : MonoBehaviour {
 		switch(GS.OVERALL_STATE) {
 		case(Control_GameState.STATE_COLLECTION_PHASE):
 			if(MONSTER.worldModel.hasMetToni) {
-				if(currentTrackID != GS.numItemsPlaced && GS.numItemsPlaced < RITUAL_ITEMS_REQUIRED) {
+				if(currentTrackID != GS.numItemsPlaced) {
 					switchTracks(currentTrackID, GS.numItemsPlaced);
 					currentTrackID = GS.numItemsPlaced;
 				}
@@ -118,12 +117,8 @@ public class Control_Music : MonoBehaviour {
 	private void switchTracks(int oldTrack, int newTrack) {
 		// Mute the previous track
 		MainTrackList[oldTrack].muteTrack(TRACK_MUTING_DURATION);
-		// Play the item jingle
-		if(!ItemPlacementJingle.isPlaying) {
-			ItemPlacementJingle.Play();
-		}
 		// Unmute the next track after the jingle stops playing
-		float delay = ItemPlacementJingle.clip.length / 2f;
+		float delay = ItemJinglePlayer.clip.length / 2f;
 		MainTrackList[newTrack].unmuteTrack(duration: TRACK_UNMUTING_DURATION, delay: delay, restart: true);
 	}
 
@@ -170,5 +165,34 @@ public class Control_Music : MonoBehaviour {
 			EndgameTrack.mute = true;
 			allMuted = true;
 		}
+	}
+
+	// Plays the pickup jingle for the specified item, optionally with a delay
+	public void playItemPickupJingle(int forItem, float delay = 0) {
+		if(forItem >= 0 && forItem < ItemPickupJingles.Length) {
+			playItemJingle(ItemPickupJingles[forItem], delay);
+		}
+	}
+
+	// Plays the placement jingle for the specified item, optionally with a delay
+	public void playItemPlacementJingle(int forItem, float delay = 0) {
+		if(forItem >= 0 && forItem < ItemPlacementJingles.Length) {
+			playItemJingle(ItemPlacementJingles[forItem], delay);
+		}
+	}
+
+	// Plays the specified jingle with a specified delay
+	private void playItemJingle(AudioClip jingle, float delay) {
+		// This function only works during the collection phase
+		if(GS.OVERALL_STATE != Control_GameState.STATE_COLLECTION_PHASE) {
+			return;
+		}
+		// If the item player is still playing for some reason, stop it
+		if(ItemJinglePlayer.isPlaying) {
+			ItemJinglePlayer.Stop();
+		}
+		// Set the requested item pickup jingle and play it
+		ItemJinglePlayer.clip = jingle;
+		ItemJinglePlayer.PlayDelayed(Mathf.Max(0, delay));
 	}
 }

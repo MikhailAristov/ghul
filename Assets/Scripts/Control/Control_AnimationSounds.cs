@@ -7,7 +7,6 @@ public class Control_AnimationSounds : MonoBehaviour {
 
 	public AudioSource SteppingSound;
 	public AudioSource AttackSound;
-	public AudioSource ItemPickupSound;
 	public AudioSource ZappingSound;
 	public AudioSource MonsterBreathIn;
 	public AudioSource MonsterBreathOut;
@@ -20,8 +19,6 @@ public class Control_AnimationSounds : MonoBehaviour {
 	private static int walkingSoundsCount;
 	private static List<AudioClip> runningSounds;
 	private static int runningSoundsCount;
-	private static List<AudioClip> itemPickupSounds;
-	private static int itemPickupSoundsCount;
 
 	private const float walkingSoundVolume = 0.5f;
 	private const float runningSoundVolume = 1f;
@@ -42,10 +39,6 @@ public class Control_AnimationSounds : MonoBehaviour {
 			runningSounds = new List<AudioClip>(Resources.LoadAll("Toni/RunSounds", typeof(AudioClip)).Cast<AudioClip>());
 			runningSoundsCount = runningSounds.Count;
 		}
-		if(itemPickupSounds == null) {
-			itemPickupSounds = new List<AudioClip>(Resources.LoadAll("Toni/ItemPickupSounds", typeof(AudioClip)).Cast<AudioClip>());
-			itemPickupSoundsCount = itemPickupSounds.Count;
-		}
 	}
 
 	void FixedUpdate() {
@@ -58,19 +51,12 @@ public class Control_AnimationSounds : MonoBehaviour {
 				MonsterBreathIn.panStereo = stereoPan;
 				MonsterBreathOut.panStereo = stereoPan;
 			}
-			if(ItemPickupSound != null) {
-				ItemPickupSound.panStereo = stereoPan;
+			if(ZappingSound != null) {
 				ZappingSound.panStereo = stereoPan;
 			}
 			if(ToniDeathSound != null) {
 				ToniDeathSound.panStereo = stereoPan;
 			}
-		}
-
-		// Update the item pickup sound, if necessary
-		if(ItemPickupSound != null && GameStateControl != null && currentChapter != GameStateControl.currentChapter) {
-			ItemPickupSound.clip = itemPickupSounds[Mathf.Clamp(currentChapter - 1, 0, itemPickupSoundsCount - 1)];
-			currentChapter = GameStateControl.currentChapter;
 		}
 	}
 
@@ -94,12 +80,6 @@ public class Control_AnimationSounds : MonoBehaviour {
 	public void playAttackSound() {
 		if(AttackSound != null && AttackSound.clip != null && (!CheckDistanceToCamera || mainCameraCanSeeMe)) {
 			AttackSound.Play();
-		}
-	}
-
-	public void playItemPickup() {
-		if(ItemPickupSound != null && ItemPickupSound.clip != null) {
-			ItemPickupSound.Play();
 		}
 	}
 
