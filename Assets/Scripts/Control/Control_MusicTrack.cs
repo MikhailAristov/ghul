@@ -13,9 +13,11 @@ public class Control_MusicTrack : MonoBehaviour {
 
 	private AudioSource mainTrack;
 	private AudioSource proximitySubtrack;
+	private AudioSource chaseSubtrack;
 
 	private float targetMainTrackVolume;
 	private float targetProximityTrackVolume;
+	private float targetChaseTrackVolume;
 	private bool isMuted;
 	private bool isPaused;
 
@@ -30,11 +32,12 @@ public class Control_MusicTrack : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		AudioSource[] myTracks = GetComponents<AudioSource>();
-		if(myTracks.Length == 2) {
+		if(myTracks.Length == 3) {
 			mainTrack = myTracks[0];
 			proximitySubtrack = myTracks[1];
+			chaseSubtrack = myTracks[2];
 		} else {
-			throw new ArgumentException(transform.name + " doesn't have exactly 2 tracks!");
+			throw new ArgumentException(transform.name + " doesn't have exactly 3 tracks!");
 		}
 		// Automute on start
 		muteTrack(0);
@@ -49,10 +52,14 @@ public class Control_MusicTrack : MonoBehaviour {
 			if(Mathf.Abs(proximitySubtrack.volume - targetProximityTrackVolume) > 0.0001f * MAX_TRACK_VOLUME) {
 				proximitySubtrack.volume = Mathf.Lerp(proximitySubtrack.volume, targetProximityTrackVolume, (targetMainTrackVolume > 0.9f * MAX_TRACK_VOLUME ? LERPING_STEP : LERPING_STEP_FAST));
 			}
+			if(Mathf.Abs(chaseSubtrack.volume - targetChaseTrackVolume) > 0.0001f * MAX_TRACK_VOLUME) {
+				chaseSubtrack.volume = Mathf.Lerp(chaseSubtrack.volume, targetChaseTrackVolume, LERPING_STEP_FAST);
+			}
 			if(mainTrack.volume < INAUDIBIBILITY_THRESHOLD) {
 				isMuted = true;
 				mainTrack.mute = true;
 				proximitySubtrack.mute = true;
+				chaseSubtrack.mute = true;
 			}
 		}
 	}
@@ -62,8 +69,11 @@ public class Control_MusicTrack : MonoBehaviour {
 		if(duration <= 0) {
 			targetMainTrackVolume = 0;
 			targetProximityTrackVolume = 0;
+			targetChaseTrackVolume = 0;
 			mainTrack.volume = 0;
 			proximitySubtrack.volume = 0;
+			chaseSubtrack.volume = 0;
+			return;
 		}
 		// Otherwise, do so gradually
 		StopAllCoroutines();
@@ -93,6 +103,7 @@ public class Control_MusicTrack : MonoBehaviour {
 		if(restart) {
 			mainTrack.Play();
 			proximitySubtrack.Play();
+			chaseSubtrack.Play();
 		}
 		// Otherwise, do so gradually
 		StopAllCoroutines();
@@ -122,8 +133,8 @@ public class Control_MusicTrack : MonoBehaviour {
 		if(isMuted) {
 			mainTrack.mute = false;
 			proximitySubtrack.mute = false;
+			chaseSubtrack.mute = false;
 			mainTrack.volume = 2 * INAUDIBIBILITY_THRESHOLD;
-			proximitySubtrack.volume = 2 * INAUDIBIBILITY_THRESHOLD;
 			isMuted = false;
 		}
 	}
@@ -132,10 +143,15 @@ public class Control_MusicTrack : MonoBehaviour {
 		targetProximityTrackVolume = proximityFactor * targetMainTrackVolume;
 	}
 
+	public void setBeingChased(bool state) {
+		targetChaseTrackVolume = state ? MAX_TRACK_VOLUME : INAUDIBIBILITY_THRESHOLD;
+	}
+
 	public void pause() {
 		if(!isPaused) {
 			mainTrack.Pause();
 			proximitySubtrack.Pause();
+			chaseSubtrack.Pause();
 			isPaused = true;
 		}
 	}
@@ -144,6 +160,7 @@ public class Control_MusicTrack : MonoBehaviour {
 		if(isPaused) {
 			mainTrack.UnPause();
 			proximitySubtrack.UnPause();
+			chaseSubtrack.UnPause();
 			isPaused = false;
 		}
 	}

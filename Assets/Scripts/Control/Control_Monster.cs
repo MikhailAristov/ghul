@@ -55,6 +55,7 @@ public class Control_Monster : Control_Character {
 	// This can be used to prevent endless door walk cycles:
 	private Data_Room previousRoomVisited;
 
+	public Control_Music JukeboxControl;
 	public Control_CorpsePool CorpsePoolControl;
 	public GameObject AttackZone;
 
@@ -226,6 +227,7 @@ public class Control_Monster : Control_Character {
 					stateUpdateCooldown = DOOR_TRANSITION_DURATION;
 					me.state = STATE_STALKING;
 					nextDoorToGoThrough = null;
+					JukeboxControl.startPlayingChaseTrack();
 				}
 				break;
 			// If, while stalking, monster sees Toni, start pursuing
@@ -236,6 +238,7 @@ public class Control_Monster : Control_Character {
 				} else if(GS.separationBetweenTwoRooms[me.pos.RoomId, me.worldModel.mostLikelyTonisRoomIndex] > 1 &&
 					me.worldModel.certainty < certaintyThresholdToStartStalking) {
 					me.state = STATE_SEARCHING;
+					JukeboxControl.stopPlayingChaseTrack();
 				}
 				break;
 			// If, while pursuing, monster sees Toni is within attack range, initiate an attack

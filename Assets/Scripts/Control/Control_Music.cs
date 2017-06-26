@@ -19,6 +19,7 @@ public class Control_Music : MonoBehaviour {
 	private bool allPaused;
 	private bool allMuted;
 	private int currentTrackID;
+	private bool playChaseMusic;
 
 	public AudioSource EncounterJingle;
 	public AudioSource ItemJinglePlayer;
@@ -30,6 +31,7 @@ public class Control_Music : MonoBehaviour {
 	void Awake() {
 		allPaused = false;
 		allMuted = false;
+		playChaseMusic = false;
 	}
 
 	void Update() {
@@ -194,5 +196,20 @@ public class Control_Music : MonoBehaviour {
 		// Set the requested item pickup jingle and play it
 		ItemJinglePlayer.clip = jingle;
 		ItemJinglePlayer.PlayDelayed(Mathf.Max(0, delay));
+	}
+
+	// For when the monster chases Toni
+	public void startPlayingChaseTrack() {
+		if(!playChaseMusic) {
+			MainTrackList[currentTrackID].setBeingChased(true);
+			playChaseMusic = true;
+		}
+	}
+
+	public void stopPlayingChaseTrack() {
+		if(playChaseMusic) {
+			MainTrackList[currentTrackID].setBeingChased(false);
+			playChaseMusic = false;
+		}
 	}
 }
