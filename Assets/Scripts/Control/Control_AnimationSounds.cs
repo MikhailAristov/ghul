@@ -116,7 +116,7 @@ public class Control_AnimationSounds : MonoBehaviour {
 	}
 
 	public void makeRandomMonsterSteppingNoise() {
-		playSteppingSound(monsterWalkingSounds[UnityEngine.Random.Range(0, monsterWalkingSoundsCount)], 1f);
+		playSteppingSound(monsterWalkingSounds[UnityEngine.Random.Range(0, monsterWalkingSoundsCount)], runningSoundVolume);
 	}
 
 	public void makeRandomMonsterDraggingNoise() {
