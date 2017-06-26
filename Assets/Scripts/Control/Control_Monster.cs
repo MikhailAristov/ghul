@@ -227,7 +227,6 @@ public class Control_Monster : Control_Character {
 					stateUpdateCooldown = DOOR_TRANSITION_DURATION;
 					me.state = STATE_STALKING;
 					nextDoorToGoThrough = null;
-					JukeboxControl.startPlayingChaseTrack();
 				}
 				break;
 			// If, while stalking, monster sees Toni, start pursuing
@@ -235,6 +234,7 @@ public class Control_Monster : Control_Character {
 			case STATE_STALKING:
 				if(GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < distanceThresholdToStartPursuing) {
 					me.state = STATE_PURSUING;
+					JukeboxControl.startPlayingChaseTrack();
 				} else if(GS.separationBetweenTwoRooms[me.pos.RoomId, me.worldModel.mostLikelyTonisRoomIndex] > 1 &&
 					me.worldModel.certainty < certaintyThresholdToStartStalking) {
 					me.state = STATE_SEARCHING;
