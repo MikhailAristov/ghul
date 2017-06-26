@@ -245,6 +245,7 @@ public class Control_PlayerCharacter : Control_Character {
 			if(animatorHuman != null && animatorHuman.isInitialized) {
 				animatorHuman.SetFloat("Speed", animatorMovementSpeed);
 				animatorHuman.SetBool("Is Running", isRunning && animatorMovementSpeed > ANIM_MIN_SPEED_FOR_WALKING && canRun());
+				animatorHuman.SetBool("Is Exhausted", me.exhausted);
 			}
 			break;
 		case Control_GameState.STATE_MONSTER_PHASE:
