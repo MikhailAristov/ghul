@@ -63,7 +63,7 @@ public class Control_GraphMixup : MonoBehaviour {
 			else { techniqueNr = 2; } // Only rotation
 
 			// DEBUG
-			//techniqueNr = 3; // <- Wenn nicht auskommentiert, wird der Zusammenhangsfehler wahrscheinlicher (zum Testen).
+			techniqueNr = 3; // <- Wenn nicht auskommentiert, wird der Zusammenhangsfehler wahrscheinlicher (zum Testen).
 
 			switch (techniqueNr) {
 			case 1:
@@ -87,7 +87,7 @@ public class Control_GraphMixup : MonoBehaviour {
 		// Check whether a left side is connected to another left side (or the same for the right side) and rotating rooms accordingly.
 		Control_GraphMixup.checkSideConnections(ref graph);
 		//TODO: Get this working again
-		//Control_GraphMixup.dijkstraConnectionTest(ref graph);
+		Control_GraphMixup.dijkstraConnectionTest(ref graph);
 
 		// DEBUG
 		//graph.printCompleteGraphInformation();
@@ -166,14 +166,25 @@ public class Control_GraphMixup : MonoBehaviour {
 					Data_GraphRoomVertice room = graph.ABSTRACT_ROOMS[disconnectedRoom];
 					Data_GraphDoorSpawn spawn = room.getRandomEmptyDoorSpawn();
 					if (spawn == null) {
-						// The disconnected room doesn't have free door spawns. Cutting one of them.
+						// The disconnected room doesn't have free door spawns. Cutting one of them. Also reset the corresponding former partner-spawn.
 						spawn = room.getRandomConnectedDoorSpawn();
+						int partnerSpawnID = spawn.CONNECTS_TO_SPAWN_ID;
+						int partnerRoomID = graph.DOOR_SPAWN_IS_IN_ROOM[partnerSpawnID];
+						Data_GraphRoomVertice partnerRoom = graph.ABSTRACT_ROOMS[partnerRoomID];
+						Data_GraphDoorSpawn partnerSpawn = partnerRoom.DOOR_SPAWNS[partnerSpawnID];
+
 						spawn.disconnect();
+						partnerSpawn.disconnect();
+
+						partnerRoom.updateNumDoors();
 					}
 					Data_GraphRoomVertice otherRoom = graph.ABSTRACT_ROOMS[otherRoomId];
 					Data_GraphDoorSpawn otherSpawn = otherRoom.getRandomEmptyDoorSpawn();
 					spawn.connectTo(otherSpawn.INDEX);
 					otherSpawn.connectTo(spawn.INDEX);
+
+					room.updateNumDoors();
+					otherRoom.updateNumDoors();
 					Debug.Log("Dijkstra-Check discovered a disconnection. Connected spawns (" + spawn.INDEX + ", " + otherSpawn.INDEX + ") in rooms (" + room.INDEX + ", " + otherRoom.INDEX + ")");
 				}
 
