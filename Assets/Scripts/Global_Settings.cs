@@ -79,6 +79,7 @@ public class Global_Settings {
 			// Miscellaneous setttings
 			{ "AUTOSAVE_FREQUENCY",				10.0f },	// In seconds
 			{ "TOTAL_DEATH_DURATION",			4.5f },		// When deathDuration of Data_Character reaches this value the player resets to the starting room
+			{ "TOP_MUSIC_VOLUME",				0.7f },
 			{ "ENCOUNTER_JINGLE_DURATION",		3.0f },
 
 			// Comma after the last pair of values is okay, the compiler doesn't care

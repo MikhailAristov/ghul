@@ -5,9 +5,11 @@ using System.Collections;
 public class Control_MusicTrack : MonoBehaviour {
 
 	private const float INAUDIBIBILITY_THRESHOLD = 0.01f;
-	private const float MAX_TRACK_VOLUME = 0.8f;
 	private const float MUTING_STEP = 0.1f;
-	private const float LERPING_STEP = 0.01f;
+	private float MAX_TRACK_VOLUME;
+
+	public const float LERPING_STEP = 0.01f;
+	public const float LERPING_STEP_FAST = 0.1f;
 
 	private AudioSource mainTrack;
 	private AudioSource proximitySubtrack;
@@ -19,6 +21,10 @@ public class Control_MusicTrack : MonoBehaviour {
 
 	public bool muted {
 		get { return isMuted; }
+	}
+
+	void Awake() {
+		MAX_TRACK_VOLUME = Mathf.Clamp01(Global_Settings.read("TOP_MUSIC_VOLUME"));
 	}
 
 	// Use this for initialization
@@ -41,7 +47,7 @@ public class Control_MusicTrack : MonoBehaviour {
 		if(!isMuted && !isPaused) {
 			mainTrack.volume = Mathf.Lerp(mainTrack.volume, targetMainTrackVolume, LERPING_STEP);
 			if(Mathf.Abs(proximitySubtrack.volume - targetProximityTrackVolume) > 0.0001f) {
-				proximitySubtrack.volume = Mathf.Lerp(proximitySubtrack.volume, targetProximityTrackVolume, LERPING_STEP);
+				proximitySubtrack.volume = Mathf.Lerp(proximitySubtrack.volume, targetProximityTrackVolume, (targetMainTrackVolume > 0.9f ? LERPING_STEP : LERPING_STEP_FAST));
 			}
 			if(mainTrack.volume < INAUDIBIBILITY_THRESHOLD) {
 				isMuted = true;
