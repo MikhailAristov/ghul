@@ -1992,7 +1992,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: a618af3a3b2a35a44b2c57c43e94ff56, type: 3}
+  m_audioClip: {fileID: 8300000, guid: 515c72419ba2b4a4aa8912ad95292ff9, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -2536,12 +2536,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   EncounterJingle: {fileID: 1581269554}
   ItemJinglePlayer: {fileID: 1023594280}
-  ItemPickupJingles:
-  - {fileID: 8300000, guid: 560a122e3dafee24ab6ab2f6c5249d7d, type: 3}
-  - {fileID: 8300000, guid: 560a122e3dafee24ab6ab2f6c5249d7d, type: 3}
-  - {fileID: 8300000, guid: 560a122e3dafee24ab6ab2f6c5249d7d, type: 3}
-  - {fileID: 8300000, guid: 560a122e3dafee24ab6ab2f6c5249d7d, type: 3}
-  - {fileID: 8300000, guid: 560a122e3dafee24ab6ab2f6c5249d7d, type: 3}
+  ItemPickupJingle: {fileID: 8300000, guid: 560a122e3dafee24ab6ab2f6c5249d7d, type: 3}
   ItemPlacementJingles:
   - {fileID: 8300000, guid: c9fc1ce6c02b69346934ff358c7aa886, type: 3}
   - {fileID: 8300000, guid: 70c475d2bbc0e94449b5e26c0aefd623, type: 3}
@@ -3473,7 +3468,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: a618af3a3b2a35a44b2c57c43e94ff56, type: 3}
+  m_audioClip: {fileID: 8300000, guid: 515c72419ba2b4a4aa8912ad95292ff9, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
