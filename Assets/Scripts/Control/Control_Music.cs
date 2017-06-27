@@ -23,7 +23,7 @@ public class Control_Music : MonoBehaviour {
 
 	public AudioSource EncounterJingle;
 	public AudioSource ItemJinglePlayer;
-	public AudioClip[] ItemPickupJingles;
+	public AudioClip ItemPickupJingle;
 	public AudioClip[] ItemPlacementJingles;
 	public Control_MusicTrack[] MainTrackList;
 	public AudioSource EndgameTrack;
@@ -171,8 +171,8 @@ public class Control_Music : MonoBehaviour {
 
 	// Plays the pickup jingle for the specified item, optionally with a delay
 	public void playItemPickupJingle(int forItem, float delay = 0) {
-		if(forItem >= 0 && forItem < ItemPickupJingles.Length) {
-			playItemJingle(ItemPickupJingles[forItem], delay);
+		if(ItemPickupJingle != null) {
+			playItemJingle(ItemPickupJingle, delay);
 		}
 	}
 
