@@ -17,7 +17,7 @@ public class Global_Settings {
 			{ "TOTAL_NUMBER_OF_ROOMS",			17.0f },	// How many rooms are to there to be in the game, including the Ritual Room; must be more than 5!
 			{ "ROOMS_UNLOCKED_AT_ZERO_ITEMS",	5.0f },		// How many rooms are accessible at the start of the game
 			{ "ROOMS_UNLOCKED_AFTER_ONE_ITEM",	8.0f },		// How many rooms are accessible after placing the first item on the pengram
-			{ "ROOMS_UNLOCKED_AFTER_TWO_ITEMS",	11.0f },	// How many rooms are accessible after placing the second item on the pengram
+			{ "ROOMS_UNLOCKED_AFTER_TWO_ITEMS",	13.0f },	// How many rooms are accessible after placing the second item on the pengram
 			// (Placing the third item unlocks all remaining rooms!)
 
 			// Level layout setttings
