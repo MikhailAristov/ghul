@@ -104,5 +104,10 @@ public class Data_PlayerCharacter : Data_Character {
 		gameObj = GameObject.Find(_gameObjName);
 		control = gameObj.GetComponent<Control_PlayerCharacter>();
 		isIn = GS.getRoomByIndex(_pos.RoomId);
+		// Check for carried item
+		Data_Item curItem = GS.getCurrentItem();
+		if(curItem.state == Data_Item.STATE_CARRIED) {
+			carriedItem = curItem;
+		}
 	}
 }

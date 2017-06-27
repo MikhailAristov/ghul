@@ -5,6 +5,7 @@ using System.Collections;
 public class Control_MusicTrack : MonoBehaviour {
 
 	private const float INAUDIBIBILITY_THRESHOLD = 0.01f;
+	private const float HIGH_TENSION_VOLUME = 0.5f;
 	private const float MUTING_STEP = 0.1f;
 	private float MAX_TRACK_VOLUME;
 
@@ -18,6 +19,7 @@ public class Control_MusicTrack : MonoBehaviour {
 	private float targetMainTrackVolume;
 	private float targetProximityTrackVolume;
 	private float targetChaseTrackVolume;
+	private float minChaseTrackVolume;
 	private bool isMuted;
 	private bool isPaused;
 
@@ -27,6 +29,7 @@ public class Control_MusicTrack : MonoBehaviour {
 
 	void Awake() {
 		MAX_TRACK_VOLUME = Mathf.Clamp01(Global_Settings.read("TOP_MUSIC_VOLUME"));
+		minChaseTrackVolume = INAUDIBIBILITY_THRESHOLD;
 	}
 
 	// Use this for initialization
@@ -144,7 +147,15 @@ public class Control_MusicTrack : MonoBehaviour {
 	}
 
 	public void setBeingChased(bool state) {
-		targetChaseTrackVolume = state ? MAX_TRACK_VOLUME : INAUDIBIBILITY_THRESHOLD;
+		targetChaseTrackVolume = state ? MAX_TRACK_VOLUME : minChaseTrackVolume;
+	}
+
+	public void rampTensionUp(bool state) {
+		minChaseTrackVolume = state ? HIGH_TENSION_VOLUME * MAX_TRACK_VOLUME : INAUDIBIBILITY_THRESHOLD;
+		// Update the chase track volume itself if necessary
+		if((state && targetChaseTrackVolume < minChaseTrackVolume) || (!state && targetChaseTrackVolume > minChaseTrackVolume)) {
+			targetChaseTrackVolume = minChaseTrackVolume;
+		}
 	}
 
 	public void pause() {

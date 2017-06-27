@@ -20,6 +20,7 @@ public class Control_Music : MonoBehaviour {
 	private bool allMuted;
 	private int currentTrackID;
 	private bool playChaseMusic;
+	private bool tensionHigh;
 
 	public AudioSource EncounterJingle;
 	public AudioSource ItemJinglePlayer;
@@ -32,6 +33,7 @@ public class Control_Music : MonoBehaviour {
 		allPaused = false;
 		allMuted = false;
 		playChaseMusic = false;
+		tensionHigh = false;
 	}
 
 	void Update() {
@@ -210,6 +212,20 @@ public class Control_Music : MonoBehaviour {
 		if(playChaseMusic) {
 			MainTrackList[currentTrackID].setBeingChased(false);
 			playChaseMusic = false;
+		}
+	}
+
+	public void setTensionHigh() {
+		if(!tensionHigh) {
+			MainTrackList[currentTrackID].rampTensionUp(true);
+			tensionHigh = true;
+		}
+	}
+
+	public void setTensionLow() {
+		if(tensionHigh) {
+			MainTrackList[currentTrackID].rampTensionUp(false);
+			tensionHigh = false;
 		}
 	}
 }

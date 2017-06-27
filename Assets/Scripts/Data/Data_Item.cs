@@ -78,8 +78,5 @@ public class Data_Item : Data_Character {
 
 		// Fix the rest
 		control = gameObj.GetComponent<Control_Item>();
-		if(state == Data_Item.STATE_CARRIED) {
-			GS.getToni().carriedItem = this;
-		}
 	}
 }
