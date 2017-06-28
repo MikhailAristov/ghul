@@ -694,27 +694,24 @@ public class Control_GameState : MonoBehaviour {
 
 	// Play the opening cutscene of the game
 	private IEnumerator playOpeningCutscene() {
-		float waitUntil = Time.timeSinceLevelLoad, lingerOnScribbles = 3f, waitOnToni = 0.5f, waitOnCameraPan = 2.8f;
 		// Put Toni on cooldown
-		TONI.control.activateCooldown(lingerOnScribbles + waitOnToni + waitOnCameraPan);
+		TONI.control.activateCooldown(3f);
 		// Focus camera on the blood scribbles
 		MAIN_CAMERA_CONTROL.setPanningSpeedFactor(0.25f);
 		MAIN_CAMERA_CONTROL.setFocusOn(new Data_Position(RITUAL_ROOM_INDEX, RitualRoomScribbles.transform.localPosition.x), snapToPosition:true);
 		// Place the skeletal corpse in the ritual room
 		CorpsePoolControl.placeHumanSkeleton(RitualRoomScribbles.transform.parent.gameObject, new Vector2(1.2375f, 0), false);
-		// Wait for a second
-		waitUntil += lingerOnScribbles;
-		yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
+		// Wait until Toni comes out of the cooldown
+		yield return new WaitUntil(() => TONI.cooldown <= 0);
 		// Make it look like Toni has just walked in through the right door (next to the pentagram)
 		TONI.control.enterTheHouse();
 		// Wait some more
-		waitUntil += waitOnToni;
-		yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
+		yield return new WaitUntil(() => TONI.cooldown <= 0);
 		// Swing the camera over to him
+		TONI.control.activateCooldown(2.3f);
 		MAIN_CAMERA_CONTROL.setFocusOn(TONI.pos);
 		// Wait until the cooldown wears off before resetting the camera panning speed
-		waitUntil += waitOnCameraPan;
-		yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
+		yield return new WaitUntil(() => TONI.cooldown <= 0);
 		MAIN_CAMERA_CONTROL.setPanningSpeedFactor(1f);
 	}
 }
