@@ -124,11 +124,11 @@ public abstract class Control_Character : MonoBehaviour {
 	}
 
 	protected IEnumerator moveToPosition(float pos, bool run) {
-		while(Mathf.Abs(pos - getMe().atPos) > Data_Position.PIXEL_GRID_SIZE && getMe().cooldown > 0) {
+		do {
 			float timestamp = Time.timeSinceLevelLoad;
-			yield return new WaitForEndOfFrame();
+			yield return null;
 			walk(pos - getMe().atPos, run, Time.timeSinceLevelLoad - timestamp);
-		}
+		} while(Mathf.Abs(pos - getMe().atPos) > Data_Position.PIXEL_GRID_SIZE && getMe().cooldown > 0);
 	}
 
 	public abstract void setSpriteFlip(bool state);
