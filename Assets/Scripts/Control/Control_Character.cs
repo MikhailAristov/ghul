@@ -116,6 +116,21 @@ public abstract class Control_Character : MonoBehaviour {
 		return null;
 	}
 
+	// Local character movement for cutscenes
+	public void moveTo(float pos, bool run = false) {
+		if(getMe().cooldown > 0) {
+			StartCoroutine(moveToPosition(getMe().isIn.env.validatePosition(pos), run));
+		}
+	}
+
+	protected IEnumerator moveToPosition(float pos, bool run) {
+		while(Mathf.Abs(pos - getMe().atPos) > Data_Position.PIXEL_GRID_SIZE && getMe().cooldown > 0) {
+			float timestamp = Time.timeSinceLevelLoad;
+			yield return new WaitForEndOfFrame();
+			walk(pos - getMe().atPos, run, Time.timeSinceLevelLoad - timestamp);
+		}
+	}
+
 	public abstract void setSpriteFlip(bool state);
 
 	protected abstract bool canRun();
