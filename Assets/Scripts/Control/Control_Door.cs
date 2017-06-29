@@ -189,8 +189,10 @@ public class Control_Door : MonoBehaviour {
 			}
 			break;
 		case SOUND_TYPE_RATTLE:
-			knobSound.clip = rattlingSounds[UnityEngine.Random.Range(0, rattlingSounds.Count)];
-			knobSound.Play();
+			if(!knobSound.isPlaying) {
+				knobSound.clip = rattlingSounds[UnityEngine.Random.Range(0, rattlingSounds.Count)];
+				knobSound.Play();
+			}
 			break;
 		default:
 			return;
