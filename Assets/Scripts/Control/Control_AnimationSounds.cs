@@ -14,6 +14,7 @@ public class Control_AnimationSounds : MonoBehaviour {
 	public AudioSource MonsterBreathOut;
 	public AudioSource MonsterFootDrag;
 	public AudioSource ToniDeathSound;
+	public AudioSource ToniTransfrormation;
 	public bool CheckDistanceToCamera;
 	public Control_Camera MainCameraControl;
 	public Control_GameState GameStateControl;
@@ -86,6 +87,7 @@ public class Control_AnimationSounds : MonoBehaviour {
 				foreach(AudioSource src in ToniBreathSounds) {
 					src.panStereo = stereoPan;
 				}
+				ToniTransfrormation.panStereo = stereoPan;
 			}
 			if(ToniDeathSound != null) {
 				ToniDeathSound.panStereo = stereoPan;
@@ -166,6 +168,12 @@ public class Control_AnimationSounds : MonoBehaviour {
 	public void playToniDeath() {
 		if(ToniDeathSound != null && ToniDeathSound.clip != null && (!CheckDistanceToCamera || mainCameraCanHearMe)) {
 			ToniDeathSound.Play();
+		}
+	}
+
+	public void playToniTransformation() {
+		if(ToniDeathSound != null && ToniDeathSound.clip != null) {
+			ToniTransfrormation.Play();
 		}
 	}
 

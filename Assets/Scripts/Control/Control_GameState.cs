@@ -715,8 +715,9 @@ public class Control_GameState : MonoBehaviour {
 	// Play the transformation cutscene after triggering the endgame
 	private IEnumerator playTransformationCutscene() {
 		updateRoomLocksForToni(1, RITUAL_ITEMS_REQUIRED);
+		MONSTER.control.activateCooldown(60f); // Fix the monster in place
 		// Toni walks to the center of the pentagram and looks left
-		float cooldown = (Global_Settings.read("RITUAL_PLACEMENT_MARGIN") * 2f) / Global_Settings.read("CHARA_WALKING_SPEED");
+		float cooldown = (Global_Settings.read("RITUAL_PLACEMENT_MARGIN") * 3f) / Global_Settings.read("CHARA_WALKING_SPEED");
 		TONI.control.activateCooldown(cooldown);
 		TONI.control.moveTo(RITUAL_PENTAGRAM_CENTER);
 		yield return new WaitUntil(() => TONI.cooldown <= 0);
