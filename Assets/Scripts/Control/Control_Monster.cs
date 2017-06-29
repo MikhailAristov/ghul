@@ -441,11 +441,11 @@ public class Control_Monster : Control_Character {
 		// Precompute whether the monster is hungry enough to attack Toni
 		bool readyToEngage = distanceThresholdToStartPursuing >= HALF_SCREEN_SIZE_HORIZONTAL;
 
-		// If monster sees Toni, stare at him until he either leaves or comes withing striking range
+		// If monster sees Toni, walk slowly and menacingly towards him
 		if(GS.monsterSeesToni) {
 			nextDoorToGoThrough = null;
 			doorToLurkAt = null;
-			setSpriteFlip(Toni.atPos < me.atPos);
+			walk(GS.distanceToToni, false, Time.deltaTime);
 			return;
 		} else if(GS.separationBetweenTwoRooms[me.pos.RoomId, me.worldModel.mostLikelyTonisRoomIndex] == 1 && !readyToEngage) {
 			// If the monster cannot see Toni, but believes him to be in an adjacent room,
