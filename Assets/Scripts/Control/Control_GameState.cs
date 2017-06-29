@@ -297,14 +297,9 @@ public class Control_GameState : MonoBehaviour {
 		if(cutscene) {
 			StartCoroutine(playTransformationCutscene());
 		} else {
-			// Set monster Toni sprite
-			TONI.control.setupEndgame();
-			// Set "civilian" monster sprite if necessary
-			if(overallState > STATE_TRANSFORMATION) {
-				MONSTER.control.setupEndgame();
-			}
-			// Unlock only one room if it's still the transformation phase, or all rooms otherwise
 			updateRoomLocksForToni(overallState == STATE_TRANSFORMATION ? 1 : GS.ROOMS.Count, RITUAL_ITEMS_REQUIRED);
+			TONI.control.setupEndgame();
+			MONSTER.control.setupEndgame();
 		}
 	}
 

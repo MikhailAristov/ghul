@@ -94,25 +94,9 @@ public class Control_PlayerCharacter : Control_Character {
 		this.me = gameState.getToni();
 		this.currentEnvironment = me.isIn.env;
 
-		// Ensure the appropriate sprite display and jukebox settings
-		switch(GS.OVERALL_STATE) {
-		default:
-		case Control_GameState.STATE_COLLECTION_PHASE:
-			stickmanObject.SetActive(true);
-			monsterToniObject.SetActive(false);
-			if(me.carriedItem != null) {
-				JukeboxControl.setTensionHigh();
-			}
-			break;
-		case Control_GameState.STATE_TRANSFORMATION:
-		case Control_GameState.STATE_MONSTER_PHASE:
-			stickmanObject.SetActive(true);
-			monsterToniObject.SetActive(false);
-			break;
-		case Control_GameState.STATE_MONSTER_DEAD:
-			stickmanObject.SetActive(false);
-			monsterToniObject.SetActive(false);
-			break;
+		// Ensure the jukebox settings
+		if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE && me.carriedItem != null) {
+			JukeboxControl.setTensionHigh();
 		}
 
 		// Move the character sprite directly to where the game state says it should be standing
@@ -482,14 +466,26 @@ public class Control_PlayerCharacter : Control_Character {
 	}
 
 	public void setupEndgame() {
-		stickmanObject.SetActive(false);
-		// Only display monster Toni sprite if monster is still alive
-		monsterToniObject.SetActive(GS.OVERALL_STATE < Control_GameState.STATE_MONSTER_DEAD);
-		monsterToniRenderer.flipX = !stickmanRenderer.flipX;
-		// Update speeds
-		WALKING_SPEED = Global_Settings.read("MONSTER_SLOW_WALKING_SPEED");
-		RUNNING_SPEED = Global_Settings.read("MONSTER_WALKING_SPEED");
-		WALKING_RUNNING_THRESHOLD = (WALKING_SPEED + RUNNING_SPEED) / 2;
+		switch(GS.OVERALL_STATE) {
+		case Control_GameState.STATE_TRANSFORMATION:
+		case Control_GameState.STATE_MONSTER_PHASE:
+			// Update sprites
+			stickmanObject.SetActive(false);
+			monsterToniObject.SetActive(true);
+			monsterToniRenderer.flipX = !stickmanRenderer.flipX;
+			// Update speeds
+			WALKING_SPEED = Global_Settings.read("MONSTER_SLOW_WALKING_SPEED");
+			RUNNING_SPEED = Global_Settings.read("MONSTER_WALKING_SPEED");
+			WALKING_RUNNING_THRESHOLD = (WALKING_SPEED + RUNNING_SPEED) / 2;
+			break;
+		case Control_GameState.STATE_MONSTER_DEAD:
+			// Hide all sprites
+			stickmanObject.SetActive(false);
+			monsterToniObject.SetActive(false);
+			break;
+		default:
+			break;
+		}
 	}
 
 	// Shows the currentlly carried item on the UI

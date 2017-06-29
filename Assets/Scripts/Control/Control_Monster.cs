@@ -116,21 +116,9 @@ public class Control_Monster : Control_Character {
 		this.Toni = gameState.getToni();
 		this.currentEnvironment = me.isIn.env;
 
-		// Ensure the appropriate sprite display
-		switch(GS.OVERALL_STATE) {
-		default:
-		case Control_GameState.STATE_COLLECTION_PHASE:
-		case Control_GameState.STATE_TRANSFORMATION:
-			monsterImageObject.SetActive(true);
-			knolliObject.SetActive(false);
-			civilianObject.SetActive(false);
-			break;
-		case Control_GameState.STATE_MONSTER_PHASE:
-		case Control_GameState.STATE_MONSTER_DEAD:
-			monsterImageObject.SetActive(false);
-			knolliObject.SetActive(false);
-			civilianObject.SetActive(true);
-			break;
+		// Jukebox setting
+		if(me.state == STATE_PURSUING) {
+			JukeboxControl.startPlayingChaseTrack();
 		}
 
 		// Move the character sprite directly to where the game state says it should be standing
@@ -543,14 +531,30 @@ public class Control_Monster : Control_Character {
 
 	// This function carries out the necessary adjustments to the monster's game objects
 	public void setupEndgame() {
-		monsterImageObject.SetActive(false);
-		knolliObject.SetActive(false);
-		civilianObject.SetActive(true);
-		me.state = STATE_WANDERING;
-		// Change the movement speed to human
-		WALKING_SPEED = Global_Settings.read("CHARA_WALKING_SPEED");
-		// Since the intruders still have infinite stamina, don't let them run at full speed
-		RUNNING_SPEED = Global_Settings.read("CHARA_WALKING_SPEED");
+		switch(GS.OVERALL_STATE) {
+		case Control_GameState.STATE_TRANSFORMATION:
+			// Update sprites
+			monsterImageObject.SetActive(true);
+			knolliObject.SetActive(false);
+			civilianObject.SetActive(false);
+			// Update state
+			me.state = STATE_FLEEING;
+			break;
+		case Control_GameState.STATE_MONSTER_PHASE:
+		case Control_GameState.STATE_MONSTER_DEAD:
+			// Update sprites
+			monsterImageObject.SetActive(false);
+			knolliObject.SetActive(false);
+			civilianObject.SetActive(true);
+			// Update state
+			me.state = STATE_WANDERING;
+			// Since the intruders still have infinite stamina, don't let them run at full speed
+			WALKING_SPEED = Global_Settings.read("CHARA_WALKING_SPEED");
+			RUNNING_SPEED = Global_Settings.read("CHARA_WALKING_SPEED");
+			break;
+		default:
+			break;
+		}
 	}
 
 	public void teleportToRitualRoom(Data_Door doorTaken) {
