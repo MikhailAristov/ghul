@@ -137,7 +137,10 @@ public class Control_Item : MonoBehaviour {
 
 	// When CHARA picks it up
 	public void moveToInventory() {
-		Debug.Assert(me != null);
+		Debug.AssertFormat(me != null, "{0} lost the object reference!", name);
+		if(me == null) {
+			fixBrokenDataObjectReference();
+		}
 		if(me.isTakeable()) {
 			StopCoroutine("fallOntoTheFloor");
 			me.state = Data_Item.STATE_CARRIED;
@@ -177,6 +180,20 @@ public class Control_Item : MonoBehaviour {
 			StartCoroutine(materializeAtRitualPosition(targetPosition, duration));
 		} else {
 			Debug.LogError("Cannot put down " + me);
+		}
+	}
+
+	// Fixes the this.me reference in case it got broken
+	private void fixBrokenDataObjectReference() {
+		// Parse own index out of the GameObject name
+		if(name.StartsWith("Item")) {
+			int ownIndex = int.Parse(name.Substring(4, 2));
+			// Fix the object references
+			me = GS.getItemByIndex(ownIndex);
+			me.control = this;
+			Debug.LogWarning(name + " had to fix its data object reference!");
+		} else {
+			throw new ArgumentException("Malformed item name: " + name);
 		}
 	}
 }
