@@ -8,6 +8,8 @@ public class Control_AnimationSounds : MonoBehaviour {
 	public AudioSource SteppingSound;
 	public AudioSource AttackSound;
 	public AudioSource ZappingSound;
+	public GameObject ToniBreathSound;
+	private List<AudioSource> ToniBreathSounds;
 	public AudioSource MonsterBreathIn;
 	public AudioSource MonsterBreathOut;
 	public AudioSource MonsterFootDrag;
@@ -20,6 +22,10 @@ public class Control_AnimationSounds : MonoBehaviour {
 	private static int walkingSoundsCount;
 	private static List<AudioClip> runningSounds;
 	private static int runningSoundsCount;
+	private static List<AudioClip> breathingSounds;
+	private static int breathingSoundsCount;
+	private static List<AudioClip> heavyBreathingSounds;
+	private static int heavyBreathingSoundsCount;
 	private static List<AudioClip> monsterWalkingSounds;
 	private static int monsterWalkingSoundsCount;
 	private static List<AudioClip> monsterDraggingSounds;
@@ -44,6 +50,14 @@ public class Control_AnimationSounds : MonoBehaviour {
 			runningSounds = new List<AudioClip>(Resources.LoadAll("Toni/RunSounds", typeof(AudioClip)).Cast<AudioClip>());
 			runningSoundsCount = runningSounds.Count;
 		}
+		if(breathingSounds == null) {
+			breathingSounds = new List<AudioClip>(Resources.LoadAll("Toni/Breathing", typeof(AudioClip)).Cast<AudioClip>());
+			breathingSoundsCount = breathingSounds.Count;
+		}
+		if(heavyBreathingSounds == null) {
+			heavyBreathingSounds = new List<AudioClip>(Resources.LoadAll("Toni/HeavyBreathing", typeof(AudioClip)).Cast<AudioClip>());
+			heavyBreathingSoundsCount = heavyBreathingSounds.Count;
+		}
 		if(monsterWalkingSounds == null) {
 			monsterWalkingSounds = new List<AudioClip>(Resources.LoadAll("Monster/SteppingSounds", typeof(AudioClip)).Cast<AudioClip>());
 			monsterWalkingSoundsCount = monsterWalkingSounds.Count;
@@ -52,6 +66,8 @@ public class Control_AnimationSounds : MonoBehaviour {
 			monsterDraggingSounds = new List<AudioClip>(Resources.LoadAll("Monster/FootDraggingSounds", typeof(AudioClip)).Cast<AudioClip>());
 			monsterDraggingSoundsCount = monsterDraggingSounds.Count;
 		}
+		// Internal references
+		ToniBreathSounds = (ToniBreathSound != null) ? new List<AudioSource>(ToniBreathSound.GetComponents<AudioSource>()) : new List<AudioSource>();
 	}
 
 	void FixedUpdate() {
@@ -67,6 +83,9 @@ public class Control_AnimationSounds : MonoBehaviour {
 			}
 			if(ZappingSound != null) {
 				ZappingSound.panStereo = stereoPan;
+				foreach(AudioSource src in ToniBreathSounds) {
+					src.panStereo = stereoPan;
+				}
 			}
 			if(ToniDeathSound != null) {
 				ToniDeathSound.panStereo = stereoPan;
@@ -88,6 +107,24 @@ public class Control_AnimationSounds : MonoBehaviour {
 			SteppingSound.clip = sound;
 			SteppingSound.volume = volume;
 			SteppingSound.Play();
+		}
+	}
+
+	public void makeRandomBreathingNoise() {
+		playBreathingSound(breathingSounds[UnityEngine.Random.Range(0, breathingSoundsCount)]);
+	}
+
+	public void makeRandomHeavyBreathingNoise() {
+		playBreathingSound(heavyBreathingSounds[UnityEngine.Random.Range(0, heavyBreathingSoundsCount)]);
+	}
+
+	private void playBreathingSound(AudioClip sound) {
+		foreach(AudioSource src in ToniBreathSounds) {
+			if(src != null && !src.isPlaying) {
+				src.clip = sound;
+				src.Play();
+				break;
+			}
 		}
 	}
 

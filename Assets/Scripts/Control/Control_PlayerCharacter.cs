@@ -94,12 +94,15 @@ public class Control_PlayerCharacter : Control_Character {
 		this.me = gameState.getToni();
 		this.currentEnvironment = me.isIn.env;
 
-		// Ensure the appropriate sprite display
+		// Ensure the appropriate sprite display and jukebox settings
 		switch(GS.OVERALL_STATE) {
 		default:
 		case Control_GameState.STATE_COLLECTION_PHASE:
 			stickmanObject.SetActive(true);
 			monsterToniObject.SetActive(false);
+			if(me.carriedItem != null) {
+				JukeboxControl.setTensionHigh();
+			}
 			break;
 		case Control_GameState.STATE_TRANSFORMATION:
 		case Control_GameState.STATE_MONSTER_PHASE:
@@ -392,6 +395,7 @@ public class Control_PlayerCharacter : Control_Character {
 			noiseSystem.makeNoise(Control_Noise.NOISE_TYPE_ITEM, me.pos);
 			// Show inventory
 			StartCoroutine(displayInventory());
+			JukeboxControl.setTensionHigh();
 			// Now wait until the animation is done before saving
 			yield return new WaitUntil(() => (me.cooldown <= 0));
 			// Auto save when collecting an item.
@@ -423,6 +427,7 @@ public class Control_PlayerCharacter : Control_Character {
 			me.carriedItem = null;
 			// Make noise at the current location
 			noiseSystem.makeNoise(Control_Noise.NOISE_TYPE_ITEM, me.pos);
+			JukeboxControl.setTensionLow();
 			// Auto save when dropping an item.
 			Control_Persistence.saveToDisk(GS);
 		}
@@ -442,6 +447,7 @@ public class Control_PlayerCharacter : Control_Character {
 			me.carriedItem.control.moveToCadaver();
 			Debug.Log("Item #" + me.carriedItem.INDEX + " left on cadaver");
 			me.carriedItem = null;
+			JukeboxControl.setTensionLow();
 			// No autosave because death already autosaves
 		}
 	}
@@ -456,6 +462,7 @@ public class Control_PlayerCharacter : Control_Character {
 		halt();
 		triggerItemAnimation(verticePos);
 		JukeboxControl.playItemPlacementJingle(GS.numItemsPlaced, delay:0.33f);
+		JukeboxControl.setTensionLow();
 		activateCooldown(ITEM_PICKUP_DURATION + RITUAL_ITEM_PLACEMENT_DURATION);
 		yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
 		// Place the item in it

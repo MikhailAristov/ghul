@@ -69,6 +69,7 @@ public class Control_MainMenu : MonoBehaviour {
 	public void show() {
 		if(hidden) {
 			MainMenuCanvas.enabled = true;
+			Cursor.visible = true;
 		}
 	}
 
@@ -77,6 +78,7 @@ public class Control_MainMenu : MonoBehaviour {
 			inputBuffer = "";
 			isLaunchMenu = false;
 			MainMenuCanvas.enabled = false;
+			Cursor.visible = false;
 		}
 	}
 

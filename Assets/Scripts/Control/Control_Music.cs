@@ -20,10 +20,11 @@ public class Control_Music : MonoBehaviour {
 	private bool allMuted;
 	private int currentTrackID;
 	private bool playChaseMusic;
+	private bool tensionHigh;
 
 	public AudioSource EncounterJingle;
 	public AudioSource ItemJinglePlayer;
-	public AudioClip[] ItemPickupJingles;
+	public AudioClip ItemPickupJingle;
 	public AudioClip[] ItemPlacementJingles;
 	public Control_MusicTrack[] MainTrackList;
 	public AudioSource EndgameTrack;
@@ -32,6 +33,7 @@ public class Control_Music : MonoBehaviour {
 		allPaused = false;
 		allMuted = false;
 		playChaseMusic = false;
+		tensionHigh = false;
 	}
 
 	void Update() {
@@ -171,8 +173,8 @@ public class Control_Music : MonoBehaviour {
 
 	// Plays the pickup jingle for the specified item, optionally with a delay
 	public void playItemPickupJingle(int forItem, float delay = 0) {
-		if(forItem >= 0 && forItem < ItemPickupJingles.Length) {
-			playItemJingle(ItemPickupJingles[forItem], delay);
+		if(ItemPickupJingle != null) {
+			playItemJingle(ItemPickupJingle, delay);
 		}
 	}
 
@@ -210,6 +212,20 @@ public class Control_Music : MonoBehaviour {
 		if(playChaseMusic) {
 			MainTrackList[currentTrackID].setBeingChased(false);
 			playChaseMusic = false;
+		}
+	}
+
+	public void setTensionHigh() {
+		if(!tensionHigh) {
+			MainTrackList[currentTrackID].rampTensionUp(true);
+			tensionHigh = true;
+		}
+	}
+
+	public void setTensionLow() {
+		if(tensionHigh) {
+			MainTrackList[currentTrackID].rampTensionUp(false);
+			tensionHigh = false;
 		}
 	}
 }
