@@ -164,7 +164,7 @@ public class Control_Music : MonoBehaviour {
 	private void muteAll() {
 		if(!allMuted) {
 			foreach(Control_MusicTrack track in MainTrackList) {
-				track.muteTrack(0);
+				track.muteTrack(TRACK_MUTING_DURATION);
 			}
 			EndgameTrack.mute = true;
 			allMuted = true;
