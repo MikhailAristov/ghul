@@ -204,7 +204,7 @@ public class Control_GameState : MonoBehaviour {
 		// Check if all items have been placed
 		if(GS.numItemsPlaced >= RITUAL_ITEMS_REQUIRED) {
 			GS.OVERALL_STATE = STATE_TRANSFORMATION;
-			triggerEndgame(GS.OVERALL_STATE);
+			triggerEndgame(GS.OVERALL_STATE, cutscene:true);
 		} else { // Otherwise, check if wall scribbles need to be updated
 			if(GS.ANOTHER_ITEM_PLEASE) {
 				updateRoomLocksForToni(getAccessibleRoomCountInCurrentChapter(), GS.numItemsPlaced + 1);
@@ -291,19 +291,21 @@ public class Control_GameState : MonoBehaviour {
 		}
 	}
 
-	// TODO: Proper endgame
-	private void triggerEndgame(int overallState) {
-		int roomsToUnlock = 1;
-		if(overallState > STATE_COLLECTION_PHASE) {
-			// Transform Toni
+	// The endgame scenario
+	private void triggerEndgame(int overallState, bool cutscene = false) {
+		// Place the cutscene if triggered in the regular gameplay, otherwise just update the sprites and locks
+		if(cutscene) {
+			StartCoroutine(playTransformationCutscene());
+		} else {
+			// Set monster Toni sprite
 			TONI.control.setupEndgame();
+			// Set "civilian" monster sprite if necessary
+			if(overallState > STATE_TRANSFORMATION) {
+				MONSTER.control.setupEndgame();
+			}
+			// Unlock only one room if it's still the transformation phase, or all rooms otherwise
+			updateRoomLocksForToni(overallState == STATE_TRANSFORMATION ? 1 : GS.ROOMS.Count, RITUAL_ITEMS_REQUIRED);
 		}
-		if(overallState > STATE_TRANSFORMATION) {
-			roomsToUnlock = GS.ROOMS.Count;
-			MONSTER.control.setupEndgame();
-		}
-		updateRoomLocksForToni(roomsToUnlock, RITUAL_ITEMS_REQUIRED);
-		Control_Persistence.saveToDisk(GS);
 	}
 
 	// This method initializes the game state back to default
@@ -713,5 +715,38 @@ public class Control_GameState : MonoBehaviour {
 		// Wait until the cooldown wears off before resetting the camera panning speed
 		yield return new WaitUntil(() => TONI.cooldown <= 0);
 		MAIN_CAMERA_CONTROL.setPanningSpeedFactor(1f);
+	}
+
+	// Play the transformation cutscene after triggering the endgame
+	private IEnumerator playTransformationCutscene() {
+		updateRoomLocksForToni(1, RITUAL_ITEMS_REQUIRED);
+		// Toni walks to the center of the pentagram and looks left
+		float cooldown = (Global_Settings.read("RITUAL_PLACEMENT_MARGIN") * 2f) / Global_Settings.read("CHARA_WALKING_SPEED");
+		TONI.control.activateCooldown(cooldown);
+		TONI.control.moveTo(RITUAL_PENTAGRAM_CENTER);
+		yield return new WaitUntil(() => TONI.cooldown <= 0);
+		TONI.control.setSpriteFlip(true);
+		// Trigger the transformation 
+		cooldown = Global_Settings.read("TRANSFORMATION_DURATION");
+		TONI.control.activateCooldown(cooldown + 1f);
+		TONI.control.transformIntoMonster();
+		// Have the monster enter after a couple seconds into the transformation
+		float waitUntil = Time.timeSinceLevelLoad + 17f;
+		yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
+		Data_Door monsterEntry = GS.getRoomByIndex(RITUAL_ROOM_INDEX).getDoorAtSpawn(1);
+		MONSTER.control.teleportToRitualRoom(monsterEntry);
+		yield return new WaitUntil(() => MONSTER.cooldown <= 0);
+		MONSTER.control.setSpriteFlip(false);
+		MONSTER.control.activateCooldown(60f);
+		yield return new WaitUntil(() => TONI.cooldown <= 0);
+		// While the camera is on the monster, switch the Toni sprite
+		MONSTER.control.activateCooldown(0);
+		TONI.control.activateCooldown(1f);
+		MAIN_CAMERA_CONTROL.setFocusOn(MONSTER.pos);
+		yield return new WaitUntil(() => TONI.cooldown <= 0);
+		TONI.control.setupEndgame();
+		// Swing the camera back to Toni
+		MAIN_CAMERA_CONTROL.setFocusOn(TONI.pos);
+		Control_Persistence.saveToDisk(GS);
 	}
 }

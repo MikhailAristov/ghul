@@ -182,9 +182,9 @@ public class Control_Monster : Control_Character {
 		updateState();
 
 		// Handling the animation
-		if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE && animatorMonster != null && animatorMonster.isInitialized) {
+		if(animatorMonster != null && animatorMonster.isInitialized) {
 			animatorMonster.SetFloat("Speed", animatorMovementSpeed);
-		} else if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE && animatorCivilian != null && animatorCivilian.isInitialized) {
+		} else if(animatorCivilian != null && animatorCivilian.isInitialized) {
 			animatorCivilian.SetFloat("Speed", animatorMovementSpeed);
 			animatorCivilian.SetBool("Is Running", isRunning);
 		}
@@ -320,17 +320,6 @@ public class Control_Monster : Control_Character {
 			return;
 		}
 
-		// If the endgame has been triggered, but the monster has not yet been killed,
-		// teleport into the ritual room and stand there passively
-		if(GS.OVERALL_STATE == Control_GameState.STATE_TRANSFORMATION && !GS.MONSTER_KILLED) {
-			if(me.isIn.INDEX != RITUAL_ROOM_INDEX) {
-				monsterRenderer.color = Color.white;
-				teleportToRitualRoom();
-			} else {
-				setSpriteFlip(me.atPos > Toni.atPos);
-				return;
-			}
-		}
 
 		// During the collection phase of the game, make Toni drop his carried items if he gets too close
 		if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE && GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < MARGIN_ITEM_STEAL
@@ -564,18 +553,8 @@ public class Control_Monster : Control_Character {
 		RUNNING_SPEED = Global_Settings.read("CHARA_WALKING_SPEED");
 	}
 
-	private void teleportToRitualRoom() {
-		// Find the door furthest removed from the pentagram
-		Data_Position pentagramPos = new Data_Position(RITUAL_ROOM_INDEX, Global_Settings.read("RITUAL_PENTAGRAM_CENTER"));
-		Data_Door targetDoor = null;
-		float distToPentagram = 0;
-		foreach(Data_Door d in GS.getRoomByIndex(RITUAL_ROOM_INDEX).DOORS.Values) {
-			float newDistance = GS.getDistance(d, pentagramPos);
-			if(newDistance > distToPentagram) {
-				targetDoor = d.connectsTo;
-				distToPentagram = newDistance;
-			}
-		}
+	public void teleportToRitualRoom(Data_Door doorTaken) {
+		monsterRenderer.color = Color.white;
 		// Set AI state to fleeing, just in case
 		me.state = STATE_FLEEING;
 		if(animatorMonster != null && animatorMonster.isInitialized) {
@@ -583,7 +562,7 @@ public class Control_Monster : Control_Character {
 		}
 		// "Go" through the door
 		goingThroughADoor = true;
-		StartCoroutine(goThroughTheDoor(targetDoor));
+		StartCoroutine(goThroughTheDoor(doorTaken.connectsTo));
 	}
 
 	// Killing the monster / civilian during endgame
@@ -662,11 +641,15 @@ public class Control_Monster : Control_Character {
 		// Extend the time the monster stands still after killing Toni (while the house is being rebuilt)
 		activateCooldown(DEATH_ANIMATION_DURATION);
 	}
+
+	protected override void failedDoorTransitionHook(Data_Door doorTaken) {
+		nextDoorToGoThrough = null;
+	}
+
 	// The rest stays empty for now (only relevant for Toni)...
 	protected override void updateStamina(bool isRunning) {}
 	protected override void regainStamina() {}
 	protected override void makeWalkingNoise(float walkedDistance, int type, Data_Position atPos) {}
-	protected override void failedDoorTransitionHook(Data_Door doorTaken) {}
 	protected override void preDoorTransitionHook(Data_Door doorTaken) {}
 	protected override void preRoomLeavingHook(Data_Door doorTaken) {}
 

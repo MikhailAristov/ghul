@@ -69,7 +69,7 @@ public class Control_PlayerCharacter : Control_Character {
 
 		RITUAL_ROOM_INDEX = Global_Settings.readInt("RITUAL_ROOM_INDEX");
 		RITUAL_PENTAGRAM_CENTER = Global_Settings.read("RITUAL_PENTAGRAM_CENTER");
-		RITUAL_ITEM_PLACEMENT_RADIUS = Global_Settings.read("RITUAL_PENTAGRAM_RADIUS") / 2;
+		RITUAL_ITEM_PLACEMENT_RADIUS = Global_Settings.read("RITUAL_PLACEMENT_MARGIN");
 		RITUAL_ITEM_PLACEMENT_DURATION = Global_Settings.read("RITUAL_ITEM_PLACEMENT");
 		SUICIDLE_DURATION = Global_Settings.read("SUICIDLE_DURATION");
 
@@ -243,22 +243,12 @@ public class Control_PlayerCharacter : Control_Character {
 		}
 
 		// Transition for walking / running animation
-		switch(GS.OVERALL_STATE) {
-		case Control_GameState.STATE_COLLECTION_PHASE:
-			if(animatorHuman != null && animatorHuman.isInitialized) {
-				animatorHuman.SetFloat("Speed", animatorMovementSpeed);
-				animatorHuman.SetBool("Is Running", isRunning && animatorMovementSpeed > ANIM_MIN_SPEED_FOR_WALKING && canRun());
-				animatorHuman.SetBool("Is Exhausted", me.exhausted);
-			}
-			break;
-		case Control_GameState.STATE_MONSTER_PHASE:
-		case Control_GameState.STATE_TRANSFORMATION:
-			if(animatorMonsterToni != null && animatorMonsterToni.isInitialized) {
-				animatorMonsterToni.SetFloat("Speed", animatorMovementSpeed);
-			}
-			break;
-		default:
-			break;
+		if(animatorHuman != null && animatorHuman.isInitialized) {
+			animatorHuman.SetFloat("Speed", animatorMovementSpeed);
+			animatorHuman.SetBool("Is Running", isRunning && animatorMovementSpeed > ANIM_MIN_SPEED_FOR_WALKING && canRun());
+			animatorHuman.SetBool("Is Exhausted", me.exhausted);
+		} else if(animatorMonsterToni != null && animatorMonsterToni.isInitialized) {
+			animatorMonsterToni.SetFloat("Speed", animatorMovementSpeed);
 		}
 	}
 
@@ -483,6 +473,12 @@ public class Control_PlayerCharacter : Control_Character {
 		StartCoroutine(goThroughTheDoor(entryDoor));
 		// Turn Toni towards the center of the ritual room
 		setSpriteFlip(true);
+	}
+
+	public void transformIntoMonster() {
+		if(animatorHuman != null && animatorHuman.isInitialized) {
+			animatorHuman.SetTrigger("Transform");
+		}
 	}
 
 	public void setupEndgame() {

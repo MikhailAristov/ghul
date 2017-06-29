@@ -119,6 +119,7 @@ public abstract class Control_Character : MonoBehaviour {
 	// Local character movement for cutscenes
 	public void moveTo(float pos, bool run = false) {
 		if(getMe().cooldown > 0) {
+			pos += (getMe().atPos < pos) ? Data_Position.PIXEL_GRID_SIZE : -Data_Position.PIXEL_GRID_SIZE;
 			StartCoroutine(moveToPosition(getMe().isIn.env.validatePosition(pos), run));
 		}
 	}
@@ -148,7 +149,8 @@ public abstract class Control_Character : MonoBehaviour {
 
 		// Doors leading into locked-off room cannot be walked through
 		// or if the door is currently being held shut by the monster
-		if(door.state == Data_Door.STATE_HELD || (isPlayerCharacter && destinationRoom.ToniCannotEnter)) {
+		if(door.state == Data_Door.STATE_HELD 
+			|| (destinationRoom.ToniCannotEnter && (isPlayerCharacter || GS.OVERALL_STATE == Control_GameState.STATE_TRANSFORMATION))) {
 			door.control.forceClose();
 			failedDoorTransitionHook(door);
 			door.control.rattleDoorknob();
