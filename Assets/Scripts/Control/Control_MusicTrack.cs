@@ -84,11 +84,12 @@ public class Control_MusicTrack : MonoBehaviour {
 	}
 
 	private IEnumerator graduallyMuteTrack(float duration) {
-		float waitUntil = Time.timeSinceLevelLoad;
-		float timeStep = duration * MUTING_STEP;
+		float waitUntil = Time.timeSinceLevelLoad, timeStep = duration * MUTING_STEP, prevMainVolume;
 		do {
 			// Mute the track
+			prevMainVolume = targetMainTrackVolume;
 			targetMainTrackVolume = Math.Max(0, targetMainTrackVolume - MUTING_STEP);
+			targetProximityTrackVolume *= (targetMainTrackVolume / prevMainVolume);
 			// And wait
 			waitUntil += timeStep;
 			yield return new WaitUntil(() => Time.timeSinceLevelLoad >= waitUntil);
