@@ -12,8 +12,8 @@ PlayerSettings:
   accelerometerFrequency: 60
   companyName: GhulProject
   productName: Ghul
-  defaultCursor: {fileID: 0}
-  cursorHotspot: {x: 0, y: 0}
+  defaultCursor: {fileID: 2800000, guid: 996ee2ffdacac2f43ba41f4023f0e8c9, type: 3}
+  cursorHotspot: {x: 11, y: 4}
   m_SplashScreenStyle: 0
   m_ShowUnitySplashScreen: 1
   m_VirtualRealitySplashScreen: {fileID: 0}
