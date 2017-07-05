@@ -29,7 +29,7 @@ public class Global_Settings {
 			{ "RITUAL_PENTAGRAM_CENTER",		2.7375f },	// The center pentagram space (relative to room center)
 			{ "RITUAL_PENTAGRAM_RADIUS",		0.9f },		// The distance between pentagram center and edge in either direction
 			{ "RITUAL_PLACEMENT_MARGIN",		0.5f },		// How close to the pentagram center Toni must be to place an item
-			{ "RITUAL_ITEMS_REQUIRED",			5.0f },		// How many items are needed for the ritual (has to be cast to int)
+			{ "RITUAL_ITEMS_REQUIRED",			1.0f },		// How many items are needed for the ritual (has to be cast to int)
 			{ "RITUAL_ITEM_PLACEMENT",			1.0f },		// How long, in seconds, it takes to place an item on the pentagram
 			{ "TOTAL_NUMBER_OF_ITEMS_PLACED",	10.0f },	// needs casting to int when used
 			{ "TRANSFORMATION_DURATION",		24.0f },	// how long it takes Toni to fully transform into a monster

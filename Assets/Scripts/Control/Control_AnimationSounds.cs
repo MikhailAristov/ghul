@@ -6,104 +6,23 @@ using System.Linq;
 public class Control_AnimationSounds : MonoBehaviour {
 
 	public AudioSource SteppingSound;
-	public AudioSource AttackSound;
-	public AudioSource ZappingSound;
-	public GameObject ToniBreathSound;
-	private List<AudioSource> ToniBreathSounds;
-	public AudioSource MonsterBreathIn;
-	public AudioSource MonsterBreathOut;
-	public AudioSource MonsterFootDrag;
-	public AudioSource ToniDeathSound;
-	public AudioSource ToniTransfrormation;
+
 	public bool CheckDistanceToCamera;
 	public Control_Camera MainCameraControl;
-	public Control_GameState GameStateControl;
+	protected float stereoPan;
 
-	private static List<AudioClip> walkingSounds;
-	private static int walkingSoundsCount;
-	private static List<AudioClip> runningSounds;
-	private static int runningSoundsCount;
-	private static List<AudioClip> breathingSounds;
-	private static int breathingSoundsCount;
-	private static List<AudioClip> heavyBreathingSounds;
-	private static int heavyBreathingSoundsCount;
-	private static List<AudioClip> monsterWalkingSounds;
-	private static int monsterWalkingSoundsCount;
-	private static List<AudioClip> monsterDraggingSounds;
-	private static int monsterDraggingSoundsCount;
-
-	private const float walkingSoundVolume = 0.5f;
-	private const float runningSoundVolume = 1f;
-
-	private bool mainCameraCanHearMe {
+	protected bool mainCameraCanHearMe {
 		get { return (MainCameraControl != null && MainCameraControl.canSeeObject(gameObject, -100f)); }
 	}
 
-	private static int currentChapter;
-
-	void Awake() {
-		// Define all sounds
-		if(walkingSounds == null) {
-			walkingSounds = new List<AudioClip>(Resources.LoadAll("Toni/WalkSounds", typeof(AudioClip)).Cast<AudioClip>());
-			walkingSoundsCount = walkingSounds.Count;
-		}
-		if(runningSounds == null) {
-			runningSounds = new List<AudioClip>(Resources.LoadAll("Toni/RunSounds", typeof(AudioClip)).Cast<AudioClip>());
-			runningSoundsCount = runningSounds.Count;
-		}
-		if(breathingSounds == null) {
-			breathingSounds = new List<AudioClip>(Resources.LoadAll("Toni/Breathing", typeof(AudioClip)).Cast<AudioClip>());
-			breathingSoundsCount = breathingSounds.Count;
-		}
-		if(heavyBreathingSounds == null) {
-			heavyBreathingSounds = new List<AudioClip>(Resources.LoadAll("Toni/HeavyBreathing", typeof(AudioClip)).Cast<AudioClip>());
-			heavyBreathingSoundsCount = heavyBreathingSounds.Count;
-		}
-		if(monsterWalkingSounds == null) {
-			monsterWalkingSounds = new List<AudioClip>(Resources.LoadAll("Monster/SteppingSounds", typeof(AudioClip)).Cast<AudioClip>());
-			monsterWalkingSoundsCount = monsterWalkingSounds.Count;
-		}
-		if(monsterDraggingSounds == null) {
-			monsterDraggingSounds = new List<AudioClip>(Resources.LoadAll("Monster/FootDraggingSounds", typeof(AudioClip)).Cast<AudioClip>());
-			monsterDraggingSoundsCount = monsterDraggingSounds.Count;
-		}
-		// Internal references
-		ToniBreathSounds = (ToniBreathSound != null) ? new List<AudioSource>(ToniBreathSound.GetComponents<AudioSource>()) : new List<AudioSource>();
-	}
-
-	void FixedUpdate() {
-		// Update the stereo pan
+	protected void FixedUpdate () {
 		if(mainCameraCanHearMe) {
-			float stereoPan = getHorizontalSoundPan(MainCameraControl.transform.position.x - transform.position.x);
+			stereoPan = getHorizontalSoundPan(MainCameraControl.transform.position.x - transform.position.x);
 			SteppingSound.panStereo = stereoPan;
-			if(AttackSound != null) {
-				AttackSound.panStereo = stereoPan;
-				MonsterBreathIn.panStereo = stereoPan;
-				MonsterBreathOut.panStereo = stereoPan;
-				MonsterFootDrag.panStereo = stereoPan;
-			}
-			if(ZappingSound != null) {
-				ZappingSound.panStereo = stereoPan;
-				foreach(AudioSource src in ToniBreathSounds) {
-					src.panStereo = stereoPan;
-				}
-				ToniTransfrormation.panStereo = stereoPan;
-			}
-			if(ToniDeathSound != null) {
-				ToniDeathSound.panStereo = stereoPan;
-			}
 		}
 	}
 
-	public void makeRandomWalkingStepNoise() {
-		playSteppingSound(walkingSounds[UnityEngine.Random.Range(0, walkingSoundsCount)], walkingSoundVolume);
-	}
-
-	public void makeRandomRunningStepNoise() {
-		playSteppingSound(runningSounds[UnityEngine.Random.Range(0, runningSoundsCount)], runningSoundVolume);
-	}
-
-	private void playSteppingSound(AudioClip sound, float volume) {
+	protected void playSteppingSound(AudioClip sound, float volume) {
 		if(SteppingSound != null && (!CheckDistanceToCamera || mainCameraCanHearMe)) {
 			SteppingSound.Stop();
 			SteppingSound.clip = sound;
@@ -112,69 +31,12 @@ public class Control_AnimationSounds : MonoBehaviour {
 		}
 	}
 
-	public void makeRandomBreathingNoise() {
-		playBreathingSound(breathingSounds[UnityEngine.Random.Range(0, breathingSoundsCount)]);
+	protected static List<AudioClip> loadAudioClips(string resourceLocation) {
+		return new List<AudioClip>(Resources.LoadAll(resourceLocation, typeof(AudioClip)).Cast<AudioClip>());
 	}
 
-	public void makeRandomHeavyBreathingNoise() {
-		playBreathingSound(heavyBreathingSounds[UnityEngine.Random.Range(0, heavyBreathingSoundsCount)]);
-	}
-
-	private void playBreathingSound(AudioClip sound) {
-		foreach(AudioSource src in ToniBreathSounds) {
-			if(src != null && !src.isPlaying) {
-				src.clip = sound;
-				src.Play();
-				break;
-			}
-		}
-	}
-
-	public void playAttackSound() {
-		if(AttackSound != null && AttackSound.clip != null && (!CheckDistanceToCamera || mainCameraCanHearMe)) {
-			AttackSound.Play();
-		}
-	}
-
-	public void playZappingSound() {
-		if(ZappingSound != null && ZappingSound.clip != null) {
-			ZappingSound.Play();
-		}
-	}
-
-	public void monsterBreatheIn() {
-		if(MonsterBreathIn != null && MonsterBreathIn.clip != null && (!CheckDistanceToCamera || mainCameraCanHearMe)) {
-			MonsterBreathIn.Play();
-		}
-	}
-
-	public void monsterBreatheOut() {
-		if(MonsterBreathOut != null && MonsterBreathOut.clip != null && (!CheckDistanceToCamera || mainCameraCanHearMe)) {
-			MonsterBreathOut.Play();
-		}
-	}
-
-	public void makeRandomMonsterSteppingNoise() {
-		playSteppingSound(monsterWalkingSounds[UnityEngine.Random.Range(0, monsterWalkingSoundsCount)], runningSoundVolume);
-	}
-
-	public void makeRandomMonsterDraggingNoise() {
-		if(MonsterFootDrag != null && !MonsterFootDrag.isPlaying && (!CheckDistanceToCamera || mainCameraCanHearMe)) {
-			MonsterFootDrag.clip = monsterDraggingSounds[UnityEngine.Random.Range(0, monsterDraggingSoundsCount)];
-			MonsterFootDrag.Play();
-		}
-	}
-
-	public void playToniDeath() {
-		if(ToniDeathSound != null && ToniDeathSound.clip != null && (!CheckDistanceToCamera || mainCameraCanHearMe)) {
-			ToniDeathSound.Play();
-		}
-	}
-
-	public void playToniTransformation() {
-		if(ToniDeathSound != null && ToniDeathSound.clip != null) {
-			ToniTransfrormation.Play();
-		}
+	protected static AudioClip pickRandomClip(ref List<AudioClip> fromList) {
+		return fromList[UnityEngine.Random.Range(0, fromList.Count)];
 	}
 
 	// Returns the appropriate 2D sound panning value for a horizontal distance to the main camera
