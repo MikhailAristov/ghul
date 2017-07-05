@@ -79,20 +79,14 @@ public class Control_AnimationSoundsHuman : Control_AnimationSounds {
 	}
 
 	public void playZappingSound() {
-		if(ZappingSound != null && ZappingSound.clip != null) {
-			ZappingSound.Play();
-		}
+		checkAndPlay(ref ZappingSound);
 	}
 
 	public void playToniDeath() {
-		if(DeathSound != null && DeathSound.clip != null && (!CheckDistanceToCamera || mainCameraCanHearMe)) {
-			DeathSound.Play();
-		}
+		checkAndPlay(ref DeathSound);
 	}
 
 	public void playToniTransformation() {
-		if(DeathSound != null && DeathSound.clip != null) {
-			Transformation.Play();
-		}
+		checkAndPlay(ref Transformation);
 	}
 }

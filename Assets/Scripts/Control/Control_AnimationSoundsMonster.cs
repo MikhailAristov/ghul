@@ -5,6 +5,8 @@ using System.Linq;
 
 public class Control_AnimationSoundsMonster : Control_AnimationSounds {
 
+	public Control_GameState gameStateControl;
+
 	public AudioSource AttackSound;
 	public AudioSource MonsterVoice;
 	public AudioSource BreathIn;
@@ -44,21 +46,15 @@ public class Control_AnimationSoundsMonster : Control_AnimationSounds {
 	}
 
 	public void playAttackSound() {
-		if(AttackSound != null && AttackSound.clip != null && (!CheckDistanceToCamera || mainCameraCanHearMe)) {
-			AttackSound.Play();
-		}
+		checkAndPlay(ref AttackSound);
 	}
 
 	public void monsterBreatheIn() {
-		if(BreathIn != null && BreathIn.clip != null && (!CheckDistanceToCamera || mainCameraCanHearMe)) {
-			BreathIn.Play();
-		}
+		checkAndPlay(ref BreathIn);
 	}
 
 	public void monsterBreatheOut() {
-		if(BreathOut != null && BreathOut.clip != null && (!CheckDistanceToCamera || mainCameraCanHearMe)) {
-			BreathOut.Play();
-		}
+		checkAndPlay(ref BreathOut);
 	}
 
 	public void makeRandomMonsterSteppingNoise() {
@@ -69,6 +65,13 @@ public class Control_AnimationSoundsMonster : Control_AnimationSounds {
 		if(FootDragSound != null && !FootDragSound.isPlaying && (!CheckDistanceToCamera || mainCameraCanHearMe)) {
 			FootDragSound.clip = pickRandomClip(ref footDraggingSounds);
 			FootDragSound.Play();
+		}
+	}
+
+	public void playRandomVoiceSnippet() {
+		if(MonsterVoice != null && !MonsterVoice.isPlaying && (!CheckDistanceToCamera || mainCameraCanHearMe)) {
+			MonsterVoice.clip = gameStateControl.monsterMetToni ? pickRandomClip(ref monsterGroans) : pickRandomClip(ref monsterLaughs);
+			MonsterVoice.Play();
 		}
 	}
 }

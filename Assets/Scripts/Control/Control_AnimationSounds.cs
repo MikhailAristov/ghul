@@ -35,6 +35,12 @@ public class Control_AnimationSounds : MonoBehaviour {
 		return new List<AudioClip>(Resources.LoadAll(resourceLocation, typeof(AudioClip)).Cast<AudioClip>());
 	}
 
+	protected void checkAndPlay(ref AudioSource src) {
+		if(src != null && src.clip != null && (!CheckDistanceToCamera || mainCameraCanHearMe)) {
+			src.Play();
+		}
+	}
+
 	protected static AudioClip pickRandomClip(ref List<AudioClip> fromList) {
 		return fromList[UnityEngine.Random.Range(0, fromList.Count)];
 	}
