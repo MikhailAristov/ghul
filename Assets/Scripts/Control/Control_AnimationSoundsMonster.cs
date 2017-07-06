@@ -56,6 +56,9 @@ public class Control_AnimationSoundsMonster : Control_AnimationSounds {
 			updateStereoPan(MonsterVoice);
 			updateStereoPan(BreathIn);
 			updateStereoPan(BreathOut);
+			updateStereoPan(ArmHiss);
+			updateStereoPan(ArmRattle);
+			updateStereoPan(ArmSwing);
 			updateStereoPan(FootDragSound);
 		}
 	}
