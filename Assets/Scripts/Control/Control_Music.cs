@@ -68,10 +68,6 @@ public class Control_Music : MonoBehaviour {
 			}
 			break;
 		default:
-			// Ambient music should not play during other phases
-			if(!allMuted) {
-				muteAll();
-			}
 			break;
 		}
 	}

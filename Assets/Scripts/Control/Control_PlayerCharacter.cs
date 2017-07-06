@@ -24,7 +24,9 @@ public class Control_PlayerCharacter : Control_Character {
 	private float RITUAL_PENTAGRAM_CENTER;
 	private float RITUAL_ITEM_PLACEMENT_RADIUS;
 	private float RITUAL_ITEM_PLACEMENT_DURATION;
-	private float SUICIDLE_DURATION;
+	private float SUICIDLE_DELAY;
+	private float SUICIDLE_CANCELABLE_DURATION;
+	private float SUICIDLE_COMPLETE_DURATION;
 
 	private float RESPAWN_TRANSITION_DURATION;
 	private float INVENTORY_DISPLAY_DURATION;
@@ -48,6 +50,7 @@ public class Control_PlayerCharacter : Control_Character {
 	public Animator animatorHuman;
 	public Animator animatorMonsterToni;
 	private bool isRunning;
+	private bool suicidleIsPlaying;
 
 	// Most basic initialization
 	void Awake() {
@@ -71,7 +74,10 @@ public class Control_PlayerCharacter : Control_Character {
 		RITUAL_PENTAGRAM_CENTER = Global_Settings.read("RITUAL_PENTAGRAM_CENTER");
 		RITUAL_ITEM_PLACEMENT_RADIUS = Global_Settings.read("RITUAL_PLACEMENT_MARGIN");
 		RITUAL_ITEM_PLACEMENT_DURATION = Global_Settings.read("RITUAL_ITEM_PLACEMENT");
-		SUICIDLE_DURATION = Global_Settings.read("SUICIDLE_DURATION");
+
+		SUICIDLE_DELAY = Global_Settings.read("SUICIDLE_DELAY");
+		SUICIDLE_CANCELABLE_DURATION = SUICIDLE_DELAY + Global_Settings.read("SUICIDLE_CANCELABLE_DURATION");
+		SUICIDLE_COMPLETE_DURATION = SUICIDLE_DELAY + Global_Settings.read("SUICIDLE_COMPLETE_DURATION");
 
 		ATTACK_RANGE = Global_Settings.read("MONSTER_ATTACK_RANGE");
 		ATTACK_MARGIN = Global_Settings.read("TONI_ATTACK_MARGIN");
@@ -84,8 +90,9 @@ public class Control_PlayerCharacter : Control_Character {
 
 	// Use this for initialization; note that only local variables are initialized here, game state is loaded later
 	void Start() {
-		carriedItemUI.CrossFadeAlpha(0.0f, 0.0f, false);
+		carriedItemUI.CrossFadeAlpha(0, 0, false);
 		walkingDistanceSinceLastNoise = 0;
+		suicidleIsPlaying = false;
 	}
 
 	// To make sure the game state is fully initialized before loading it, this function is called by game state class itself
@@ -106,14 +113,18 @@ public class Control_PlayerCharacter : Control_Character {
 
 	// Update is called once per frame
 	void Update() {
-		// Don't do anything if the game state is not loaded yet or suspended or in the final endgame state
-		if(GS == null || GS.SUSPENDED || GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_DEAD) {
+		// Don't do anything if the game state is not loaded yet or suspended
+		if(GS == null || GS.SUSPENDED) {
 			animatorHuman.speed = 0;
 			animatorMonsterToni.speed = 0;
 			return; 
 		} else {
 			animatorHuman.speed = 1f;
 			animatorMonsterToni.speed = 1f;
+		}
+		// Don't do anything in the final endgame state
+		if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_DEAD) {
+			return;
 		}
 		// While the character is etherial, don't do anything
 		if(me.cooldown > 0) {
@@ -196,11 +207,9 @@ public class Control_PlayerCharacter : Control_Character {
 
 		// Suicidle...
 		if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE) {
-			if(me.timeWithoutAction >= SUICIDLE_DURATION) {
-				me.timeWithoutAction = 0;
-				StartCoroutine(dieAndRespawn());
+			if(me.timeWithoutAction >= SUICIDLE_DELAY && !suicidleIsPlaying) {
+				StartCoroutine(playSuicidle());
 			}
-			mainCameraControl.setRedOverlay(me.timeWithoutAction / SUICIDLE_DURATION);
 		}
 	}
 
@@ -325,9 +334,9 @@ public class Control_PlayerCharacter : Control_Character {
 		} else {
 			// During the endgame, simply replace the monster Toni sprite with the cadaver
 			GS.TONI_KILLED = true;
-			monsterToniRenderer.enabled = false;
-			CorpsePoolControl.placeMonsterCorpse(me.isIn.env.gameObject, me.pos.asLocalVector(), stickmanRenderer.flipX);
-			GS.updateCadaverPosition(me.pos, stickmanRenderer.flipX);
+			// Do not replace the renderer with a monster corpse -- instead, let the animation just loop indefinitely
+			// The corpse will be placed on this spot after the game is reloaded
+			GS.updateCadaverPosition(me.pos, monsterToniRenderer.flipX);
 			activateCooldown(0);
 		}
 
@@ -641,5 +650,31 @@ public class Control_PlayerCharacter : Control_Character {
 	// After each kill, open the door leading to the next intruder
 	protected override void postKillHook() {
 		guideMonsterToniToIntruders(drawAttention: true);
+	}
+
+	// Play the suicidle
+	private IEnumerator playSuicidle() {
+		// It is assume that this function is called after SUICIDLE_DELAY elapsed
+		suicidleIsPlaying = true;
+		// Start the animation
+		if(animatorMonsterToni != null && animatorMonsterToni.isInitialized) {
+			animatorMonsterToni.SetTrigger("Suicidle");
+		}
+		// Wait until Phase 1 completes without player moving or until the player moves
+		yield return new WaitUntil(() => (me.timeWithoutAction > SUICIDLE_CANCELABLE_DURATION || me.timeWithoutAction < SUICIDLE_DELAY));
+		// If the player moved, cancel the animation and exit
+		if(me.timeWithoutAction < SUICIDLE_DELAY) {
+			if(animatorMonsterToni != null && animatorMonsterToni.isInitialized) {
+				animatorMonsterToni.SetTrigger("SuicidleCancel");
+			}
+			suicidleIsPlaying = false;
+			yield break;
+		}
+		// Otherwise, activate cooldown and proceed to the second stage
+		activateCooldown(SUICIDLE_COMPLETE_DURATION - SUICIDLE_CANCELABLE_DURATION);
+		yield return new WaitUntil(() => (me.timeWithoutAction > SUICIDLE_COMPLETE_DURATION));
+		// Trigger the next chapter
+		StartCoroutine(dieAndRespawn());
+		suicidleIsPlaying = false;
 	}
 }

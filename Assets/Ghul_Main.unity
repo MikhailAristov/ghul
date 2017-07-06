@@ -5263,6 +5263,8 @@ MonoBehaviour:
     type: 2}
   MonsterCorpsePrefab: {fileID: 1000012098924484, guid: 16ed8d7bfd250d146b04f4b1ec8def93,
     type: 2}
+  MonsterToniCorpsePrefab: {fileID: 1000012722994158, guid: 1c470f26d22a98e4ca7d9b2d71ae75c0,
+    type: 2}
 --- !u!1 &1220599431
 GameObject:
   m_ObjectHideFlags: 0

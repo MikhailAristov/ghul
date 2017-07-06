@@ -43,7 +43,6 @@ public class Global_Settings {
 			{ "CHARA_WALKING_SPEED",			1.95f },
 			{ "CHARA_RUNNING_SPEED",			4.275f },
 			{ "CHARA_SINGLE_STEP_LENGTH",		0.8f },		// this is how many (virtual) meters chara can walk before making a noise
-			{ "SUICIDLE_DURATION",				30.0f },	// How long the suicidle animation takes
 
 			// Monster settings
 			{ "MONSTER_WALKING_SPEED",			2.75f },
@@ -74,6 +73,11 @@ public class Global_Settings {
 			{ "INVENTORY_DISPLAY_DURATION",		2.0f },		// How long the inventory overlay is shown when invoked
 			{ "ITEM_PICKUP_DURATION",			1.3f },		// How long Toni needs to pick up an item
 			{ "ITEM_ZAP_DURATION",				1.9f },		// How long Toni is disabled after trying to pick up a wrong item
+
+			// Suicidle settings
+			{ "SUICIDLE_DELAY",				   	5.0f },		// How long it takes for the suicide to trigger at all
+			{ "SUICIDLE_CANCELABLE_DURATION",	12.5f },	// For how long can the player still cancel out of suicidle after it's been triggered
+			{ "SUICIDLE_COMPLETE_DURATION",		18.0f },	// How long does it take for the suicdle to complete (cumulatively)
 
 			// Artificial intelligence and modelling settings
 			{ "TIME_STEP",		Time.fixedDeltaTime },		// ...

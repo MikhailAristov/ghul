@@ -11,6 +11,7 @@ public class Control_CorpsePool : MonoBehaviour {
 	public GameObject BloodPuddlePrefab;
 	public GameObject HumanSkeletonPrefab;
 	public GameObject MonsterCorpsePrefab;
+	public GameObject MonsterToniCorpsePrefab;
 
 	private List<GameObject> humanCorpses;
 	private List<GameObject> bloodPuddles;
@@ -93,6 +94,11 @@ public class Control_CorpsePool : MonoBehaviour {
 	// Creates or recycles a monster corpse GameObject and places it where specified
 	public GameObject placeMonsterCorpse(GameObject parent, Vector2 position, bool flipped) {
 		return placeCorpse(ref monsterCorpses, ref MonsterCorpsePrefab, ref lastMonsterCorpse, parent, position, flipped);
+	}
+
+	// Creates or recycles a Monster!Toni corpse GameObject and places it where specified
+	public GameObject placeMonsterToniCorpse(GameObject parent, Vector2 position, bool flipped) {
+		return placeCorpse(ref monsterCorpses, ref MonsterToniCorpsePrefab, ref lastMonsterCorpse, parent, position, flipped);
 	}
 
 	// Creates or recycles a blood puddle GameObject and places it where specified
