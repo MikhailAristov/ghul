@@ -519,16 +519,15 @@ public class Control_Monster : Control_Character {
 	private void walkToAndThroughDoor(Data_Door door, bool run, float deltaTime) {
 		Debug.Assert(door != null);
 		if(door != null) {
+			// Calculate the distance to the door
 			float distToDoor = door.visiblePos - me.atPos;
+			// Check the margin and go through the door if possible
 			if(Math.Abs(distToDoor) <= MARGIN_DOOR_ENTRANCE) {
 				goingThroughADoor = true;
 				StartCoroutine(goThroughTheDoor(door));
 			} else {
-				Data_Door triggeredDoor = walk(distToDoor, run, deltaTime);
-				if(triggeredDoor == door) {
-					goingThroughADoor = true;
-					StartCoroutine(goThroughTheDoor(triggeredDoor));
-				}
+				// Otherwise, walk towards the door
+				walk(distToDoor, run, deltaTime);
 			}
 		}
 	}

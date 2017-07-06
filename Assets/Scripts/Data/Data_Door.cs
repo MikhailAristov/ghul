@@ -5,8 +5,6 @@ using System;
 [Serializable]
 public class Data_Door : IComparable<Data_Door> {
 
-	private const float SIDE_DOOR_DISPLACEMENT = 0.65f;
-
 	[NonSerialized]
 	public Control_Door control;
 
@@ -64,7 +62,7 @@ public class Data_Door : IComparable<Data_Door> {
 	}
 
 	public float visiblePos {
-		get { return Mathf.Clamp(atPos, isIn.leftWalkBoundary - SIDE_DOOR_DISPLACEMENT, isIn.rightWalkBoundary + SIDE_DOOR_DISPLACEMENT); }
+		get { return Mathf.Clamp(atPos, isIn.leftWalkBoundary, isIn.rightWalkBoundary); }
 	}
 
 	// Connecting door ("other side")
