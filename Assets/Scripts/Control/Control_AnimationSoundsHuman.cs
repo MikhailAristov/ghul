@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 
 public class Control_AnimationSoundsHuman : Control_AnimationSounds {
 
@@ -21,18 +20,10 @@ public class Control_AnimationSoundsHuman : Control_AnimationSounds {
 
 	void Awake() {
 		// Define all sounds
-		if(walkingSounds == null) {
-			walkingSounds = loadAudioClips("Toni/WalkSounds");
-		}
-		if(runningSounds == null) {
-			runningSounds = loadAudioClips("Toni/RunSounds");
-		}
-		if(breathingSounds == null) {
-			breathingSounds = loadAudioClips("Toni/Breathing");
-		}
-		if(heavyBreathingSounds == null) {
-			heavyBreathingSounds = loadAudioClips("Toni/HeavyBreathing");
-		}
+		loadAudioClips(ref walkingSounds, path: "Toni/WalkSounds");
+		loadAudioClips(ref runningSounds, path: "Toni/RunSounds");
+		loadAudioClips(ref breathingSounds, path: "Toni/Breathing");
+		loadAudioClips(ref heavyBreathingSounds, path: "Toni/HeavyBreathing");
 		// Internal references
 		BreathSounds = (BreathingSound != null) ? new List<AudioSource>(BreathingSound.GetComponents<AudioSource>()) : new List<AudioSource>();
 	}
@@ -51,11 +42,11 @@ public class Control_AnimationSoundsHuman : Control_AnimationSounds {
 	}
 
 	public void makeRandomWalkingStepNoise() {
-		playSteppingSound(pickRandomClip(ref walkingSounds), walkingSoundVolume);
+		setRandomAndPlay(ref SteppingSound, ref walkingSounds, walkingSoundVolume);
 	}
 
 	public void makeRandomRunningStepNoise() {
-		playSteppingSound(pickRandomClip(ref runningSounds), runningSoundVolume);
+		setRandomAndPlay(ref SteppingSound, ref runningSounds, runningSoundVolume);
 	}
 
 	public void makeRandomBreathingNoise() {

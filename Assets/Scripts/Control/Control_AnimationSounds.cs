@@ -15,28 +15,30 @@ public class Control_AnimationSounds : MonoBehaviour {
 		get { return (MainCameraControl != null && MainCameraControl.canSeeObject(gameObject, -100f)); }
 	}
 
-	protected void FixedUpdate () {
+	protected void FixedUpdate() {
 		if(!AudioListener.pause && mainCameraCanHearMe) {
 			stereoPan = getHorizontalSoundPan(MainCameraControl.transform.position.x - transform.position.x);
 			updateStereoPan(SteppingSound);
 		}
 	}
 
-	protected void playSteppingSound(AudioClip sound, float volume) {
-		if(SteppingSound != null && (!CheckDistanceToCamera || mainCameraCanHearMe)) {
-			SteppingSound.Stop();
-			SteppingSound.clip = sound;
-			SteppingSound.volume = volume;
-			SteppingSound.Play();
+	protected static void loadAudioClips(ref List<AudioClip> tgt, string path) {
+		if(tgt == null) {
+			tgt = new List<AudioClip>(Resources.LoadAll(path, typeof(AudioClip)).Cast<AudioClip>());
 		}
-	}
-
-	protected static List<AudioClip> loadAudioClips(string resourceLocation) {
-		return new List<AudioClip>(Resources.LoadAll(resourceLocation, typeof(AudioClip)).Cast<AudioClip>());
 	}
 
 	protected void checkAndPlay(ref AudioSource src) {
 		if(src != null && src.clip != null && (!CheckDistanceToCamera || mainCameraCanHearMe)) {
+			src.Play();
+		}
+	}
+
+	protected void setRandomAndPlay(ref AudioSource src, ref List<AudioClip> soundList, float volume = 1f) {
+		if(src != null && (!CheckDistanceToCamera || mainCameraCanHearMe)) {
+			src.Stop();
+			src.clip = pickRandomClip(ref soundList);
+			src.volume = volume;
 			src.Play();
 		}
 	}
