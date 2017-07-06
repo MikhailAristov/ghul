@@ -5,8 +5,6 @@ using System;
 public class Control_Camera : MonoBehaviour {
 	// Used for scene transitions
 	public Image fadeoutImage;
-	// Used to represent immediate danger
-	public Image redoutImage;
 
 	private Data_GameState GS;
 	private Data_Position focusOn;
@@ -27,7 +25,6 @@ public class Control_Camera : MonoBehaviour {
 
 	void Start() {
 		fadeoutImage.CrossFadeAlpha(0, 0, false);
-		redoutImage.CrossFadeAlpha(0, 0, false);
 	}
 
 	// To make sure the game state is fully initialized before loading it, this function is called by game state class itself
@@ -88,17 +85,6 @@ public class Control_Camera : MonoBehaviour {
 	// Asynchronously fades back from black
 	public void fadeIn(float duration) {
 		fadeoutImage.CrossFadeAlpha(0, duration, false);
-	}
-
-	// Set red overlay intensity
-	public void setRedOverlay(float intensity) {
-		intensity = Mathf.Clamp(intensity, 0, 0.9f);
-		redoutImage.CrossFadeAlpha(intensity, 0, false);
-	}
-
-	// Asynchronously fades back from red
-	public void resetRedOverlay() {
-		redoutImage.CrossFadeAlpha(0, 1f, false);
 	}
 
 	// Checks whether a game object is clearly visible to the camera
