@@ -90,7 +90,7 @@ public class Control_Monster : Control_Character {
 	void Awake() {
 		RUNNING_SPEED = Global_Settings.read("MONSTER_WALKING_SPEED");
 		WALKING_SPEED = Global_Settings.read("MONSTER_SLOW_WALKING_SPEED");
-		MARGIN_DOOR_ENTRANCE = Global_Settings.read("MARGIN_DOOR_ENTRANCE");
+		MARGIN_DOOR_ENTRANCE = Global_Settings.read("MARGIN_DOOR_ENTRANCE") / 2;
 		HALF_SCREEN_SIZE_HORIZONTAL = Global_Settings.read("SCREEN_SIZE_HORIZONTAL") / 2;
 
 		ATTACK_RANGE = Global_Settings.read("MONSTER_ATTACK_RANGE");
