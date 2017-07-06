@@ -37,11 +37,12 @@ public class Control_AnimationSoundsMonster : Control_AnimationSounds {
 	protected new void FixedUpdate() {
 		base.FixedUpdate();
 		// Update the stereo pan
-		if(AttackSound != null) {
-			AttackSound.panStereo = stereoPan;
-			BreathIn.panStereo = stereoPan;
-			BreathOut.panStereo = stereoPan;
-			FootDragSound.panStereo = stereoPan;
+		if(!AudioListener.pause) {
+			updateStereoPan(AttackSound);
+			updateStereoPan(MonsterVoice);
+			updateStereoPan(BreathIn);
+			updateStereoPan(BreathOut);
+			updateStereoPan(FootDragSound);
 		}
 	}
 

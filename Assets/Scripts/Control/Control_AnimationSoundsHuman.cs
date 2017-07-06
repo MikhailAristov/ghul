@@ -40,15 +40,13 @@ public class Control_AnimationSoundsHuman : Control_AnimationSounds {
 	protected new void FixedUpdate() {
 		base.FixedUpdate();
 		// Update the stereo pan
-		if(ZappingSound != null) {
-			ZappingSound.panStereo = stereoPan;
+		if(!AudioListener.pause) {
+			updateStereoPan(ZappingSound);
 			foreach(AudioSource src in BreathSounds) {
-				src.panStereo = stereoPan;
+				updateStereoPan(src);
 			}
-			Transformation.panStereo = stereoPan;
-		}
-		if(DeathSound != null) {
-			DeathSound.panStereo = stereoPan;
+			updateStereoPan(Transformation);
+			updateStereoPan(DeathSound);
 		}
 	}
 

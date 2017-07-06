@@ -70,6 +70,7 @@ public class Control_MainMenu : MonoBehaviour {
 		if(hidden) {
 			MainMenuCanvas.enabled = true;
 			Cursor.visible = true;
+			AudioListener.pause = true;
 		}
 	}
 
@@ -79,6 +80,7 @@ public class Control_MainMenu : MonoBehaviour {
 			isLaunchMenu = false;
 			MainMenuCanvas.enabled = false;
 			Cursor.visible = false;
+			AudioListener.pause = false;
 		}
 	}
 

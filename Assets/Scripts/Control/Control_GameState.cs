@@ -81,6 +81,7 @@ public class Control_GameState : MonoBehaviour {
 
 	void Start() {
 		MAIN_CAMERA_CONTROL = Camera.main.GetComponent<Control_Camera>();
+		AudioListener.pause = true;
 		// Initialize factories
 		prefabFactory = GetComponent<Factory_PrefabController>();
 		graphFactory = GetComponent<Factory_Graph>();

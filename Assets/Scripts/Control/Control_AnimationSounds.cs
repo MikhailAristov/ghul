@@ -16,9 +16,9 @@ public class Control_AnimationSounds : MonoBehaviour {
 	}
 
 	protected void FixedUpdate () {
-		if(mainCameraCanHearMe) {
+		if(!AudioListener.pause && mainCameraCanHearMe) {
 			stereoPan = getHorizontalSoundPan(MainCameraControl.transform.position.x - transform.position.x);
-			SteppingSound.panStereo = stereoPan;
+			updateStereoPan(SteppingSound);
 		}
 	}
 
@@ -49,5 +49,11 @@ public class Control_AnimationSounds : MonoBehaviour {
 	public static float getHorizontalSoundPan(float horizontalDistToCamera) {
 		float result = Mathf.Atan2(-horizontalDistToCamera, -Camera.main.transform.position.z) / Mathf.PI * 2f;
 		return Mathf.Clamp(result, -1f, 1f);
+	}
+
+	protected void updateStereoPan(AudioSource src) {
+		if(src != null) {
+			src.panStereo = stereoPan;
+		}
 	}
 }

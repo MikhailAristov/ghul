@@ -16,7 +16,6 @@ public class Control_Music : MonoBehaviour {
 	private const float maxProximityTrackVolumeFactor = 1f;
 
 	// Jukebox references
-	private bool allPaused;
 	private bool allMuted;
 	private int currentTrackID;
 	private bool playChaseMusic;
@@ -30,7 +29,6 @@ public class Control_Music : MonoBehaviour {
 	public AudioSource EndgameTrack;
 
 	void Awake() {
-		allPaused = false;
 		allMuted = false;
 		playChaseMusic = false;
 		tensionHigh = false;
@@ -38,10 +36,7 @@ public class Control_Music : MonoBehaviour {
 
 	void Update() {
 		if(GS == null || GS.SUSPENDED) {
-			pauseAll();
 			return;
-		} else {
-			unpauseAll();
 		}
 
 		switch(GS.OVERALL_STATE) {
@@ -135,29 +130,6 @@ public class Control_Music : MonoBehaviour {
 			if(MainTrackList[currentTrackID].muted) {
 				MainTrackList[currentTrackID].unmuteTrack(duration: TRACK_UNMUTING_DURATION, delay: Global_Settings.read("ENCOUNTER_JINGLE_DURATION"), restart: true);
 			}
-		}
-	}
-
-	// Pause and unpause all audio sources in the jukebox
-	private void pauseAll() {
-		if(!allPaused) {
-			EncounterJingle.Pause();
-			foreach(Control_MusicTrack track in MainTrackList) {
-				track.pause();
-			}
-			EndgameTrack.Pause();
-			allPaused = true;
-		}
-	}
-
-	private void unpauseAll() {
-		if(allPaused) {
-			EncounterJingle.UnPause();
-			foreach(Control_MusicTrack track in MainTrackList) {
-				track.unpause();
-			}
-			EndgameTrack.UnPause();
-			allPaused = false;
 		}
 	}
 
