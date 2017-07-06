@@ -736,14 +736,13 @@ public class Control_GameState : MonoBehaviour {
 		MONSTER.control.setSpriteFlip(false);
 		MONSTER.control.activateCooldown(60f);
 		yield return new WaitUntil(() => TONI.cooldown <= 0);
-		// While the camera is on the monster, switch the Toni sprite
+		// Release the monster to move while Toni is still transforming
 		MONSTER.control.activateCooldown(0);
-		TONI.control.activateCooldown(1f);
-		MAIN_CAMERA_CONTROL.setFocusOn(MONSTER.pos);
-		yield return new WaitUntil(() => TONI.cooldown <= 0);
+		TONI.control.activateCooldown(2f);
+		// Wait until the transformation plays out before switching our renderers
+		yield return new WaitUntil(() => TONI.control.animatorHuman.IsInTransition(0));
 		TONI.control.setupEndgame();
-		// Swing the camera back to Toni
-		MAIN_CAMERA_CONTROL.setFocusOn(TONI.pos);
+		yield return new WaitUntil(() => TONI.cooldown <= 0);
 		Control_Persistence.saveToDisk(GS);
 	}
 }
