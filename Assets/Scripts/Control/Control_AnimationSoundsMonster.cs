@@ -18,6 +18,8 @@ public class Control_AnimationSoundsMonster : Control_AnimationSounds {
 	private static List<AudioClip> walkingSounds;
 	private static List<AudioClip> footDraggingSounds;
 
+	private int lastLaughedInChapter;
+
 	void Awake() {
 		// Define all sounds
 		if(monsterGroans == null) {
@@ -32,6 +34,8 @@ public class Control_AnimationSoundsMonster : Control_AnimationSounds {
 		if(footDraggingSounds == null) {
 			footDraggingSounds = loadAudioClips("Monster/FootDraggingSounds");
 		}
+		// For the monster voice
+		lastLaughedInChapter = 0;
 	}
 
 	protected new void FixedUpdate() {
@@ -71,7 +75,12 @@ public class Control_AnimationSoundsMonster : Control_AnimationSounds {
 
 	public void playRandomVoiceSnippet() {
 		if(MonsterVoice != null && !MonsterVoice.isPlaying && (!CheckDistanceToCamera || mainCameraCanHearMe)) {
-			MonsterVoice.clip = gameStateControl.monsterMetToni ? pickRandomClip(ref monsterGroans) : pickRandomClip(ref monsterLaughs);
+			if(lastLaughedInChapter != gameStateControl.currentChapter) {
+				MonsterVoice.clip = pickRandomClip(ref monsterLaughs);
+				lastLaughedInChapter = gameStateControl.currentChapter;
+			} else {
+				MonsterVoice.clip = pickRandomClip(ref monsterGroans);
+			}
 			MonsterVoice.Play();
 		}
 	}

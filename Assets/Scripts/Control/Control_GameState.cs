@@ -54,9 +54,6 @@ public class Control_GameState : MonoBehaviour {
 	public int currentChapter {
 		get { return (GS != null && GS.OVERALL_STATE == STATE_COLLECTION_PHASE) ? (GS.numItemsPlaced + 1) : 0; }
 	}
-	public bool monsterMetToni {
-		get { return (GS != null && GS.getMonster().worldModel.hasMetToniSinceLastMilestone); }
-	}
 
 	// Use this for initialization
 	void Awake() {
