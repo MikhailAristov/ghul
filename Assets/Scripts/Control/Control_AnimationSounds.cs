@@ -56,4 +56,8 @@ public class Control_AnimationSounds : MonoBehaviour {
 			src.panStereo = stereoPan;
 		}
 	}
+
+	public void takeScreenshot() {
+		Control_Persistence.takeScreenshot();
+	}
 }
