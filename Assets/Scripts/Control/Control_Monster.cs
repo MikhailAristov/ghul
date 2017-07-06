@@ -258,7 +258,7 @@ public class Control_Monster : Control_Character {
 				break;
 			// Wandering is a special case: if the ritual has been performed, start fleeing from Toni
 			case STATE_WANDERING:
-				if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE &&
+				if(GS.OVERALL_STATE >= Control_GameState.STATE_MONSTER_PHASE &&
 				   GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < HALF_SCREEN_SIZE_HORIZONTAL) {
 					me.state = STATE_FLEEING;
 					isRunning = true;
@@ -266,7 +266,7 @@ public class Control_Monster : Control_Character {
 				break;
 			// Stop fleeing if Toni is no longer seen
 			case STATE_FLEEING:
-				if(!GS.monsterSeesToni || GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_DEAD) {
+				if(!GS.monsterSeesToni) {
 					me.state = STATE_WANDERING;
 					isRunning = false;
 				}
