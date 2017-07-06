@@ -8,6 +8,7 @@ public class Control_Music : MonoBehaviour {
 	private Data_PlayerCharacter TONI;
 	private Data_Monster MONSTER;
 
+	private float MAX_TRACK_VOLUME;
 	private const float TRACK_MUTING_DURATION = 1f;
 	private const float TRACK_UNMUTING_DURATION = 5f;
 
@@ -16,7 +17,6 @@ public class Control_Music : MonoBehaviour {
 	private const float maxProximityTrackVolumeFactor = 1f;
 
 	// Jukebox references
-	private bool allPaused;
 	private bool allMuted;
 	private int currentTrackID;
 	private bool playChaseMusic;
@@ -27,25 +27,23 @@ public class Control_Music : MonoBehaviour {
 	public AudioClip ItemPickupJingle;
 	public AudioClip[] ItemPlacementJingles;
 	public Control_MusicTrack[] MainTrackList;
+	public AudioSource TransformationTrack;
 	public AudioSource EndgameTrack;
 
 	void Awake() {
-		allPaused = false;
 		allMuted = false;
 		playChaseMusic = false;
 		tensionHigh = false;
+		MAX_TRACK_VOLUME = Mathf.Clamp01(Global_Settings.read("TOP_MUSIC_VOLUME"));
 	}
 
 	void Update() {
 		if(GS == null || GS.SUSPENDED) {
-			pauseAll();
 			return;
-		} else {
-			unpauseAll();
 		}
 
 		switch(GS.OVERALL_STATE) {
-		case(Control_GameState.STATE_COLLECTION_PHASE):
+		case Control_GameState.STATE_COLLECTION_PHASE:
 			if(MONSTER.worldModel.hasMetToni) {
 				if(currentTrackID != GS.numItemsPlaced) {
 					switchTracks(currentTrackID, GS.numItemsPlaced);
@@ -54,15 +52,19 @@ public class Control_Music : MonoBehaviour {
 				MainTrackList[currentTrackID].updateProximityFactor(proximityTrackVolumeFactor);
 			}
 			break;
-		case(Control_GameState.STATE_MONSTER_PHASE):
-			if(MONSTER.worldModel.hasMetToniSinceLastMilestone) {
-				if(EndgameTrack.mute) {
-					EndgameTrack.Play();
-					EndgameTrack.mute = false;
-				}
-				if(EndgameTrack.volume < 0.999f) {
-					EndgameTrack.volume = Mathf.Lerp(EndgameTrack.volume, 1f, 0.001f);
-				}
+		case Control_GameState.STATE_TRANSFORMATION:
+			if(TransformationTrack.mute) {
+				// Mute the current collection track
+				MainTrackList[currentTrackID].muteTrack(TRACK_MUTING_DURATION);
+				// Unmute the transformation track
+				StartCoroutine(unmuteBasicTrack(TransformationTrack));
+			}
+			break;
+		case Control_GameState.STATE_MONSTER_PHASE:
+			// Unmute the endgame track once Monster Toni finds the first intruder
+			if(EndgameTrack.mute && MONSTER.worldModel.hasMetToniSinceLastMilestone) {
+				TransformationTrack.mute = true;
+				StartCoroutine(unmuteBasicTrack(EndgameTrack));
 			}
 			break;
 		default:
@@ -138,34 +140,12 @@ public class Control_Music : MonoBehaviour {
 		}
 	}
 
-	// Pause and unpause all audio sources in the jukebox
-	private void pauseAll() {
-		if(!allPaused) {
-			EncounterJingle.Pause();
-			foreach(Control_MusicTrack track in MainTrackList) {
-				track.pause();
-			}
-			EndgameTrack.Pause();
-			allPaused = true;
-		}
-	}
-
-	private void unpauseAll() {
-		if(allPaused) {
-			EncounterJingle.UnPause();
-			foreach(Control_MusicTrack track in MainTrackList) {
-				track.unpause();
-			}
-			EndgameTrack.UnPause();
-			allPaused = false;
-		}
-	}
-
 	private void muteAll() {
 		if(!allMuted) {
 			foreach(Control_MusicTrack track in MainTrackList) {
 				track.muteTrack(TRACK_MUTING_DURATION);
 			}
+			TransformationTrack.mute = true;
 			EndgameTrack.mute = true;
 			allMuted = true;
 		}
@@ -226,6 +206,21 @@ public class Control_Music : MonoBehaviour {
 		if(tensionHigh) {
 			MainTrackList[currentTrackID].rampTensionUp(false);
 			tensionHigh = false;
+		}
+	}
+
+	// Gradually unmute a basic track
+	private IEnumerator unmuteBasicTrack(AudioSource src) {
+		if(src.mute) {
+			src.Play();
+			src.mute = false;
+		} else {
+			// Security against multiple calls
+			yield break;
+		}
+		while(src.volume < MAX_TRACK_VOLUME) {
+			src.volume = Mathf.Lerp(src.volume, 1f, 0.001f);
+			yield return new WaitForEndOfFrame();
 		}
 	}
 }

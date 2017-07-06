@@ -21,7 +21,6 @@ public class Control_MusicTrack : MonoBehaviour {
 	private float targetChaseTrackVolume;
 	private float minChaseTrackVolume;
 	private bool isMuted;
-	private bool isPaused;
 
 	public bool muted {
 		get { return isMuted; }
@@ -45,12 +44,11 @@ public class Control_MusicTrack : MonoBehaviour {
 		// Automute on start
 		muteTrack(0);
 		isMuted = true;
-		isPaused = false;
 	}
 
 	// Update is called once per frame
 	void Update () {
-		if(!isMuted && !isPaused) {
+		if(!isMuted && !AudioListener.pause) {
 			mainTrack.volume = Mathf.Lerp(mainTrack.volume, targetMainTrackVolume, LERPING_STEP);
 			if(Mathf.Abs(proximitySubtrack.volume - targetProximityTrackVolume) > 0.0001f * MAX_TRACK_VOLUME) {
 				proximitySubtrack.volume = Mathf.Lerp(proximitySubtrack.volume, targetProximityTrackVolume, (targetMainTrackVolume > 0.9f * MAX_TRACK_VOLUME ? LERPING_STEP : LERPING_STEP_FAST));
@@ -156,24 +154,6 @@ public class Control_MusicTrack : MonoBehaviour {
 		// Update the chase track volume itself if necessary
 		if((state && targetChaseTrackVolume < minChaseTrackVolume) || (!state && targetChaseTrackVolume > minChaseTrackVolume)) {
 			targetChaseTrackVolume = minChaseTrackVolume;
-		}
-	}
-
-	public void pause() {
-		if(!isPaused) {
-			mainTrack.Pause();
-			proximitySubtrack.Pause();
-			chaseSubtrack.Pause();
-			isPaused = true;
-		}
-	}
-
-	public void unpause() {
-		if(isPaused) {
-			mainTrack.UnPause();
-			proximitySubtrack.UnPause();
-			chaseSubtrack.UnPause();
-			isPaused = false;
 		}
 	}
 }

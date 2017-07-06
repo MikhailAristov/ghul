@@ -78,6 +78,7 @@ public class Control_GameState : MonoBehaviour {
 
 	void Start() {
 		MAIN_CAMERA_CONTROL = Camera.main.GetComponent<Control_Camera>();
+		AudioListener.pause = true;
 		// Initialize factories
 		prefabFactory = GetComponent<Factory_PrefabController>();
 		graphFactory = GetComponent<Factory_Graph>();
@@ -727,8 +728,8 @@ public class Control_GameState : MonoBehaviour {
 		TONI.control.activateCooldown(cooldown + 1f);
 		TONI.control.transformIntoMonster();
 		// Have the monster enter after a couple seconds into the transformation
-		float waitUntil = Time.timeSinceLevelLoad + 17f;
-		yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
+		MONSTER.control.activateCooldown(17f);
+		yield return new WaitUntil(() => MONSTER.cooldown <= 0);
 		Data_Door monsterEntry = GS.getRoomByIndex(RITUAL_ROOM_INDEX).getDoorAtSpawn(1);
 		MONSTER.control.teleportToRitualRoom(monsterEntry);
 		yield return new WaitUntil(() => MONSTER.cooldown <= 0);

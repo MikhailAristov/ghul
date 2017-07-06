@@ -11,6 +11,7 @@ public class Control_Monster : Control_Character {
 
 	[NonSerialized]
 	private Data_Monster me;
+
 	protected override Data_Character getMe() {
 		return me as Data_Character;
 	}
@@ -42,9 +43,11 @@ public class Control_Monster : Control_Character {
 	private const double utilityPenaltyToniInTheWay = double.MaxValue / 4;
 
 	private float stateUpdateCooldown;
+
 	private float distanceThresholdToStartPursuing {
 		get { return me.AGGRO * HALF_SCREEN_SIZE_HORIZONTAL; }
 	}
+
 	private double certaintyThresholdToStartStalking;
 	private float cumultativeImpasseDuration;
 
@@ -77,15 +80,17 @@ public class Control_Monster : Control_Character {
 	private const float minVisibility = 0.1f;
 	private int INVISIBLE_AFTER_ITEM;
 	private float INVISIBILITY_TRANSITION_DURATION;
+
 	private bool currentlyInvisible {
 		get { return (GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE && GS.numItemsPlaced >= INVISIBLE_AFTER_ITEM && !attackAnimationPlaying); }
 	}
+
 	private float visibilityTransitionSpeed = 1f;
 
 	void Awake() {
 		RUNNING_SPEED = Global_Settings.read("MONSTER_WALKING_SPEED");
 		WALKING_SPEED = Global_Settings.read("MONSTER_SLOW_WALKING_SPEED");
-		MARGIN_DOOR_ENTRANCE = Global_Settings.read("MARGIN_DOOR_ENTRANCE");
+		MARGIN_DOOR_ENTRANCE = Global_Settings.read("MARGIN_DOOR_ENTRANCE") / 2;
 		HALF_SCREEN_SIZE_HORIZONTAL = Global_Settings.read("SCREEN_SIZE_HORIZONTAL") / 2;
 
 		ATTACK_RANGE = Global_Settings.read("MONSTER_ATTACK_RANGE");
@@ -224,7 +229,7 @@ public class Control_Monster : Control_Character {
 					me.state = STATE_PURSUING;
 					JukeboxControl.startPlayingChaseTrack();
 				} else if(GS.separationBetweenTwoRooms[me.pos.RoomId, me.worldModel.mostLikelyTonisRoomIndex] > 1 &&
-					me.worldModel.certainty < certaintyThresholdToStartStalking) {
+				          me.worldModel.certainty < certaintyThresholdToStartStalking) {
 					me.state = STATE_SEARCHING;
 					JukeboxControl.stopPlayingChaseTrack();
 				}
@@ -296,7 +301,7 @@ public class Control_Monster : Control_Character {
 			if(currentlyInvisible && monsterRenderer.color.a > minVisibility) {
 				float fade = Mathf.SmoothDamp(monsterRenderer.color.a, minVisibility, ref visibilityTransitionSpeed, INVISIBILITY_TRANSITION_DURATION);
 				monsterRenderer.color = new Color(1f, 1f, 1f, fade);
-			} else if(!currentlyInvisible && monsterRenderer.color.a < maxVisibility){
+			} else if(!currentlyInvisible && monsterRenderer.color.a < maxVisibility) {
 				float fade = Mathf.SmoothDamp(monsterRenderer.color.a, maxVisibility, ref visibilityTransitionSpeed, INVISIBILITY_TRANSITION_DURATION);
 				monsterRenderer.color = new Color(1f, 1f, 1f, fade);
 			}
@@ -308,10 +313,9 @@ public class Control_Monster : Control_Character {
 			return;
 		}
 
-
 		// During the collection phase of the game, make Toni drop his carried items if he gets too close
 		if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE && GS.monsterSeesToni && Math.Abs(GS.distanceToToni) < MARGIN_ITEM_STEAL
-			&& !(MOSTLY_HARMLESS && Debug.isDebugBuild)) {
+		   && !(MOSTLY_HARMLESS && Debug.isDebugBuild)) {
 			Toni.control.dropItem();
 		}
 
@@ -633,6 +637,7 @@ public class Control_Monster : Control_Character {
 			animatorMonster.SetTrigger("Attack");
 		}
 	}
+
 	protected override void stopAttackAnimation() {
 		// Cancel the animation
 		if(animatorMonster != null && animatorMonster.isInitialized) {
