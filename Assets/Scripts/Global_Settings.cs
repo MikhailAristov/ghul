@@ -79,9 +79,6 @@ public class Global_Settings {
 			{ "SUICIDLE_CANCELABLE_DURATION",	12.5f },	// For how long can the player still cancel out of suicidle after it's been triggered
 			{ "SUICIDLE_COMPLETE_DURATION",		18.0f },	// How long does it take for the suicdle to complete (cumulatively)
 
-			// Artificial intelligence and modelling settings
-			{ "TIME_STEP",		Time.fixedDeltaTime },		// ...
-
 			// Miscellaneous setttings
 			{ "AUTOSAVE_FREQUENCY",				10.0f },	// In seconds
 			{ "TOTAL_DEATH_DURATION",			4.5f },		// When deathDuration of Data_Character reaches this value the player resets to the starting room

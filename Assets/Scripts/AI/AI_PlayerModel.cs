@@ -53,7 +53,7 @@ public class AI_PlayerModel {
 
 	public AI_PlayerModel(Data_GameState GS) {
 		// First, some global settings
-		TIME_STEP 				= Global_Settings.read("TIME_STEP");
+		TIME_STEP 				= Time.fixedDeltaTime;
 		TONI_SINGLE_STEP_LENGTH	= Global_Settings.read("CHARA_SINGLE_STEP_LENGTH");
 		// Then, initialize the transition matrix
 		recalculate(GS);
