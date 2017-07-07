@@ -32,6 +32,7 @@ public class Global_Settings {
 			{ "RITUAL_ITEMS_REQUIRED",			5.0f },		// How many items are needed for the ritual (has to be cast to int)
 			{ "RITUAL_ITEM_PLACEMENT",			1.0f },		// How long, in seconds, it takes to place an item on the pentagram
 			{ "TOTAL_NUMBER_OF_ITEMS_PLACED",	10.0f },	// needs casting to int when used
+			{ "TRANSFORMATION_DELAY",			5.0f },		// how much time passes between the placement of the final item and the start of the transformation
 			{ "TRANSFORMATION_DURATION",		24.0f },	// how long it takes Toni to fully transform into a monster
 
 			// Door settings

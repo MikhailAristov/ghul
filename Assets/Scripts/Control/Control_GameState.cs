@@ -718,14 +718,13 @@ public class Control_GameState : MonoBehaviour {
 		updateRoomLocksForToni(1, RITUAL_ITEMS_REQUIRED);
 		MONSTER.control.activateCooldown(60f); // Fix the monster in place
 		// Toni walks to the center of the pentagram and looks left
-		float cooldown = (Global_Settings.read("RITUAL_PLACEMENT_MARGIN") * 3f) / Global_Settings.read("CHARA_WALKING_SPEED");
-		TONI.control.activateCooldown(cooldown);
+		TONI.control.activateCooldown(Global_Settings.read("TRANSFORMATION_DELAY"));
 		TONI.control.moveTo(RITUAL_PENTAGRAM_CENTER);
+		// Then wait until cooldown wears off while nothing happens
 		yield return new WaitUntil(() => TONI.cooldown <= 0);
 		TONI.control.setSpriteFlip(true);
-		// Trigger the transformation 
-		cooldown = Global_Settings.read("TRANSFORMATION_DURATION");
-		TONI.control.activateCooldown(cooldown + 1f);
+		// Trigger the transformation
+		TONI.control.activateCooldown(Global_Settings.read("TRANSFORMATION_DURATION") + 1f);
 		TONI.control.transformIntoMonster();
 		// Have the monster enter after a couple seconds into the transformation
 		MONSTER.control.activateCooldown(17f);
@@ -740,7 +739,7 @@ public class Control_GameState : MonoBehaviour {
 		MONSTER.control.activateCooldown(0);
 		TONI.control.activateCooldown(2f);
 		// Wait until the transformation plays out before switching our renderers
-		yield return new WaitUntil(() => TONI.control.animatorHuman.IsInTransition(0));
+		yield return new WaitUntil(() => TONI.control.animatorHuman.GetCurrentAnimatorStateInfo(0).IsName("Toni_transformation_END"));
 		TONI.control.setupEndgame();
 		yield return new WaitUntil(() => TONI.cooldown <= 0);
 		Control_Persistence.saveToDisk(GS);

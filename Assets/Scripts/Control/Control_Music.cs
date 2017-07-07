@@ -57,7 +57,7 @@ public class Control_Music : MonoBehaviour {
 				// Mute the current collection track
 				MainTrackList[currentTrackID].muteTrack(TRACK_MUTING_DURATION);
 				// Unmute the transformation track
-				StartCoroutine(unmuteBasicTrack(TransformationTrack));
+				StartCoroutine(unmuteBasicTrack(TransformationTrack, delay:Global_Settings.read("TRANSFORMATION_DELAY")));
 			}
 			break;
 		case Control_GameState.STATE_MONSTER_PHASE:
@@ -206,7 +206,11 @@ public class Control_Music : MonoBehaviour {
 	}
 
 	// Gradually unmute a basic track
-	private IEnumerator unmuteBasicTrack(AudioSource src) {
+	private IEnumerator unmuteBasicTrack(AudioSource src, float delay = 0) {
+		if(delay > 0) {
+			float waitUntil = Time.timeSinceLevelLoad + delay;
+			yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
+		}
 		if(src.mute) {
 			src.Play();
 			src.mute = false;
