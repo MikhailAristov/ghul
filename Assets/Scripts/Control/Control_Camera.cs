@@ -10,17 +10,14 @@ public class Control_Camera : MonoBehaviour {
 	private Data_Position focusOn;
 	private Environment_Room currentEnvironment;
 
-	private float SCREEN_SIZE_HORIZONTAL;
-	private float SCREEN_SIZE_VERTICAL;
+	private float HALF_SCREEN_SIZE_VERTICAL;
 	private float PANNING_SPEED;
 	private float VERTICAL_ROOM_SPACING;
 
 	void Awake() {
-		SCREEN_SIZE_HORIZONTAL = Global_Settings.read("SCREEN_SIZE_HORIZONTAL");
-		SCREEN_SIZE_VERTICAL = Global_Settings.read("SCREEN_SIZE_VERTICAL");
-		// Set general movement parameters
 		PANNING_SPEED = Global_Settings.read("CAMERA_PANNING_SPEED");
 		VERTICAL_ROOM_SPACING = Global_Settings.read("VERTICAL_ROOM_SPACING");
+		HALF_SCREEN_SIZE_VERTICAL = Global_Settings.read("SCREEN_SIZE_VERTICAL") / 2;
 	}
 
 	void Start() {
@@ -91,13 +88,18 @@ public class Control_Camera : MonoBehaviour {
 	public bool canSeeObject(GameObject obj, float horizonalVisibilityThreshold) {
 		Vector2 objPos = obj.transform.position;
 		// First, check the vertical visibility
-		if(Math.Abs(objPos.y - transform.position.y) > SCREEN_SIZE_VERTICAL / 2) {
+		if(Math.Abs(objPos.y - transform.position.y) > HALF_SCREEN_SIZE_VERTICAL) {
 			return false;
 		}
 		// Then, the horizonal visibility within the given bounds
-		float leftBound = transform.position.x - SCREEN_SIZE_HORIZONTAL / 2 + horizonalVisibilityThreshold;
-		float rightBound = transform.position.x + SCREEN_SIZE_HORIZONTAL / 2 - horizonalVisibilityThreshold;
+		float leftBound = transform.position.x - HALF_SCREEN_SIZE_VERTICAL + horizonalVisibilityThreshold;
+		float rightBound = transform.position.x + HALF_SCREEN_SIZE_VERTICAL - horizonalVisibilityThreshold;
 		return (leftBound <= objPos.x && objPos.x <= rightBound);
+	}
+
+	// Checks whether a game object can be heard by the camera
+	public bool canHearObject(GameObject obj) {
+		return (Math.Abs(obj.transform.position.y - transform.position.y) < HALF_SCREEN_SIZE_VERTICAL);
 	}
 
 	// Updates the panning speed with the given factor

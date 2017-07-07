@@ -168,9 +168,10 @@ AnimationClip:
   m_GenerateMotionCurves: 0
   m_Events:
   - time: 0
-    functionName: playToniDeath
+    functionName: playSound
     data: 
-    objectReferenceParameter: {fileID: 0}
+    objectReferenceParameter: {fileID: 8300000, guid: 28c79e92fa4e23b4a82da200d25f8667,
+      type: 3}
     floatParameter: 0
     intParameter: 0
     messageOptions: 0

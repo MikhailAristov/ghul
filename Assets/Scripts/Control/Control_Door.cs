@@ -13,6 +13,7 @@ public class Control_Door : MonoBehaviour {
 	public GameObject OpenSprite;
 	private AudioSource knobSound;
 	private AudioSource creakSound;
+	private Control_Camera mainCameraConrol;
 
 	private const int SOUND_TYPE_CLOSE = 0;
 	private const int SOUND_TYPE_OPEN = 1;
@@ -31,11 +32,6 @@ public class Control_Door : MonoBehaviour {
 	private float doorOpenCheckFrequency;
 	private float timeUntilLettingGo;
 	private const float doorHeldDuration = 0.1f;
-	private float verticalHearingThreshold;
-
-	private bool mainCameraCanHearMe {
-		get { return (Mathf.Abs(transform.position.y - Camera.main.transform.position.y) < verticalHearingThreshold); }
-	}
 
 	// Returns whether the door is currently being held open (to guide Monster Toni)
 	public bool isHeldOpen {
@@ -46,7 +42,6 @@ public class Control_Door : MonoBehaviour {
 	void Awake() {
 		doorOpenDuration = Global_Settings.read("DOOR_OPEN_DURATION");
 		doorOpenCheckFrequency = doorOpenDuration / 10f;
-		verticalHearingThreshold = Global_Settings.read("SCREEN_SIZE_VERTICAL") / 10f;
 
 		knobSound = GetComponents<AudioSource>()[0];
 		creakSound = GetComponents<AudioSource>()[1];
@@ -67,6 +62,10 @@ public class Control_Door : MonoBehaviour {
 		}
 	}
 
+	void Start() {
+		mainCameraConrol = Camera.main.GetComponent<Control_Camera>();
+	}
+
 	void FixedUpdate() {
 		// If the door is being held, check whether it timed out
 		if(me != null && me.connectsTo.state == Data_Door.STATE_HELD) {
@@ -77,7 +76,7 @@ public class Control_Door : MonoBehaviour {
 		}
 
 		// Update the sound pan as long as the camera can hear you
-		if(mainCameraCanHearMe) {
+		if(mainCameraConrol.canHearObject(gameObject)) {
 			float soundPan = Control_AnimationSounds.getHorizontalSoundPan(Camera.main.transform.position.x - transform.position.x);
 			knobSound.panStereo = soundPan;
 			creakSound.panStereo = soundPan;
@@ -162,7 +161,7 @@ public class Control_Door : MonoBehaviour {
 
 	// Play the specified sound if the main camera (i.e. Toni) is within the current room
 	private void playSound(int soundType, bool forceCreak = false) {
-		if(!mainCameraCanHearMe) {
+		if(!mainCameraConrol.canHearObject(gameObject)) {
 			return;
 		}
 

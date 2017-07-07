@@ -138,9 +138,10 @@ AnimationClip:
   m_GenerateMotionCurves: 0
   m_Events:
   - time: 0
-    functionName: playAttackSound
+    functionName: playSound
     data: 
-    objectReferenceParameter: {fileID: 0}
+    objectReferenceParameter: {fileID: 8300000, guid: 515c72419ba2b4a4aa8912ad95292ff9,
+      type: 3}
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
