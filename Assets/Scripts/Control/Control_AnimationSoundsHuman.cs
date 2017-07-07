@@ -8,7 +8,6 @@ public class Control_AnimationSoundsHuman : Control_AnimationSounds {
 	public GameObject BreathingSound;
 	private List<AudioSource> BreathSounds;
 	public AudioSource DeathSound;
-	public AudioSource Transformation;
 
 	private static List<AudioClip> walkingSounds;
 	private static List<AudioClip> runningSounds;
@@ -36,7 +35,6 @@ public class Control_AnimationSoundsHuman : Control_AnimationSounds {
 			foreach(AudioSource src in BreathSounds) {
 				updateStereoPan(src);
 			}
-			updateStereoPan(Transformation);
 			updateStereoPan(DeathSound);
 		}
 	}
@@ -73,9 +71,5 @@ public class Control_AnimationSoundsHuman : Control_AnimationSounds {
 
 	public void playToniDeath() {
 		checkAndPlay(ref DeathSound);
-	}
-
-	public void playToniTransformation() {
-		checkAndPlay(ref Transformation);
 	}
 }
