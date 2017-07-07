@@ -733,7 +733,7 @@ public class Control_GameState : MonoBehaviour {
 		yield return new WaitUntil(() => TONI.cooldown <= 0);
 		TONI.control.setSpriteFlip(true);
 		// Trigger the transformation
-		TONI.control.activateCooldown(Global_Settings.read("TRANSFORMATION_DURATION") + 1f);
+		TONI.control.activateCooldown(Global_Settings.read("TRANSFORMATION_DURATION"));
 		TONI.control.transformIntoMonster();
 		// Have the monster enter after a couple seconds into the transformation
 		MONSTER.control.activateCooldown(17f);

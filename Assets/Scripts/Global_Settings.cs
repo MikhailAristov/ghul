@@ -33,7 +33,7 @@ public class Global_Settings {
 			{ "RITUAL_ITEM_PLACEMENT",			1.0f },		// How long, in seconds, it takes to place an item on the pentagram
 			{ "TOTAL_NUMBER_OF_ITEMS_PLACED",	10.0f },	// needs casting to int when used
 			{ "TRANSFORMATION_DELAY",			5.0f },		// how much time passes between the placement of the final item and the start of the transformation
-			{ "TRANSFORMATION_DURATION",		24.0f },	// how long it takes Toni to fully transform into a monster
+			{ "TRANSFORMATION_DURATION",		25.0f },	// how long it takes Toni to fully transform into a monster
 
 			// Door settings
 			{ "MARGIN_DOOR_ENTRANCE",			0.8625f },	// How close a character's center of mass must be to the door's center to use it
