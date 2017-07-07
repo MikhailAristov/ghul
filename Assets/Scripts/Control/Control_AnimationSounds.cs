@@ -34,7 +34,7 @@ public class Control_AnimationSounds : MonoBehaviour {
 			AudioClip soundToPlay = (AudioClip)e.objectReferenceParameter;
 			float intendedVolume = (e.floatParameter > 0) ? Mathf.Clamp01(e.floatParameter) : 1f;
 			// Play the sound
-			playSound(soundToPlay, intendedVolume);
+			playSoundInternal(soundToPlay, intendedVolume);
 		}
 	}
 
@@ -45,11 +45,11 @@ public class Control_AnimationSounds : MonoBehaviour {
 			// Extract the reference to the sound clip to be played, and the intended volume, if specified
 			string pathKey = e.stringParameter;
 			float intendedVolume = (e.floatParameter > 0) ? Mathf.Clamp01(e.floatParameter) : 1f;
-			playRandomFromPath(pathKey, intendedVolume);
+			playRandomFromPathInternal(pathKey, intendedVolume);
 		}
 	}
 
-	protected void playRandomFromPath(string pathKey, float vol) {
+	protected void playRandomFromPathInternal(string pathKey, float vol) {
 		// Initialize the audio database if necessary
 		if(AudioDatabase == null) {
 			AudioDatabase = new Dictionary<string, List<AudioClip>>();
@@ -61,10 +61,10 @@ public class Control_AnimationSounds : MonoBehaviour {
 			AudioDatabase.Add(pathKey, clipList);
 		}
 		// Pick a random clip from the list and play it
-		playSound(clipList[UnityEngine.Random.Range(0, clipList.Count)], vol);
+		playSoundInternal(clipList[UnityEngine.Random.Range(0, clipList.Count)], vol);
 	}
 
-	protected void playSound(AudioClip snd, float vol) {
+	protected void playSoundInternal(AudioClip snd, float vol) {
 		// Initialize the cutscene sound source list if necessary
 		if(GenericAudioTracks == null) {
 			GenericAudioTracks = new List<AudioSource>();
@@ -100,11 +100,7 @@ public class Control_AnimationSounds : MonoBehaviour {
 		}
 	}
 
-	// Wrapper for legacy compatibility
-	public void playCutsceneSound(AnimationEvent e) {
-		playSound(e);
-	}
-
+	// Just for taking pretty screenshots in the middle of an animation...
 	public void takeScreenshot() {
 		Control_Persistence.takeScreenshot();
 	}

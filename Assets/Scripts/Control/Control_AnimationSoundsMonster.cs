@@ -10,9 +10,9 @@ public class Control_AnimationSoundsMonster : Control_AnimationSounds {
 		if(GenericSounds != null && (!CheckDistanceToCamera || MainCameraControl.canHearObject(gameObject))) {
 			if(lastLaughedInChapter != gameStateControl.currentChapter) {
 				lastLaughedInChapter = gameStateControl.currentChapter;
-				playRandomFromPath("Monster/Laughs", 1f);
+				playRandomFromPathInternal("Monster/Laughs", 1f);
 			} else {
-				playRandomFromPath("Monster/Groans", 1f);
+				playRandomFromPathInternal("Monster/Groans", 1f);
 			}
 		}
 	}
