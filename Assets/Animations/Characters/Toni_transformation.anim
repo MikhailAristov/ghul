@@ -1077,3 +1077,33 @@ AnimationClip:
     floatParameter: 0.6
     intParameter: 0
     messageOptions: 0
+  - time: 23.666666
+    functionName: playSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: 79e7d0914373c8642a391c4e6c628a5a,
+      type: 3}
+    floatParameter: 0.1
+    intParameter: 0
+    messageOptions: 0
+  - time: 23.75
+    functionName: playRandomFromPath
+    data: Monster/Groans
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 24.333334
+    functionName: playSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: 8ecfbb9366ce7d84594dd920d28c97e6,
+      type: 3}
+    floatParameter: 0.1
+    intParameter: 0
+    messageOptions: 0
+  - time: 24.5
+    functionName: playRandomFromPath
+    data: Monster/Groans
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
