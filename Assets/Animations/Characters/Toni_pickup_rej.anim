@@ -135,9 +135,10 @@ AnimationClip:
   m_GenerateMotionCurves: 0
   m_Events:
   - time: 0.125
-    functionName: playZappingSound
+    functionName: playSound
     data: 
-    objectReferenceParameter: {fileID: 0}
+    objectReferenceParameter: {fileID: 8300000, guid: 05628465c259c6749a7f325166dbd853,
+      type: 3}
     floatParameter: 0
     intParameter: 0
     messageOptions: 0

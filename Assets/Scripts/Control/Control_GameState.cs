@@ -173,6 +173,15 @@ public class Control_GameState : MonoBehaviour {
 			// Do nothing
 			break;
 		}
+
+		// Switch camera between monster and Toni
+		if(Debug.isDebugBuild && Input.GetKeyUp(KeyCode.Tab)) {
+			if(MAIN_CAMERA_CONTROL.isFocusedOn(TONI.pos)) {
+				MAIN_CAMERA_CONTROL.setFocusOn(MONSTER.pos);
+			} else {
+				MAIN_CAMERA_CONTROL.setFocusOn(TONI.pos);
+			}
+		}
 	}
 
 	// Normal update routine before all items are placed
