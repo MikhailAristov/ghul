@@ -1900,7 +1900,7 @@ MonoBehaviour:
   ItemJinglePlayer: {fileID: 1023594280}
   ItemPickupJingle: {fileID: 8300000, guid: 560a122e3dafee24ab6ab2f6c5249d7d, type: 3}
   ItemPlacementJingles:
-  - {fileID: 8300000, guid: c9fc1ce6c02b69346934ff358c7aa886, type: 3}
+  - {fileID: 8300000, guid: f45179276b8f5410bb84e204394f4d7c, type: 3}
   - {fileID: 8300000, guid: 70c475d2bbc0e94449b5e26c0aefd623, type: 3}
   - {fileID: 8300000, guid: 79c16f10e021cde48b7bb9498977696b, type: 3}
   - {fileID: 8300000, guid: 6be6d4b531f42a84bacb4936e2d0e3d3, type: 3}
@@ -4177,7 +4177,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 77ec34e7f28f4824684f3b478e87048a, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.65
   m_Pitch: 1
   Loop: 0
   Mute: 0
