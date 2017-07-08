@@ -821,6 +821,14 @@ AnimationClip:
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
+  - time: 0.9166667
+    functionName: playSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: 96038897a0fe1468fbe38d9f1a39ee2b,
+      type: 3}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
   - time: 1
     functionName: playRandomMonsterVoiceSnippet
     data: 
@@ -851,6 +859,14 @@ AnimationClip:
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
+  - time: 2.7916667
+    functionName: playSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: 1852acd54d2bf4096a62b8a5dbee0704,
+      type: 3}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
   - time: 4.7083335
     functionName: playSound
     data: 
@@ -871,6 +887,30 @@ AnimationClip:
     functionName: playSound
     data: 
     objectReferenceParameter: {fileID: 8300000, guid: 85b7081d42c47428282fda8111109bb6,
+      type: 3}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 6.5416665
+    functionName: playSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: 4b8654ca1d870405f9fb63aea26d5cb5,
+      type: 3}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 7.3333335
+    functionName: playSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: b0a799299082a49358573c57a59673dd,
+      type: 3}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 8.666667
+    functionName: playSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: cc78b64591b2a4d5083dc48550d779d1,
       type: 3}
     floatParameter: 0
     intParameter: 0
@@ -923,10 +963,34 @@ AnimationClip:
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
+  - time: 13.291667
+    functionName: playSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: 774907e98755e4eb59a97d100f57260a,
+      type: 3}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
   - time: 13.75
     functionName: playSound
     data: 
     objectReferenceParameter: {fileID: 8300000, guid: 777bedfedd59741aa9e81ecc62df676f,
+      type: 3}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 14.333333
+    functionName: playSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: dceaf432182d84633ba2d5456aa45ae8,
+      type: 3}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 15.916667
+    functionName: playSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: 954d21f1483974793b08fcca226bc066,
       type: 3}
     floatParameter: 0
     intParameter: 0
