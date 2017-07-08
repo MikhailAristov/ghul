@@ -6,7 +6,7 @@ using System.Collections.Generic;
 // This is the controller class that manages the game state data
 public class Control_GameState : MonoBehaviour {
     
-	// In the exposition builds, it is always possible to reset the game state 
+	// In the exposition builds, it is always possible to reset the game state
 	// on restarting the game, and there is no continue button
 	public bool InExpoMode;
 
@@ -48,9 +48,11 @@ public class Control_GameState : MonoBehaviour {
 
 	private float AUTOSAVE_FREQUENCY;
 	private float NEXT_AUTOSAVE_IN;
+
 	public bool newGameDisabled {
 		get { return (GS != null && GS.OVERALL_STATE > STATE_COLLECTION_PHASE); }
 	}
+
 	public int currentChapter {
 		get { return (GS != null && GS.OVERALL_STATE == STATE_COLLECTION_PHASE) ? (GS.numItemsPlaced + 1) : 0; }
 	}
@@ -86,7 +88,7 @@ public class Control_GameState : MonoBehaviour {
 		if(!InExpoMode) {
 			continueFromSavedGameState();
 			if(GS != null) {
-				setAdditionalParameters(newGame:false);
+				setAdditionalParameters(newGame: false);
 				GS.SUSPENDED = true; // Suspend the game while in the main menu initially
 			}
 		}
@@ -141,7 +143,7 @@ public class Control_GameState : MonoBehaviour {
 
 		// Check whether monster and Toni have met
 		if(!MONSTER.worldModel.hasMetToniSinceLastMilestone && GS.monsterSeesToni && MAIN_CAMERA_CONTROL.canSeeObject(MONSTER.gameObj, 0.4f)
-			&& !TONI.control.isGoingThroughADoor && !MONSTER.control.isGoingThroughADoor) {
+		   && !TONI.control.isGoingThroughADoor && !MONSTER.control.isGoingThroughADoor) {
 			MONSTER.worldModel.hasMetToniSinceLastMilestone = true;
 		}
 
@@ -206,7 +208,7 @@ public class Control_GameState : MonoBehaviour {
 		}
 
 		// Check if player died to trigger house mix-up
-		if(GS.TONI_KILLED == true) {
+		if(GS.TONI_KILLED) {
 			GS.TONI_KILLED = false;
 			houseMixup(TONI.deaths);
 		}
@@ -214,7 +216,7 @@ public class Control_GameState : MonoBehaviour {
 		// Check if all items have been placed
 		if(GS.numItemsPlaced >= RITUAL_ITEMS_REQUIRED) {
 			GS.OVERALL_STATE = STATE_TRANSFORMATION;
-			triggerEndgame(GS.OVERALL_STATE, cutscene:true);
+			triggerEndgame(GS.OVERALL_STATE, cutscene: true);
 		} else { // Otherwise, check if wall scribbles need to be updated
 			if(GS.ANOTHER_ITEM_PLEASE) {
 				updateRoomLocksForToni(getAccessibleRoomCountInCurrentChapter(), GS.numItemsPlaced + 1);
@@ -603,14 +605,14 @@ public class Control_GameState : MonoBehaviour {
 		float timeStep = overTime / 100;
 		float waitUntil = Time.timeSinceLevelLoad;
 		while(RitualRoomScribbles.color.a > 0.001f) {
-			RitualRoomScribbles.color -= new Color(0, 0, 0, 1f/50f);
+			RitualRoomScribbles.color -= new Color(0, 0, 0, 1f / 50f);
 			waitUntil += timeStep;
 			yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
 		}
 		// Then update them and fade back in
 		RitualRoomScribbles.sprite = GS.getCurrentItem().control.BloodyScribble;
 		while(RitualRoomScribbles.color.a < 0.999f) {
-			RitualRoomScribbles.color += new Color(0, 0, 0, 1f/50f);
+			RitualRoomScribbles.color += new Color(0, 0, 0, 1f / 50f);
 			waitUntil += timeStep;
 			yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
 		}
@@ -634,7 +636,7 @@ public class Control_GameState : MonoBehaviour {
 		// Can only be clicked if not transformed into a monster yet
 		if(!newGameDisabled) {
 			resetGameState();				// Reset the game state
-			setAdditionalParameters(newGame:true);	// Refocus camera and such
+			setAdditionalParameters(newGame: true);	// Refocus camera and such
 			StartCoroutine(playOpeningCutscene());
 			GS.SUSPENDED = false;			// Continue playing
 		}
@@ -645,7 +647,7 @@ public class Control_GameState : MonoBehaviour {
 		// If no game state has been loaded before, create a new one
 		if(GS == null) {
 			resetGameState();
-			setAdditionalParameters(newGame:true);
+			setAdditionalParameters(newGame: true);
 		}
 		GS.SUSPENDED = false;
 	}
@@ -705,7 +707,7 @@ public class Control_GameState : MonoBehaviour {
 		TONI.control.activateCooldown(3f);
 		// Focus camera on the blood scribbles
 		MAIN_CAMERA_CONTROL.setPanningSpeedFactor(0.25f);
-		MAIN_CAMERA_CONTROL.setFocusOn(new Data_Position(RITUAL_ROOM_INDEX, RitualRoomScribbles.transform.localPosition.x), snapToPosition:true);
+		MAIN_CAMERA_CONTROL.setFocusOn(new Data_Position(RITUAL_ROOM_INDEX, RitualRoomScribbles.transform.localPosition.x), snapToPosition: true);
 		// Place the skeletal corpse in the ritual room
 		CorpsePoolControl.placeHumanSkeleton(RitualRoomScribbles.transform.parent.gameObject, new Vector2(1.2375f, 0), false);
 		// Wait until Toni comes out of the cooldown
