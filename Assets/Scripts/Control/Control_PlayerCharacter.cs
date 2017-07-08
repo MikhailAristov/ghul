@@ -672,7 +672,7 @@ public class Control_PlayerCharacter : Control_Character {
 		}
 		// Otherwise, activate cooldown and proceed to the second stage
 		activateCooldown(SUICIDLE_COMPLETE_DURATION - SUICIDLE_CANCELABLE_DURATION);
-		yield return new WaitUntil(() => (me.timeWithoutAction > SUICIDLE_COMPLETE_DURATION));
+		yield return new WaitUntil(() => (me.cooldown <= 0));
 		// Trigger the next chapter
 		StartCoroutine(dieAndRespawn());
 		suicidleIsPlaying = false;

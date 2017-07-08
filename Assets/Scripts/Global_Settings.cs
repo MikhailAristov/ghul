@@ -78,7 +78,7 @@ public class Global_Settings {
 			// Suicidle settings
 			{ "SUICIDLE_DELAY",				   	5.0f },		// How long it takes for the suicide to trigger at all
 			{ "SUICIDLE_CANCELABLE_DURATION",	12.5f },	// For how long can the player still cancel out of suicidle after it's been triggered
-			{ "SUICIDLE_COMPLETE_DURATION",		18.0f },	// How long does it take for the suicdle to complete (cumulatively)
+			{ "SUICIDLE_COMPLETE_DURATION",		21.0f },	// How long does it take for the suicidle to complete (cumulatively)
 
 			// Miscellaneous setttings
 			{ "AUTOSAVE_FREQUENCY",				10.0f },	// In seconds
