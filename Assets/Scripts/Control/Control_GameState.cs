@@ -748,7 +748,7 @@ public class Control_GameState : MonoBehaviour {
 		yield return new WaitUntil(() => TONI.cooldown <= 0);
 		// Release the monster to move while Toni is still transforming
 		MONSTER.control.activateCooldown(0);
-		TONI.control.activateCooldown(2f);
+		TONI.control.activateCooldown(1f);
 		// Wait until the transformation plays out before switching our renderers
 		yield return new WaitUntil(() => TONI.control.animatorHuman.GetCurrentAnimatorStateInfo(0).IsName("Toni_transformation_END"));
 		TONI.control.setupEndgame();
