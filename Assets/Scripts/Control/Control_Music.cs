@@ -67,6 +67,13 @@ public class Control_Music : MonoBehaviour {
 				StartCoroutine(unmuteBasicTrack(EndgameTrack));
 			}
 			break;
+		case Control_GameState.STATE_MONSTER_DEAD:
+			// Unmute the endgame track if it's not already unmuted
+			if(EndgameTrack.mute) {
+				TransformationTrack.mute = true;
+				StartCoroutine(unmuteBasicTrack(EndgameTrack));
+			}
+			break;
 		default:
 			break;
 		}
