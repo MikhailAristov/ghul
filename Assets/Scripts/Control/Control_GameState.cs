@@ -648,6 +648,7 @@ public class Control_GameState : MonoBehaviour {
 		if(GS == null) {
 			resetGameState();
 			setAdditionalParameters(newGame: true);
+			StartCoroutine(playOpeningCutscene());
 		}
 		GS.SUSPENDED = false;
 	}
@@ -658,7 +659,6 @@ public class Control_GameState : MonoBehaviour {
 		if(GS != null) {
 			Control_Persistence.saveToDisk(GS);
 		}
-		Screen.SetResolution(640, 480, false);
 		Application.Quit();
 		Debug.Log("Quitting game...");
 	}
