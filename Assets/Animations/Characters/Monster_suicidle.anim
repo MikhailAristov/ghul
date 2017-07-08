@@ -805,4 +805,235 @@ AnimationClip:
   m_HasGenericRootTransform: 0
   m_HasMotionFloatCurves: 0
   m_GenerateMotionCurves: 0
-  m_Events: []
+  m_Events:
+  - time: 0.25
+    functionName: playSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: 79e7d0914373c8642a391c4e6c628a5a,
+      type: 3}
+    floatParameter: 0.1
+    intParameter: 0
+    messageOptions: 0
+  - time: 0.25
+    functionName: playRandomMonsterVoiceSnippet
+    data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 1
+    functionName: playRandomMonsterVoiceSnippet
+    data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 1.0416666
+    functionName: playSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: 8ecfbb9366ce7d84594dd920d28c97e6,
+      type: 3}
+    floatParameter: 0.1
+    intParameter: 0
+    messageOptions: 0
+  - time: 1.6666666
+    functionName: playSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: bc4795abc74f04c659b84ab173104675,
+      type: 3}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 1.75
+    functionName: playRandomMonsterVoiceSnippet
+    data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 4.7083335
+    functionName: playSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: bcee98be5c0d5914d86b2d044fca2b1f,
+      type: 3}
+    floatParameter: 0.7
+    intParameter: 0
+    messageOptions: 0
+  - time: 5.5416665
+    functionName: playSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: a6453ad534ec45f43a7b5f815b254a17,
+      type: 3}
+    floatParameter: 0.7
+    intParameter: 0
+    messageOptions: 0
+  - time: 6.4583335
+    functionName: playSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: 85b7081d42c47428282fda8111109bb6,
+      type: 3}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 8.916667
+    functionName: playSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: a6453ad534ec45f43a7b5f815b254a17,
+      type: 3}
+    floatParameter: 0.7
+    intParameter: 0
+    messageOptions: 0
+  - time: 9.833333
+    functionName: playSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: bcee98be5c0d5914d86b2d044fca2b1f,
+      type: 3}
+    floatParameter: 0.7
+    intParameter: 0
+    messageOptions: 0
+  - time: 10.833333
+    functionName: playSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: abaaa4880733f794b9568e064b067f2f,
+      type: 3}
+    floatParameter: 0.7
+    intParameter: 0
+    messageOptions: 0
+  - time: 11.625
+    functionName: playSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: d0f09d8c739e3d94fafae6b0e4ec1d85,
+      type: 3}
+    floatParameter: 0.7
+    intParameter: 0
+    messageOptions: 0
+  - time: 12.333333
+    functionName: playSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: abaaa4880733f794b9568e064b067f2f,
+      type: 3}
+    floatParameter: 0.7
+    intParameter: 0
+    messageOptions: 0
+  - time: 13.083333
+    functionName: playSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: 5b01ba735968c412b8588bfb43da7a10,
+      type: 3}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 13.75
+    functionName: playSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: 777bedfedd59741aa9e81ecc62df676f,
+      type: 3}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 16.291666
+    functionName: playSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: e8b6a5ff657bf43448299e65aaf6c4dc,
+      type: 3}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 17.333334
+    functionName: playSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: c2a321dad24ce4a48b09963993eaae19,
+      type: 3}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 18.083334
+    functionName: playRandomFromPath
+    data: Monster/ArmLeft/Rattle
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 18.083334
+    functionName: playSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: cf0e2e7f7bb5d490ab8b2c3a0fcf49a5,
+      type: 3}
+    floatParameter: 0.1
+    intParameter: 0
+    messageOptions: 0
+  - time: 18.708334
+    functionName: playSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: e1f80c181bcff4ff6a5b4f24d91deb72,
+      type: 3}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 18.708334
+    functionName: playRandomFromPath
+    data: Monster/ArmRight/Rattle
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0.1
+    intParameter: 0
+    messageOptions: 0
+  - time: 19.166666
+    functionName: playSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: cf0e2e7f7bb5d490ab8b2c3a0fcf49a5,
+      type: 3}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 19.166666
+    functionName: playRandomFromPath
+    data: Monster/ArmLeft/Rattle
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0.1
+    intParameter: 0
+    messageOptions: 0
+  - time: 19.75
+    functionName: playSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: e1f80c181bcff4ff6a5b4f24d91deb72,
+      type: 3}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 19.75
+    functionName: playRandomFromPath
+    data: Monster/ArmRight/Rattle
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0.1
+    intParameter: 0
+    messageOptions: 0
+  - time: 20.291666
+    functionName: playSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: cf0e2e7f7bb5d490ab8b2c3a0fcf49a5,
+      type: 3}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 20.291666
+    functionName: playRandomFromPath
+    data: Monster/ArmLeft/Rattle
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0.1
+    intParameter: 0
+    messageOptions: 0
+  - time: 20.75
+    functionName: playSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: e1f80c181bcff4ff6a5b4f24d91deb72,
+      type: 3}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 20.75
+    functionName: playRandomFromPath
+    data: Monster/ArmRight/Rattle
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0.1
+    intParameter: 0
+    messageOptions: 0
