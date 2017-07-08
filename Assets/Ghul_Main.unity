@@ -1623,7 +1623,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GenericSounds: {fileID: 527278870}
   CheckDistanceToCamera: 1
-  MainCameraControl: {fileID: 1344317741}
 --- !u!1 &667959635
 GameObject:
   m_ObjectHideFlags: 0
@@ -2490,7 +2489,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GenericSounds: {fileID: 271758503}
   CheckDistanceToCamera: 0
-  MainCameraControl: {fileID: 1344317741}
   gameStateControl: {fileID: 1333168852}
 --- !u!1 &1023594278
 GameObject:
@@ -4336,7 +4334,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GenericSounds: {fileID: 527278870}
   CheckDistanceToCamera: 1
-  MainCameraControl: {fileID: 1344317741}
   gameStateControl: {fileID: 1333168852}
 --- !u!1 &1673746494
 GameObject:
@@ -4797,4 +4794,3 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GenericSounds: {fileID: 271758503}
   CheckDistanceToCamera: 0
-  MainCameraControl: {fileID: 1344317741}
