@@ -12,7 +12,7 @@ public class Control_AnimationSoundsMonster : Control_AnimationSounds {
 				lastLaughedInChapter = gameStateControl.currentChapter;
 				playRandomFromPathInternal("Monster/Laughs", 1f);
 			} else {
-				playRandomFromPathInternal("Monster/Groans", 1f);
+				playRandomFromPathInternal("Monster/Groans", 0.3f);
 			}
 		}
 	}
