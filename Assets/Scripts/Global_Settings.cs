@@ -81,8 +81,9 @@ public class Global_Settings {
 			{ "SUICIDLE_COMPLETE_DURATION",		21.0f },	// How long does it take for the suicidle to complete (cumulatively)
 
 			// Miscellaneous setttings
-			{ "AUTOSAVE_FREQUENCY",				10.0f },	// In seconds
+			{ "AUTOSAVE_FREQUENCY",				5.0f },		// In seconds
 			{ "TOTAL_DEATH_DURATION",			4.5f },		// When deathDuration of Data_Character reaches this value the player resets to the starting room
+			{ "MONSTER_DEATH_DURATION",			2.5f },		// How long the monster death animation takes to play out
 			{ "TOP_MUSIC_VOLUME",				0.7f },
 			{ "ENCOUNTER_JINGLE_DURATION",		3.0f },
 

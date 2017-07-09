@@ -60,7 +60,7 @@ public class Control_Music : MonoBehaviour {
 				// Mute the current collection track
 				MainTrackList[currentTrackID].muteTrack(TRACK_MUTING_DURATION);
 				// Unmute the transformation track
-				StartCoroutine(unmuteBasicTrack(TransformationTrack, delay:Global_Settings.read("TRANSFORMATION_DELAY")));
+				StartCoroutine(unmuteBasicTrack(TransformationTrack, delay:Global_Settings.read("TRANSFORMATION_DELAY") - 0.5f));
 			}
 			break;
 		case Control_GameState.STATE_MONSTER_PHASE:

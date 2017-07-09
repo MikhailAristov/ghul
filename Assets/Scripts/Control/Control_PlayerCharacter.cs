@@ -649,6 +649,9 @@ public class Control_PlayerCharacter : Control_Character {
 
 	// After each kill, open the door leading to the next intruder
 	protected override void postKillHook() {
+		if(GS.OVERALL_STATE == Control_GameState.STATE_TRANSFORMATION) {
+			activateCooldown(Global_Settings.read("MONSTER_DEATH_DURATION"));
+		}
 		guideMonsterToniToIntruders(drawAttention: true);
 	}
 

@@ -24,7 +24,8 @@ public class Control_Monster : Control_Character {
 	private float MARGIN_ITEM_STEAL;
 	private float WAIT_FOR_TONI_TO_MOVE;
 	private int HOLD_DOORS_AFTER_ITEM;
-	private float DEATH_ANIMATION_DURATION;
+	private float HUMAN_DEATH_ANIMATION_DURATION;
+	private float MONSTER_DEATH_ANIMATION_DURATION;
 
 	// For prediction and planning of attacks
 	private float EFFECTIVE_MINIMUM_ATTACK_RANGE;
@@ -111,7 +112,8 @@ public class Control_Monster : Control_Character {
 		INVISIBLE_AFTER_ITEM = Global_Settings.readInt("MONSTER_INVISIBLE_AFTER_ITEM");
 		INVISIBILITY_TRANSITION_DURATION = Global_Settings.read("MONSTER_INVISIBILITY_TRANSITION");
 
-		DEATH_ANIMATION_DURATION = Global_Settings.read("TOTAL_DEATH_DURATION");
+		HUMAN_DEATH_ANIMATION_DURATION = Global_Settings.read("TOTAL_DEATH_DURATION");
+		MONSTER_DEATH_ANIMATION_DURATION = Global_Settings.read("MONSTER_DEATH_DURATION");
 	}
 
 	// To make sure the game state is fully initialized before loading it, this function is called by game state class itself
@@ -575,22 +577,31 @@ public class Control_Monster : Control_Character {
 	// Killing the monster / civilian during endgame
 	private IEnumerator dieAndRespawn() {
 		Debug.Log(me + " died...");
-		activateCooldown(DEATH_ANIMATION_DURATION);
-
-		// Place a tombstone where the death occured
-		float waitUntil = Time.timeSinceLevelLoad + DEATH_ANIMATION_DURATION;
+		// During the transformation, play the monster death animation
 		if(GS.OVERALL_STATE == Control_GameState.STATE_TRANSFORMATION) {
+			activateCooldown(MONSTER_DEATH_ANIMATION_DURATION);
+			// Flip sprite towards Monster!Toni
+			setSpriteFlip(Toni.atPos < me.atPos);
+			if(animatorMonster != null && animatorMonster.isInitialized) {
+				animatorMonster.SetTrigger("Is Killed");
+			}
+			// Wait until the animation completes before placing the corpse
+			yield return new WaitUntil(() => me.cooldown <= 0);
 			monsterRenderer.enabled = false;
-			CorpsePoolControl.placeMonsterCorpse(me.isIn.env.gameObject, me.pos.asLocalVector(), civilianRenderer.flipX);
-			yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
+			CorpsePoolControl.placeMonsterCorpse(me.isIn.env.gameObject, me.pos.asLocalVector(), monsterRenderer.flipX);
 		} else {
+			// Afterwards, paly the human death animation
+			activateCooldown(HUMAN_DEATH_ANIMATION_DURATION);
 			if(animatorCivilian != null && animatorCivilian.isInitialized) {
 				animatorCivilian.SetTrigger("Is Killed");
 			}
-			yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
+			// Wait until the animation completes before placing the corpse
+			yield return new WaitUntil(() => me.cooldown <= 0);
 			civilianRenderer.enabled = false;
-			animatorCivilian.Rebind();
 			CorpsePoolControl.placeHumanCorpse(me.isIn.env.gameObject, me.pos.asLocalVector(), civilianRenderer.flipX);
+			if(animatorCivilian != null && animatorCivilian.isInitialized) {
+				animatorCivilian.SetTrigger("Is Resurrected");
+			}
 		}
 
 		// Move the civilian to a distant room
@@ -626,6 +637,7 @@ public class Control_Monster : Control_Character {
 	// If hit after the ritual was performed, die
 	public override void getHit() {
 		if(GS.OVERALL_STATE > Control_GameState.STATE_COLLECTION_PHASE) {
+			activateCooldown(1f);
 			StartCoroutine(dieAndRespawn());
 		}
 	}
@@ -647,7 +659,7 @@ public class Control_Monster : Control_Character {
 	protected override void postKillHook() {
 		me.timeSinceLastKill = 0;
 		// Extend the time the monster stands still after killing Toni (while the house is being rebuilt)
-		activateCooldown(DEATH_ANIMATION_DURATION);
+		activateCooldown(HUMAN_DEATH_ANIMATION_DURATION);
 	}
 
 	protected override void failedDoorTransitionHook(Data_Door doorTaken) {
