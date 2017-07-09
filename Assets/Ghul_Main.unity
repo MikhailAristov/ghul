@@ -3500,7 +3500,7 @@ MonoBehaviour:
     type: 2}
   HumanSkeletonPrefab: {fileID: 1000012395292944, guid: c0ab8f1247eacbf48a24edb687e373f3,
     type: 2}
-  MonsterCorpsePrefab: {fileID: 1000012098924484, guid: 16ed8d7bfd250d146b04f4b1ec8def93,
+  MonsterCorpsePrefab: {fileID: 1000012722994158, guid: d6a72d79c590b1a4b8266edeeafae2dc,
     type: 2}
   MonsterToniCorpsePrefab: {fileID: 1000012722994158, guid: 1c470f26d22a98e4ca7d9b2d71ae75c0,
     type: 2}
