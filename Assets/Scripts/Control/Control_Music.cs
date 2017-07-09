@@ -21,6 +21,7 @@ public class Control_Music : MonoBehaviour {
 	private int currentTrackID;
 	private bool playChaseMusic;
 	private bool tensionHigh;
+	private bool wasInCollectionPhase;
 
 	public AudioSource EncounterJingle;
 	public AudioSource ItemJinglePlayer;
@@ -34,6 +35,7 @@ public class Control_Music : MonoBehaviour {
 		allMuted = false;
 		playChaseMusic = false;
 		tensionHigh = false;
+		wasInCollectionPhase = false;
 		MAX_TRACK_VOLUME = Mathf.Clamp01(Global_Settings.read("TOP_MUSIC_VOLUME"));
 	}
 
@@ -51,9 +53,10 @@ public class Control_Music : MonoBehaviour {
 				}
 				MainTrackList[currentTrackID].updateProximityFactor(proximityTrackVolumeFactor);
 			}
+			wasInCollectionPhase = true;
 			break;
 		case Control_GameState.STATE_TRANSFORMATION:
-			if(TransformationTrack.mute) {
+			if(wasInCollectionPhase && TransformationTrack.mute) {
 				// Mute the current collection track
 				MainTrackList[currentTrackID].muteTrack(TRACK_MUTING_DURATION);
 				// Unmute the transformation track
