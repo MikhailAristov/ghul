@@ -1066,7 +1066,7 @@ AnimationClip:
     data: 
     objectReferenceParameter: {fileID: 8300000, guid: 51c50cab6c9b145e4810cfe821bd047e,
       type: 3}
-    floatParameter: 0.6
+    floatParameter: 0.3
     intParameter: 0
     messageOptions: 0
   - time: 22.625
@@ -1074,7 +1074,7 @@ AnimationClip:
     data: 
     objectReferenceParameter: {fileID: 8300000, guid: b86718b85437d47a0baa123851098778,
       type: 3}
-    floatParameter: 0.6
+    floatParameter: 0.3
     intParameter: 0
     messageOptions: 0
   - time: 23.666666

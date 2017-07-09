@@ -257,7 +257,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4000013515800652, guid: 196e49cb9f4b1e74e9689f5364febef9, type: 2}
       propertyPath: m_LocalPosition.z
-      value: -3
+      value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 4000013515800652, guid: 196e49cb9f4b1e74e9689f5364febef9, type: 2}
       propertyPath: m_LocalRotation.x
@@ -540,7 +540,7 @@ AudioSource:
       tangentMode: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
-    m_RotationOrder: 4
+    m_RotationOrder: 0
   reverbZoneMixCustomCurve:
     serializedVersion: 2
     m_Curve:
@@ -855,7 +855,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4000013944519472, guid: 48e3f10aa125afe4a89e599edda75895, type: 2}
       propertyPath: m_LocalPosition.z
-      value: 0.2
+      value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 4000013944519472, guid: 48e3f10aa125afe4a89e599edda75895, type: 2}
       propertyPath: m_LocalRotation.x
@@ -1138,7 +1138,7 @@ AudioSource:
       tangentMode: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
-    m_RotationOrder: 4
+    m_RotationOrder: 0
   reverbZoneMixCustomCurve:
     serializedVersion: 2
     m_Curve:
@@ -1623,7 +1623,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GenericSounds: {fileID: 527278870}
   CheckDistanceToCamera: 1
-  MainCameraControl: {fileID: 1344317741}
 --- !u!1 &667959635
 GameObject:
   m_ObjectHideFlags: 0
@@ -1664,7 +1663,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 4f2b8d9e5e0824e71a0ff5e86ba50dc8, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.8
   m_Pitch: 1
   Loop: 0
   Mute: 1
@@ -1901,7 +1900,7 @@ MonoBehaviour:
   ItemJinglePlayer: {fileID: 1023594280}
   ItemPickupJingle: {fileID: 8300000, guid: 560a122e3dafee24ab6ab2f6c5249d7d, type: 3}
   ItemPlacementJingles:
-  - {fileID: 8300000, guid: c9fc1ce6c02b69346934ff358c7aa886, type: 3}
+  - {fileID: 8300000, guid: f45179276b8f5410bb84e204394f4d7c, type: 3}
   - {fileID: 8300000, guid: 70c475d2bbc0e94449b5e26c0aefd623, type: 3}
   - {fileID: 8300000, guid: 79c16f10e021cde48b7bb9498977696b, type: 3}
   - {fileID: 8300000, guid: 6be6d4b531f42a84bacb4936e2d0e3d3, type: 3}
@@ -2490,7 +2489,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GenericSounds: {fileID: 271758503}
   CheckDistanceToCamera: 0
-  MainCameraControl: {fileID: 1344317741}
   gameStateControl: {fileID: 1333168852}
 --- !u!1 &1023594278
 GameObject:
@@ -3369,7 +3367,7 @@ AudioSource:
       tangentMode: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
-    m_RotationOrder: 4
+    m_RotationOrder: 0
   reverbZoneMixCustomCurve:
     serializedVersion: 2
     m_Curve:
@@ -3827,7 +3825,7 @@ AudioSource:
       tangentMode: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
-    m_RotationOrder: 4
+    m_RotationOrder: 0
   reverbZoneMixCustomCurve:
     serializedVersion: 2
     m_Curve:
@@ -3856,7 +3854,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4000013944519472, guid: 48e3f10aa125afe4a89e599edda75895, type: 2}
       propertyPath: m_LocalPosition.z
-      value: 0.2
+      value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 4000013944519472, guid: 48e3f10aa125afe4a89e599edda75895, type: 2}
       propertyPath: m_LocalRotation.x
@@ -4179,7 +4177,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 77ec34e7f28f4824684f3b478e87048a, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.65
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -4336,7 +4334,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GenericSounds: {fileID: 527278870}
   CheckDistanceToCamera: 1
-  MainCameraControl: {fileID: 1344317741}
   gameStateControl: {fileID: 1333168852}
 --- !u!1 &1673746494
 GameObject:
@@ -4450,7 +4447,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4000013944519472, guid: 48e3f10aa125afe4a89e599edda75895, type: 2}
       propertyPath: m_LocalPosition.z
-      value: 0.2
+      value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 4000013944519472, guid: 48e3f10aa125afe4a89e599edda75895, type: 2}
       propertyPath: m_LocalRotation.x
@@ -4673,7 +4670,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4000011146791980, guid: d9f393794faf75a4b91269e850a21917, type: 2}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 4000011146791980, guid: d9f393794faf75a4b91269e850a21917, type: 2}
       propertyPath: m_LocalRotation.x
@@ -4797,4 +4794,3 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GenericSounds: {fileID: 271758503}
   CheckDistanceToCamera: 0
-  MainCameraControl: {fileID: 1344317741}

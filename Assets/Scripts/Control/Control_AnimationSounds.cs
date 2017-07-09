@@ -11,11 +11,15 @@ public class Control_AnimationSounds : MonoBehaviour {
 	protected static Dictionary<string, List<AudioClip>> AudioDatabase;
 
 	public bool CheckDistanceToCamera;
-	public Control_Camera MainCameraControl;
+	protected Control_Camera MainCameraControl;
 	protected float stereoPan;
 
+	protected void Start() {
+		MainCameraControl = Camera.main.GetComponent<Control_Camera>();
+	}
+
 	protected void FixedUpdate() {
-		if(!AudioListener.pause && MainCameraControl.canHearObject(gameObject)) {
+		if(!AudioListener.pause && (!CheckDistanceToCamera || MainCameraControl.canHearObject(gameObject))) {
 			stereoPan = getHorizontalSoundPan(MainCameraControl.transform.position.x - transform.position.x);
 			if(GenericAudioTracks != null) {
 				foreach(AudioSource src in GenericAudioTracks) {

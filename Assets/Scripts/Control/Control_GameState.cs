@@ -648,6 +648,7 @@ public class Control_GameState : MonoBehaviour {
 		if(GS == null) {
 			resetGameState();
 			setAdditionalParameters(newGame: true);
+			StartCoroutine(playOpeningCutscene());
 		}
 		GS.SUSPENDED = false;
 	}
@@ -658,7 +659,6 @@ public class Control_GameState : MonoBehaviour {
 		if(GS != null) {
 			Control_Persistence.saveToDisk(GS);
 		}
-		Screen.SetResolution(640, 480, false);
 		Application.Quit();
 		Debug.Log("Quitting game...");
 	}
@@ -748,7 +748,7 @@ public class Control_GameState : MonoBehaviour {
 		yield return new WaitUntil(() => TONI.cooldown <= 0);
 		// Release the monster to move while Toni is still transforming
 		MONSTER.control.activateCooldown(0);
-		TONI.control.activateCooldown(2f);
+		TONI.control.activateCooldown(1f);
 		// Wait until the transformation plays out before switching our renderers
 		yield return new WaitUntil(() => TONI.control.animatorHuman.GetCurrentAnimatorStateInfo(0).IsName("Toni_transformation_END"));
 		TONI.control.setupEndgame();

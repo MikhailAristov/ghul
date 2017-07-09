@@ -10,7 +10,7 @@ PlayerSettings:
   targetDevice: 2
   useOnDemandResources: 0
   accelerometerFrequency: 60
-  companyName: GhulProject
+  companyName: GameLab
   productName: Ghul
   defaultCursor: {fileID: 2800000, guid: 996ee2ffdacac2f43ba41f4023f0e8c9, type: 3}
   cursorHotspot: {x: 11, y: 4}
