@@ -368,10 +368,12 @@ public class Control_PlayerCharacter : Control_Character {
 			waitUntil += ITEM_PICKUP_DURATION / 2;
 			yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
 			// Move item to inventory
-			if(thisItem.control == null) {
+			try{
+				thisItem.control.moveToInventory();
+			} catch(NullReferenceException) {
 				thisItem.fixObjectReferences(GS, null);
+				thisItem.control.moveToInventory();
 			}
-			thisItem.control.moveToInventory();
 			me.carriedItem = thisItem;
 			Debug.Log(thisItem + " has been collected");
 			// Make noise at the current location
