@@ -16,6 +16,7 @@ public class Control_AnimationSounds : MonoBehaviour {
 
 	protected void Start() {
 		MainCameraControl = Camera.main.GetComponent<Control_Camera>();
+		StartCoroutine(precacheImportantSounds());
 	}
 
 	protected void FixedUpdate() {
@@ -54,16 +55,8 @@ public class Control_AnimationSounds : MonoBehaviour {
 	}
 
 	protected void playRandomFromPathInternal(string pathKey, float vol) {
-		// Initialize the audio database if necessary
-		if(AudioDatabase == null) {
-			AudioDatabase = new Dictionary<string, List<AudioClip>>();
-		}
 		// Obtain the clip list for the key
-		List<AudioClip> clipList;
-		if(!AudioDatabase.TryGetValue(pathKey, out clipList)) {
-			clipList = new List<AudioClip>(Resources.LoadAll(pathKey, typeof(AudioClip)).Cast<AudioClip>());
-			AudioDatabase.Add(pathKey, clipList);
-		}
+		List<AudioClip> clipList = getClipList(pathKey);
 		// Pick a random clip from the list and play it
 		playSoundInternal(clipList[UnityEngine.Random.Range(0, clipList.Count)], vol);
 	}
@@ -113,5 +106,42 @@ public class Control_AnimationSounds : MonoBehaviour {
 	public static float getHorizontalSoundPan(float horizontalDistToCamera) {
 		float result = Mathf.Atan2(-horizontalDistToCamera, -Camera.main.transform.position.z) / Mathf.PI * 2f;
 		return Mathf.Clamp(result, -1f, 1f);
+	}
+
+	protected List<AudioClip> getClipList(string resourcePath) {
+		List<AudioClip> result;
+		if(!AudioDatabase.TryGetValue(resourcePath, out result)) {
+			result = new List<AudioClip>(Resources.LoadAll(resourcePath, typeof(AudioClip)).Cast<AudioClip>());
+			AudioDatabase.Add(resourcePath, result);
+		}
+		return result;
+	}
+
+	protected IEnumerator precacheImportantSounds() {
+		// Initialize the audio database if necessary
+		if(AudioDatabase == null) {
+			AudioDatabase = new Dictionary<string, List<AudioClip>>();
+		}
+		yield return null;
+		getClipList("Toni/WalkSounds");
+		getClipList("Toni/RunSounds");
+		yield return null;
+		getClipList("Toni/Breathing");
+		getClipList("Toni/HeavyBreathing");
+		yield return null;
+		getClipList("Monster/SteppingSounds");
+		getClipList("Monster/FootDraggingSounds");
+		yield return null;
+		getClipList("Monster/Groans");
+		getClipList("Monster/Laughs");
+		yield return null;
+		getClipList("Monster/ArmLeft/Hiss");
+		getClipList("Monster/ArmRight/Hiss");
+		yield return null;
+		getClipList("Monster/ArmLeft/Rattle");
+		getClipList("Monster/ArmRight/Rattle");
+		yield return null;
+		getClipList("Monster/ArmLeft/Swing");
+		getClipList("Monster/ArmRight/Swing");
 	}
 }
