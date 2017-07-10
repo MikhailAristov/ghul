@@ -599,9 +599,7 @@ public class Control_Monster : Control_Character {
 			yield return new WaitUntil(() => me.cooldown <= 0);
 			civilianRenderer.enabled = false;
 			CorpsePoolControl.placeHumanCorpse(me.isIn.env.gameObject, me.pos.asLocalVector(), civilianRenderer.flipX);
-			if(animatorCivilian != null && animatorCivilian.isInitialized) {
-				animatorCivilian.SetTrigger("Is Resurrected");
-			}
+			GS.updateCadaverPosition(me.pos, civilianRenderer.flipX);
 		}
 
 		// Move the civilian to a distant room
@@ -613,6 +611,11 @@ public class Control_Monster : Control_Character {
 		Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
 		transform.Translate(savedPosition - transform.position);
 		civilianRenderer.enabled = true;
+		// The resurrection flag needs to be set after the civilian renderer is enabled again, 
+		// but not during the transformation phase, since the animator is only now initialized
+		if(GS.OVERALL_STATE != Control_GameState.STATE_TRANSFORMATION && animatorCivilian != null && animatorCivilian.isInitialized) {
+			animatorCivilian.SetTrigger("Is Resurrected");
+		}
 
 		GS.MONSTER_KILLED = true;
 	}
