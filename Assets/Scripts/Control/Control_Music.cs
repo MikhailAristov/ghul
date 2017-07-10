@@ -47,7 +47,7 @@ public class Control_Music : MonoBehaviour {
 		switch(GS.OVERALL_STATE) {
 		case Control_GameState.STATE_COLLECTION_PHASE:
 			if(MONSTER.worldModel.hasMetToni) {
-				if(currentTrackID != GS.numItemsPlaced) {
+				if(currentTrackID != GS.numItemsPlaced && currentTrackID >= 0 && currentTrackID < MainTrackList.Length) {
 					switchTracks(currentTrackID, GS.numItemsPlaced);
 					currentTrackID = GS.numItemsPlaced;
 				}
