@@ -27,7 +27,6 @@ public abstract class Control_Character : MonoBehaviour {
 	protected float animatorMovementSpeed;
 	protected bool goingThroughADoor;
 	protected bool attackAnimationPlaying;
-	private float cumulativeAttackDuration;
 	private Data_Position positionAtTheLastTimeStep;
 
 	public bool isGoingThroughADoor {
@@ -61,11 +60,6 @@ public abstract class Control_Character : MonoBehaviour {
 			} else if(!spriteIsAlignedToGrid) {
 				transform.Translate((Data_Position.snapToGrid(getMe().atPos) - getMe().atPos), 0, 0);
 				spriteIsAlignedToGrid = true;
-			}
-
-			// If the character is attacking, count up the attack duration
-			if(attackAnimationPlaying) {
-				cumulativeAttackDuration += Time.fixedDeltaTime;
 			}
 		}
 	}
@@ -149,8 +143,8 @@ public abstract class Control_Character : MonoBehaviour {
 
 		// Doors leading into locked-off room cannot be walked through
 		// or if the door is currently being held shut by the monster
-		if(door.state == Data_Door.STATE_HELD 
-			|| (destinationRoom.ToniCannotEnter && (isPlayerCharacter || GS.OVERALL_STATE == Control_GameState.STATE_TRANSFORMATION))) {
+		if(door.state == Data_Door.STATE_HELD
+		   || (destinationRoom.ToniCannotEnter && (isPlayerCharacter || GS.OVERALL_STATE == Control_GameState.STATE_TRANSFORMATION))) {
 			door.control.forceClose();
 			failedDoorTransitionHook(door);
 			door.control.rattleDoorknob();
@@ -201,41 +195,30 @@ public abstract class Control_Character : MonoBehaviour {
 	// Animation automatically cancels out if the attacker moves
 	// targetPos is separated from target because the player (as a monster) can attack even without seeing the monster
 	protected IEnumerator playAttackAnimation(float targetPos, Data_Character target) {
-		float waitUntil = Time.timeSinceLevelLoad;
 		attackAnimationPlaying = true;
-		cumulativeAttackDuration = 0;
 		Data_Position attackOrigin = getMe().pos.clone();
-		bool attackIsCanceledByMoving = false;
 		// Flip the sprite if necessary
-		if(GS.monsterSeesToni) {
+		if(!isPlayerCharacter && GS.monsterSeesToni) {
 			setSpriteFlip(targetPos < attackOrigin.X);
 		}
 		float attackPoint = attackOrigin.X + Math.Sign(targetPos - attackOrigin.X) * ATTACK_RANGE;
-		Debug.Log(getMe() + " attacks from " + getMe().pos + " to " + attackPoint + " at T+" + Time.timeSinceLevelLoad);
 		// PHASE 1: Attack
+		float waitUntil = Time.timeSinceLevelLoad + ATTACK_DURATION;
 		startAttackAnimation();
-		while(cumulativeAttackDuration < ATTACK_DURATION) {
-			// If the attacker moves from the original spot, immediately cancel the attack
-			if(getMe().isIn.INDEX != attackOrigin.RoomId || Math.Abs(getMe().atPos - attackOrigin.X) > ATTACK_MARGIN) {
-				Debug.LogWarning(getMe() + " moved, attack canceled!");
-				attackIsCanceledByMoving = true;
-				break;
-			}
-			waitUntil += 1f / 60f;
-			yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
-		}
+		// Wait until either the attack plays out completely, or the attacker goes through a door, or moves at all
+		yield return new WaitUntil(() => (Time.timeSinceLevelLoad > waitUntil || getMe().isIn.INDEX != attackOrigin.RoomId || Math.Abs(getMe().atPos - attackOrigin.X) > ATTACK_MARGIN));
+		bool attackWassCanceled = (Time.timeSinceLevelLoad <= waitUntil);
 		stopAttackAnimation();
-		Debug.Log(getMe() + " completes attack in " + cumulativeAttackDuration + " s, " + target + " was at " + target.atPos);
 		// PHASE 2: Resolve
-		if(!attackIsCanceledByMoving && !target.isInvulnerable &&
+		if(!attackWassCanceled && !target.isInvulnerable &&
 		   getMe().isIn == target.isIn && Math.Abs(target.atPos - attackPoint) <= ATTACK_MARGIN) {
 			target.getControl().getHit();
 			postKillHook();
 		}
 		// PHASE 3: Cooldown
-		waitUntil += ATTACK_COOLDOWN;
+		waitUntil = Time.timeSinceLevelLoad + ATTACK_COOLDOWN;
 		// Can't attack immediately after attacking, even if it was canceled (prevents spam)
-		yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
+		yield return new WaitUntil(() => (Time.timeSinceLevelLoad > waitUntil));
 		attackAnimationPlaying = false;
 	}
 
