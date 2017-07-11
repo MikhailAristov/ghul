@@ -238,6 +238,9 @@ public class Control_PlayerCharacter : Control_Character {
 		// Transition for walking / running animation
 		if(animatorHuman != null && animatorHuman.isInitialized) {
 			animatorHuman.SetFloat("Speed", animatorMovementSpeed);
+			if(animatorMovementSpeed > ANIM_MIN_SPEED_FOR_WALKING) {
+				animatorHuman.ResetTrigger("Shake Head");
+			}
 			animatorHuman.SetBool("Is Running", isRunning && animatorMovementSpeed > ANIM_MIN_SPEED_FOR_WALKING && canRun());
 			animatorHuman.SetBool("Is Exhausted", me.exhausted);
 		} else if(animatorMonsterToni != null && animatorMonsterToni.isInitialized) {
