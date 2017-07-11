@@ -5,7 +5,7 @@ using System.Collections;
 public class Control_MusicTrack : MonoBehaviour {
 
 	private const float INAUDIBIBILITY_THRESHOLD = 0.01f;
-	private const float HIGH_TENSION_VOLUME = 0.5f;
+	private const float HIGH_TENSION_VOLUME = 0.2f;
 	private const float MUTING_STEP = 0.1f;
 	private float MAX_TRACK_VOLUME;
 
