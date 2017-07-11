@@ -112,7 +112,7 @@ public class Control_GameState : MonoBehaviour {
 			MainMenuControl.hide();
 			GS.SUSPENDED = false;
 			Input.ResetInputAxes();
-		} else if(!GS.SUSPENDED && escapeButtonPressed) {
+		} else if(!GS.SUSPENDED && escapeButtonPressed && TONI.cooldown <= 0) {
 			// Show menu if not suspended
 			GS.SUSPENDED = true;
 			MainMenuControl.show();
