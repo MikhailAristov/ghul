@@ -71,6 +71,9 @@ public class Control_MainMenu : MonoBehaviour {
 			MainMenuCanvas.enabled = true;
 			Cursor.visible = true;
 			AudioListener.pause = true;
+			// Move the mouse the center of the screen
+			Cursor.lockState = CursorLockMode.Locked;
+			Cursor.lockState = CursorLockMode.None;   
 		}
 	}
 
