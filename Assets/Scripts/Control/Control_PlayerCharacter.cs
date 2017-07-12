@@ -122,13 +122,13 @@ public class Control_PlayerCharacter : Control_Character {
 			animatorHuman.speed = 1f;
 			animatorMonsterToni.speed = 1f;
 		}
-		// Don't do anything in the final endgame state
-		if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_DEAD) {
-			return;
-		}
 		// While the character is etherial, don't do anything
 		if(me.cooldown > 0) {
 			me.cooldown -= Time.deltaTime;
+			return;
+		}
+		// Don't do anything in the final endgame state
+		if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_DEAD) {
 			return;
 		}
 		// This is for the suicidle later...
@@ -208,6 +208,7 @@ public class Control_PlayerCharacter : Control_Character {
 		// Suicidle...
 		if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE) {
 			if(me.timeWithoutAction >= SUICIDLE_DELAY && !suicidleIsPlaying) {
+				suicidleIsPlaying = true;
 				StartCoroutine(playSuicidle());
 			}
 		}
@@ -662,8 +663,7 @@ public class Control_PlayerCharacter : Control_Character {
 
 	// Play the suicidle
 	private IEnumerator playSuicidle() {
-		// It is assume that this function is called after SUICIDLE_DELAY elapsed
-		suicidleIsPlaying = true;
+		// It is assumed that this function is called after SUICIDLE_DELAY elapsed
 		// Start the animation
 		if(animatorMonsterToni != null && animatorMonsterToni.isInitialized) {
 			animatorMonsterToni.SetTrigger("Suicidle");
@@ -683,6 +683,7 @@ public class Control_PlayerCharacter : Control_Character {
 		yield return new WaitUntil(() => (me.cooldown <= 0));
 		// Trigger the next chapter
 		StartCoroutine(dieAndRespawn());
+		yield return new WaitForSeconds(1);
 		suicidleIsPlaying = false;
 	}
 }
