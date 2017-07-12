@@ -51,11 +51,9 @@ public class Control_Camera : MonoBehaviour {
 				return;
 			}
 
-			// Otherwise, pan gradually
-			displacementX *= Time.deltaTime * PANNING_SPEED;
 			// Correct displacement
-			if(Mathf.Abs(displacementX) > 0.001f) {
-				transform.Translate(displacementX, 0, 0);
+			if(Mathf.Abs(displacementX) > Data_Position.PIXEL_GRID_SIZE) {
+				transform.Translate(displacementX * Time.deltaTime * PANNING_SPEED, 0, 0);
 			}
 		}
 	}
