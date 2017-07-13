@@ -49,9 +49,11 @@ public class Control_MonsterPerception : MonoBehaviour {
 
 	// The sound system triggers this function to inform the monster of incoming sounds
 	public void hearNoise(Data_Door doorway, float loudness) {
-		lastNoiseVolume = loudness;
-		lastNoiseHeardFrom = doorway;
-		newNoiseHeard = true;
+		if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
+			lastNoiseVolume = loudness;
+			lastNoiseHeardFrom = doorway;
+			newNoiseHeard = true;
+		}
 	}
 
 	// Inform the monster that Toni has just walked through this door to its other side
