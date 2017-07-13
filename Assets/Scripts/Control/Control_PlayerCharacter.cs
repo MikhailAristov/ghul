@@ -127,12 +127,13 @@ public class Control_PlayerCharacter : Control_Character {
 			me.cooldown -= Time.deltaTime;
 			return;
 		}
-		// Don't do anything in the final endgame state
+		// This is for the suicidle later...
+		me.timeWithoutAction += Time.deltaTime;
+
+		// Ignore all inputs in the final endgame state
 		if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_DEAD) {
 			return;
 		}
-		// This is for the suicidle later...
-		me.timeWithoutAction += Time.deltaTime;
 
 		// Item actions before the ritual or attack action after ritual
 		if(Input.GetButtonDown("Action")) {

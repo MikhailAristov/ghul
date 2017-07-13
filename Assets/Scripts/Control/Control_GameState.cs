@@ -57,6 +57,10 @@ public class Control_GameState : MonoBehaviour {
 		get { return (GS != null && GS.OVERALL_STATE == STATE_COLLECTION_PHASE) ? (GS.numItemsPlaced + 1) : 0; }
 	}
 
+	private bool inactivityTimeoutInExpoMode {
+		get { return (InExpoMode && TONI != null && TONI.timeWithoutAction > 60f); }
+	}
+
 	// Use this for initialization
 	void Awake() {
 		RITUAL_ROOM_INDEX = Global_Settings.readInt("RITUAL_ROOM_INDEX");
@@ -107,16 +111,20 @@ public class Control_GameState : MonoBehaviour {
 		}
 		// Main menu handling
 		bool escapeButtonPressed = Input.GetButton("Cancel");
-		if(GS.SUSPENDED && escapeButtonPressed) {
+		if(GS.SUSPENDED && escapeButtonPressed && !MainMenuControl.inactivityTimeoutInExpoMode) {
 			// Hide menu if suspended
 			MainMenuControl.hide();
 			GS.SUSPENDED = false;
 			Input.ResetInputAxes();
-		} else if(!GS.SUSPENDED && escapeButtonPressed && TONI.cooldown <= 0) {
+		} else if(!GS.SUSPENDED && (escapeButtonPressed || inactivityTimeoutInExpoMode) && TONI.cooldown <= 0) {
 			// Show menu if not suspended
 			GS.SUSPENDED = true;
 			MainMenuControl.show();
 			Input.ResetInputAxes();
+			// Reset timeout, just in case
+			if(inactivityTimeoutInExpoMode) {
+				TONI.timeWithoutAction = 0;
+			}
 		} else if(GS.SUSPENDED) {
 			// If suspended and nothing pressed, just do nothing
 			return;

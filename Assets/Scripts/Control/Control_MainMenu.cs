@@ -17,6 +17,11 @@ public class Control_MainMenu : MonoBehaviour {
 	private string inputBuffer;
 
 	private bool isLaunchMenu;
+	private float openForSeconds;
+
+	public bool inactivityTimeoutInExpoMode {
+		get { return (GameStateControl.InExpoMode && !hidden && openForSeconds > 20f); }
+	}
 
 	private bool hidden {
 		get { return !MainMenuCanvas.enabled; }
@@ -52,9 +57,16 @@ public class Control_MainMenu : MonoBehaviour {
 			hideContinueButton();
 		} 
 
+		// Count the time being open
+		if(!hidden) {
+			openForSeconds += Time.deltaTime;
+		}
+
 		// And the escape blinker
-		if(!isLaunchMenu && !EscapeBlinker.activeSelf) {
+		if(!isLaunchMenu && !EscapeBlinker.activeSelf && !inactivityTimeoutInExpoMode) {
 			showEscapeBlinker();
+		} else if(EscapeBlinker.activeSelf && inactivityTimeoutInExpoMode) {
+			hideEscapeBlinker();
 		}
 
 		// Easter egg: summon Knolli Classic
@@ -71,6 +83,7 @@ public class Control_MainMenu : MonoBehaviour {
 			MainMenuCanvas.enabled = true;
 			Cursor.visible = true;
 			AudioListener.pause = true;
+			openForSeconds = 0;
 			// Move the mouse the center of the screen
 			Cursor.lockState = CursorLockMode.Locked;
 			Cursor.lockState = CursorLockMode.None;   
@@ -82,6 +95,7 @@ public class Control_MainMenu : MonoBehaviour {
 			inputBuffer = "";
 			isLaunchMenu = false;
 			MainMenuCanvas.enabled = false;
+			openForSeconds = 0;
 			Cursor.visible = false;
 			AudioListener.pause = false;
 		}
@@ -107,6 +121,10 @@ public class Control_MainMenu : MonoBehaviour {
 
 	private void showEscapeBlinker() {
 		EscapeBlinker.SetActive(true);
+	}
+
+	private void hideEscapeBlinker() {
+		EscapeBlinker.SetActive(false);
 	}
 
 	// This method is called when the New Game button is activated from the main menu
