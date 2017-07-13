@@ -581,7 +581,7 @@ public class Control_PlayerCharacter : Control_Character {
 
 	// This function guides the player to the "civilian" intruders in the house during the monster phase of the game
 	public void guideMonsterToniToIntruders(bool drawAttention = false) {
-		if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE && !GS.monsterSeesToni) {
+		if(GS.OVERALL_STATE == Control_GameState.STATE_MONSTER_PHASE && me.isIn != GS.getMonster().isIn) {
 			// Find the door in the current room that currently has the shortest distance to the intruder
 			Data_Door bestDoor = me.isIn.DOORS.Values[0];
 			float shortestDistance = float.MaxValue, curDistance;
