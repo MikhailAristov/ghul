@@ -131,6 +131,8 @@ public class Control_Monster : Control_Character {
 		// Move the character sprite directly to where the game state says it should be standing
 		Vector3 savedPosition = new Vector3(me.atPos, me.isIn.INDEX * VERTICAL_ROOM_SPACING);
 		transform.Translate(savedPosition - transform.position);
+		// Reset invisibility, if necessary
+		monsterRenderer.color = Color.white;
 
 		// Perception sub-system
 		me.perception = GetComponent<Control_MonsterPerception>();
