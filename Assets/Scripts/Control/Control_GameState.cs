@@ -13,6 +13,7 @@ public class Control_GameState : MonoBehaviour {
 	private Data_GameState GS;
 	private Data_PlayerCharacter TONI;
 	private Data_Monster MONSTER;
+	private IEnumerator distanceUpdateCoroutine;
 
 	// Before all items are placed for ritual
 	public const int STATE_COLLECTION_PHASE = 0;
@@ -85,6 +86,7 @@ public class Control_GameState : MonoBehaviour {
 	void Start() {
 		MAIN_CAMERA_CONTROL = Camera.main.GetComponent<Control_Camera>();
 		AudioListener.pause = true;
+		distanceUpdateCoroutine = updateToniMonsterDistanceDisplay();
 		// Initialize factories
 		prefabFactory = GetComponent<Factory_PrefabController>();
 		graphFactory = GetComponent<Factory_Graph>();
@@ -248,8 +250,8 @@ public class Control_GameState : MonoBehaviour {
 		GetComponent<Control_Noise>().loadGameState(GS);
 
 		// Reset the distance display
-		StopCoroutine("updateToniMonsterDistanceDisplay");
-		StartCoroutine("updateToniMonsterDistanceDisplay");
+		StopCoroutine(distanceUpdateCoroutine);
+		StartCoroutine(distanceUpdateCoroutine);
 	}
 
 	// This method loads the saved game state to memory

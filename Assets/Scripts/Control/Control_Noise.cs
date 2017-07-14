@@ -6,6 +6,7 @@ public class Control_Noise : MonoBehaviour {
 
 	private Data_GameState GS;
 	private Data_Monster MONSTER;
+	private IEnumerator noiseCoroutine;
 
 	// Random noise settings
 	public const float RANDOM_NOISE_MIN_DELAY = 0.5f;
@@ -29,13 +30,17 @@ public class Control_Noise : MonoBehaviour {
 	// Loud noises are audible over the estimated maximum possible distance between rooms (empirically: 30 m)
 	public const float NOISE_VOL_LOUD = NOISE_INAUDIBLE * 30f * 30f;
 
+	void Awake() {
+		noiseCoroutine = generateRandomNoises();
+	}
+
 	// Loads the game state
 	public void loadGameState(Data_GameState gameState) {
 		GS = gameState;
 		MONSTER = gameState.getMonster();
 		// (Re)Start sub-controllers
-		StopCoroutine("generateRandomNoises");
-		StartCoroutine("generateRandomNoises");
+		StopCoroutine(noiseCoroutine);
+		StartCoroutine(noiseCoroutine);
 	}
 
 	// Whenever chara makes noise, this is where it is "heard"
