@@ -141,6 +141,7 @@ public class Control_Item : MonoBehaviour {
 	// When CHARA picks it up
 	public void moveToInventory() {
 		Debug.AssertFormat(me != null, "{0} lost the object reference!", name);
+		Debug.AssertFormat(spriteRenderer != null, "{0} lost the sprite renderer reference!", name);
 		if(me == null) {
 			fixBrokenDataObjectReference();
 		}
