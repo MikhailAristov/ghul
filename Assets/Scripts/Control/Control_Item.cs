@@ -17,12 +17,14 @@ public class Control_Item : MonoBehaviour {
 
 	private float ITEM_CARRY_ELEVATION;
 	private float ITEM_FLOOR_LEVEL;
+	private bool atRest;
 
 	void Awake() {
 		ITEM_CARRY_ELEVATION = Global_Settings.read("ITEM_CARRY_ELEVATION");
 		ITEM_FLOOR_LEVEL = Global_Settings.read("ITEM_FLOOR_LEVEL");
 
 		spriteRenderer = GetComponent<SpriteRenderer>();
+		atRest = true;
 	}
 
 	// To make sure the game state is fully initialized before loading it, this function is called by game state class itself
@@ -32,7 +34,7 @@ public class Control_Item : MonoBehaviour {
 		Debug.Assert(me != null);
 
 		// Check the item visibility
-		GetComponent<Renderer>().enabled = me.isVisible();
+		spriteRenderer.enabled = me.isVisible();
 	}
 	
 	// Update is called once per frame
@@ -51,25 +53,26 @@ public class Control_Item : MonoBehaviour {
 		}
 
 		// Set the position of the item to chara's position as long as it is carried
-		if(me.state == Data_Item.STATE_CARRIED) {
+		switch(me.state) {
+		case Data_Item.STATE_CARRIED:
 			Data_PlayerCharacter chara = GS.getToni();
 			me.updatePosition(chara.isIn, chara.pos.X, ITEM_CARRY_ELEVATION);
 			updateGameObjectPosition();
-		}
-	}
-
-	// Drops a free-falling object on the floor
-	private IEnumerator fallOntoTheFloor() {
-		if(gameObject != null) {
-			while(me.elevation > ITEM_FLOOR_LEVEL) {
+			break;
+		case Data_Item.STATE_DROPPED:
+			if(me.elevation > ITEM_FLOOR_LEVEL) {
+				atRest = false;
 				float newElevation = me.elevation - Time.deltaTime * getDownwardVelocity(ITEM_CARRY_ELEVATION - me.elevation);
 				me.updatePosition(me.isIn, me.pos.X, Math.Max(ITEM_FLOOR_LEVEL, newElevation));
 				updateGameObjectPosition();
-				yield return null;
+			} else if(!atRest) {
+				me.pos.snapToGrid();
+				updateGameObjectPosition();
+				atRest = true;
 			}
-			// Lastly, adjust the position of the item to align with the pixel grid
-			me.pos.snapToGrid();
-			updateGameObjectPosition();
+			break;
+		default:
+			break;
 		}
 	}
 
@@ -104,7 +107,7 @@ public class Control_Item : MonoBehaviour {
 	public void updateGameObjectPosition() {
 		// The first two items are placed on the pentagram "in front" of the player character
 		float zPos = transform.position.z;
-		if((me.elevation - spriteRenderer.bounds.size.y / 2) <= ITEM_FLOOR_LEVEL) {
+		if(me.state == Data_Item.STATE_DROPPED | (me.elevation - spriteRenderer.bounds.size.y / 2) <= ITEM_FLOOR_LEVEL) {
 			zPos = -2f;
 			GetComponent<SpriteRenderer>().sortingLayerName = "Foreground";
 		} else {
@@ -129,7 +132,7 @@ public class Control_Item : MonoBehaviour {
 			me.resetPosition(GS);
 			updateGameObjectPosition();
 			// Show the object
-			GetComponent<Renderer>().enabled = true;
+			spriteRenderer.enabled = true;
 		} else {
 			Debug.LogError("Cannot reset " + me);
 		}
@@ -142,9 +145,8 @@ public class Control_Item : MonoBehaviour {
 			fixBrokenDataObjectReference();
 		}
 		if(me.isTakeable()) {
-			StopCoroutine("fallOntoTheFloor");
 			me.state = Data_Item.STATE_CARRIED;
-			GetComponent<Renderer>().enabled = false;
+			spriteRenderer.enabled = false;
 		} else {
 			Debug.LogError("Cannot pick up " + me);
 		}
@@ -154,8 +156,7 @@ public class Control_Item : MonoBehaviour {
 	public void dropFromInventory() {
 		if(me.state == Data_Item.STATE_CARRIED) { 
 			me.state = Data_Item.STATE_DROPPED;
-			GetComponent<Renderer>().enabled = true;
-			StartCoroutine("fallOntoTheFloor");
+			spriteRenderer.enabled = true;
 		} else {
 			Debug.LogError("Cannot drop " + me);
 		}
@@ -167,7 +168,7 @@ public class Control_Item : MonoBehaviour {
 			me.state = Data_Item.STATE_ON_CADAVER;
 			me.updatePosition(me.isIn, me.pos.X, ITEM_FLOOR_LEVEL); // The item remains where it was, just on the floor level
 			updateGameObjectPosition();
-			GetComponent<Renderer>().enabled = false;
+			spriteRenderer.enabled = false;
 		} else {
 			Debug.LogError("Cannot transfer " + me + " to cadaver");
 		}
