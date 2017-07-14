@@ -130,6 +130,7 @@ public class Control_MainMenu : MonoBehaviour {
 	// This method is called when the New Game button is activated from the main menu
 	public void onNewGameSelect() {
 		if(!hidden && !newGameButtonDisabled) {
+			NewGameButton.OnDeselect(null);
 			StartCoroutine(showControlsBeforeNewGame());
 			hide();
 		}
@@ -158,6 +159,7 @@ public class Control_MainMenu : MonoBehaviour {
 	// This method is called when the Continue button is activated from the main menu
 	public void onContinueSelect() {
 		if(!hidden) {
+			ContinueButton.OnDeselect(null);
 			GameStateControl.continueOldGame();
 			hide();
 		}
