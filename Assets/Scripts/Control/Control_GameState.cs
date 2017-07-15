@@ -557,8 +557,7 @@ public class Control_GameState : MonoBehaviour {
 	private Data_Item spawnNextItem() {
 		// Calculate spawn position that isn't used yet
 		Data_Position spawnPos = null;
-		bool alreadyTakenPos = true;
-		while(alreadyTakenPos) {
+		bool alreadyTakenPos; do {
 			alreadyTakenPos = false;
 			spawnPos = GS.getRandomItemSpawn();
 			foreach(Data_Item item in GS.ITEMS.Values) {
@@ -566,7 +565,7 @@ public class Control_GameState : MonoBehaviour {
 					alreadyTakenPos = true;
 				}
 			}
-		}
+		} while(alreadyTakenPos);
 
 		Data_Room parentRoom = GS.getRoomByIndex(spawnPos.RoomId);
 		Transform parentRoomTransform = parentRoom.env.transform;

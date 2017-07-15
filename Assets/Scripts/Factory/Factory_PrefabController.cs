@@ -31,6 +31,10 @@ public class Factory_PrefabController : MonoBehaviour {
 		loadItemIndex();
 	}
 
+	private string getNewObjectName(string prefix, int index, string displayName, int prefabIndex) {
+		return String.Format("{0}{1:00}: {2} [prefab{3:00}][uid:{4:X8}]", prefix, index, displayName, prefabIndex, UnityEngine.Random.Range(Int32.MinValue, Int32.MaxValue));
+	}
+
 	// Parses the index of the prefab that was used to spawn the object with a particular name
 	private int parsePrefabID(string gameObjectName) {
 		int result;
@@ -62,7 +66,7 @@ public class Factory_PrefabController : MonoBehaviour {
 		string prefabPath = "Items/" + allItems.list[prefabIndex].prefabName;
 		GameObject newItem = Instantiate(Resources.Load(prefabPath, typeof(GameObject))) as GameObject;
 		// Set additional properties
-		newItem.name = String.Format("Item{0:00}: {2} [prefab{1:00}]", totalItemCounter, prefabIndex, allItems.list[prefabIndex].displayName);
+		newItem.name = getNewObjectName("Item", totalItemCounter, allItems.list[prefabIndex].displayName, prefabIndex);
 		newItem.transform.parent = parent;
 		newItem.transform.localPosition = localPosition;
 		// Mark the item as spawned and return the handle to the new instance
@@ -118,7 +122,7 @@ public class Factory_PrefabController : MonoBehaviour {
 		string prefabPath = "Rooms/" + allRooms.list[prefabIndex].prefabName;
 		GameObject newRoom = Instantiate(Resources.Load(prefabPath, typeof(GameObject))) as GameObject;
 		// Set additional properties
-		newRoom.name = String.Format("Room{0:00}: {2} [prefab{1:00}]", totalRoomCounter, prefabIndex, allRooms.list[prefabIndex].displayName);
+		newRoom.name = getNewObjectName("Room", totalRoomCounter, allRooms.list[prefabIndex].displayName, prefabIndex);
 		newRoom.transform.position = globalPosition;
 		// Increase the instance count and return the handle to the new instance
 		roomSpawnCount[prefabIndex] += 1; totalRoomCounter += 1;
