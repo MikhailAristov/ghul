@@ -44,8 +44,8 @@ public class AI_PlayerParameters {
 
 	public AI_PlayerParameters() {
 		resetWalkingWeights();
-		PROB_RUNNING = 0.05;
-		PROB_STANDING = 0.4;
+		PROB_RUNNING = 0.1;
+		PROB_STANDING = 0.55;
 		COUNT_SPEED_MEASUREMENTS = (long)(COUNT_SPEED_MEASUREMENTS_CUTOFF / 10);
 	}
 
@@ -158,9 +158,9 @@ public class AI_PlayerParameters {
 	}
 
 	private void resetWalkingWeights() {
-		WEIGHT_EXPLORATION_WALK = 0.1;
-		WEIGHT_ITEM_FETCH_WALK = 0.7;
-		WEIGHT_DOOR2DOOR_WALK = 0.4;
+		WEIGHT_EXPLORATION_WALK = 0.575;
+		WEIGHT_ITEM_FETCH_WALK = 1.0;
+		WEIGHT_DOOR2DOOR_WALK = 0.74;
 		if(roomHistory == null) {
 			roomHistory = new List<AI_RoomHistory>();
 		} else {
