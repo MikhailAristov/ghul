@@ -1,2 +1,2 @@
-# ghul
-Game design project at HfG Karlsruhe.
+# Ghul
+Horror game design project at HfG Karlsruhe.
