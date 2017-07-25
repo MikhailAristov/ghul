@@ -1904,6 +1904,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 70c475d2bbc0e94449b5e26c0aefd623, type: 3}
   - {fileID: 8300000, guid: 79c16f10e021cde48b7bb9498977696b, type: 3}
   - {fileID: 8300000, guid: 6be6d4b531f42a84bacb4936e2d0e3d3, type: 3}
+  - {fileID: 8300000, guid: 5f61a35795b9d45dc915d1dd7670d537, type: 3}
   MainTrackList:
   - {fileID: 111515869}
   - {fileID: 395841768}
@@ -3155,7 +3156,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: d83a77675e6262345999fccf6b76dc7a, type: 3}
+  m_audioClip: {fileID: 8300000, guid: 842ddd72ced1d48afb5f17b5ddf27008, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
