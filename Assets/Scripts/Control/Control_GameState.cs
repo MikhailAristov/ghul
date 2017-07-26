@@ -59,7 +59,7 @@ public class Control_GameState : MonoBehaviour {
 	}
 
 	private bool inactivityTimeoutInExpoMode {
-		get { return (InExpoMode && TONI != null && TONI.timeWithoutAction > 60f); }
+		get { return (InExpoMode && TONI != null && TONI.timeWithoutAction > 60f && !CreditsCanvas.gameObject.activeSelf); }
 	}
 
 	// Use this for initialization
