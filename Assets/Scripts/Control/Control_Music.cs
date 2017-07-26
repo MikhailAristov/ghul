@@ -118,7 +118,7 @@ public class Control_Music : MonoBehaviour {
 		for(int i = 0; i < MainTrackList.Length; i++) {
 			if(i == currentTrackID && MONSTER.worldModel.hasMetToni &&
 				GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
-				MainTrackList[i].unmuteTrack(0);
+				MainTrackList[i].unmuteTrack(0, restart:true);
 			} else {
 				MainTrackList[i].muteTrack(0);
 			}
