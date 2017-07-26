@@ -25,7 +25,10 @@ public class Control_Door : MonoBehaviour {
 	private static List<AudioClip> openingSounds;
 	private static List<AudioClip> creakingSounds;
 	private static List<AudioClip> rattlingSounds;
+	private static int lastClosingSound;
+	private static int lastOpeningound;
 	private static int lastCreakingSound;
+	private static int lastRattlingSound;
 
 	private float timeUntilClosing;
 	private float doorOpenDuration;
@@ -49,9 +52,11 @@ public class Control_Door : MonoBehaviour {
 		// Define all sounds
 		if(closingSounds == null) {
 			closingSounds = new List<AudioClip>(Resources.LoadAll("Doors/ClosingSounds", typeof(AudioClip)).Cast<AudioClip>());
+			lastClosingSound = -1;
 		}
 		if(openingSounds == null) {
 			openingSounds = new List<AudioClip>(Resources.LoadAll("Doors/OpeningSounds", typeof(AudioClip)).Cast<AudioClip>());
+			lastOpeningound = -1;
 		}
 		if(creakingSounds == null) {
 			creakingSounds = new List<AudioClip>(Resources.LoadAll("Doors/CreakingSounds", typeof(AudioClip)).Cast<AudioClip>());
@@ -59,6 +64,7 @@ public class Control_Door : MonoBehaviour {
 		}
 		if(rattlingSounds == null) {
 			rattlingSounds = new List<AudioClip>(Resources.LoadAll("Doors/RattlingSounds", typeof(AudioClip)).Cast<AudioClip>());
+			lastRattlingSound = -1;
 		}
 	}
 
@@ -168,33 +174,39 @@ public class Control_Door : MonoBehaviour {
 		// Play a random sound of the given type
 		switch(soundType) {
 		case SOUND_TYPE_CLOSE:
-			knobSound.clip = closingSounds[UnityEngine.Random.Range(0, closingSounds.Count)];
+			knobSound.clip = pickRandomSound(closingSounds, ref lastClosingSound);
 			knobSound.Play();
 			break;
 		case SOUND_TYPE_OPEN:
 			// Always play an opening sound
-			knobSound.clip = openingSounds[UnityEngine.Random.Range(0, openingSounds.Count)];
+			knobSound.clip = pickRandomSound(openingSounds, ref lastOpeningound);
 			knobSound.Play();
 			// Also randomply play the creaking sound
 			if((UnityEngine.Random.Range(0f, 1f) < CREAKING_SOUND_PROBABILITY || forceCreak) && !creakSound.isPlaying) {
-				int randomCreakingSound = 0;
-				// Pick a random creaking sounds that has not been used before
-				do {
-					randomCreakingSound = UnityEngine.Random.Range(0, creakingSounds.Count);
-				} while(randomCreakingSound == lastCreakingSound);
-				lastCreakingSound = randomCreakingSound;
-				creakSound.clip = creakingSounds[randomCreakingSound];
+				creakSound.clip = pickRandomSound(creakingSounds, ref lastCreakingSound);
 				creakSound.Play();
 			}
 			break;
 		case SOUND_TYPE_RATTLE:
 			if(!knobSound.isPlaying) {
-				knobSound.clip = rattlingSounds[UnityEngine.Random.Range(0, rattlingSounds.Count)];
+				knobSound.clip = pickRandomSound(rattlingSounds, ref lastRattlingSound);
 				knobSound.Play();
 			}
 			break;
 		default:
 			return;
 		}
+	}
+
+	// Picks a random creaking sounds that has not been used before
+	private AudioClip pickRandomSound(List<AudioClip> soundList, ref int lastPlayedIndex) {
+		// Pick an index that has not been used before (as long as the sound list has at least two entries)
+		int result; do {
+			result = UnityEngine.Random.Range(0, soundList.Count);
+		} while(soundList.Count > 1 && result == lastPlayedIndex);
+		// Update the last played index
+		lastPlayedIndex = result;
+		// Return the sound list
+		return soundList[result];
 	}
 }
