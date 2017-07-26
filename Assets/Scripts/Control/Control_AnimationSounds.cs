@@ -10,6 +10,9 @@ public class Control_AnimationSounds : MonoBehaviour {
 
 	protected static Dictionary<string, List<AudioClip>> AudioDatabase;
 
+	// This dictionary stores the last indices of database tracks played, so they don't repeat
+	protected static Dictionary<string, int> AudioDatabasePlayHistory;
+
 	public bool CheckDistanceToCamera;
 	protected Control_Camera MainCameraControl;
 	protected float stereoPan;
@@ -57,8 +60,14 @@ public class Control_AnimationSounds : MonoBehaviour {
 	protected void playRandomFromPathInternal(string pathKey, float vol) {
 		// Obtain the clip list for the key
 		List<AudioClip> clipList = getClipList(pathKey);
-		// Pick a random clip from the list and play it
-		playSoundInternal(clipList[UnityEngine.Random.Range(0, clipList.Count)], vol);
+		// Pick a random clip from the list that has not been played last time
+		int indexToPlay;
+		do {
+			indexToPlay = UnityEngine.Random.Range(0, clipList.Count);
+		} while(clipList.Count > 1 && indexToPlay == AudioDatabasePlayHistory[pathKey]);
+		// Play the selected sound
+		playSoundInternal(clipList[indexToPlay], vol);
+		AudioDatabasePlayHistory[pathKey] = indexToPlay;
 	}
 
 	protected void playSoundInternal(AudioClip snd, float vol) {
@@ -113,6 +122,7 @@ public class Control_AnimationSounds : MonoBehaviour {
 		if(!AudioDatabase.TryGetValue(resourcePath, out result)) {
 			result = new List<AudioClip>(Resources.LoadAll(resourcePath, typeof(AudioClip)).Cast<AudioClip>());
 			AudioDatabase.Add(resourcePath, result);
+			AudioDatabasePlayHistory.Add(resourcePath, -1);
 		}
 		return result;
 	}
@@ -121,6 +131,9 @@ public class Control_AnimationSounds : MonoBehaviour {
 		// Initialize the audio database if necessary
 		if(AudioDatabase == null) {
 			AudioDatabase = new Dictionary<string, List<AudioClip>>();
+		}
+		if(AudioDatabasePlayHistory == null) {
+			AudioDatabasePlayHistory = new Dictionary<string, int>();
 		}
 		yield return null;
 		getClipList("Toni/WalkSounds");
