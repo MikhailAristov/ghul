@@ -296,6 +296,9 @@ public class Control_PlayerCharacter : Control_Character {
 		if(GS.OVERALL_STATE < Control_GameState.STATE_TRANSFORMATION) {
 			float timeStep = RESPAWN_TRANSITION_DURATION / 2, waitUntil = Time.timeSinceLevelLoad;
 
+			// Drop item, if any
+			dropItem();
+
 			// Trigger the death animation and wait until it's half-done
 			waitUntil += timeStep;
 			if(animatorHuman != null && animatorHuman.isInitialized) {
@@ -312,8 +315,6 @@ public class Control_PlayerCharacter : Control_Character {
 			stickmanRenderer.enabled = false;
 			CorpsePoolControl.placeHumanCorpse(me.isIn.env.gameObject, me.pos.asLocalVector(), stickmanRenderer.flipX);
 			GS.updateCadaverPosition(me.pos, stickmanRenderer.flipX);
-			// Transfer the current item if any to the cadaver
-			leaveItemOnCadaver();
 
 			// Now move the Toni sprite back to the starting room
 			me.resetPosition(GS);
