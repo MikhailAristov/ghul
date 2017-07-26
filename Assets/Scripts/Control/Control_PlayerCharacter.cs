@@ -673,7 +673,7 @@ public class Control_PlayerCharacter : Control_Character {
 		yield return new WaitUntil(() => (me.timeWithoutAction > SUICIDLE_CANCELABLE_DURATION || me.timeWithoutAction < SUICIDLE_DELAY));
 		// If the player moved, cancel the animation and exit
 		if(me.timeWithoutAction < SUICIDLE_DELAY) {
-			if(animatorMonsterToni != null && animatorMonsterToni.isInitialized) {
+			if(animatorMonsterToni != null && animatorMonsterToni.isInitialized && !attackAnimationPlaying) {
 				animatorMonsterToni.SetTrigger("SuicidleCancel");
 			}
 			suicidleIsPlaying = false;
