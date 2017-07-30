@@ -1,0 +1,36 @@
+# Set default behaviour, in case users don't have core.autocrlf set.
+* text=auto
+
+# Explicitly declare text files we want to always be normalized and converted
+# to native line endings on checkout.
+*.md             text
+*.txt            text
+*.rtf            text
+*.gitattributes  text
+*.gitignore      text
+
+# Unity-specific text files
+*.anim        text
+*.asset       text
+*.controller  text
+*.cs          text
+*.json        text
+*.md          text
+*.meta        text
+*.prefab      text
+*.unity       text
+
+# Installer-specific text files
+*.ps1  text  eol=crlf
+*.iss  text  eol=crlf
+
+# Generic binary files
+*.gif  binary
+*.ico  binary
+*.png  binary
+
+*.ogg  binary
+*.wav  binary
+
+*.ase  binary
+*.ttf  binary
