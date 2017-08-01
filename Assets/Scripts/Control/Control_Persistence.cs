@@ -83,7 +83,7 @@ public abstract class Control_Persistence {
 
 	public static void takeScreenshot() {
 		string filepath = String.Format("{0}/ghul_screenshot_{1:yyyyMMddHHmmssfff}.png", Application.persistentDataPath, System.DateTime.Now);
-		Application.CaptureScreenshot(filepath);
+		ScreenCapture.CaptureScreenshot(filepath);
 		Debug.Log("Screenshot saved to " + filepath);
 	}
 }

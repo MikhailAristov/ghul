@@ -448,7 +448,7 @@ public class Control_PlayerCharacter : Control_Character {
 		float waitUntil = Time.timeSinceLevelLoad + ITEM_PICKUP_DURATION;
 		// Find the next free slot for the item
 		string verticeObjName = "Vertice_" + (GS.numItemsPlaced % 5 + 1);
-		Vector3 verticePos = pentagram.transform.FindChild(verticeObjName).transform.position;
+		Vector3 verticePos = pentagram.transform.Find(verticeObjName).transform.position;
 		// Stop, play animation, and wait for the item to fully materialize
 		halt();
 		triggerItemAnimation(verticePos);
