@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Ghul - Expo Mode"
-#define MyAppVersion "1.1.0"
+#define MyAppVersion "1.1.1"
 #define MyAppPublisher "GameLab"
 #define MyAppURL "http://infoart.hfg-karlsruhe.de/ghul/"
 #define MyAppExeName "Ghul_EXPO.exe"
@@ -19,7 +19,7 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-DefaultDirName={pf64}\{#MyAppPublisher}\{#MyAppName}
+DefaultDirName={pf}\{#MyAppPublisher}\{#MyAppName}
 DisableProgramGroupPage=yes
 LicenseFile=..\license.rtf
 InfoAfterFile=.\dev_message.rtf
