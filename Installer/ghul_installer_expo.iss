@@ -4,7 +4,7 @@
 #define MyAppName "Ghul - Expo Mode"
 #define MyAppVersion "1.1.0"
 #define MyAppPublisher "GameLab"
-#define MyAppURL "http://infoart.hfg-karlsruhe.de/ghul/"
+#define MyAppURL "http://infoart.hfg-karlsruhe.de/ghul-horror-pixel-game/"
 #define MyAppExeName "Ghul_EXPO.exe"
 
 [Setup]
