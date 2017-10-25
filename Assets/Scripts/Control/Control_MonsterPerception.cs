@@ -14,6 +14,7 @@ public class Control_MonsterPerception : MonoBehaviour {
 	private bool newNoiseHeard;
 	private Data_Door lastNoiseHeardFrom;
 	private float lastNoiseVolume;
+	private float lastNoiseVolumeHeardAt;
 
 	// To make sure the game state is fully initialized before loading it, this function is called by game state class itself
 	public void loadGameState(Data_GameState gameState) {
@@ -38,7 +39,7 @@ public class Control_MonsterPerception : MonoBehaviour {
 			me.worldModel.predictOneTimeStep();
 			// And if a noise has been heard, update the model accordingly
 			if(newNoiseHeard) {
-				me.worldModel.filter(lastNoiseVolume, lastNoiseHeardFrom);
+				me.worldModel.filter(lastNoiseVolume, lastNoiseHeardFrom, Mathf.Abs(lastNoiseHeardFrom.atPos - lastNoiseVolumeHeardAt));
 				newNoiseHeard = false;
 			} else {
 				// If no noise has been heard, filter anyway
@@ -52,6 +53,7 @@ public class Control_MonsterPerception : MonoBehaviour {
 		if(GS.OVERALL_STATE == Control_GameState.STATE_COLLECTION_PHASE) {
 			lastNoiseVolume = loudness;
 			lastNoiseHeardFrom = doorway;
+			lastNoiseVolumeHeardAt = me.atPos;
 			newNoiseHeard = true;
 		}
 	}

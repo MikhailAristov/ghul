@@ -10,18 +10,16 @@ public class AI_SignalModel {
 	[SerializeField]
 	public AI_PlayerModel playerModel;
 
+	// House adjacency graph in a separate class
 	[SerializeField]
-	private float[,][] door2roomDistanceFunction;
+	public AI_HouseAdjacencyGraph adjacencyGraph;
+
 	[SerializeField]
 	private float[,] door2roomMinDistance;
-	[SerializeField]
-	private float[,] door2roomMaxDistance;
 	[SerializeField]
 	private float[,] room2roomMinDistance;
 	[SerializeField]
 	private float[,] roomDoor2roomMaxDistance;
-	[SerializeField]
-	private float[] roomWalkableWidth;
 
 	[SerializeField]
 	private int roomCount;
@@ -48,6 +46,7 @@ public class AI_SignalModel {
 
 	public AI_SignalModel(Data_GameState GS, AI_PlayerModel PM) {
 		playerModel = PM;
+		adjacencyGraph = new AI_HouseAdjacencyGraph(GS);
 		recalculate(GS);
 	}
 
@@ -56,9 +55,10 @@ public class AI_SignalModel {
 		roomCount = GS.ROOMS.Count;
 		doorCount = GS.DOORS.Count;
 		noiseCount = Control_Noise.NOISE_TYPE_ZAP;
-		// Recalculate distance boundaries between each door and room
-		precomputeDoorToRoomDistanceFunctions(GS);
+		// Update the adjacency graph
+		adjacencyGraph.Update(GS);
 		// Recalculate the likelihoods of specific noises from specific room being heard at certain doors
+		precomputeDoorToRoomDistances(GS);
 		precomputeDoorAudibilityLikelihoods(GS);
 		// Recalculate noise making likelihoods
 		precomputeNoiseMakerLikelihoods(GS);
@@ -67,89 +67,42 @@ public class AI_SignalModel {
 		precomputeNullSignalLikelihoods();
 	}
 
-	/* Precomputes the (non-linear) distance function 
-	 * f_d,r(x) = distance between door d and room r
-	 * where x is Toni's position in that room.
-	 * 
-	 * The function is stored as an array of "breakpoints":
-	 * odd (0, 2, 4...) values are local maxima of the distance, and even ones (1, 3, 5...) are local maxima
-	*/
-	private void precomputeDoorToRoomDistanceFunctions(Data_GameState GS) {
-		// Initialize arrays
-		AI_Util.initializeMatrix(ref door2roomMinDistance, doorCount, roomCount);
-		AI_Util.initializeMatrix(ref door2roomMaxDistance, doorCount, roomCount);
-		AI_Util.initializeMatrix(ref door2roomDistanceFunction, doorCount, roomCount);
-		AI_Util.initializeVector(ref roomWalkableWidth, roomCount);
-		// Room-to-room min and max distance
+	// Precomputes the (non-linear) min/max door-to-room and min room-to-room distances
+	private void precomputeDoorToRoomDistances(Data_GameState GS) {
+		// Minimal room-to-room distance is easy, as the game state already precomputes it
 		AI_Util.copyMatrix(ref GS.distanceBetweenTwoRooms, ref room2roomMinDistance);
+		// Now initialize the other two arrays
+		AI_Util.initializeMatrix(ref door2roomMinDistance, doorCount, roomCount);
 		AI_Util.initializeMatrix(ref roomDoor2roomMaxDistance, roomCount, roomCount);
-		// Loop through all rooms and doors
-		bool[] doorPruned = new bool[GS.DOORS.Count];
-		int[] relevantDoors = new int[0];
-		int prunedCount, lastRelevantDoorId, breakpointCount, cnt;
+		// Loop ithrough each door in each room to each door (and wall) in each room
 		foreach(Data_Room originRoom in GS.ROOMS.Values) {
-			roomWalkableWidth[originRoom.INDEX] = originRoom.rightWalkBoundary - originRoom.leftWalkBoundary;
-			foreach(Data_Door targetDoor in GS.DOORS.Values) {
-				// Prune away any doors that are Pareto dominated by another door in the origin room
-				Array.Clear(doorPruned, 0, doorCount);
-				prunedCount = 0;
-				foreach(Data_Door d1 in originRoom.DOORS.Values) {
-					foreach(Data_Door d2 in originRoom.DOORS.Values) {
-						if(d1 != d2 && !doorPruned[d1.INDEX] && !doorPruned[d2.INDEX] &&
-						   GS.distanceBetweenTwoDoors[targetDoor.INDEX, d2.INDEX] > (GS.distanceBetweenTwoDoors[targetDoor.INDEX, d1.INDEX] + GS.distanceBetweenTwoDoors[d1.INDEX, d2.INDEX])) {
-							doorPruned[d2.INDEX] = true;
-							prunedCount += 1;
-						}
+			foreach(Data_Door originDoor in originRoom.DOORS.Values) {
+				foreach(Data_Room targetRoom in GS.ROOMS.Values) {
+					// Skip the same room
+					if(originRoom.INDEX == targetRoom.INDEX) {
+						continue;
 					}
-				}
-				// Get all the non-pruned door IDs for easier handling
-				AI_Util.initializeVector(ref relevantDoors, originRoom.DOORS.Count - prunedCount);
-				cnt = 0;
-				Debug.Assert(relevantDoors.Length >= 1);
-				foreach(Data_Door d in originRoom.DOORS.Values) {
-					if(!doorPruned[d.INDEX]) {
-						relevantDoors[cnt] = d.INDEX;
-						cnt += 1;
+					// Check each door in target room for the minimum and furthest distance
+					float minDistance = float.MaxValue, thisDistance;
+					foreach(Data_Door targetDoor in targetRoom.DOORS.Values) {
+						thisDistance = GS.distanceBetweenTwoDoors[originDoor.INDEX, targetDoor.INDEX];
+						minDistance = Mathf.Min(thisDistance, minDistance);
+						roomDoor2roomMaxDistance[originRoom.INDEX, targetRoom.INDEX] = Mathf.Max(thisDistance, roomDoor2roomMaxDistance[originRoom.INDEX, targetRoom.INDEX]);
 					}
-				}
-				// Find the breaking points between each non-pruned door in order
-				breakpointCount = 2 * relevantDoors.Length;
-				AI_Util.initializeVector(ref door2roomDistanceFunction[targetDoor.INDEX, originRoom.INDEX], breakpointCount);
-				// The first breaking point is always at the left wall of the room, 
-				// so the breaking point equals distance to the leftmost non-pruned door plus distance from it to the wall
-				door2roomDistanceFunction[targetDoor.INDEX, originRoom.INDEX][0] =
-					GS.distanceBetweenTwoDoors[targetDoor.INDEX, relevantDoors[0]] + Math.Abs(originRoom.leftWalkBoundary - GS.getDoorByIndex(relevantDoors[0]).atPos);
-				// Other breaking points are placed at each non-pruned door and between it and the next one on the right,
-				// with the exact position depending on the doors' individual distances to the targetDoor
-				int thisID, nextID;
-				for(int i = 0; i < (relevantDoors.Length - 1); i++) {
-					thisID = relevantDoors[i];
-					nextID = relevantDoors[i + 1];
-					// The first break point is at this door's location
-					door2roomDistanceFunction[targetDoor.INDEX, originRoom.INDEX][i + 1] = GS.distanceBetweenTwoDoors[targetDoor.INDEX, thisID];
-					// The next one is between this door and the next one
-					door2roomDistanceFunction[targetDoor.INDEX, originRoom.INDEX][i + 2] = 
-						(GS.distanceBetweenTwoDoors[targetDoor.INDEX, thisID] + GS.distanceBetweenTwoDoors[thisID, nextID] + GS.distanceBetweenTwoDoors[targetDoor.INDEX, nextID]) / 2;
-				}
-				// Finally, the final two break points are at the rightmost non-pruned door, and at the rightmost wall
-				lastRelevantDoorId = relevantDoors[relevantDoors.Length - 1];
-				door2roomDistanceFunction[targetDoor.INDEX, originRoom.INDEX][breakpointCount - 2] = GS.distanceBetweenTwoDoors[targetDoor.INDEX, lastRelevantDoorId];
-				door2roomDistanceFunction[targetDoor.INDEX, originRoom.INDEX][breakpointCount - 1] = 
-					GS.distanceBetweenTwoDoors[targetDoor.INDEX, lastRelevantDoorId] + Math.Abs(GS.getDoorByIndex(lastRelevantDoorId).atPos - originRoom.rightWalkBoundary);
-				
-				// While we are at it, update the maximum and minimum distances for easier reference
-				door2roomMinDistance[targetDoor.INDEX, originRoom.INDEX] = float.MaxValue;
-				door2roomMaxDistance[targetDoor.INDEX, originRoom.INDEX] = float.MinValue;
-				foreach(float dist in door2roomDistanceFunction[targetDoor.INDEX, originRoom.INDEX]) {
-					if(dist < door2roomMinDistance[targetDoor.INDEX, originRoom.INDEX]) {
-						door2roomMinDistance[targetDoor.INDEX, originRoom.INDEX] = dist;
+					door2roomMinDistance[originDoor.INDEX, targetRoom.INDEX] = minDistance;
+					// Lastly, check each WALL in the target room for the furthest distance, if necessary
+					if(targetRoom.leftmostDoor.type != Data_Door.TYPE_LEFT_SIDE) {
+						roomDoor2roomMaxDistance[originRoom.INDEX, targetRoom.INDEX] = 
+							Mathf.Max(roomDoor2roomMaxDistance[originRoom.INDEX, targetRoom.INDEX], 
+								GS.getDistance(originDoor, new Data_Position(targetRoom.INDEX, targetRoom.leftWalkBoundary)));
 					}
-					if(dist > door2roomMaxDistance[targetDoor.INDEX, originRoom.INDEX]) {
-						door2roomMaxDistance[targetDoor.INDEX, originRoom.INDEX] = dist;
+					if(targetRoom.rightmostDoor.type != Data_Door.TYPE_RIGHT_SIDE) {
+						roomDoor2roomMaxDistance[originRoom.INDEX, targetRoom.INDEX] = 
+							Mathf.Max(roomDoor2roomMaxDistance[originRoom.INDEX, targetRoom.INDEX], 
+								GS.getDistance(originDoor, new Data_Position(targetRoom.INDEX, targetRoom.rightWalkBoundary)));
 					}
-					if(dist > roomDoor2roomMaxDistance[targetDoor.isIn.INDEX, originRoom.INDEX]) {
-						roomDoor2roomMaxDistance[targetDoor.isIn.INDEX, originRoom.INDEX] = dist;
-					}
+					// Ugly approximation, but it should work
+					roomDoor2roomMaxDistance[originRoom.INDEX, targetRoom.INDEX] += (float)targetRoom.effectiveWidth / 6;
 				}
 			}
 		}
@@ -231,37 +184,22 @@ public class AI_SignalModel {
 	}
 
 	// f( perceivedVolume, atDoor | Toni is in tonisRoom )
-	public double signalLikelihood(float volume, Data_Door door, int tonisRoom) {
-		double result = 0;
+	public double[] signalLikelihood(float volume, Data_Door door, float distToDoor) {
+		double[] result = new double[roomCount];
 		// This is some crazy stochastic voodoo magic...
 		for(int n = Control_Noise.NOISE_TYPE_WALK; n < noiseCount; n++) {
-			// Estimate the distance the signal must have traveled
-			double estimatedDistanceToOrigin = Math.Sqrt(Control_Noise.getInitialLoudness(n) / volume);
-			for(int r = 0; r < roomCount; r++) {
-				result += signalLikelihood(estimatedDistanceToOrigin, door, r) * likelihoodNoiseHeardAtDoor[n, r, door.INDEX] * noiseAndOriginLikelihood[n, r, tonisRoom];
-			}
+			// Estimate the distance the signal must have traveled to the door
+			float estimatedDistanceFromDoorToOrigin = Mathf.Sqrt(Control_Noise.getInitialLoudness(n) / volume) - Mathf.Abs(distToDoor);
+			if(estimatedDistanceFromDoorToOrigin > 0) {
+				float[] originRoomLikelihood = adjacencyGraph.SearchForRoomsOnTheHorizon(door, estimatedDistanceFromDoorToOrigin);
+				for(int tonisRoom = 0; tonisRoom < roomCount; tonisRoom++) {
+					for(int r = 0; r < roomCount; r++) {
+						result[tonisRoom] += originRoomLikelihood[r] * likelihoodNoiseHeardAtDoor[n, r, door.INDEX] * noiseAndOriginLikelihood[n, r, tonisRoom];
+					}
+				}
+			} 
 		}
 		return result;
-	}
-
-	// f( estimatedDistanceToOrigin | atDoor, origin room )
-	private double signalLikelihood(double estimatedDistanceToOrigin, Data_Door door, int origin) {
-		// Count how many points within the supposed origin room the sound could have originated from
-		int possibleOriginPoints = 0;
-		float intervalStart, intervalEnd;
-		if(estimatedDistanceToOrigin >= door2roomMinDistance[door.INDEX, origin] &&
-		   estimatedDistanceToOrigin <= door2roomMaxDistance[door.INDEX, origin]) {
-			// Check whether the estimated distance of origin lies between the "breakpoints" of the specified room
-			for(int i = 0; i < (door2roomDistanceFunction[door.INDEX, origin].Length - 1); i++) {
-				intervalStart = door2roomDistanceFunction[door.INDEX, origin][i];
-				intervalEnd = door2roomDistanceFunction[door.INDEX, origin][i + 1];
-				if((intervalStart <= estimatedDistanceToOrigin && estimatedDistanceToOrigin <= intervalEnd) ||
-				   (intervalEnd <= estimatedDistanceToOrigin && estimatedDistanceToOrigin <= intervalStart)) {
-					possibleOriginPoints += 1;
-				}
-			}
-		}
-		return (double)possibleOriginPoints / roomWalkableWidth[origin];
 	}
 
 	// f( noise type, origin room | Toni is in tonisRoom )

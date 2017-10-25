@@ -102,12 +102,14 @@ public class AI_WorldModel {
 
 	// Update the world model with a given measurement
 	// MUST be called in a FixedUpdate after predictOneTimeStep()!
-	public void filter(float loudness, Data_Door door) {
+	public void filter(float loudness, Data_Door door, float distToDoor) {
 		// A simple Bayesian Wonham filter
 		double normalization = 0;
+		// Get likelihoods of signals
+		double[] signalLikelihood = signalModel.signalLikelihood(loudness, door, distToDoor);
+		// Posteriore := likelihood * priore (normalization constant to be applied later)
 		for(int i = 0; i < roomCount; i++) {
-			// Posteriore := likelihood * priore (normalization constant to be applied later)
-			newVector[i] = signalModel.signalLikelihood(loudness, door, i) * probabilityThatToniIsInRoom[i];
+			newVector[i] = signalLikelihood[i] * probabilityThatToniIsInRoom[i];
 			normalization += newVector[i];
 		}
 		// Lastly, normalize the probabilities to sum up to 1
@@ -125,11 +127,13 @@ public class AI_WorldModel {
 			newVector[i] = signalModel.nullSignalLikelihood[i, monsterRoomIndex] * probabilityThatToniIsInRoom[i];
 			normalization += newVector[i];
 		}
-		// Lastly, normalize the probabilities to sum up to 1
-		for(int j = 0; j < roomCount; j++) {
-			probabilityThatToniIsInRoom[j] = newVector[j] / normalization;
+		// Lastly, normalize the probabilities to sum up to 1, but only if non-zero
+		if(normalization > 0) {
+			for(int j = 0; j < roomCount; j++) {
+				probabilityThatToniIsInRoom[j] = newVector[j] / normalization;
+			}
+			updateMostLikelyRoomIndices();
 		}
-		updateMostLikelyRoomIndices();
 	}
 
 	private void updateMostLikelyRoomIndices() {
