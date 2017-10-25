@@ -10,10 +10,11 @@ public class AI_HouseAdjacencyGraph {
 	private const int VTYPE_BACK_DOOR = 0;
 	private const int VTYPE_RIGHT_WALL = 1;
 
-	public List<Vertice> Vertices;
-	public int[] Door2Vertice;
+	private List<Vertice> Vertices;
+	private int[] Door2Vertice;
+	private int RoomCount;
 
-	public class Vertice {
+	private class Vertice {
 		public int Type;
 		public int Room;
 		public Dictionary<Vertice, float> Edges;
@@ -33,17 +34,15 @@ public class AI_HouseAdjacencyGraph {
 	}
 
 	public AI_HouseAdjacencyGraph(Data_GameState GS) {
+		Vertices = new List<Vertice>();
 		Update(GS);
-	}
-
-	public Vertice GetVerticeForDoor(Data_Door D) {
-		return Vertices[Door2Vertice[D.INDEX]];
 	}
 
 	public void Update(Data_GameState GS) {
 		// Initialize data
 		Vertices.Clear();
 		Door2Vertice = new int[GS.DOORS.Count];
+		RoomCount = GS.ROOMS.Count;
 		// Every left and right wall is a vertice, as is every back door
 		foreach(Data_Room r in GS.ROOMS.Values) {
 			// Add the left wall vertice
@@ -87,5 +86,56 @@ public class AI_HouseAdjacencyGraph {
 		foreach(Data_Door d in GS.DOORS.Values) {
 			GetVerticeForDoor(d).ConnectTo(GetVerticeForDoor(d.connectsTo), DOOR_TRANSITION_COST);
 		}
+	}
+
+	// Searches the graph starting from a node corresponding to the door specified
+	// Returns all rooms that contain vertices that lie on the search horizon specified
+	// The HorizonSharpness parameter allows for a certain fuzziness in the search horizon value
+	public int[] SearchForRoomsOnTheHorizon(Data_Door SearchStart, float SearchHorizon, float HorizonSharpness = 0.5f) {
+		// Initialize parameters and results
+		Vertice start = GetVerticeForDoor(SearchStart);
+		float lowerHorizonBound = SearchHorizon - HorizonSharpness, upperHorizonBound = SearchHorizon + HorizonSharpness;
+		int[] SearchResultCountPerRoom = new int[RoomCount];
+		// Initialize priority queue for Dijkstra
+		SimplePriorityQueue<Vertice> Q = new SimplePriorityQueue<Vertice>();
+		Dictionary<Vertice, float> dist = new Dictionary<Vertice, float>();
+		Dictionary<Vertice, Vertice> prev = new Dictionary<Vertice, Vertice>();
+		foreach(Vertice v in Vertices) {
+			float initialDistanceToStart = (v == start) ? 0 : float.MaxValue;
+			Q.Enqueue(v, initialDistanceToStart);
+			dist.Add(v, initialDistanceToStart);
+			prev.Add(v, null);
+		}
+		// Search until the queue is empty
+		// TODO Better termination condition
+		while(Q.Count > 0) {
+			// Fetch the next vertice from the priority queue
+			Vertice currentVertice = Q.Dequeue(), previousVertice = prev[currentVertice];
+
+			// If the current vertice lies beyond the search horizon, while its previous one didn't,
+			// AND they both are in the same room, add this room to the result list
+			if(dist[currentVertice] > lowerHorizonBound && dist[previousVertice] <= upperHorizonBound && currentVertice.Room == previousVertice.Room) {
+				SearchResultCountPerRoom[currentVertice.Room] += 1;
+			}
+
+			// Otherwise, go through the neighbours that are still in the queue and update their distances as necessary
+			foreach(Vertice neighbourVertice in currentVertice.Edges.Keys) {
+				if(Q.Contains(neighbourVertice)) {
+					// Calculate distnace to neighbour
+					float distanceFromStartToNeighbour = dist[currentVertice] + currentVertice.Edges[neighbourVertice];
+					// Update only if necessary
+					if(distanceFromStartToNeighbour < dist[neighbourVertice]) {
+						Q.UpdatePriority(neighbourVertice, distanceFromStartToNeighbour);
+						dist[neighbourVertice] = distanceFromStartToNeighbour;
+						prev[neighbourVertice] = currentVertice;
+					}
+				}
+			}
+		}
+		return SearchResultCountPerRoom;
+	}
+
+	private Vertice GetVerticeForDoor(Data_Door D) {
+		return Vertices[Door2Vertice[D.INDEX]];
 	}
 }
