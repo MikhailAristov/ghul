@@ -106,7 +106,7 @@ public class AI_PlayerModel {
 			}
 		}
 
-		AI_Util.displayMatrix("PLAYER MODEL: Room transition matrix", TRANSITION_MATRIX);
+		//AI_Util.displayMatrix("PLAYER MODEL: Room transition matrix", TRANSITION_MATRIX);
 	}
 
 	private double calculateMeanStayingTime(Data_GameState GS, int roomIndex) {

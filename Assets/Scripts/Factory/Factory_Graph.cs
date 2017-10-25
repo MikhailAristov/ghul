@@ -56,7 +56,7 @@ public class Factory_Graph : MonoBehaviour {
 			graphCalculated = true;
 
 			// DEBUG
-			graph.printCompleteGraphInformation();
+			//graph.printCompleteGraphInformation();
 			// END OF DEBUG
 		} else {
 			Debug.Log("Failed at connecting all rooms.");

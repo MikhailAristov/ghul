@@ -59,7 +59,7 @@ public class AI_PlayerParameters {
 		PROB_STANDING = (double)newCntStand / COUNT_SPEED_MEASUREMENTS;
 		PROB_RUNNING = (double)newCntRun / COUNT_SPEED_MEASUREMENTS;
 		COUNT_SPEED_MEASUREMENTS = Math.Min(COUNT_SPEED_MEASUREMENTS, COUNT_SPEED_MEASUREMENTS_CUTOFF);
-		Debug.LogFormat("Player movement model: {0:P3} standing, {1:P3} walking, {2:P3} running", PROB_STANDING, PROB_WALKING, PROB_RUNNING);
+		//Debug.LogFormat("Player movement model: {0:P3} standing, {1:P3} walking, {2:P3} running", PROB_STANDING, PROB_WALKING, PROB_RUNNING);
 	}
 
 	// Use stochastic gradient descent using the weights to update the walking weights
