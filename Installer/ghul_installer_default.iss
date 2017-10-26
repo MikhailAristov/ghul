@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Ghul"
-#define MyAppVersion "1.1.1"
+#define MyAppVersion "1.2.0"
 #define MyAppPublisher "GameLab"
 #define MyAppURL "http://infoart.hfg-karlsruhe.de/ghul-horror-pixel-game/"
 #define MyAppExeName "Ghul.exe"
