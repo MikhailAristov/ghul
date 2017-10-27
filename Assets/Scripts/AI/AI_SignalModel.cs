@@ -191,13 +191,13 @@ public class AI_SignalModel {
 			// Estimate the distance the signal must have traveled to the door
 			float estimatedDistanceFromDoorToOrigin = Mathf.Sqrt(Control_Noise.getInitialLoudness(n) / volume) - Mathf.Abs(distToDoor);
 			if(estimatedDistanceFromDoorToOrigin > 0) {
-				float[] originRoomLikelihood = adjacencyGraph.SearchForRoomsOnTheHorizon(door, estimatedDistanceFromDoorToOrigin);
+				double[] originRoomLikelihood = adjacencyGraph.SearchForRoomsOnTheHorizon(door, estimatedDistanceFromDoorToOrigin);
 				for(int tonisRoom = 0; tonisRoom < roomCount; tonisRoom++) {
 					for(int r = 0; r < roomCount; r++) {
 						result[tonisRoom] += originRoomLikelihood[r] * likelihoodNoiseHeardAtDoor[n, r, door.INDEX] * noiseAndOriginLikelihood[n, r, tonisRoom];
 					}
 				}
-			} 
+			}
 		}
 		return result;
 	}

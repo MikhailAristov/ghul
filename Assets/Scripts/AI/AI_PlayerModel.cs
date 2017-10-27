@@ -105,8 +105,6 @@ public class AI_PlayerModel {
 				// the probability of transitioning to such a room is double (or more) than to any other room
 			}
 		}
-
-		//AI_Util.displayMatrix("PLAYER MODEL: Room transition matrix", TRANSITION_MATRIX);
 	}
 
 	private double calculateMeanStayingTime(Data_GameState GS, int roomIndex) {
@@ -116,7 +114,7 @@ public class AI_PlayerModel {
 										 PLAYER_PARAMETERS.WEIGHT_ITEM_FETCH_WALK * room.meanItemFetchDistance +
 										 PLAYER_PARAMETERS.WEIGHT_DOOR2DOOR_WALK * room.meanDoorToDoorDistance;
 		// Convert the walking distance into mean staying time and return it
-		return meanWalkingDistance[roomIndex] / MEAN_TONI_VELOCITY / TIME_STEP;
+		return Math.Max(1.0, meanWalkingDistance[roomIndex] / MEAN_TONI_VELOCITY / TIME_STEP);
 	}
 
 	// f( noise type | the room Toni was in when he made the sound )
