@@ -95,8 +95,10 @@ public class AI_WorldModel {
 			}
 		}
 		// Normalization
-		for(int j = 0; j < roomCount; j++) {
-			probabilityThatToniIsInRoom[j] = newVector[j] / normalization;
+		if(normalization > 0) {
+			for(int j = 0; j < roomCount; j++) {
+				probabilityThatToniIsInRoom[j] = newVector[j] / normalization;
+			}
 		}
 	}
 
@@ -112,11 +114,13 @@ public class AI_WorldModel {
 			newVector[i] = signalLikelihood[i] * probabilityThatToniIsInRoom[i];
 			normalization += newVector[i];
 		}
-		// Lastly, normalize the probabilities to sum up to 1
-		for(int j = 0; j < roomCount; j++) {
-			probabilityThatToniIsInRoom[j] = newVector[j] / normalization;
+		// Lastly, normalize the probabilities to sum up to 1, but only if non-zero
+		if(normalization > 0) {
+			for(int j = 0; j < roomCount; j++) {
+				probabilityThatToniIsInRoom[j] = newVector[j] / normalization;
+			}
+			updateMostLikelyRoomIndices();
 		}
-		updateMostLikelyRoomIndices();
 	}
 
 	// Update the world model in absence of a measurement ("null signal")
