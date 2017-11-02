@@ -71,7 +71,7 @@ Source: ".\auto_restart.ps1"; DestDir: "{app}"; Flags: ignoreversion
 [Icons]
 Name: "{commonprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
-Name: "{commondesktop}\Ghul Auto-Restart Script"; Filename: "{app}\auto_restart.ps1"; Tasks: desktopicon
+Name: "{commondesktop}\Ghul Auto-Restart Script"; Filename: "{app}\auto_restart.ps1"; WorkingDir: "{app}"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent

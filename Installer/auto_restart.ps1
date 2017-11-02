@@ -17,7 +17,7 @@
 #####################################################################################
 
 $processName = "Ghul_EXPO"
-$executablePath = "C:\Program Files\GameLab\Ghul - Expo Mode\Ghul_EXPO.exe"
+$executablePath = "Ghul_EXPO.exe"
 $waitBeforeRestart = 10
 
 while(Test-Path -Path $executablePath) {
