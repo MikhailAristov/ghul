@@ -194,7 +194,7 @@ public abstract class Control_Character : MonoBehaviour {
 	// Play out the attack animation
 	// Animation automatically cancels out if the attacker moves
 	// targetPos is separated from target because the player (as a monster) can attack even without seeing the monster
-	protected IEnumerator playAttackAnimation(float targetPos, Data_Character target) {
+	protected IEnumerator playAttackAnimation(float targetPos, Data_Character target, float delay = 0) {
 		attackAnimationPlaying = true;
 		Data_Position attackOrigin = getMe().pos.clone();
 		// Flip the sprite if necessary
@@ -202,8 +202,11 @@ public abstract class Control_Character : MonoBehaviour {
 			setSpriteFlip(targetPos < attackOrigin.X);
 		}
 		float attackPoint = attackOrigin.X + Math.Sign(targetPos - attackOrigin.X) * ATTACK_RANGE;
+		// PHASE 0: Reaction time (deliberately after the attack targeting has been calculated to allow for misses)
+		float waitUntil = Time.timeSinceLevelLoad + delay;
+		yield return new WaitUntil(() => Time.timeSinceLevelLoad > waitUntil);
 		// PHASE 1: Attack
-		float waitUntil = Time.timeSinceLevelLoad + ATTACK_DURATION;
+		waitUntil = Time.timeSinceLevelLoad + ATTACK_DURATION;
 		startAttackAnimation();
 		// Wait until either the attack plays out completely, or the attacker goes through a door, or moves at all
 		yield return new WaitUntil(() => (Time.timeSinceLevelLoad > waitUntil || getMe().isIn.INDEX != attackOrigin.RoomId || Math.Abs(getMe().atPos - attackOrigin.X) > ATTACK_MARGIN));

@@ -38,6 +38,10 @@ public class Control_Monster : Control_Character {
 	public const int STATE_PURSUING = 3;
 	public const int STATE_FLEEING = 5;
 
+	// Monster reaction times
+	private const float SIMPLE_REACTION_TIME = 0.2f;
+	private const float GO_NOGO_REACTION_TIME = 0.4f;
+
 	private const double utilityPenaltyRitualRoom = double.MaxValue / 2;
 	private const double utilityPenaltyPreviousRoom = double.MaxValue / 4;
 	private const double utilityPenaltyTonisRoom = double.MaxValue / 8;
@@ -213,7 +217,7 @@ public class Control_Monster : Control_Character {
 		me.AGGRO += (Toni.carriedItem != null) ? me.AGGRO : 0;
 
 		// Update AI state; cycle through the conditions several times, if necessary
-		int previousState = me.state, iterationCounter = 0; 
+		int previousState = me.state, initState = me.state, iterationCounter = 0; 
 		do {
 			previousState = me.state;
 			switch(previousState) {
@@ -247,9 +251,11 @@ public class Control_Monster : Control_Character {
 						float tonisPredictedPosition = Toni.atPos + ATTACK_DURATION * Toni.currentVelocitySigned;
 						// ...as well as where the attack his his direction would land
 						float attackLandingPoint = me.atPos + Math.Sign(Toni.atPos - me.atPos) * ATTACK_RANGE;
+						// Depending on how sudden seeing Toni was, the monster will have different delay times
+						float attackDelay = (initState == STATE_SEARCHING) ? GO_NOGO_REACTION_TIME : (initState == STATE_STALKING ? SIMPLE_REACTION_TIME : 0);
 						// If Toni's predicted position and the attack landing point are within the attack margin (hit box), initiate attack
 						if(!Toni.isInvulnerable && Math.Abs(tonisPredictedPosition - attackLandingPoint) < EFFECTIVE_ATTACK_MARGIN) {
-							StartCoroutine(playAttackAnimation(Toni.atPos, Toni));
+							StartCoroutine(playAttackAnimation(Toni.atPos, Toni, attackDelay));
 							stateUpdateCooldown = ATTACK_DURATION + ATTACK_COOLDOWN;
 						}
 					}
